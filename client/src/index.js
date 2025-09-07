@@ -4,6 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route} from "react-router-dom"
+import AIHealthPrediction from "./routes/AIHealthPrediction";
+import GenerateReport from './routes/GenerateReport';
+import HealthAnalytics from './routes/HealthAnalytics';
+import Login from './routes/Login';
+import Register from './routes/Register';
+import UserLanding from './routes/UserLanding';
+import UserSettings from './routes/UserSettings';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
