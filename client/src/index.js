@@ -18,6 +18,13 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={ <App /> } />
+        <Route path="/login" element={ <Login /> } />
+        <Route path="/register" element={ <Register /> } />
+        <Route path="/user-landing" element={ <UserLanding /> } />
+        <Route path="/user-settings" element={ <UserSettings /> } />
+        <Route path="/ai-health-prediction" element={ <AIHealthPrediction /> } />
+        <Route path="/generate-report" element={ <GenerateReport/> } />
+        <Route path="/health-analytics" element={ <HealthAnalytics /> } />
         <Route path=""  element={ <App /> } />
         <Route path="*" element={ <App /> } />
       </Routes>
