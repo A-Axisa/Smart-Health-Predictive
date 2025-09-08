@@ -10,5 +10,7 @@
 2. Run the server.  
 ```node server\src\server.js```
 3. Open a second terminal and navigate to the client folder in the project directory.  
-4. Run the client.  
+4. Install packages with npm and run the client.  
+```npm install```  
 ```npm start```
+
