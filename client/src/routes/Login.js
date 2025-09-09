@@ -1,7 +1,24 @@
+import { useNavigate } from 'react-router-dom';
 import { Box, Container, Stack, TextField, Button, Typography, 
     Link } from '@mui/material'
 
 const Login = ({}) => {
+  const navigate = useNavigate();
+
+  function validateEmail(e) {
+    console.log('Email validated.');
+  }
+
+  function validatePassword(e) {
+    console.log('Password validated.');
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    console.log('Logged in succesfully!');
+    navigate('/user-landing')
+  }
+
   return (
     <Box sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
         padding:'0', margin:'0'}}>
@@ -30,12 +47,13 @@ const Login = ({}) => {
             flex:'inline', float:'left', display:'flex', alignItems:'center'}}>
         <Container sx={{ width:'80%', borderRadius:2, padding:'25px', 
                 alignItems:'center', boxShadow:24}}>
-          <Box component='form'>
+          <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
               <h1>Sign In</h1>
-              <TextField id='outlined-input' label='Email' ></TextField>
+              <TextField id='outlined-input' label='Email' 
+                  onChange={validateEmail}></TextField>
               <TextField id='outlined-password-input' label='Password' 
-                  type='password' ></TextField>
+                  type='password' onChange={validatePassword}></TextField>
               <Button type='submit' variant="contained">Login</Button>
               <Button href='/register' variant="outlined">Sign up</Button>
               <Stack direction='row' spacing={{xs:1}} 
