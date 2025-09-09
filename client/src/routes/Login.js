@@ -15,7 +15,7 @@ const Login = ({}) => {
 
   function handleLogin(e) {
     e.preventDefault();
-    console.log('Logged in succesfully!');
+    console.log('Logged in successfully!');
     navigate('/user-landing')
   }
 
