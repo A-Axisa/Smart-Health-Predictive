@@ -45,7 +45,7 @@ const Login = ({}) => {
 
       <Box sx={{ backgroundColor:'#ffffff', width:'40%', height:'100%', 
             flex:'inline', float:'left', display:'flex', alignItems:'center'}}>
-        <Container sx={{ width:'80%', borderRadius:2, padding:'25px', 
+        <Container sx={{ width:'70%', borderRadius:2, padding:'25px', 
                 alignItems:'center', boxShadow:24}}>
           <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
