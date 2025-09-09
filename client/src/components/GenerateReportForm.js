@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import * as Mui from '@mui/material';
+import {
+    Card,
+    CardHeader,
+    CardContent,
+    Box,
+    Grid,
+    Typography,
+    TextField,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Button
+} from "@mui/material";
 
 const GenerateReportForm = () => {
 
@@ -17,77 +30,120 @@ const GenerateReportForm = () => {
         });
     }
     return (
-        <Mui.Box component="form" onSubmit={handleSubmit}>
-            <Mui.TextField name="firstName" label="First Name" />
-            <Mui.TextField name="lastName" label="Last Name" />
-            <Mui.TextField name="email" label="Email" type="email" />
-            <Mui.TextField name="age" label="Age" type="number" />
-            <Mui.TextField name="weight" label="weight" type="number" />
-            <Mui.TextField name="height" label="height" type="number" />
-            <Mui.TextField name="bloodGlucose" label="Blood Glucose" type="number" />
+        <Card sx={{ maxWidth: 1000, margin: "2rem auto", padding: 2 }}>
+            <CardHeader title="Generate Report" />
+            <CardContent>
+                <Box component="form" onSubmit={handleSubmit}>
+                    
+                        <Typography variant="h6">
+                            Personal Information
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <TextField name="firstName" label="First Name" />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField name="lastName" label="Last Name" />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField name="email" label="Email" type="email" />
+                            </Grid>
 
-            <Mui.FormLabel>Alcohol
-                <Mui.RadioGroup row name="alcohol">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                            <Grid item xs={6}>
+                                <TextField name="age" label="Age" type="number" />
+                            </Grid>
+                        </Grid>
 
-            <Mui.FormLabel>Smoker
-                <Mui.RadioGroup row name="smoker">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                        <Typography variant="h6" >
+                            Physique
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <TextField name="weight" label="weight" type="number" />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField name="height" label="height" type="number" />
+                            </Grid>
+                        </Grid>
+                        <Typography variant="h6" >
+                            Fitness
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <TextField name="bloodGlucose" label="Blood Glucose" type="number" />
+                        </Grid>
+                        <FormLabel>Exercise
+                            <RadioGroup row name="exercise">
+                                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                                <FormControlLabel value="No" control={<Radio />} label="No" />
+                            </RadioGroup>
+                        </FormLabel>
 
-            <Mui.FormLabel>Excercise
-                <Mui.RadioGroup row name="excercise">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                        <FormLabel>Hyper Tension
+                            <RadioGroup row name="hyperTension">
+                                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                                <FormControlLabel value="No" control={<Radio />} label="No" />
+                            </RadioGroup>
+                        </FormLabel>
 
-            <Mui.FormLabel>Hyper Tension
-                <Mui.RadioGroup row name="hyperTension">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                        <FormLabel>Heart Disease
+                            <RadioGroup row name="heartDisease">
+                                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                                <FormControlLabel value="No" control={<Radio />} label="No" />
+                            </RadioGroup>
+                        </FormLabel>
 
-            <Mui.FormLabel>Heart Disease
-                <Mui.RadioGroup row name="heartDisease">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                        <FormLabel>Diabetes
+                            <RadioGroup row name="diabetes">
+                                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                                <FormControlLabel value="No" control={<Radio />} label="No" />
+                            </RadioGroup>
+                        </FormLabel>
+                        </Grid>
 
-            <Mui.FormLabel>Diabetes
-                <Mui.RadioGroup row name="diabetes">
-                    <Mui.FormControlLabel value="Yes" control={<Mui.Radio />} label="Yes" />
-                    <Mui.FormControlLabel value="No" control={<Mui.Radio />} label="No" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                    <Typography variant="h6" >
+                        Lifestyle
+                    </Typography>
+                    <Grid container spacing={2}>
+                    <FormLabel>Alcohol
+                        <RadioGroup row name="alcohol">
+                            <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                            <FormControlLabel value="No" control={<Radio />} label="No" />
+                        </RadioGroup>
+                    </FormLabel>
 
-            <Mui.FormLabel>Marital Status
-                <Mui.RadioGroup row name="maritalSatus">
-                    <Mui.FormControlLabel value="Married" control={<Mui.Radio />} label="Married" />
-                    <Mui.FormControlLabel value="Single" control={<Mui.Radio />} label="Single" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
+                    <FormLabel>Smoker
+                        <RadioGroup row name="smoker">
+                            <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                            <FormControlLabel value="No" control={<Radio />} label="No" />
+                        </RadioGroup>
+                    </FormLabel>
+                    </Grid>
+                    
+                    <Typography variant="h6" >
+                        Life Events
+                    </Typography>
+                    <Grid container spacing={2}>
+                    <FormLabel>Marital Status
+                        <RadioGroup row name="maritalSatus">
+                            <FormControlLabel value="Married" control={<Radio />} label="Married" />
+                            <FormControlLabel value="Single" control={<Radio />} label="Single" />
+                        </RadioGroup>
+                    </FormLabel>
 
-            <Mui.FormLabel>Working Status
-                <Mui.RadioGroup row name="workingStatus">
-                    <Mui.FormControlLabel value="Private" control={<Mui.Radio />} label="Private" />
-                    <Mui.FormControlLabel value="Public" control={<Mui.Radio />} label="Public" />
-                    <Mui.FormControlLabel value="Student" control={<Mui.Radio />} label="Student" />
-                    <Mui.FormControlLabel value="Unemployed" control={<Mui.Radio />} label="Unemployed" />
-                </Mui.RadioGroup>
-            </Mui.FormLabel>
-
-
-            <Mui.Button variant="contained" type="submit">Submit</Mui.Button>
-        </Mui.Box>
-
+                    <FormLabel>Working Status
+                        <RadioGroup row name="workingStatus">
+                            <FormControlLabel value="Private" control={<Radio />} label="Private" />
+                            <FormControlLabel value="Public" control={<Radio />} label="Public" />
+                            <FormControlLabel value="Student" control={<Radio />} label="Student" />
+                            <FormControlLabel value="Unemployed" control={<Radio />} label="Unemployed" />
+                        </RadioGroup>
+                    </FormLabel>
+                    </Grid>
+                    <Button variant="contained" type="submit">Submit</Button>
+                </Box>
+            </CardContent>
+        </Card>
 
     );
 }
