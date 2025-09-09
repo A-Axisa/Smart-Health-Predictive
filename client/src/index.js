@@ -11,8 +11,6 @@ import Login from './routes/Login';
 import Register from './routes/Register';
 import UserLanding from './routes/UserLanding';
 import UserSettings from './routes/UserSettings';
-import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
