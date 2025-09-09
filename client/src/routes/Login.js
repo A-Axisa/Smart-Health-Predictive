@@ -23,7 +23,7 @@ const Login = ({}) => {
     <Box sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
         padding:'0', margin:'0'}}>
 
-      <Box sx={{ backgroundImage:'linear-gradient(to top left, #164945, #127067)',
+      <Box sx={{ backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',
             width:'60%', height:'100vh', flex:'inline', float:'left'}}>
         <Container style={{padding:'100px'}}>
           <Stack>
