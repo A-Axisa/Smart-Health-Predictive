@@ -8,8 +8,6 @@ import {
   TextField,
   Divider,
   Button,
-  createTheme,
-  ThemeProvider,
   Avatar,
   Switch,
   FormControlLabel,
@@ -20,32 +18,7 @@ import {
   Alert,
   Stack,
 } from '@mui/material';
-
-const theme = createTheme({
-  palette: {
-    primary: { main: '#127067' },
-    background: { default: '#f8f9fa', paper: '#ffffff' },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: { textTransform: 'uppercase', fontWeight: 600 },
-        containedPrimary: {
-          backgroundColor: '#127067',
-          '&:hover': { backgroundColor: '#0f5a52' },
-        },
-        outlinedPrimary: {
-          borderColor: '#127067',
-          color: '#127067',
-          '&:hover': {
-            borderColor: '#0f5a52',
-            backgroundColor: 'rgba(18,112,103,.06)'
-          },
-        },
-      },
-    },
-  },
-});
+import AppThemeProvider from '../components/AppThemeProvider';
 
 const UserSettings = () => {
   const [selectedSection, setSelectedSection] = useState('Account Details');
@@ -449,7 +422,7 @@ const UserSettings = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+  <AppThemeProvider>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
         {/* Sidebar */}
         <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
@@ -494,7 +467,7 @@ const UserSettings = () => {
         {/* Main content */}
         <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
       </Box>
-    </ThemeProvider>
+  </AppThemeProvider>
   );
 };
 
