@@ -146,12 +146,11 @@ const UserSettings = () => {
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-        <Button variant="outlined" color="primary" sx={{ mr: 2 }}>
+  <Button variant="outlined" sx={{ mr: 2 }}>
           Cancel
         </Button>
         <Button
           variant="contained"
-          color="primary"
           onClick={() => handleSave('Account Details')}
           sx={{ px: 4, py: 1.25 }}
         >
@@ -184,7 +183,7 @@ const UserSettings = () => {
           <Typography variant="body2" color="text.secondary">
             {formData.email}
           </Typography>
-          <Button variant="outlined" color="primary" sx={{ mt: 1 }}>
+          <Button variant="outlined" sx={{ mt: 1 }}>
             Change Photo
           </Button>
         </Box>
@@ -234,7 +233,6 @@ const UserSettings = () => {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
         <Button
           variant="contained"
-          color="primary"
           onClick={() => handleSave('Profile')}
           sx={{ px: 4, py: 1.25 }}
         >
@@ -293,7 +291,6 @@ const UserSettings = () => {
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
-              color="primary"
               disabled={disabled}
               onClick={() => handleSave('Password')}
               sx={{ px: 4, py: 1.25 }}
@@ -323,7 +320,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.emailNotifications}
               onChange={(e) => updateNotify('emailNotifications', e.target.checked)}
-              color="primary"
             />
           }
           label="Email Notifications"
@@ -337,7 +333,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.pushNotifications}
               onChange={(e) => updateNotify('pushNotifications', e.target.checked)}
-              color="primary"
             />
           }
           label="Push Notifications"
@@ -351,7 +346,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.smsNotifications}
               onChange={(e) => updateNotify('smsNotifications', e.target.checked)}
-              color="primary"
             />
           }
           label="SMS Notifications"
@@ -366,7 +360,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.healthReminders}
               onChange={(e) => updateNotify('healthReminders', e.target.checked)}
-              color="primary"
             />
           }
           label="Health Reminders"
@@ -376,7 +369,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.reportUpdates}
               onChange={(e) => updateNotify('reportUpdates', e.target.checked)}
-              color="primary"
             />
           }
           label="Report Updates"
@@ -386,7 +378,6 @@ const UserSettings = () => {
             <Switch
               checked={notifications.systemAlerts}
               onChange={(e) => updateNotify('systemAlerts', e.target.checked)}
-              color="primary"
             />
           }
           label="System Alerts"
@@ -395,7 +386,6 @@ const UserSettings = () => {
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => handleSave('Notifications')}
             sx={{ px: 4, py: 1.25 }}
           >
@@ -453,8 +443,6 @@ const UserSettings = () => {
                     primary: {
                       style: {
                         fontWeight: selectedSection === item ? 600 : 400,
-                        color:
-                          selectedSection === item ? 'rgb(18,112,103)' : 'inherit',
                       },
                     },
                   }}
