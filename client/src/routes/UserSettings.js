@@ -18,7 +18,6 @@ import {
   Alert,
   Stack,
 } from '@mui/material';
-import AppThemeProvider from '../components/AppThemeProvider';
 
 const UserSettings = () => {
   const [selectedSection, setSelectedSection] = useState('Account Details');
@@ -412,7 +411,6 @@ const UserSettings = () => {
   };
 
   return (
-  <AppThemeProvider>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
         {/* Sidebar */}
         <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
@@ -454,8 +452,7 @@ const UserSettings = () => {
 
         {/* Main content */}
         <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
-      </Box>
-  </AppThemeProvider>
+  </Box>
   );
 };
 
