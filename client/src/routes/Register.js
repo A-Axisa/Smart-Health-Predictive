@@ -13,10 +13,10 @@ const Register = ({}) => {
     console.log('Password validated.');
   }
 
-  function handleLogin(e) {
+  function handleRegistration(e) {
     e.preventDefault();
-    console.log('Logged in successfully!');
-    navigate('/user-landing')
+    console.log('Account Created!');
+    navigate('/login')
   }
 
   return (
@@ -24,7 +24,7 @@ const Register = ({}) => {
         padding:'0', margin:'0'}}>
 
       <Box sx={{ backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',
-            width:'60%', height:'100vh', flex:'inline', float:'left'}}>
+          width:'60%', height:'100vh', flex:'inline', float:'left'}}>
         <Container style={{padding:'100px'}}>
           <Stack>
             <Typography style={{ color:"#e7f1f1ff", fontWeight:'bold', 
@@ -44,23 +44,26 @@ const Register = ({}) => {
       </Box>
 
       <Box sx={{ backgroundColor:'#ffffff', width:'40%', height:'100%', 
-            flex:'inline', float:'left', display:'flex', alignItems:'center'}}>
+          flex:'inline', float:'left', display:'flex', alignItems:'center'}}>
         <Container sx={{ width:'70%', borderRadius:2, padding:'25px', 
-                alignItems:'center', boxShadow:24}}>
-          <Box component='form' onSubmit={handleLogin}>
+            alignItems:'center', boxShadow:24}}>
+          <Box component='form' onSubmit={handleRegistration}>
             <Stack spacing={{xs:2}}>
-              <h1>Sign In</h1>
+              <h1>Create Account</h1>
+              <TextField id='outlined-input' label='Full Name' ></TextField>
+              <TextField id='outlined-input' label='Phone' ></TextField>
               <TextField id='outlined-input' label='Email' 
                   onChange={validateEmail}></TextField>
               <TextField id='outlined-password-input' label='Password' 
                   type='password' onChange={validatePassword}></TextField>
-              <Button type='submit' variant="contained">Login</Button>
-              <Button href='/register' variant="outlined">Sign up</Button>
+              <TextField id='outlined-password-input' label='Confirm Password' 
+                  type='password' onChange={validatePassword}></TextField>
+              <Button type='submit' variant="contained">Create</Button>
               <Stack direction='row' spacing={{xs:1}} 
                   style={{ justifyContent:"center"}}> 
-                <Typography align='center' style={{ color:'#888888' }}>Forgot 
-                    your password?</Typography>
-                <Link href="" align='center' fontWeight='bold' >Click Here</Link>
+                <Typography align='center' style={{ color:'#888888' }}>Already 
+                    have an account?</Typography>
+                <Link href="/login" align='center' fontWeight='bold' >Log in</Link>
               </Stack>
             </Stack>
           </Box>
