@@ -15,15 +15,15 @@
 ```npm install```  
 ```npm start```
 
-### Running the Database (Docker)
-1. Open terminal and navigate to Smart-Health-Predictive\server\
-2. Install necessary dependencies:
+### Running the Database (Docker Compose)
+1. Open terminal and navigate to the server folder in the project directory.
+2. Install necessary dependencies.  
 ```npm install dotenv mysql2```
 3. Install and run Docker Desktop.
-4. Navigate to the project root directory (Smart-Health-Predictive\).
-5. Create and start the Docker container:
+4. Navigate to the project root directory.
+5. Create and start the Docker container.   
 ```docker compose up -d```
-6. Run the initial migration script:
+6. Run the initial migration script.    
 ```docker exec -i shp-mysql mysql -uadmin -padmin user-db < server/src/migrations/01_init_schema.sql```
-7. Verify table creation in database:
+7. Verify table creations in database.   
 ```docker exec -it shp-mysql mysql -uadmin -padmin user-db -e "SHOW TABLES;"```
