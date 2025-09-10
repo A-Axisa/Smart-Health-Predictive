@@ -5,6 +5,14 @@ import { Box, Container, Stack, TextField, Button, Typography,
 const Register = ({}) => {
   const navigate = useNavigate();
 
+  function validateName(e) {
+    console.log('Name validated.');
+  }
+
+  function validatePhone(e) {
+    console.log('Phone validated.');
+  }
+
   function validateEmail(e) {
     console.log('Email validated.');
   }
@@ -50,8 +58,10 @@ const Register = ({}) => {
           <Box component='form' onSubmit={handleRegistration}>
             <Stack spacing={{xs:2}}>
               <h1>Create Account</h1>
-              <TextField id='outlined-input' label='Full Name' ></TextField>
-              <TextField id='outlined-input' label='Phone' ></TextField>
+              <TextField id='outlined-input' label='Full Name' 
+                  onChange={validateName}></TextField>
+              <TextField id='outlined-input' label='Phone' 
+                  onChange={validatePhone}></TextField>
               <TextField id='outlined-input' label='Email' 
                   onChange={validateEmail}></TextField>
               <TextField id='outlined-password-input' label='Password' 
