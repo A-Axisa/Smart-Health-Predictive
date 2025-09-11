@@ -76,7 +76,7 @@ const AIHealthPrediction = ({ }) => {
                     )}
                 </List>
             </Box>
-
+            {/* Report Content */}
             <ReportTemplate report = {selectedReport} />
         </Box>
     );
