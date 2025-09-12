@@ -1,0 +1,16 @@
+services:
+  mysql:
+    container_name: shp-mysql
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    restart: always
+    volumes:
+      - mysql_volumes:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+volumes:
+  mysql_volumes:

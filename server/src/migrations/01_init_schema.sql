@@ -1,0 +1,71 @@
+CREATE TABLE AccountRole (
+RoleID INT NOT NULL AUTO_INCREMENT,
+RoleName VARCHAR(100) UNIQUE NOT NULL,
+PRIMARY KEY (RoleID)
+);
+
+CREATE TABLE Permission (
+PermissionID INT NOT NULL AUTO_INCREMENT,
+PermissionName VARCHAR(100) UNIQUE NOT NULL,
+PRIMARY KEY (PermissionID)
+);
+
+CREATE TABLE RolePermission (
+RoleID INT NOT NULL,
+PermissionID INT NOT NULL,
+AssignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (RoleID, PermissionID),
+FOREIGN KEY (RoleID) REFERENCES AccountRole(RoleID),
+FOREIGN KEY (PermissionID) REFERENCES Permission(PermissionID)
+);
+
+CREATE TABLE UserAccount (
+UserID INT NOT NULL AUTO_INCREMENT,
+FullName VARCHAR(255) NOT NULL,
+Email VARCHAR(255) UNIQUE NOT NULL,
+PasswordHash VARCHAR(255) NOT NULL,
+PhoneNumber VARCHAR(20),
+CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (UserID)
+);
+
+CREATE TABLE UserAccountRole (
+RoleID INT NOT NULL,
+UserID INT NOT NULL,
+AssignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (RoleID, UserID),
+FOREIGN KEY (RoleID) REFERENCES AccountRole(RoleID),
+FOREIGN KEY (UserID) REFERENCES UserAccount(UserID)
+);
+
+CREATE TABLE HealthData (
+HealthDataID INT NOT NULL AUTO_INCREMENT,
+UserID INT NOT NULL,
+Gender ENUM('Male','Female'),
+Age INT,
+WeightKilograms DECIMAL(5,2),
+HeightMeters DECIMAL(3,2),
+Alcohol BOOLEAN,
+SmokingStatus ENUM('No','Former','Yes'),
+MaritalStatus ENUM('Married','Single'),
+WorkingStatus ENUM('Private','Public','Student','Unemployed'),
+Exercise BOOLEAN,
+Hypertension BOOLEAN,
+HeartDisease BOOLEAN,
+Diabetes BOOLEAN,
+BloodGlucose DECIMAL(5,2),
+CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (HealthDataID),
+FOREIGN KEY (UserID) REFERENCES UserAccount(UserID)
+);
+
+CREATE TABLE Prediction (
+PredictionID INT NOT NULL AUTO_INCREMENT,
+HealthDataID INT NOT NULL,
+StrokeChance DECIMAL(5,2),
+CVDChance DECIMAL(5,2),
+DiabetesChance DECIMAL(5,2),
+CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (PredictionID),
+FOREIGN KEY (HealthDataID) REFERENCES HealthData(HealthDataID)
+);
