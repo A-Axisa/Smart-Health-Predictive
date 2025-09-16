@@ -4,6 +4,7 @@
 ### Prerequisites
 - Node.js v22.x or higher
 - npm
+- FastApi (Python)
 - Docker Desktop
 
 ### Running the Web Application
@@ -14,6 +15,18 @@
 4. Install packages with npm and run the client.  
 ```npm install```  
 ```npm start```
+
+## FastApi
+### First time set up
+1. Open Command Prompt
+2. Run pip install ```"fastapi[standard]"```
+
+### Run FastApi
+1. Navigate to FastApi directory
+```cd server```
+2. Run the server
+```fastapi dev main.py```
+3. Go to http://127.0.0.1:8000/docs to interact with API
 
 ### Running the Database (Docker Compose)
 1. Open terminal and navigate to the server folder in the project directory.
