@@ -22,7 +22,8 @@
 2. Run pip install "fastapi[standard]"
 
 ### Run FastApi
-1. Navigate to FastApi Directory
+1. Navigate to FastApi directory
+```cd ml_backend```
 2. Run the server
 ```fastapi dev main.py```
 3. Go to http://127.0.0.1:8000/docs to interact with API
