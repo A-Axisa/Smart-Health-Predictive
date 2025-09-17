@@ -1,3 +1,2 @@
 /.vs
-/ml_backend/__pycache__
-/ml_backend/routers/__pycache__
+__pycache__/
