@@ -16,6 +16,12 @@
 ```npm install```  
 ```npm start```
 
+## Installing Required Modules
+### Server
+1. Open command prompt in the server directory of the project.
+2. Install the modules listed in the requirements.txt.  
+```pip3 install -r requirements.txt```
+
 ## FastApi
 ### First time set up
 1. Open Command Prompt
