@@ -1,4 +1,6 @@
-fastapi
-uvicorn
-cryptography
-python-dotenv
+fastapi==0.116.1
+uvicorn==0.35.0
+cryptography==46.0.1
+python-dotenv==1.1.1
+SQLAlchemy==2.0.43
+PyMySQL==1.1.2
