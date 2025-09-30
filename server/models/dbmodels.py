@@ -20,3 +20,4 @@ class UserAccount(declarative_base()):
         return f"UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
             Phone={self.PhoneNumber}, Created={self.CreatedAt} )"
+    
