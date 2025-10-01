@@ -14,7 +14,7 @@ if openai_api_base:
 else:
     client = OpenAI(api_key=openai_api_key)
 
-def get_health_recommendations(user_id: int):
+def get_health_recommendations(user_id: int, health_data_id: int):
     """
     Generates health recommendations for a user based on their data.
     
@@ -22,12 +22,12 @@ def get_health_recommendations(user_id: int):
     would fetch user's health data from the database.
     """
     # --- Placeholder for database access ---
-    # In a real application, you would fetch the user's health data from the database.
+    # Fetch the user's health data from the database.
     # For example:
-    # user_health_data = db.query(UserHealthProfile).filter(UserHealthProfile.user_id == user_id).first()
+    # user_health_data = db.query(...)
     # if not user_health_data:
     #     return None
-    # For now, we'll use mock data.
+    # For now, I'll use mock data.
     user_health_data = {
         "age": 45,
         "sex": "Female",
@@ -95,7 +95,7 @@ def get_health_recommendations(user_id: int):
 
 if __name__ == '__main__':
     # This is for testing the function directly.
-    recommendations = get_health_recommendations(user_id=1)
+    recommendations = get_health_recommendations(user_id=1 , health_data_id=1)
     if "error" not in recommendations:
         print("--- Health Recommendations ---")
         print("\n[Exercise Recommendation]")
