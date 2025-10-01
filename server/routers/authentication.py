@@ -25,7 +25,7 @@ async def register(user_reg: UserRegistrationDetails, db_conn: Session = Depends
     new_user = UserAccount(
         user_reg.username,
         user_reg.email,
-        user_reg.password,
+        password_hash,
         user_reg.phone
     )
 
