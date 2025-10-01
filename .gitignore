@@ -4,3 +4,4 @@ __pycache__/
 /server/routers/__pycache__
 /server/predictionModels/*
 !/server/predictionModels/.gitkeep
+/server/.venv/
