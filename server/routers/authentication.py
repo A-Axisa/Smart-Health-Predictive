@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
 from ..models.dbmodels import UserAccount
+from ..models.dbmodels import UserAccount, UserAccountRole
+
+STANDARD_ACCOUNT_ROLE_ID = 1
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -33,6 +36,16 @@ async def register(user_reg: UserRegistrationDetails, db_conn: Session = Depends
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
     if not user:        
         db_conn.add(new_user)
-        db_conn.commit()
+        
+    # Load the user with the added details
+    new_user_id = db_conn.query(UserAccount.UserID). \
+        filter_by(Email=user_reg.email).first()[0]
+    role = UserAccountRole(STANDARD_ACCOUNT_ROLE_ID, new_user_id)
+
+    # Add the role if they are a new user.
+    if not user:
+        db_conn.add(role)
+    
+    db_conn.commit()
 
     return {'message': 'User successfully created.'}
