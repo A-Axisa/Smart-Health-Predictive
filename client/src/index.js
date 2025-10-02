@@ -12,6 +12,7 @@ import Register from './routes/Register';
 import UserLanding from './routes/UserLanding';
 import UserSettings from './routes/UserSettings';
 import AppThemeProvider from './components/AppThemeProvider';
+import DownloadTestPage from './routes/DownloadTestPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -27,6 +28,7 @@ root.render(
           <Route path="/ai-health-prediction" element={ <AIHealthPrediction /> } />
           <Route path="/generate-report" element={ <GenerateReport/> } />
           <Route path="/health-analytics" element={ <HealthAnalytics /> } />
+          <Route path="/download-test" element={ <DownloadTestPage /> } />
           <Route path=""  element={ <App /> } />
           <Route path="*" element={ <App /> } />
         </Routes>
