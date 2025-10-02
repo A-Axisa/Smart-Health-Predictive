@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import items
+from .routers import items, users
 
 ORIGINS = [
     "http://localhost:3000",
@@ -21,3 +21,4 @@ async def root():
     return {"message": "Hello World"}
 
 app.include_router(items.router)
+app.include_router(users.router)
