@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import items,AIPrediction, getHealthDataDates, getReportData, authentication, health_analytics, health_analytics, users 
+from .routers import items, reports
 
 ORIGINS = [
     "http://localhost:3000",
@@ -28,3 +29,4 @@ app.include_router(getReportData.router)
 app.include_router(authentication.router)
 app.include_router(health_analytics.router)
 app.include_router(users.router)
+app.include_router(reports.router, prefix="/api")
