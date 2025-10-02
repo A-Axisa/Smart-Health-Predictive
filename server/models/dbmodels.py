@@ -23,3 +23,17 @@ class UserAccount(declarative_base):
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
             Phone={self.PhoneNumber}, Created={self.CreatedAt} )"
     
+class UserAccountRole(declarative_base):
+    __tablename__ = "UserAccountRole"
+    RoleID = Column(Integer, primary_key=True)
+    UserID = Column(Integer, primary_key=True)
+    AssignedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    def __init__(self, role_id, user_id):
+        self.RoleID = role_id
+        self.UserID = user_id
+
+    def __repr__(self):
+        return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
+            AssignedAt={self.AssignedAt})'
+    
