@@ -1,7 +1,9 @@
 from sqlalchemy import Column, Integer, String, DateTime, text
 from sqlalchemy.orm import declarative_base
 
-class UserAccount(declarative_base()):
+declarative_base = declarative_base()
+
+class UserAccount(declarative_base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key = True)
     FullName = Column(String)
