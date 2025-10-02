@@ -10,7 +10,7 @@ class UserAccount(declarative_base):
     Email = Column(String, unique=True)
     PasswordHash = Column(String, nullable=False)
     PhoneNumber = Column(String)
-    CreatedAt = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     def __init__(self, full_name, email, password_hash, phone_number):
         self.FullName = full_name
@@ -19,9 +19,9 @@ class UserAccount(declarative_base):
         self.PhoneNumber = phone_number
 
     def __repr__(self):
-        return f"UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
+        return f'UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
-            Phone={self.PhoneNumber}, Created={self.CreatedAt} )"
+            Phone={self.PhoneNumber}, Created={self.CreatedAt} )'
     
 class UserAccountRole(declarative_base):
     __tablename__ = "UserAccountRole"
