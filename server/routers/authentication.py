@@ -22,10 +22,12 @@ class UserRegistrationDetails(BaseModel):
 router = APIRouter()
 
 @router.post("/register/")
-async def register(user_reg: UserRegistrationDetails, db_conn: Session = Depends(get_db)):
+async def register(user_reg: UserRegistrationDetails, \
+                   db_conn: Session = Depends(get_db)):
 
     # Always hash the password to obfuscate success and failure.
-    password_hash = bcrypt.hashpw(user_reg.password.encode('utf-8'), bcrypt.gensalt(rounds=15))
+    password_hash = bcrypt.hashpw(user_reg.password.encode('utf-8'), \
+                                  bcrypt.gensalt(rounds=15))
     new_user = UserAccount(
         user_reg.username,
         user_reg.email,
