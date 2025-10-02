@@ -7,7 +7,6 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
-from ..models.dbmodels import UserAccount
 from ..models.dbmodels import UserAccount, UserAccountRole
 
 STANDARD_ACCOUNT_ROLE_ID = 1
