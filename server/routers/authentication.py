@@ -11,6 +11,8 @@ from ..models.dbmodels import UserAccount
 from ..models.dbmodels import UserAccount, UserAccountRole
 
 STANDARD_ACCOUNT_ROLE_ID = 1
+VALIDATION_TOKEN_LENGTH = 128
+VALIDATION_EXPIRATION_IN_HOURS = 24
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -42,6 +44,10 @@ async def register(user_reg: UserRegistrationDetails, db_conn: Session = Depends
         filter_by(Email=user_reg.email).first()[0]
     role = UserAccountRole(STANDARD_ACCOUNT_ROLE_ID, new_user_id)
 
+    # Create account validation token
+    validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
+    
     # Add the role if they are a new user.
     if not user:
         db_conn.add(role)
