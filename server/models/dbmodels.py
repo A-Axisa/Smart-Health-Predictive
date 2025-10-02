@@ -6,9 +6,9 @@ declarative_base = declarative_base()
 class UserAccount(declarative_base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key = True)
-    FullName = Column(String)
-    Email = Column(String)
-    PasswordHash = Column(String)
+    FullName = Column(String, nullable=False)
+    Email = Column(String, unique=True)
+    PasswordHash = Column(String, nullable=False)
     PhoneNumber = Column(String)
     CreatedAt = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
 
