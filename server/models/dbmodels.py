@@ -24,7 +24,7 @@ class UserAccount(declarative_base):
             Phone={self.PhoneNumber}, Created={self.CreatedAt} )'
     
 class UserAccountRole(declarative_base):
-    __tablename__ = "UserAccountRole"
+    __tablename__ = 'UserAccountRole'
     RoleID = Column(Integer, primary_key=True)
     UserID = Column(Integer, primary_key=True)
     AssignedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
