@@ -19,9 +19,6 @@ const MerchantReportForm = ({}) => {
       <Box sx={{ p:1 }}>
         <Grid container spacing={2}>
           <Grid item size={12} sx={{justifyContent: 'center', display: 'flex'}}>
-            <Button variant="text" onClick={toggleCollapse}>
-              {collapse ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </Button>
             <Typography variant='h5' color='primary' sx={{fontWeight: '600'}}>
               Health Report
             </Typography>
@@ -171,11 +168,14 @@ const MerchantReportForm = ({}) => {
                 </RadioGroup>
               </FormControl>
             </Grid>
+            <Button variant="contained" fullWidth sx={{p:1}}>
+              Submit
+            </Button>
           </Collapse>
         </Grid>
       </Box>
-      <Button variant="contained" fullWidth sx={{p:1}}>
-        Submit
+      <Button fullWidth variant="text" onClick={toggleCollapse}>
+        {collapse ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </Button>
     </Paper>
   )
