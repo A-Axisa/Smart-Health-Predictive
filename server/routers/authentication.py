@@ -4,6 +4,7 @@ from secrets import token_urlsafe
 import bcrypt
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr
+from pydantic_extra_types.phone_numbers import PhoneNumber
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
@@ -17,7 +18,7 @@ class UserRegistrationDetails(BaseModel):
     username: str
     password: str
     email: EmailStr
-    phone: str
+    phone: PhoneNumber
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ async def register(user_reg: UserRegistrationDetails, \
         user_reg.username,
         user_reg.email,
         password_hash,
-        user_reg.phone
+        user_reg.phone.removeprefix('tel:')
     )
 
     # Add the user if the email doesn't already exist.
