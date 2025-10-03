@@ -22,7 +22,7 @@ class UserRegistrationDetails(BaseModel):
 
 router = APIRouter()
 
-@router.post("/register/")
+@router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
 
