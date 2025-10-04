@@ -1,18 +1,24 @@
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter
 from pydantic import BaseModel
 import joblib
 import pandas as pd
+from sqlalchemy.orm import Session
 
-# 
+from ..utils.database import get_db 
+from ..models.dbmodels import HealthData, Prediction
+
+# HealthData
 class HealthData(BaseModel):
+    userId: int
     age: int
     weight: float
     height: float
     gender: int
     bloodGlucose: float
-    ap_hi: float    # Value provided in model unsure what it is
-    ap_lo: float    # Value provided in model unsure what it is
-    highCholesterol: int
+    ap_hi: float            # Value provided in model unsure what it is
+    ap_lo: float            # Value provided in model unsure what it is
+    highCholesterol: int    # The last 9 variables are either True or False where True = 1 and False = 0
     exercise: int
     hyperTension: int
     heartDisease: int
