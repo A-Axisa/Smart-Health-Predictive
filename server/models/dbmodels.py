@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, text
+from sqlalchemy import Column, Integer, String, DateTime, text, Boolean
 from sqlalchemy.orm import declarative_base
 
 declarative_base = declarative_base()
@@ -11,6 +11,7 @@ class UserAccount(declarative_base):
     PasswordHash = Column(String, nullable=False)
     PhoneNumber = Column(String)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    IsValidated = Column(Boolean, default=False)
 
     def __init__(self, full_name, email, password_hash, phone_number):
         self.FullName = full_name
@@ -21,7 +22,8 @@ class UserAccount(declarative_base):
     def __repr__(self):
         return f'UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
-            Phone={self.PhoneNumber}, Created={self.CreatedAt} )'
+            Phone={self.PhoneNumber}, Created={self.CreatedAt}, \
+            IsValidated={self.IsValidated})'
     
 class UserAccountRole(declarative_base):
     __tablename__ = 'UserAccountRole'
