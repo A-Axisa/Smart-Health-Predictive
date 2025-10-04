@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, ForeignKey
 from sqlalchemy.orm import declarative_base
 
 declarative_base = declarative_base()
@@ -38,4 +38,20 @@ class UserAccountRole(declarative_base):
     def __repr__(self):
         return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
             AssignedAt={self.AssignedAt})'
+    
+class UserAccountValidationToken(declarative_base):
+    __tablename__ = 'UserAccountValidationToken'
+    UserID = Column(Integer, ForeignKey('UserAccount.UserID'), nullable=False)
+    ValidationToken = Column(String(128), nullable=False)
+    ExpiresAt = Column(DateTime, nullable=False)
+
+    def __init__(self, user_id, validation_token, expires_at):
+        self.UserID = user_id
+        self.ValidationToken = validation_token
+        self.ExpiresAt = expires_at
+        
+    def __repr__(self):
+        return f'UserAccountValidationToken(UserID={self.UserID}, \
+            ValidationToken={self.ValidationToken}, ExpiresAt={self.ExpiresAt})'
+
     
