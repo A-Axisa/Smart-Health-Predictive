@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import items, authentication
+from .routers import items, authentication, health_analytics
 
 ORIGINS = [
     "http://localhost:3000",
@@ -22,3 +22,4 @@ async def root():
 
 app.include_router(items.router)
 app.include_router(authentication.router)
+app.include_router(health_analytics.router)

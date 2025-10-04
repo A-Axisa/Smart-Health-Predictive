@@ -25,20 +25,27 @@ const HealthAnalytics = () => {
     diabetesProbability: true
   });
 
-  // demo data - replace with API call in real usage
-  const generateMockData = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const data = months.map((month, index) => ({
-      month,
-      strokeProbability: Math.random() * 30 + 10,
-      cardioProbability: Math.random() * 25 + 15,
-      diabetesProbability: Math.random() * 20 + 20
-    }));
-    setHealthData(data);
+  // fetch data from API
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/health-analytics`, {
+        // Include credentials to send cookies if any for authentication
+        credentials: 'include', 
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      //console.log("Fetched data:", data); // Log fetched data
+      setHealthData(data);
+    } catch (error) {
+      console.error("Failed to fetch health analytics data:", error);
+      // Keep existing data or set to empty array on error? For now, just log.
+    }
   };
 
   useEffect(() => {
-    generateMockData();
+    fetchData();
   }, []);
 
   // handle selection change
@@ -78,6 +85,10 @@ const HealthAnalytics = () => {
   }
 
   const xAxisData = healthData.map(item => item.month);
+
+  console.log("healthData state:", healthData);
+  console.log("chartSeries to render:", chartSeries);
+  console.log("xAxisData to render:", xAxisData);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -127,7 +138,7 @@ const HealthAnalytics = () => {
           <Box sx={{ mt: 2 }}>
             <Button 
               variant="outlined" 
-              onClick={generateMockData}
+              onClick={fetchData}
               size="small"
             >
               Refresh Data
