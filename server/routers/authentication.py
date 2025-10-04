@@ -53,7 +53,7 @@ async def register(user_reg: UserRegistrationDetails, \
                                                       validation_token,
                                                         expires_at)
 
-    # Add the role if they are a new user.
+    # Add the role and validation token if the user is new.
     if not user:
         db_conn.add(role)
         db_conn.add(acc_validation_token)
