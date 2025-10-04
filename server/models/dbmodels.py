@@ -41,7 +41,7 @@ class UserAccountRole(declarative_base):
     
 class UserAccountValidationToken(declarative_base):
     __tablename__ = 'UserAccountValidationToken'
-    UserID = Column(Integer, ForeignKey('UserAccount.UserID'), nullable=False)
+    UserID = Column(Integer, ForeignKey('UserAccount.UserID'), primary_key=True, nullable=False)
     ValidationToken = Column(String(128), nullable=False)
     ExpiresAt = Column(DateTime, nullable=False)
 
