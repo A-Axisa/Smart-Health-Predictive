@@ -2,9 +2,8 @@ from datetime import datetime, timedelta, timezone
 from secrets import token_urlsafe
 
 import bcrypt
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr
-from pydantic_extra_types.phone_numbers import PhoneNumber
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
@@ -17,8 +16,8 @@ VALIDATION_EXPIRATION_IN_HOURS = 24
 class UserRegistrationDetails(BaseModel):
     username: str
     password: str
-    email: EmailStr
-    phone: PhoneNumber
+    email: str
+    phone: str
 
 router = APIRouter()
 
@@ -33,7 +32,7 @@ async def register(user_reg: UserRegistrationDetails, \
         user_reg.username,
         user_reg.email,
         password_hash,
-        user_reg.phone.removeprefix('tel:')
+        user_reg.phone
     )
 
     # Add the user if the email doesn't already exist.
