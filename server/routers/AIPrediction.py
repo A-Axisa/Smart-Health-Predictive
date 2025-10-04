@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 import joblib
 import pandas as pd
@@ -9,7 +9,7 @@ from ..utils.database import get_db
 from ..models.dbmodels import HealthData, Prediction
 
 # HealthData
-class HealthData(BaseModel):
+class HealthDataInput(BaseModel):
     userId: int
     age: int
     weight: float
@@ -38,13 +38,23 @@ diabetesModel = joblib.load("predictionModels/model_diabetes_h.joblib")
 router = APIRouter()
 
 @router.post("/AIPrediction/")
-async def predict(data: HealthData):
+async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
     #Calculate BMI
     if(data.height == 0):
         BMI = 0
     else:
         BMI = (data.weight/(data.height**2))
     
+    healthData = HealthData(data.userId, data.age, data.weight, data.height, data.gender, 
+                        data.bloodGlucose, data.ap_hi,data.ap_lo,data.highCholesterol,
+                        data.exercise,data.hyperTension, data.heartDisease, data.diabetes, data.alcohol, 
+                        data.smoker, data.maritalStatus,data.workingStatus)
+    # Store health data into the database
+    db_conn.add(healthData)
+    db_conn.commit() 
+    # Refresh to retrieve primary key for prediction data
+    db_conn.refresh(healthData)
+
     #Cardio Dataframe
     cardio_df = pd.DataFrame([[
         data.age,
@@ -60,7 +70,7 @@ async def predict(data: HealthData):
     ]])
     # Cardio prediction
     cardioPrediction = cardioModel.predict_proba(cardio_df)
-   
+    cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     #Stoke Dataframe
     stroke_df = pd.DataFrame([[
         data.gender,
@@ -77,7 +87,7 @@ async def predict(data: HealthData):
     
     # Stroke Prediction
     strokePrediction = strokeModel.predict_proba(stroke_df)
-
+    strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)   
     #diabetes Dataframe
     diabetes_df = pd.DataFrame([[
         data.gender,
@@ -92,9 +102,17 @@ async def predict(data: HealthData):
 
     # diabetes prediction
     diabetesPrediction = diabetesModel.predict_proba(diabetes_df)
+    diabetesPrediction = round(float(diabetesPrediction[0][1]) * 100, 2)
+
+    # Create prediction object for storage
+    prediction = Prediction(healthData.HealthDataID, strokePrediction, cardioPrediction, diabetesPrediction)
+    
+    # Store prediction
+    db_conn.add(prediction)
+    db_conn.commit()
 
     return {
-    "cardioProbability": round(float(cardioPrediction[0][1]) * 100, 2),
-    "strokeProbability": round(float(strokePrediction[0][1]) * 100, 2),
-    "diabetesProbability": round(float(diabetesPrediction[0][1]) * 100, 2)
+    "cardioProbability": cardioPrediction,
+    "strokeProbability": strokePrediction,
+    "diabetesProbability": diabetesPrediction
 }

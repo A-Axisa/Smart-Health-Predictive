@@ -31,52 +31,52 @@ class HealthData(declarative_base()):
     UserID = Column(Integer, ForeignKey(UserAccount.UserID))
 
     # Variables
-    age = Column(Integer)
-    weight = Column(Numeric(5, 2))
-    height = Column(Numeric(3, 2))
-    gender = Column(Boolean)
-    bloodGlucose = Column(Numeric(5, 2))
-    ap_hi = Column(Numeric(4, 2))
-    ap_lo = Column(Numeric(4, 2))
-    highCholesterol = Column(Boolean)
-    exercise = Column(Boolean)
-    hyperTension = Column(Boolean)
-    heartDisease = Column(Boolean)
-    diabetes = Column(Boolean)
-    alcohol = Column(Boolean)
-    smoker = Column(Boolean)
-    maritalStatus = Column(Boolean)
-    workingStatus = Column(Boolean)
+    Age = Column(Integer)
+    WeightKilograms = Column(Numeric(5, 2))
+    HeightMeters = Column(Numeric(3, 2))
+    Gender = Column(Boolean)
+    BloodGlucose = Column(Numeric(5, 2))
+    APHigh = Column(Numeric(5, 2))
+    APLow = Column(Numeric(5, 2))
+    HighCholesterol = Column(Boolean)
+    Exercise = Column(Boolean)
+    HyperTension = Column(Boolean)
+    HeartDisease = Column(Boolean)
+    Diabetes = Column(Boolean)
+    Alcohol = Column(Boolean)
+    SmokingStatus = Column(Boolean)
+    MaritalStatus = Column(Boolean)
+    WorkingStatus = Column(Boolean)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     def __init__(self, UserID, age, weight, height, gender, bloodGlucose, ap_hi, 
                 ap_lo, highCholesterol, exercise, hyperTension, heartDisease,
                 diabetes, alcohol, smoker, maritalStatus, workingStatus):
         self.UserID = UserID
-        self.age = age
-        self.weight = weight
-        self.height = height
-        self.gender = gender
-        self.bloodGlucose = bloodGlucose
-        self.ap_hi = ap_hi
-        self.ap_lo = ap_lo
-        self.highCholesterol = highCholesterol
-        self.exercise = exercise
-        self.hyperTension = hyperTension
-        self.heartDisease = heartDisease
-        self.diabetes = diabetes
-        self.alcohol = alcohol
-        self.smoker = smoker
-        self.maritalStatus = maritalStatus
-        self.workingStatus = workingStatus
+        self.Age= age
+        self.WeightKilogramsKilograms = weight
+        self.HeightMeters = height
+        self.Gender = gender
+        self.BloodGlucose  = bloodGlucose
+        self.APHigh = ap_hi
+        self.APLow = ap_lo
+        self.HighCholesterol = highCholesterol
+        self.Exercise = exercise
+        self.HyperTension = hyperTension
+        self.HeartDisease = heartDisease
+        self.Diabetes = diabetes
+        self.Alcohol = alcohol
+        self.SmokingStatus = smoker
+        self.MaritalStatus = maritalStatus
+        self.WorkingStatus = workingStatus
 
     def __repr__(self):
-        return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.age}, weight={self.weight}, \
-            height={self.height}, gender={self.gender}, bloodGlucose={self.bloodGlucose}, \
-            ap_hi={self.ap_hi}, ap_lo={self.ap_lo}, highCholesterol={self.highCholesterol}, \
-            exercise={self.exercise}, hyperTension={self.hyperTension}, heartDisease={self.heartDisease}, \
-            diabetes={self.diabetes}, alcohol={self.alcohol}, smoker={self.smoker}, \
-            maritalStatus={self.maritalStatus}, workingStatus={self.workingStatus}, Created={self.CreatedAt} )'
+        return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.age}, weight={self.WeightKilograms}, \
+            height={self.height}, gender={self.Gender}, bloodGlucose={self.BloodGlucose }, \
+            ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
+            exercise={self.Exercise}, hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
+            diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt} )'
 
 
 class Prediction(declarative_base()):
@@ -87,16 +87,17 @@ class Prediction(declarative_base()):
     HealthDataID = Column(Integer, ForeignKey(HealthData.HealthDataID))
 
     # Variables
-    strokeChance = Column(Numeric(4, 2))
-    diabetesChance = Column(Numeric(4, 2))
+    StrokeChance = Column(Numeric(4, 2))
+    DiabetesChance = Column(Numeric(4, 2))
     CVDChance = Column(Numeric(4, 2))
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
-    def __init__(self, strokeChance, diabetesChance, CVDChance):
-        self.strokeChance = strokeChance
-        self.diabetesChance = diabetesChance
+    def __init__(self, healthDataID, strokeChance, diabetesChance, CVDChance):
+        self.HealthDataID = healthDataID
+        self.StrokeChance = strokeChance
+        self.DiabetesChance = diabetesChance
         self.CVDChance = CVDChance
 
     def __repr__(self):
-        return f'Prediction(PredictionID = {self.PredictionID}, HealthDataID = {self.HealthDataID}, StrokeChance = {self.strokeChance}, \
-        DiabetesChance = {self.diabetesChance}, CVDChance = {self.CVDChance}, Created={self.CreatedAt})'
+        return f'Prediction(PredictionID = {self.PredictionID}, HealthDataID = {self.HealthDataID}, StrokeChance = {self.StrokeChance}, \
+        DiabetesChance = {self.DiabetesChance}, CVDChance = {self.CVDChance}, Created={self.CreatedAt})'
