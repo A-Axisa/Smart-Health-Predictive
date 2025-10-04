@@ -8,7 +8,7 @@ from pydantic_extra_types.phone_numbers import PhoneNumber
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
-from ..models.dbmodels import UserAccount, UserAccountRole
+from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
 
 STANDARD_ACCOUNT_ROLE_ID = 1
 VALIDATION_TOKEN_LENGTH = 128
@@ -48,12 +48,17 @@ async def register(user_reg: UserRegistrationDetails, \
 
     # Create account validation token
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
-    
+    expires_at = datetime.now(timezone.utc) + \
+        timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
+    acc_validation_token = UserAccountValidationToken(new_user_id, \
+                                                      validation_token,
+                                                        expires_at)
+
     # Add the role if they are a new user.
     if not user:
         db_conn.add(role)
-    
+        db_conn.add(acc_validation_token)
+
     db_conn.commit()
 
     return {'message': 'User successfully created.'}
