@@ -13,10 +13,32 @@ const Login = ({}) => {
     console.log('Password validated.');
   }
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
-    console.log('Logged in successfully!');
-    navigate('/user-landing')
+
+    await fetch('http://localhost:8000/login', {
+      method: 'POST',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: e.target.email.value,
+        password: e.target.password.value
+      })
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      console.log(data);
+      //navigate('/login')
+      //navigate('/user-landing')
+    }).catch(error => {
+      console.log(error)
+      console.log('Log in unsuccessful!')
+    })
+
   }
 
   return (
@@ -50,9 +72,9 @@ const Login = ({}) => {
           <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
               <h1>Sign In</h1>
-              <TextField id='outlined-input' label='Email' 
+              <TextField id='outlined-input' name='email' label='Email' 
                   onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' label='Password' 
+              <TextField id='outlined-password-input' name='password' label='Password' 
                   type='password' onChange={validatePassword}></TextField>
               <Button type='submit' variant="contained">Login</Button>
               <Button href='/register' variant="outlined">Sign up</Button>
