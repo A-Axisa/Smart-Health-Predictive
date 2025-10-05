@@ -1,24 +1,28 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..utils.database import get_db
-from ..models.dbmodels import UserAccount
+from ..models.dbmodels import UserAccount, UserAccountRole, AccountRole
 
 
 router = APIRouter()
 
 @router.get("/users/")
 async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount).all()
+    users = db_conn.query(UserAccount, AccountRole.RoleName). \
+        join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
+        join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
+        all()
     
     result = []
 
-    for user in users:
+    for user, role in users:
         result.append({
             "id": user.UserID,
             "fullName": user.FullName,
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
-            "createdAt": user.CreatedAt
+            "createdAt": user.CreatedAt,
+            "roles": role
         })
 
     return result
