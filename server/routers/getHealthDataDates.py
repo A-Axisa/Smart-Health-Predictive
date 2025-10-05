@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/getHealthDataDates/{userId}")
 async def getHealthData(userId:int, db_conn: Session = Depends(get_db)):
     # Retrieve user health data
-    healthData = db_conn.query(HealthData).filter(HealthData.UserID == userId).order_by(HealthData.CreatedAt).all()
+    healthData = db_conn.query(HealthData).filter(HealthData.UserID == userId).order_by(HealthData.CreatedAt.desc()).all()
     
     # Filter by ID and date create to return
     healthDataDates = [HealthDataDates(healthDataID=data.HealthDataID,date=data.CreatedAt) for data in healthData]
