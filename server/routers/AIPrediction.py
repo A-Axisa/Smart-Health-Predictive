@@ -105,7 +105,7 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
     diabetesPrediction = round(float(diabetesPrediction[0][1]) * 100, 2)
 
     # Create prediction object for storage
-    prediction = Prediction(healthData.HealthDataID, strokePrediction, cardioPrediction, diabetesPrediction)
+    prediction = Prediction(healthData.HealthDataID, strokePrediction, diabetesPrediction,cardioPrediction)
     
     # Store prediction
     db_conn.add(prediction)
