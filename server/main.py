@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import items,AIPrediction
+from .routers import items,AIPrediction, getHealthDataDates, getReportData
 
 ORIGINS = [
     "http://localhost:3000",
@@ -22,3 +22,5 @@ async def root():
 
 app.include_router(items.router)
 app.include_router(AIPrediction.router)
+app.include_router(getHealthDataDates.router)
+app.include_router(getReportData.router)

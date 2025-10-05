@@ -54,7 +54,7 @@ class HealthData(declarative_base()):
                 diabetes, alcohol, smoker, maritalStatus, workingStatus):
         self.UserID = UserID
         self.Age= age
-        self.WeightKilogramsKilograms = weight
+        self.WeightKilograms = weight
         self.HeightMeters = height
         self.Gender = gender
         self.BloodGlucose  = bloodGlucose
@@ -71,8 +71,8 @@ class HealthData(declarative_base()):
         self.WorkingStatus = workingStatus
 
     def __repr__(self):
-        return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.age}, weight={self.WeightKilograms}, \
-            height={self.height}, gender={self.Gender}, bloodGlucose={self.BloodGlucose }, \
+        return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
+            height={self.HeightMeters}, gender={self.Gender}, bloodGlucose={self.BloodGlucose }, \
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             exercise={self.Exercise}, hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
