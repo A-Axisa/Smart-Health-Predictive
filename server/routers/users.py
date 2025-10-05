@@ -7,7 +7,7 @@ from ..models.dbmodels import UserAccount
 router = APIRouter()
 
 @router.get("/users/")
-async def readUser(db_conn: Session = Depends(get_db)):
+async def getUsers(db_conn: Session = Depends(get_db)):
     users = db_conn.query(UserAccount).all()
     
     result = []
