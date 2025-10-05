@@ -19,6 +19,10 @@ class UserRegistrationDetails(BaseModel):
     email: str
     phone: str
 
+class LoginCredentials(BaseModel):
+    email: str
+    password: str
+    
 router = APIRouter()
 
 @router.post("/register")
@@ -61,3 +65,27 @@ async def register(user_reg: UserRegistrationDetails, \
     db_conn.commit()
 
     return {'message': 'User successfully created.'}
+
+@router.post('/login')
+async def login(user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
+    user = authenticate_user(user_cred.email, user_cred.password, db_conn)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect username or password',
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    return {'message': 'Login successful.', 'username':user.FullName}
+
+def authenticate_user(email: str, password: str, db_conn: Session):
+    user = db_conn.query(UserAccount).filter_by(Email=email).first()
+    if not user:
+        return False
+    if not verify_password(password, user.PasswordHash):
+        return False
+    return user
+
+def verify_password(password_text: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(password_text.encode('utf-8'), password_hash.encode('utf-8'))
+
