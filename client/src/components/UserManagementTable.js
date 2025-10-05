@@ -26,22 +26,7 @@ const UserManagementTable = () => {
     { field: 'fullName', headerName: 'Full Name', width: 200, sortable: true },
     { field: 'email', headerName: 'Email', width: 300, sortable: false },
     { field: 'createdAt', headerName: 'Created At', width: 120, sortable: true },
-    // {
-    //   field: 'roles',
-    //   headerName: 'Roles',
-    //   width: 300,
-    //   sortable: false,
-    //   renderCell: (params) => (
-    //     <Stack direction="row" spacing={0.5}>
-    //       {params.row.roles.map((role) => (
-    //         <Chip key={role}
-    //           label={role}
-    //           size="small"
-    //           color="error"/>
-    //       ))}
-    //     </Stack>
-    //   ),
-    // },
+    { field: 'role', headerName: 'Roles', width: 200, sortable: false},
   ];
 
   return (
