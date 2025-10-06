@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import items, authentication
+from .routers import items,AIPrediction, getHealthDataDates, getReportData, authentication
 
 ORIGINS = [
     "http://localhost:3000",
@@ -21,4 +21,7 @@ async def root():
     return {"message": "Hello World"}
 
 app.include_router(items.router)
+app.include_router(AIPrediction.router)
+app.include_router(getHealthDataDates.router)
+app.include_router(getReportData.router)
 app.include_router(authentication.router)
