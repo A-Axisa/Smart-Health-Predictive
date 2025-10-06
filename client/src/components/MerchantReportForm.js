@@ -1,15 +1,9 @@
-import { useState } from 'react';
 import { Box, TextField, Grid, FormControl, FormLabel,
 RadioGroup, FormControlLabel, Radio, Paper, Typography,
-Button, Collapse } from '@mui/material';
+Button } from '@mui/material';
 
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const MerchantReportForm = ({}) => {
-
-  const [collapse, setCollapse] = useState(false);
-
   return (
     <Paper elevation={2}>
       <Box sx={{ p:1 }}>
