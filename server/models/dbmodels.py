@@ -1,6 +1,6 @@
-
-from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship
+
 
 
 Base = declarative_base()
@@ -188,3 +188,32 @@ class UserAccountValidationToken(Base):
     def __repr__(self):
         return f'UserAccountValidationToken(UserID={self.UserID}, \
             ValidationToken={self.ValidationToken}, ExpiresAt={self.ExpiresAt})'
+
+    
+class Recommendation(declarative_base):
+    __tablename__ = 'Recommendation'
+
+    # Keys
+    RecommendationID = Column(Integer, primary_key=True)
+    HealthDataID = Column(Integer, ForeignKey('HealthData.HealthDataID'))
+
+    # Content
+    ExerciseRecommendation = Column(Text)
+    DietRecommendation = Column(Text)
+    LifestyleRecommendation = Column(Text)
+    DietToAvoidRecommendation = Column(Text)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    def __init__(self, healthDataID, exerciseRecommendation, dietRecommendation, lifestyleRecommendation, dietToAvoidRecommendation=None):
+        self.HealthDataID = healthDataID
+        self.ExerciseRecommendation = exerciseRecommendation
+        self.DietRecommendation = dietRecommendation
+        self.LifestyleRecommendation = lifestyleRecommendation
+        self.DietToAvoidRecommendation = dietToAvoidRecommendation
+
+    def __repr__(self):
+        return (f'Recommendation(RecommendationID={self.RecommendationID}, '
+                f'HealthDataID={self.HealthDataID}, '
+                f'CreatedAt={self.CreatedAt})')
+
+

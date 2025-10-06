@@ -62,8 +62,8 @@ const ReportTemplate = ({ report, date }) => {
 					</Grid>
 					<Grid item size={4}>
 						<Box sx={{ display: "flex", gap: 1 }}>
-							<Typography sx={{ fontWeight: 600 }}>Excercise:</Typography>
-							<Typography>{report.excercise === 0 ? "Yes" : "No"}</Typography>
+							<Typography sx={{ fontWeight: 600 }}>Exercise:</Typography>
+								<Typography>{report.exercise === 1 ? "Yes" : "No"}</Typography>
 						</Box>
 					</Grid>
 					<h4>And more...</h4>
@@ -97,76 +97,49 @@ const ReportTemplate = ({ report, date }) => {
 			<Divider sx={{ borderColor: '#e0e0e0' }} />
 
 			<Grid container spacing={2}>
-				{/* Lifestyle Recomendations */}
+				{/* Lifestyle Recommendations */}
 				<Grid size={6}>
 					<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
 						<Typography variant="h5" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: "center" }} >
-							Lifestyle Recomendations
+							Lifestyle Recommendations
 						</Typography>
 						<List>
 							<ListItem>
-								<ListItemText primary="Recomendation 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere. " />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
+								<ListItemText primary={report.lifestyleRecommendation || 'No lifestyle recommendation available.'} />
 							</ListItem>
 						</List>
 					</Card>
 				</Grid>
 
-				{/* Exercise Recomendations*/}
+				{/* Exercise Recommendations*/}
 				<Grid size={6}>
 					<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
 						<Typography variant="h5" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: "center" }} >
-							Exercise Recomendations
+							Exercise Recommendations
 						</Typography>
 						<List>
 							<ListItem>
-								<ListItemText primary="Recomendation 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere. " />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
+								<ListItemText primary={report.exerciseRecommendation || 'No exercise recommendation available.'} />
 							</ListItem>
 						</List>
 					</Card>
 				</Grid>
 
-				{/* Diet Recomendations*/}
+				{/* Diet Recommendations*/}
 				<Grid size={6}>
 					<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
 						<Typography variant="h5" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: "center" }} >
-							Diet Recomendations
+							Diet Recommendations
 						</Typography>
 						<List>
 							<ListItem>
-								<ListItemText primary="Recomendation 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere. " />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
+								<ListItemText primary={report.dietRecommendation || 'No diet recommendation available.'} />
 							</ListItem>
 						</List>
 					</Card>
 				</Grid>
 
-				{/* Diet to Avoid*/}
+				{/* Diet to Avoid */}
 				<Grid size={6}>
 					<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
 						<Typography variant="h5" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: "center" }} >
@@ -174,16 +147,7 @@ const ReportTemplate = ({ report, date }) => {
 						</Typography>
 						<List>
 							<ListItem>
-								<ListItemText primary="Recomendation 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere. " />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
+								<ListItemText primary={report.dietToAvoidRecommendation || 'No diet-to-avoid recommendation available.'} />
 							</ListItem>
 						</List>
 					</Card>

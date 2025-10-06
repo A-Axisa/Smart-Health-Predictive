@@ -13,3 +13,4 @@ matplotlib==3.10.6
 bcrypt==5.0.0
 pydantic-extra-types==2.10.5
 phonenumbers==9.0.15
+openai==2.0.0

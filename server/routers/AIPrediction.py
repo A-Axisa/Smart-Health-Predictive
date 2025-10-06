@@ -6,7 +6,8 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
-from ..models.dbmodels import HealthData, Prediction
+from ..models.dbmodels import HealthData, Prediction, Recommendation
+from ..services.health_recommendation_service import get_health_recommendations
 
 # HealthData
 class HealthDataInput(BaseModel):
@@ -111,8 +112,45 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
     db_conn.add(prediction)
     db_conn.commit()
 
+    # Generate AI-based health recommendations (best-effort; non-fatal if fails)
+    recommendations = None
+    try:
+        _hd_id = getattr(healthData, 'HealthDataID', None)
+        if _hd_id is not None:
+            recommendations = get_health_recommendations(db_conn=db_conn, health_data_id=int(_hd_id))
+        else:
+            recommendations = {"error": "Missing HealthDataID"}
+    except Exception as e:
+        recommendations = {"error": str(e)}
+
+    # Persist recommendations when available
+    exercise_rec = None
+    diet_rec = None
+    lifestyle_rec = None
+    if isinstance(recommendations, dict) and "error" not in recommendations:
+        exercise_rec = recommendations.get("exercise_recommendation")
+        diet_rec = recommendations.get("diet_recommendation")
+        lifestyle_rec = recommendations.get("lifestyle_recommendation")
+        diet_to_avoid_rec = recommendations.get("diet_to_avoid_recommendation")
+
+        rec_row = Recommendation(
+            healthDataID=healthData.HealthDataID,
+            exerciseRecommendation=exercise_rec,
+            dietRecommendation=diet_rec,
+            lifestyleRecommendation=lifestyle_rec,
+            dietToAvoidRecommendation=diet_to_avoid_rec
+        )
+        db_conn.add(rec_row)
+        db_conn.commit()
+
     return {
-    "cardioProbability": cardioPrediction,
-    "strokeProbability": strokePrediction,
-    "diabetesProbability": diabetesPrediction
-}
+        "cardioProbability": cardioPrediction,
+        "strokeProbability": strokePrediction,
+        "diabetesProbability": diabetesPrediction,
+        "recommendations": {
+            "exercise": exercise_rec,
+            "diet": diet_rec,
+            "lifestyle": lifestyle_rec,
+            "diet_to_avoid": diet_to_avoid_rec
+        }
+    }
