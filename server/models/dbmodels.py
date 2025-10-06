@@ -22,10 +22,11 @@ class UserAccount(declarative_base):
     def __repr__(self):
         return f'UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
-            Phone={self.PhoneNumber}, Created={self.CreatedAt} )'
+            Phone={self.PhoneNumber}, Created={self.CreatedAt}, \
+            IsValidated={self.IsValidated})'
 
 
-class HealthData(declarative_base()):
+class HealthData(declarative_base):
     __tablename__ = 'HealthData'
     # Keys
     HealthDataID = Column(Integer, primary_key=True)
@@ -80,7 +81,7 @@ class HealthData(declarative_base()):
             maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt} )'
 
 
-class Prediction(declarative_base()):
+class Prediction(declarative_base):
 
     __tablename__ = 'Prediction'
     # Keys
@@ -102,8 +103,7 @@ class Prediction(declarative_base()):
     def __repr__(self):
         return f'Prediction(PredictionID = {self.PredictionID}, HealthDataID = {self.HealthDataID}, StrokeChance = {self.StrokeChance}, \
         DiabetesChance = {self.DiabetesChance}, CVDChance = {self.CVDChance}, Created={self.CreatedAt})'
-            Phone={self.PhoneNumber}, Created={self.CreatedAt}, \
-            IsValidated={self.IsValidated})'
+            
     
 class UserAccountRole(declarative_base):
     __tablename__ = 'UserAccountRole'
