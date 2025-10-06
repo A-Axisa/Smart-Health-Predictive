@@ -1,2 +1,6 @@
 /.vs
 __pycache__/
+/server/__pycache__
+/server/routers/__pycache__
+/server/predictionModels/*
+!/server/predictionModels/.gitkeep
