@@ -10,17 +10,20 @@ const MerchantGenerateReport = ({}) => {
 
   return (
     <Container>
-      <Box center sx={{display: 'flex', justifyContent: 'center', p:4}}>
+      <Box center sx={{display: 'flex', justifyContent: 'center', p:5}}>
         <ButtonGroup disableElevation aria-label="disable button group">
-          <Button onClick={() => setPage('manual')}>Manual Input</Button>
-          <Button onClick={() => setPage('upload')}>Upload</Button>
+          <Button
+          variant={page === 'manual' ? 'contained' : 'outlined'}
+          onClick={() => setPage('manual')}>Form Input</Button>
+          <Button
+          variant={page === 'upload' ? 'contained' : 'outlined'}
+          onClick={() => setPage('upload')}>Import</Button>
         </ButtonGroup>
       </Box>
       <Box sx={{p:4}}>
         {page == 'manual' ? (<MerchantReportForm/>) : (<ReportUpload/>)}
       </Box>
     </Container>
-    
   )
 }
 
