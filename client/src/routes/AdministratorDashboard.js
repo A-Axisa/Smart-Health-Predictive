@@ -8,9 +8,9 @@ const AdministratorDashboard = () => {
   const [page, setPage] = useState({});
 
   const UserManagement = () => (
-      <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
-        <Box sx={{display: 'flex', justifyContent: 'center', p: 4}}>
-          <Typography variant='h4' color='primary' sx={{fontWeight: 600}}>
+      <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
+        <Box>
+          <Typography variant='h4' color='primary' sx={{fontWeight: 600, mb: 4}}>
             User Management
           </Typography>
         </Box>
@@ -44,7 +44,7 @@ const AdministratorDashboard = () => {
             ))}
           </List>
         </Box>
-        <Box sx={{p: 4}}>
+        <Box>
           {pages[page]}
         </Box>
       </Box>

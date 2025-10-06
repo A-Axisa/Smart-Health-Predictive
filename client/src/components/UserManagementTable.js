@@ -23,19 +23,21 @@ const UserManagementTable = () => {
 
 
   const columns = [
-    { field: 'fullName', headerName: 'Full Name', width: 200, sortable: true },
-    { field: 'email', headerName: 'Email', width: 300, sortable: false },
-    { field: 'createdAt', headerName: 'Created At', width: 120, sortable: true },
-    { field: 'role', headerName: 'Roles', width: 200, sortable: false},
+    { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
+    { field: 'email', headerName: 'Email', width: 350, sortable: false },
+    { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
+    { field: 'role', headerName: 'Roles', width: 200, sortable: false}
   ];
 
   return (
-    <Paper sx={{ width: '100%'}}>
+    <Paper sx={{ width: '1016px'}}>
       <DataGrid
         rows={data}
         columns={columns}
         pageSizeOptions={[50, 100, 1000]}
         initialState={{ pagination: { pageSize: 50 } }}
+        disableColumnResize
+        disableRowSelectionOnClick
         sx={{ border: 0, p: 1}}
       />
     </Paper>
