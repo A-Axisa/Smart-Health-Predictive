@@ -190,7 +190,7 @@ class UserAccountValidationToken(Base):
             ValidationToken={self.ValidationToken}, ExpiresAt={self.ExpiresAt})'
 
     
-class Recommendation(declarative_base):
+class Recommendation(Base):
     __tablename__ = 'Recommendation'
 
     # Keys
