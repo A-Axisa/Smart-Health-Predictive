@@ -10,10 +10,6 @@ const MerchantReportForm = ({}) => {
 
   const [collapse, setCollapse] = useState(false);
 
-  const toggleCollapse = () => {
-    setCollapse(!collapse);
-  }
-
   return (
     <Paper elevation={2}>
       <Box sx={{ p:1 }}>
@@ -24,7 +20,6 @@ const MerchantReportForm = ({}) => {
             </Typography>
           </Grid>
           
-          <Collapse in={collapse}>
             {/* Personal information */}
             <Grid item size={12}>
               <Typography variant='h6' color='primary' sx={{fontWeight: '600'}}>
@@ -168,14 +163,10 @@ const MerchantReportForm = ({}) => {
                 </RadioGroup>
               </FormControl>
             </Grid>
-            <Button variant="contained" fullWidth sx={{p:1}}>
-              Submit
-            </Button>
-          </Collapse>
         </Grid>
       </Box>
-      <Button fullWidth variant="text" onClick={toggleCollapse}>
-        {collapse ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      <Button variant="contained" fullWidth sx={{}}>
+        Submit
       </Button>
     </Paper>
   )
