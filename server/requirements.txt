@@ -10,3 +10,6 @@ numpy==2.3.3
 pandas==2.3.2
 joblib==1.5.2
 matplotlib==3.10.6
+bcrypt==5.0.0
+pydantic-extra-types==2.10.5
+phonenumbers==9.0.15
