@@ -9,8 +9,8 @@ router = APIRouter()
 @router.get("/users/")
 async def getUsers(db_conn: Session = Depends(get_db)):
     users = db_conn.query(UserAccount, AccountRole.RoleName). \
-        join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
-        join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
+        outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
+        outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
         all()
     
     result = []
