@@ -5,7 +5,7 @@ Button } from '@mui/material';
 
 const MerchantReportForm = ({}) => {
   return (
-    <Paper elevation={2}>
+    <Paper elevation={3}>
       <Box sx={{ p:1 }}>
         <Grid container spacing={2}>
           <Grid item size={12} sx={{justifyContent: 'center', display: 'flex'}}>
@@ -159,7 +159,7 @@ const MerchantReportForm = ({}) => {
             </Grid>
         </Grid>
       </Box>
-      <Button variant="contained" fullWidth sx={{}}>
+      <Button href='/ai-health-prediction' variant="contained" fullWidth sx={{}}>
         Submit
       </Button>
     </Paper>
