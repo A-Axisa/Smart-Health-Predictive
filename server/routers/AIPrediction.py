@@ -131,12 +131,14 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
         exercise_rec = recommendations.get("exercise_recommendation")
         diet_rec = recommendations.get("diet_recommendation")
         lifestyle_rec = recommendations.get("lifestyle_recommendation")
+        diet_to_avoid_rec = recommendations.get("diet_to_avoid_recommendation")
 
         rec_row = Recommendation(
             healthDataID=healthData.HealthDataID,
             exerciseRecommendation=exercise_rec,
             dietRecommendation=diet_rec,
-            lifestyleRecommendation=lifestyle_rec
+            lifestyleRecommendation=lifestyle_rec,
+            dietToAvoidRecommendation=diet_to_avoid_rec
         )
         db_conn.add(rec_row)
         db_conn.commit()
@@ -148,6 +150,7 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
         "recommendations": {
             "exercise": exercise_rec,
             "diet": diet_rec,
-            "lifestyle": lifestyle_rec
+            "lifestyle": lifestyle_rec,
+            "diet_to_avoid": diet_to_avoid_rec
         }
     }

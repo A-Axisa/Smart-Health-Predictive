@@ -86,8 +86,8 @@ def get_health_recommendations(db_conn: Session, health_data_id: int):
 
     prompt = (
         "You are a medical lifestyle assistant. Based on the following user health data, "
-        "generate concise, actionable recommendations. The output MUST be a JSON object with three keys: "
-        "\"exercise_recommendation\", \"diet_recommendation\", and \"lifestyle_recommendation\".\n\n"
+        "generate concise, actionable recommendations. The output MUST be a JSON object with four keys: "
+        "\"exercise_recommendation\", \"diet_recommendation\", \"lifestyle_recommendation\", and \"diet_to_avoid_recommendation\".\n\n"
         f"User data:\n"
         f"- Age: {ctx['age']}\n"
         f"- Sex: {ctx['sex']}\n"
@@ -122,6 +122,7 @@ def get_health_recommendations(db_conn: Session, health_data_id: int):
             "exercise_recommendation": parsed.get("exercise_recommendation", ""),
             "diet_recommendation": parsed.get("diet_recommendation", ""),
             "lifestyle_recommendation": parsed.get("lifestyle_recommendation", ""),
+            "diet_to_avoid_recommendation": parsed.get("diet_to_avoid_recommendation", ""),
         }
 
     except Exception as e:
@@ -158,9 +159,11 @@ def _fallback_recommendations(ctx: Dict):
     if "alcohol use" in conditions:
         lifestyle += "Limit alcohol (≤2 standard drinks/day for men, ≤1 for women; aim for several alcohol-free days/week). "
 
+    diet_to_avoid = "Limit ultra-processed foods, high-sugar desserts, and trans-fat containing snacks. Minimize high-sodium processed meats."
     return {
         "exercise_recommendation": exercise.strip(),
         "diet_recommendation": diet.strip(),
         "lifestyle_recommendation": lifestyle.strip(),
+        "diet_to_avoid_recommendation": diet_to_avoid.strip(),
     }
 

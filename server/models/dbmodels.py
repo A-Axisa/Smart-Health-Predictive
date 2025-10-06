@@ -146,13 +146,15 @@ class Recommendation(declarative_base):
     ExerciseRecommendation = Column(Text)
     DietRecommendation = Column(Text)
     LifestyleRecommendation = Column(Text)
+    DietToAvoidRecommendation = Column(Text)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
-    def __init__(self, healthDataID, exerciseRecommendation, dietRecommendation, lifestyleRecommendation):
+    def __init__(self, healthDataID, exerciseRecommendation, dietRecommendation, lifestyleRecommendation, dietToAvoidRecommendation=None):
         self.HealthDataID = healthDataID
         self.ExerciseRecommendation = exerciseRecommendation
         self.DietRecommendation = dietRecommendation
         self.LifestyleRecommendation = lifestyleRecommendation
+        self.DietToAvoidRecommendation = dietToAvoidRecommendation
 
     def __repr__(self):
         return (f'Recommendation(RecommendationID={self.RecommendationID}, '

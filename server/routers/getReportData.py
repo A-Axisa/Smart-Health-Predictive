@@ -31,6 +31,7 @@ class Report(BaseModel):
     exerciseRecommendation: Optional[str] = None
     dietRecommendation: Optional[str] = None
     lifestyleRecommendation: Optional[str] = None
+    dietToAvoidRecommendation: Optional[str] = None
     
 
 
@@ -67,6 +68,7 @@ async def getReportData(healthDataId:int, db_conn: Session = Depends(get_db)):
         exerciseRecommendation=getattr(recommendationData, 'ExerciseRecommendation', None) if recommendationData else None,
         dietRecommendation=getattr(recommendationData, 'DietRecommendation', None) if recommendationData else None,
         lifestyleRecommendation=getattr(recommendationData, 'LifestyleRecommendation', None) if recommendationData else None,
+        dietToAvoidRecommendation=getattr(recommendationData, 'DietToAvoidRecommendation', None) if recommendationData else None,
     )
 
     # Return reportData object

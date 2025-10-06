@@ -139,7 +139,7 @@ const ReportTemplate = ({ report, date }) => {
 					</Card>
 				</Grid>
 
-				{/* Diet to Avoid*/}
+				{/* Diet to Avoid */}
 				<Grid size={6}>
 					<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
 						<Typography variant="h5" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: "center" }} >
@@ -147,16 +147,7 @@ const ReportTemplate = ({ report, date }) => {
 						</Typography>
 						<List>
 							<ListItem>
-								<ListItemText primary="Recomendation 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere. " />
-							</ListItem>
-							<ListItem>
-								<ListItemText primary="Recomendation 3: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-				facilisis arcu et ex tristique, ut hendrerit est posuere." />
+								<ListItemText primary={report.dietToAvoidRecommendation || 'No diet-to-avoid recommendation available.'} />
 							</ListItem>
 						</List>
 					</Card>
