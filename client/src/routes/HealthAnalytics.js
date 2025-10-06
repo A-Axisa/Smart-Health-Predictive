@@ -40,7 +40,6 @@ const HealthAnalytics = () => {
       setHealthData(data);
     } catch (error) {
       console.error("Failed to fetch health analytics data:", error);
-      // Keep existing data or set to empty array on error? For now, just log.
     }
   };
 
