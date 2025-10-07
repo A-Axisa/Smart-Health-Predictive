@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
 import { Box, Container, Stack, TextField, Button, Typography, 
-    Link } from '@mui/material'
+    Link, Alert } from '@mui/material'
 
 const Login = ({}) => {
   const navigate = useNavigate();
+  const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
 
   function validateEmail(e) {
     console.log('Email validated.');
@@ -11,6 +13,13 @@ const Login = ({}) => {
 
   function validatePassword(e) {
     console.log('Password validated.');
+  }
+
+  function generateUnsuccessfulLoginAlert() {
+    if (isLoginUnsuccessful){
+      return <Alert variant="filled" severity="error"> Login details are incorrect</Alert>
+    }
+    return null
   }
 
   async function handleLogin(e) {
@@ -32,13 +41,10 @@ const Login = ({}) => {
       return response.json()
     }).then(data => {
       console.log(data);
-      //navigate('/login')
-      //navigate('/user-landing')
+      navigate('/user-landing')
     }).catch(error => {
-      console.log(error)
-      console.log('Log in unsuccessful!')
+      setIsLoginUnsuccessful(true)
     })
-
   }
 
   return (
@@ -72,6 +78,7 @@ const Login = ({}) => {
           <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
               <h1>Sign In</h1>
+              {generateUnsuccessfulLoginAlert()}
               <TextField id='outlined-input' name='email' label='Email' 
                   onChange={validateEmail}></TextField>
               <TextField id='outlined-password-input' name='password' label='Password' 
