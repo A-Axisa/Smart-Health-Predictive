@@ -1,4 +1,5 @@
 import ReportTemplate from "../components/ReportTemplate";
+import DownloadReportButton from "../components/DownloadReportButton";
 import React, { useState, useEffect } from 'react';
 import {
 	Box,
@@ -85,6 +86,13 @@ const AIHealthPrediction = ({ }) => {
 				</Box>
 				{/* Report Content */}
 				<Box sx={{ flex: 1 }}>
+					<Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+						<DownloadReportButton
+						  healthDataId={selectedDate?.healthDataID}
+						  flatReportData={reportData}
+						  meta={{ date: selectedDate?.date, healthDataID: selectedDate?.healthDataID }}
+						/>
+					</Box>
 					<ReportTemplate report={reportData} date={selectedDate.date} />
 				</Box>
 			</Box>
