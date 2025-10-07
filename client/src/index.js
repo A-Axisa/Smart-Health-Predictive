@@ -15,6 +15,7 @@ import MerchantGenerateReport from './routes/MerchantGenerateReport';
 import AdministratorDashboard from './routes/AdministratorDashboard';
 import AppThemeProvider from './components/AppThemeProvider';
 import DownloadTestPage from './routes/DownloadTestPage';
+import DownloadTestPage from './routes/DownloadTestPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
