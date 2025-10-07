@@ -28,4 +28,3 @@ app.include_router(getReportData.router)
 app.include_router(authentication.router)
 app.include_router(health_analytics.router)
 app.include_router(users.router)
-
