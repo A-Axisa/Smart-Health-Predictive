@@ -40,7 +40,6 @@ const Login = ({}) => {
       }
       return response.json()
     }).then(data => {
-      console.log(data);
       navigate('/user-landing')
     }).catch(error => {
       setIsLoginUnsuccessful(true)
