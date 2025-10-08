@@ -86,13 +86,13 @@ const UserManagementTable = () => {
         return (
         <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
           <Select
-            key={params.row.role}
-            value={selectedRow === params.row.id && newRole ? newRole : params.row.role}
+            key={params.row.role.id}
+            value={selectedRow === params.row.id && newRole ? newRole : params.row.role.id}
             size="small"
             sx={{ width: '100%', alignItems: 'center', display: 'flex'}}
             disabled={selectedRow !== params.row.id}
             onChange={(e) => {
-              handleRoleSelect(params.row.id, params.row.role, e.target.value);
+              handleRoleSelect(params.row.id, params.row.role.id, e.target.value);
             }}
           >
             {roleData.map((role) =>
