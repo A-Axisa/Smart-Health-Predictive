@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/users/")
 async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount, AccountRole.RoleName). \
+    users = db_conn.query(UserAccount, AccountRole). \
         outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
         outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
         all()
@@ -22,7 +22,10 @@ async def getUsers(db_conn: Session = Depends(get_db)):
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
             "createdAt": user.CreatedAt,
-            "roles": role
+            "role": {
+                "id": role.RoleID if role else None,
+                "name": role.RoleName if role else None
+            }
         })
 
     return result
