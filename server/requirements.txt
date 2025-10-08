@@ -7,3 +7,4 @@ PyMySQL==1.1.2
 bcrypt==5.0.0
 pydantic-extra-types==2.10.5
 phonenumbers==9.0.15
+pyjwt=2.10.1
