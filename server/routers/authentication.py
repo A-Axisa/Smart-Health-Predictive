@@ -128,3 +128,42 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
     return jwt.encode(to_encode, os.environ['SECRET_KEY'], algorithm=ALGORITHM)
 
+@router.get("/user/me")
+async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
+    return get_current_user(request, db_conn)
+
+def get_current_user(request: Request, db_conn: Session):  
+    # Prepare an exception for invalid or missing credentials.
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+
+    token = request.cookies.get("auth_token")
+    if token is None:
+        raise credentials_exception
+    
+    # Extract the data from the jwt token.
+    try:
+        payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
+        token_data = TokenData(
+            full_name=payload.get("name"),
+            email=payload.get("sub"),
+            ip_address=payload.get("ip_address")
+        )
+        if token_data.email is None or not \
+            token_data.ip_address == request.client.host:
+            raise credentials_exception
+
+    except InvalidTokenError:
+        raise credentials_exception
+    
+    # Retrieve the user from the database
+    user = get_user(token_data.email, db_conn)
+    if user is None:
+        raise credentials_exception
+    
+    return user
+
+def get_user(email: str, db_conn: Session):
+    return db_conn.query(UserAccount).filter_by(Email=email).first()
