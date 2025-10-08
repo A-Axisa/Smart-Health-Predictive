@@ -42,19 +42,32 @@ const UserManagementTable = () => {
       });
   }, []);
 
-  // Update user object with new role in state
-  const confirmRoleChange = () => {
-   if (selectedRow && newRole) {
+  async function confirmRoleChange(e) {
+    e.preventDefault();
+
+    await fetch(`http://localhost:8000/users/${selectedRow}/roles/${newRole}`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    }).then((response) => {
+      if(!response.ok) {
+        throw new Error(response.status);
+      }
+      return response.json();
+    }).then(data => {
       setUserData((prev) =>
-        prev.map((user) =>
-          user.id === selectedRow ? { ...user, role: newRole } : user
-        )
-      );
-    }
-    setDialogOpen(false);
-    setNewRole(null);
-    setSelectedRow(null);
-  }
+          prev.map((user) =>
+            user.id === selectedRow ? { ...user, role: { id:newRole, name: data.role.name }} : user
+          )
+        );
+      setDialogOpen(false);
+      setNewRole(null);
+      setSelectedRow(null);
+    }).catch(err => {
+      console.log(err)
+    })
+  };
 
   // Cancels role change and resets state
   const cancelRoleChange = () => {
