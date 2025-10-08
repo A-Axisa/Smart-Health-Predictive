@@ -174,3 +174,20 @@ def get_current_user(request: Request, db_conn: Session):
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
+@router.post("/logout")
+def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
+    user = get_current_user(request, db_conn)
+    invalidate_access_token(user.Email)
+
+    response.delete_cookie(
+        key="auth_token",
+        httponly=True,
+        secure=False, # Set to false for development
+        samesite="Strict"
+    )
+
+def invalidate_access_token(email: str, db_conn: Session):
+    user = db_conn.query(UserAccount).filter_by(Email=email).first()
+    user.TokenVersion += 1
+    db_conn.commit()
