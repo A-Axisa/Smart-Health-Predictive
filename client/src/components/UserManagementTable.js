@@ -2,12 +2,16 @@ import { Paper, Box, MenuItem, Select, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ConfirmationDialog from '../components/confirmationDialog'
 
 
 const UserManagementTable = () => {
 
-  const [data, setData] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null); // Stores ID of the current row being edited
+  const [data, setData] = useState([]); // Stores user data
+  const [selectedRow, setSelectedRow] = useState(null); // Stores the current row being edited
+  const [selectedRole, setSelectedRole] = useState(null); // Stores the current role
+  const [newRole, setNewRole] = useState(null); // Temp store for the pending role
+  const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility 
 
   useEffect(() => {
     fetch('http://localhost:8000/users')
@@ -23,6 +27,36 @@ const UserManagementTable = () => {
       });
   }, []);
 
+  // Update user object with new role in state
+  const confirmRoleChange = () => {
+   if (selectedRow && newRole) {
+      setData((prev) =>
+        prev.map((user) =>
+          user.id === selectedRow ? { ...user, role: newRole } : user
+        )
+      );
+    }
+    setDialogOpen(false);
+    setNewRole(null);
+    setSelectedRow(null);
+  }
+
+  // Cancels role change and resets state
+  const cancelRoleChange = () => {
+    setDialogOpen(false);
+    setSelectedRow(null);
+    setSelectedRole(null);
+    setNewRole(null);
+  }
+
+  // Updates states when new role is selected
+  const handleRoleSelect = (row, oldRole, newRole) => {
+    setSelectedRow(row);
+    setSelectedRole(oldRole);
+    setNewRole(newRole);
+    setDialogOpen(true);
+  }
+
   const columns = [
     { field: 'id', headerName: 'User ID', width: 100, sortable: true},
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
@@ -33,16 +67,18 @@ const UserManagementTable = () => {
       headerName: 'Role',
       width: 220,
       sortable: true,
-      renderCell: (params) => {
-        const activeRow = selectedRow === params.row.id;
-        
+      renderCell: (params) => {        
         return (
         <Box sx={{overflow: 'visible', width: '100%', display: 'flex'}}>
           <Select
-            value={params.row.role}
+            key={params.row.role}
+            value={selectedRow === params.row.id && newRole ? newRole : params.row.role}
             size="small"
             sx={{ width: '100%', alignItems: 'center', display: 'flex'}}
-            disabled={!activeRow}
+            disabled={selectedRow !== params.row.id}
+            onChange={(e) => {
+              handleRoleSelect(params.row.id, params.row.role, e.target.value);
+            }}
           >
             {/* Temp values */}
             <MenuItem value="user">User</MenuItem>
@@ -52,7 +88,6 @@ const UserManagementTable = () => {
           <IconButton
             size="small"
             color="info"
-            sx={{overflow: 'visible'}}
             onClick={() => setSelectedRow(params.row.id)}
             >
             <SettingsIcon />
@@ -64,6 +99,7 @@ const UserManagementTable = () => {
   ];
 
   return (
+    <>
     <Paper sx={{ width: '1040px'}}>
       <DataGrid
         rows={data}
@@ -75,6 +111,15 @@ const UserManagementTable = () => {
         sx={{ border: 0, p: 1 }}
       />
     </Paper>
+
+    <ConfirmationDialog
+      open={dialogOpen}
+      role={newRole}
+      user={data.find((user) => user.id === selectedRow)?.fullName}
+      confirm={confirmRoleChange}
+      cancel={cancelRoleChange}
+    />
+    </>
   )
 };
 
