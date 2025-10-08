@@ -178,7 +178,7 @@ def get_user(email: str, db_conn: Session):
 @router.post("/logout")
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
     user = get_current_user(request, db_conn)
-    invalidate_access_token(user.Email)
+    invalidate_access_token(user.Email, db_conn)
 
     response.delete_cookie(
         key="auth_token",
