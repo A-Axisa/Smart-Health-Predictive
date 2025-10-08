@@ -126,3 +126,17 @@ def test_get_current_user_success():
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['Email'] == 'Mock@Mail.com'
     
+def test_get_current_user_no_cookie():
+    credentials = {'email':'Mock@Mail.com', 'password':'qwerty'}
+    client.post('/login/', json=credentials)
+    authentication.invalidate_access_token(credentials['email'], next(get_db()))
+    response = client.get('/user/me')
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
+
+def test_logout_current_user():
+    client.post('/logout/')
+    response = client.get('/user/me')
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
+

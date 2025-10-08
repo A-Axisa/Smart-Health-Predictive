@@ -9,9 +9,26 @@ import {
 	Button,
 	CardActions
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const UserLanding = ({ }) => {
+  const navigate = useNavigate();
 
+  async function logout(e) {
+    e.preventDefault();
+
+    await fetch('http://localhost:8000/logout', {
+      method: 'POST',
+	  credentials: 'include'
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/login')
+    })
+  }
 
 	return (
 		<Box sx={{ backgroundColor: '#127067', width: '100vw', height: '100vh', padding: '0', margin: '0' }}>
@@ -38,6 +55,7 @@ const UserLanding = ({ }) => {
 
 						<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>							
 								<Stack spacing={2}>
+								<Button variant="outlined" onClick={logout}>Logout</Button>
 								<Button type='submit' href="generate-report" variant="contained" size="large">Generate Report </Button>
 								<Button type='submit' href="ai-health-prediction" variant="contained" size="large">Health Prediction History</Button>
 								</Stack>

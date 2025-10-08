@@ -33,6 +33,7 @@ class TokenData(BaseModel):
     full_name: str
     email: str
     ip_address: str
+    version: int
 
 load_dotenv()
 
@@ -88,12 +89,17 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
             detail='Incorrect username or password',
         )
 
+    # Update the token version number in the db.
+    user.TokenVersion += 1
+    db_conn.commit()
+
     # Create the jwt token
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
         'name': user.FullName,
-        'ip_address': request.client.host
+        'ip_address': request.client.host,
+        'version': user.TokenVersion
     }
     token = create_access_token(data, expiration)
     
@@ -149,7 +155,8 @@ def get_current_user(request: Request, db_conn: Session):
         token_data = TokenData(
             full_name=payload.get("name"),
             email=payload.get("sub"),
-            ip_address=payload.get("ip_address")
+            ip_address=payload.get("ip_address"),
+            version=payload.get("version")
         )
         if token_data.email is None or not \
             token_data.ip_address == request.client.host:
@@ -160,6 +167,9 @@ def get_current_user(request: Request, db_conn: Session):
     
     # Retrieve the user from the database
     user = get_user(token_data.email, db_conn)
+    if not user.TokenVersion == token_data.version:
+        raise credentials_exception
+
     if user is None:
         raise credentials_exception
     
@@ -167,3 +177,20 @@ def get_current_user(request: Request, db_conn: Session):
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
+@router.post("/logout")
+def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
+    user = get_current_user(request, db_conn)
+    invalidate_access_token(user.Email, db_conn)
+
+    response.delete_cookie(
+        key="auth_token",
+        httponly=True,
+        secure=False, # Set to false for development
+        samesite="Strict"
+    )
+
+def invalidate_access_token(email: str, db_conn: Session):
+    user = db_conn.query(UserAccount).filter_by(Email=email).first()
+    user.TokenVersion += 1
+    db_conn.commit()

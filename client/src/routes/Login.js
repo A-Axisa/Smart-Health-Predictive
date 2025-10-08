@@ -33,7 +33,8 @@ const Login = ({}) => {
       body: JSON.stringify({
         email: e.target.email.value,
         password: e.target.password.value
-      })
+      }),
+      credentials: 'include'
     }).then(response => {
       if (!response.ok) {
         throw new Error(response.status)
