@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
 import { Box, Container, Stack, TextField, Button, Typography, 
-    Link } from '@mui/material'
+    Link, Alert } from '@mui/material'
 
 const Login = ({}) => {
   const navigate = useNavigate();
+  const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
 
   function validateEmail(e) {
     console.log('Email validated.');
@@ -13,10 +15,35 @@ const Login = ({}) => {
     console.log('Password validated.');
   }
 
-  function handleLogin(e) {
+  function generateUnsuccessfulLoginAlert() {
+    if (isLoginUnsuccessful){
+      return <Alert variant="filled" severity="error"> Login details are incorrect</Alert>
+    }
+    return null
+  }
+
+  async function handleLogin(e) {
     e.preventDefault();
-    console.log('Logged in successfully!');
-    navigate('/user-landing')
+
+    await fetch('http://localhost:8000/login', {
+      method: 'POST',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: e.target.email.value,
+        password: e.target.password.value
+      })
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/user-landing')
+    }).catch(error => {
+      setIsLoginUnsuccessful(true)
+    })
   }
 
   return (
@@ -50,9 +77,10 @@ const Login = ({}) => {
           <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
               <h1>Sign In</h1>
-              <TextField id='outlined-input' label='Email' 
+              {generateUnsuccessfulLoginAlert()}
+              <TextField id='outlined-input' name='email' label='Email' 
                   onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' label='Password' 
+              <TextField id='outlined-password-input' name='password' label='Password' 
                   type='password' onChange={validatePassword}></TextField>
               <Button type='submit' variant="contained">Login</Button>
               <Button href='/register' variant="outlined">Sign up</Button>
