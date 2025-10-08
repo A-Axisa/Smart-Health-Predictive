@@ -167,6 +167,9 @@ def get_current_user(request: Request, db_conn: Session):
     
     # Retrieve the user from the database
     user = get_user(token_data.email, db_conn)
+    if not user.TokenVersion == token_data.version:
+        raise credentials_exception
+
     if user is None:
         raise credentials_exception
     
