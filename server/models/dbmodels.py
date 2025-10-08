@@ -14,6 +14,7 @@ class UserAccount(Base):
     PhoneNumber = Column(String)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     IsValidated = Column(Boolean, default=False)
+    TokenVersion = Column(Integer, nullable=False, default=0)
 
     userRoles = relationship("UserAccountRole", back_populates = "user")
 
