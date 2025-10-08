@@ -7,7 +7,7 @@ import ConfirmationDialog from '../components/confirmationDialog'
 
 const UserManagementTable = () => {
 
-  const [data, setData] = useState([]); // Stores user data
+  const [userData, setUserData] = useState([]); // Stores user data
   const [selectedRow, setSelectedRow] = useState(null); // Stores the current row being edited
   const [selectedRole, setSelectedRole] = useState(null); // Stores the current role
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
@@ -22,7 +22,7 @@ const UserManagementTable = () => {
         }
         return response.json();
       })
-      .then(data => setData(data))
+      .then(data => setUserData(data))
       .catch((err) => {
         console.log(err);
       });
@@ -45,7 +45,7 @@ const UserManagementTable = () => {
   // Update user object with new role in state
   const confirmRoleChange = () => {
    if (selectedRow && newRole) {
-      setData((prev) =>
+      setUserData((prev) =>
         prev.map((user) =>
           user.id === selectedRow ? { ...user, role: newRole } : user
         )
@@ -118,7 +118,7 @@ const UserManagementTable = () => {
     <>
     <Paper sx={{ width: '1040px'}}>
       <DataGrid
-        rows={data}
+        rows={userData}
         columns={columns}
         pageSizeOptions={[50, 100, 1000]}
         initialState={{ pagination: { pageSize: 50 } }}
@@ -131,7 +131,7 @@ const UserManagementTable = () => {
     <ConfirmationDialog
       open={dialogOpen}
       role={newRole}
-      user={data.find((user) => user.id === selectedRow)?.fullName}
+      user={userData.find((user) => user.id === selectedRow)?.fullName}
       confirm={confirmRoleChange}
       cancel={cancelRoleChange}
     />
