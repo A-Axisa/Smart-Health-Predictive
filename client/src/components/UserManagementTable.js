@@ -11,7 +11,8 @@ const UserManagementTable = () => {
   const [selectedRow, setSelectedRow] = useState(null); // Stores the current row being edited
   const [selectedRole, setSelectedRole] = useState(null); // Stores the current role
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
-  const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility 
+  const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
+  const [roleData, setRoleData] = useState([]); // Stores role data
 
   useEffect(() => {
     fetch('http://localhost:8000/users')
@@ -22,6 +23,20 @@ const UserManagementTable = () => {
         return response.json();
       })
       .then(data => setData(data))
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/roles')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(data => setRoleData(data))
       .catch((err) => {
         console.log(err);
       });
@@ -69,7 +84,7 @@ const UserManagementTable = () => {
       sortable: true,
       renderCell: (params) => {        
         return (
-        <Box sx={{overflow: 'visible', width: '100%', display: 'flex'}}>
+        <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
           <Select
             key={params.row.role}
             value={selectedRow === params.row.id && newRole ? newRole : params.row.role}
@@ -80,10 +95,11 @@ const UserManagementTable = () => {
               handleRoleSelect(params.row.id, params.row.role, e.target.value);
             }}
           >
-            {/* Temp values */}
-            <MenuItem value="user">User</MenuItem>
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="merchant">Merchant</MenuItem>
+            {roleData.map((role) =>
+              <MenuItem key={role.id} value={role.id}>
+                {role.roleName}
+              </MenuItem>
+            )}
           </Select>
           <IconButton
             size="small"
