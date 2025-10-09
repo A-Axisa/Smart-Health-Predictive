@@ -124,7 +124,7 @@ def test_get_current_user_success():
     client.post('/login/', json=credentials)
     response = client.get('/user/me')
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['Email'] == 'Mock@Mail.com'
+    assert response.json()['email'] == 'Mock@Mail.com'
     
 def test_get_current_user_no_cookie():
     credentials = {'email':'Mock@Mail.com', 'password':'qwerty'}
