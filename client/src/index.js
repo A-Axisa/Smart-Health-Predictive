@@ -13,6 +13,7 @@ import UserLanding from './routes/UserLanding';
 import UserSettings from './routes/UserSettings';
 import MerchantGenerateReport from './routes/MerchantGenerateReport';
 import AdministratorDashboard from './routes/AdministratorDashboard';
+import MerchantLanding from './routes/MerchantLanding'
 import AppThemeProvider from './components/AppThemeProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -31,6 +32,7 @@ root.render(
           <Route path="/health-analytics" element={ <HealthAnalytics /> } />
           <Route path="/merchant-generate-report" element={ <MerchantGenerateReport />} />
           <Route path="/admin-dashboard" element={ <AdministratorDashboard /> } />
+          <Route path="/merchant-landing" element={ <MerchantLanding /> } />
           <Route path=""  element={ <App /> } />
           <Route path="*" element={ <App /> } />
         </Routes>
