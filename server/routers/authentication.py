@@ -171,7 +171,7 @@ def get_current_user(request: Request, db_conn: Session):
     if user is None:
         raise credentials_exception
     
-    return user
+    return {'email': user.Email}
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
