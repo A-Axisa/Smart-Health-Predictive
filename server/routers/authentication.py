@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from ..utils.database import get_db 
 from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
 
-ALGORITHM = "HS256"
+ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 STANDARD_ACCOUNT_ROLE_ID = 1
 VALIDATION_TOKEN_LENGTH = 128
@@ -30,7 +30,6 @@ class LoginCredentials(BaseModel):
     password: str
 
 class TokenData(BaseModel):
-    full_name: str
     email: str
     ip_address: str
     version: int
@@ -97,18 +96,17 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
-        'name': user.FullName,
         'ip_address': request.client.host,
         'version': user.TokenVersion
     }
     token = create_access_token(data, expiration)
     
     response.set_cookie(
-        key="auth_token",
+        key='auth_token',
         value=token,
         httponly=True,
         secure=False, # Set to false for development
-        samesite="Strict"
+        samesite='Strict'
     )
 
     return {'message': f'HTTP-Only cookie set successfully.'}
@@ -134,7 +132,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
     return jwt.encode(to_encode, os.environ['SECRET_KEY'], algorithm=ALGORITHM)
 
-@router.get("/user/me")
+@router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
     return get_current_user(request, db_conn)
 
@@ -142,10 +140,10 @@ def get_current_user(request: Request, db_conn: Session):
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+        detail='Could not validate credentials'
     )
 
-    token = request.cookies.get("auth_token")
+    token = request.cookies.get('auth_token')
     if token is None:
         raise credentials_exception
     
@@ -153,10 +151,9 @@ def get_current_user(request: Request, db_conn: Session):
     try:
         payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
-            full_name=payload.get("name"),
-            email=payload.get("sub"),
-            ip_address=payload.get("ip_address"),
-            version=payload.get("version")
+            email=payload.get('sub'),
+            ip_address=payload.get('ip_address'),
+            version=payload.get('version')
         )
         if token_data.email is None or not \
             token_data.ip_address == request.client.host:
@@ -173,21 +170,21 @@ def get_current_user(request: Request, db_conn: Session):
     if user is None:
         raise credentials_exception
     
-    return user
+    return {'email': user.Email}
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
-@router.post("/logout")
+@router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
     user = get_current_user(request, db_conn)
     invalidate_access_token(user.Email, db_conn)
 
     response.delete_cookie(
-        key="auth_token",
+        key='auth_token',
         httponly=True,
         secure=False, # Set to false for development
-        samesite="Strict"
+        samesite='Strict'
     )
 
 def invalidate_access_token(email: str, db_conn: Session):
