@@ -16,6 +16,7 @@ from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidatio
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 STANDARD_ACCOUNT_ROLE_ID = 1
+MERCHANT_ACCOUNT_ROLE_ID = 3
 VALIDATION_TOKEN_LENGTH = 128
 VALIDATION_EXPIRATION_IN_HOURS = 24
 
@@ -24,6 +25,7 @@ class UserRegistrationDetails(BaseModel):
     password: str
     email: str
     phone: str
+    account_type: int
 
 class LoginCredentials(BaseModel):
     email: str
@@ -56,11 +58,19 @@ async def register(user_reg: UserRegistrationDetails, \
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
     if not user:        
         db_conn.add(new_user)
-        
-    # Load the user with the added details
+
+    # Confirm the account type.
+    if user_reg.account_type != STANDARD_ACCOUNT_ROLE_ID and \
+        user_reg.account_type != MERCHANT_ACCOUNT_ROLE_ID:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail='No such role exists',
+        )
+
+    # Get the ID of the new user
     new_user_id = db_conn.query(UserAccount.UserID). \
         filter_by(Email=user_reg.email).first()[0]
-    role = UserAccountRole(STANDARD_ACCOUNT_ROLE_ID, new_user_id)
+    role = UserAccountRole(user_reg.account_type, new_user_id)
 
     # Create account validation token
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
