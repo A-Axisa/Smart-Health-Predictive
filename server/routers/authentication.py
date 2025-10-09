@@ -30,7 +30,6 @@ class LoginCredentials(BaseModel):
     password: str
 
 class TokenData(BaseModel):
-    full_name: str
     email: str
     ip_address: str
     version: int
@@ -153,10 +152,9 @@ def get_current_user(request: Request, db_conn: Session):
     try:
         payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
-            full_name=payload.get("name"),
-            email=payload.get("sub"),
-            ip_address=payload.get("ip_address"),
-            version=payload.get("version")
+            email=payload.get('sub'),
+            ip_address=payload.get('ip_address'),
+            version=payload.get('version')
         )
         if token_data.email is None or not \
             token_data.ip_address == request.client.host:
