@@ -1,6 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Stack, TextField, Button, Typography, 
-    Link } from '@mui/material'
+    Link, FormControlLabel, Checkbox } from '@mui/material'
+
+const ACCOUNT_TYPES = Object.freeze({
+  STANDARD: 1,
+  MERCHANT: 3,
+})
 
 const Register = ({}) => {
   const navigate = useNavigate();
@@ -23,6 +28,9 @@ const Register = ({}) => {
 
   async function handleRegistration(e) {
     e.preventDefault();
+    
+    const new_account_type = e.target.is_merchant_account.value ? 
+      ACCOUNT_TYPES.MERCHANT : ACCOUNT_TYPES.STANDARD
 
     await fetch('http://localhost:8000/register', {
       method: 'POST',
@@ -33,7 +41,8 @@ const Register = ({}) => {
         username: e.target.full_name.value,
         password: e.target.password.value,
         email: e.target.email.value,
-        phone: e.target.phone.value
+        phone: e.target.phone.value,
+        account_type: new_account_type
       })
     }).then(response => {
       if (!response.ok) {
@@ -69,6 +78,7 @@ const Register = ({}) => {
                   type='password' onChange={validatePassword}></TextField>
               <TextField id='outlined-password-input' name='confirm_password' label='Confirm Password' 
                   type='password' onChange={validatePassword}></TextField>
+              <FormControlLabel control={<Checkbox name='is_merchant_account' />} label='Merchant Account' />
               <Button type='submit' variant="contained">Create</Button>
               <Stack direction='row' spacing={{xs:1}} 
                   style={{ justifyContent:"center"}}> 
