@@ -18,7 +18,7 @@ const HiddenInput = styled('input')({
 const ReportUpload = ({}) => {
   return (
     <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center'}}>
-      <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or Excel (.xlsx) files are accepted.</Typography>
+      <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or Excel (.csv) files are accepted.</Typography>
       <Button component='label' role='undefined' variant='contained' tabIndex={-1} color='info' size='large' startIcon={<FileUploadIcon/>}>
         Upload File
         <HiddenInput

@@ -29,7 +29,7 @@ const Register = ({}) => {
   async function handleRegistration(e) {
     e.preventDefault();
     
-    const new_account_type = e.target.is_merchant_account.value ? 
+    const new_account_type = e.target.is_merchant_account.checked ? 
       ACCOUNT_TYPES.MERCHANT : ACCOUNT_TYPES.STANDARD
 
     await fetch('http://localhost:8000/register', {
