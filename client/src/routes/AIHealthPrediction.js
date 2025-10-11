@@ -1,5 +1,6 @@
 import ReportTemplate from "../components/ReportTemplate";
-import React, { useState } from 'react';
+import DownloadReportButton from "../components/DownloadReportButton";
+import React, { useState, useEffect } from 'react';
 import {
 	Box,
 	Typography,
@@ -9,76 +10,94 @@ import {
 } from '@mui/material';
 
 const AIHealthPrediction = ({ }) => {
+	const [reportDates, setReportDates] = useState([]);
+	const [selectedDate, setSelectedDate] = useState();
+	const [reportData, setReportData] = useState();
 
-	// dummy report data
-	const report = [{
-		id: 0,
-		date: '11/09/2025',
-		strokeChance: 15,
-		cardioChance: 13,
-		diabetesChance: 0,
-	},
-	{
-		id: 1,
-		date: '7/09/2025',
-		strokeChance: 30,
-		cardioChance: 20,
-		diabetesChance: 10,
-	},
-	{
-		id: 2,
-		date: '3/09/2025',
-		strokeChance: 66,
-		cardioChance: 34,
-		diabetesChance: 12,
-	},
-	]
-	const [selectedReport, setSelectedReport] = useState(report[0]);
-	console.log(selectedReport)
+	// Fetch the users health data ID and Dates
+	React.useEffect(() => {
+		fetch(`http://localhost:8000/getHealthDataDates/1`) // TODO Change 1 to the current users ID
+			.then(response => response.json())
+			.then(data => {
+				setReportDates(data);
+				if (data.length > 0) {
+					setSelectedDate(data[0])
+					console.log("The selected date is: " + selectedDate)
+				}
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	}, []);
 
-	return (
-		<Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-			{/* Sidebar */}
-			<Box sx={{ width: 400, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
-				<Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
-					<Typography variant="h6" sx={{ fontWeight: 600 }}>
-						Report History
-					</Typography>
-				</Box>
-				<List component="nav" sx={{ p: 0 }}>
-					{report.map((item) =>
-						<ListItem key={item.id} selected={selectedReport.id === item.id}
-							onClick={() => setSelectedReport(item)}
-							button
-							sx={{
-								py: 2,
-								px: 3,
-								borderLeft:
-									selectedReport.id === item.id ? '4px solid' : '4px solid transparent',
-								borderLeftColor: 'primary.main',
-								bgcolor: selectedReport.id === item.id ? 'action.selected' : 'transparent',
-							}}
-						>
-							<ListItemText
-								primary={`Report: ${item.date}`}
-								slotProps={{
-									primary: {
-										style: {fontWeight: selectedReport.id === item.id ? 600 : 400,
-										},
-									},
+	// Fetch report data
+	useEffect(() => {
+		if (!selectedDate) return;
+		fetch(`http://localhost:8000/getReportData/${selectedDate.healthDataID}`)
+			.then(res => res.json())
+			.then(data => setReportData(data))
+			.catch(err => console.log(err));
+	}, [selectedDate]);
+
+	
+
+	// Prevents page from loading if the user has no health record
+	if (!reportData) {
+		return <h1>User has no Health Prediction Reports</h1>;
+	}
+	else {
+
+		return (
+			<Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+				{/* Sidebar */}
+				<Box sx={{ width: 400, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
+					<Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+						<Typography variant="h6" sx={{ fontWeight: 600 }}>
+							Report History
+						</Typography>
+					</Box>
+					<List component="nav" sx={{ p: 0 }}>
+						{reportDates.map((item) =>
+							<ListItem key={item.id} selected={selectedDate.healthDataID === item.healthDataID}
+								onClick={() => setSelectedDate(item)}
+								button
+								sx={{
+									py: 2,
+									px: 3,
+									borderLeft:
+										selectedDate.healthDataID === item.healthDataID ? '4px solid' : '4px solid transparent',
+									borderLeftColor: 'primary.main',
+									bgcolor: selectedDate.healthDataID === item.healthDataID ? 'action.selected' : 'transparent',
 								}}
-							/>
-						</ListItem>
-					)}
-				</List>
+							>
+								<ListItemText
+									primary={`Report: ${new Date(item.date).toLocaleDateString()}`}
+									slotProps={{
+										primary: {
+											style: {
+												fontWeight: selectedDate.healthDataID === item.healthDataID ? 600 : 400,
+											},
+										},
+									}}
+								/>
+							</ListItem>
+						)}
+					</List>
+				</Box>
+				{/* Report Content */}
+				<Box sx={{ flex: 1 }}>
+					<Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+						<DownloadReportButton
+						  healthDataId={selectedDate?.healthDataID}
+						  flatReportData={reportData}
+						  meta={{ date: selectedDate?.date, healthDataID: selectedDate?.healthDataID }}
+						/>
+					</Box>
+					<ReportTemplate report={reportData} date={selectedDate.date} />
+				</Box>
 			</Box>
-			{/* Report Content */}
-			<Box sx={{ flex: 1 }}>
-				<ReportTemplate report={selectedReport} />
-			</Box>
-		</Box>
-	);
-
+		);
+	}
 }
 
 export default AIHealthPrediction

@@ -1,43 +1,38 @@
-## Encryption Utility Guide
+# Encryption Utility
 
-Location: `server/src/utils/encryptor.js`
+Location: `server/utils/encryptor.py`
 
-### 1. Features
+## 1. Features
 
-- Algorithm: AES-256-GCM (confidentiality + integrity)
-- Key: environment variable `DATA_CIPHER_KEY` (32 bytes)
-- Output format: `v1:gcm:Base64(IV):Base64(AuthTag):Base64(CipherText)`
+- AES-256-GCM
+- Key env: `DATA_CIPHER_KEY` (32 bytes)
+- Output: `v1:gcm:Base64(IV):Base64(Tag):Base64(Cipher)`
 
-### 2. Generate & Set Key
-
-```
-node server/src/utils/encryptor.js gen-key
-```
-
-Set environment variable:
+## 2. Generate & Set Key
 
 ```
-DATA_CIPHER_KEY="<Base64String>"
+python -m utils.encryptor gen-key
+set DATA_CIPHER_KEY=<Base64String>
 ```
 
-### 3. Basic Usage
+## 3. Basic Usage
 
-```js
-const { encrypt, decrypt } = require('../src/utils/encryptor')
-const cipher = encrypt('Patient name: John Doe')
-const plain = decrypt(cipher)
+```python
+from utils.encryptor import encrypt, decrypt
+cipher = encrypt('hello')
+plain = decrypt(cipher)
 ```
 
-### 4. Database Storage
+## 4. Simple Test
 
-- Store the returned string directly
-- Do not re-Base64 it
-- For searchable fields, keep a separate normalized/plain index; only encrypt sensitive parts
-
-### 5. Simple Test Snippet
-
-```js
-const { encrypt, decrypt } = require('../src/utils/encryptor')
-const c = encrypt('hello')
-console.assert(decrypt(c) === 'hello')
+```python
+from utils.encryptor import encrypt, decrypt
+c = encrypt('hello')
+assert decrypt(c) == 'hello'
 ```
+
+## 5. Notes
+
+- Store the returned string directly in DB
+- Do not re-encode
+- Keep key secret / rotate if compromised

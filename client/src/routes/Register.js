@@ -1,6 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Stack, TextField, Button, Typography, 
-    Link } from '@mui/material'
+    Link, FormControlLabel, Checkbox } from '@mui/material'
+
+const ACCOUNT_TYPES = Object.freeze({
+  STANDARD: 1,
+  MERCHANT: 3,
+})
 
 const Register = ({}) => {
   const navigate = useNavigate();
@@ -21,10 +26,34 @@ const Register = ({}) => {
     console.log('Password validated.');
   }
 
-  function handleRegistration(e) {
+  async function handleRegistration(e) {
     e.preventDefault();
-    console.log('Account Created!');
-    navigate('/login')
+    
+    const new_account_type = e.target.is_merchant_account.checked ? 
+      ACCOUNT_TYPES.MERCHANT : ACCOUNT_TYPES.STANDARD
+
+    await fetch('http://localhost:8000/register', {
+      method: 'POST',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: e.target.full_name.value,
+        password: e.target.password.value,
+        email: e.target.email.value,
+        phone: e.target.phone.value,
+        account_type: new_account_type
+      })
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/login')
+    }).catch(error => {
+      console.log(error)
+    })
   }
 
   return (
@@ -39,16 +68,17 @@ const Register = ({}) => {
           <Box component='form' onSubmit={handleRegistration}>
             <Stack spacing={{xs:2}}>
               <h1>Create Account</h1>
-              <TextField id='outlined-input' label='Full Name' 
+              <TextField id='outlined-input' name='full_name' label='Full Name' 
                   onChange={validateName}></TextField>
-              <TextField id='outlined-input' label='Phone' 
+              <TextField id='outlined-input' name='phone' label='Phone' 
                   onChange={validatePhone}></TextField>
-              <TextField id='outlined-input' label='Email' 
+              <TextField id='outlined-input' name='email' label='Email' 
                   onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' label='Password' 
+              <TextField id='outlined-password-input' name='password' label='Password' 
                   type='password' onChange={validatePassword}></TextField>
-              <TextField id='outlined-password-input' label='Confirm Password' 
+              <TextField id='outlined-password-input' name='confirm_password' label='Confirm Password' 
                   type='password' onChange={validatePassword}></TextField>
+              <FormControlLabel control={<Checkbox name='is_merchant_account' />} label='Merchant Account' />
               <Button type='submit' variant="contained">Create</Button>
               <Stack direction='row' spacing={{xs:1}} 
                   style={{ justifyContent:"center"}}> 
