@@ -15,7 +15,7 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
     
     const [password, setPassword] = useState('');
     const [isValid, setIsValid] = useState(false);
-    const [isAltered, setIsAltered] = useState(false)
+    const [isAltered, setIsAltered] = useState(false);
 
     const MIN_LENGTH = 14;
     const MAX_LENGTH = 65;
