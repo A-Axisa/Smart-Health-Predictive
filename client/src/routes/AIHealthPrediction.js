@@ -79,7 +79,7 @@ const AIHealthPrediction = ({ }) => {
 								}}
 							>
 								<ListItemText
-									primary={`Report: ${new Date(item.date).toLocaleDateString()}`}
+									primary={`Report: ${new Date(item.date).toLocaleDateString('en-AU')}`}
 									slotProps={{
 										primary: {
 											style: {
