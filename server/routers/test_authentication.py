@@ -150,3 +150,23 @@ def test_logout_current_user():
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Could not validate credentials'}
 
+def test_valid_password():
+    result = authentication.is_password_valid('Amf0fFKp_43rQv$3')
+    assert result
+
+def test_password_too_long():
+    result = authentication.is_password_valid(
+        'Amf0fFKp_43rQv$3L$M^mEG;ag;aejp5mpjiga;oigaA$W$?gw?GhawH<whhaA463_)es2')
+    assert not result
+
+def test_valid_email():
+    result = authentication.is_email_valid("newemail@test.com")
+    assert result
+
+def test_validate_none_email():
+    result = authentication.is_email_valid(None)
+    assert not result
+
+def test_validate_empty_email():
+    result = authentication.is_email_valid("")
+    assert not result
