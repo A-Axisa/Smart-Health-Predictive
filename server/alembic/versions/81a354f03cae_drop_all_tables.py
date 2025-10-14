@@ -20,7 +20,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    pass
+    op.drop_table("RolePermission")
+    op.drop_table("UserAccountRole")
+    op.drop_table("Recommendation")
+    op.drop_table("Prediction")
+    op.drop_table("HealthData")
+    op.drop_table("UserAccountValidationToken")
+    op.drop_table("Permission")
+    op.drop_table("AccountRole")
+    op.drop_table("UserAccount")
+    op.drop_table("TestTable")
 
 
 def downgrade() -> None:
