@@ -190,7 +190,7 @@ class Prediction(Base):
 class UserAccountValidationToken(Base):
     __tablename__ = 'UserAccountValidationToken'
     UserID = Column(Integer, ForeignKey('UserAccount.UserID'), primary_key=True, nullable=False)
-    ValidationToken = Column(String(128), nullable=False)
+    ValidationToken = Column(String(999), nullable=False)
     ExpiresAt = Column(DateTime, nullable=False)
 
     def __init__(self, user_id, validation_token, expires_at):

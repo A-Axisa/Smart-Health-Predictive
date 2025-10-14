@@ -84,7 +84,7 @@ def upgrade() -> None:
     )
     op.create_table('UserAccountValidationToken',
     sa.Column('UserID', sa.Integer(), nullable=False),
-    sa.Column('ValidationToken', sa.String(length=128), nullable=False),
+    sa.Column('ValidationToken', sa.String(length=999), nullable=False),
     sa.Column('ExpiresAt', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['UserID'], ['UserAccount.UserID'], ),
     sa.PrimaryKeyConstraint('UserID')
