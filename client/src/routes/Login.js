@@ -22,10 +22,12 @@ const Login = ({}) => {
     return null
   }
 
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
   async function handleLogin(e) {
     e.preventDefault();
 
-    await fetch('http://localhost:8000/login', {
+    await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers:{
         'Content-Type': 'application/json'

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -18,8 +18,11 @@ import {
   Alert,
   Stack,
 } from '@mui/material';
+import ConfirmationDialog from '../components/confirmationDialog';
+import { useNavigate } from 'react-router-dom';
 
 const UserSettings = () => {
+  const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState('Account Details');
 
   // Account/Profile state
@@ -55,6 +58,42 @@ const UserSettings = () => {
   });
 
   const [saveMessage, setSaveMessage] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Resolve API base from environment variable
+  const API_BASE = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:8000', []);
+
+  // Get current user id by resolving email -> id (backend exposes /user/me returning email)
+  useEffect(() => {
+    let mounted = true;
+    async function loadCurrentUserId() {
+      try {
+        // 1) get current email from cookie-auth protected endpoint
+        const meRes = await fetch(`${API_BASE}/user/me`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (!meRes.ok) throw new Error(`me ${meRes.status}`);
+        const me = await meRes.json();
+        const email = me?.email;
+        if (!email) throw new Error('Missing email');
+
+        // 2) fetch users list and find matching email for id
+        const usersRes = await fetch(`${API_BASE}/users`, { credentials: 'include' });
+        if (!usersRes.ok) throw new Error(`users ${usersRes.status}`);
+        const users = await usersRes.json();
+        const self = Array.isArray(users) ? users.find(u => u.email === email) : null;
+        if (mounted) setCurrentUserId(self?.id ?? null);
+      } catch (e) {
+        if (mounted) setCurrentUserId(null);
+      }
+    }
+    loadCurrentUserId();
+    return () => { mounted = false; };
+  }, [API_BASE]);
 
   const updateForm = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
   const updatePwd = (k, v) => setPasswordData((p) => ({ ...p, [k]: v }));
@@ -144,17 +183,34 @@ const UserSettings = () => {
         </FormControl>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-  <Button variant="outlined" sx={{ mr: 2 }}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => handleSave('Account Details')}
-          sx={{ px: 4, py: 1.25 }}
-        >
-          Save Changes
-        </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="subtitle1" color="error" sx={{ fontWeight: 600 }}>Danger Zone</Typography>
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 1, maxWidth: 500 }}>{deleteError}</Alert>
+          )}
+          <Button
+            variant="contained"
+            color="error"
+            disabled={!currentUserId || deleteBusy}
+            onClick={() => setDeleteDialogOpen(true)}
+            sx={{ mt: 1 }}
+          >
+            {deleteBusy ? 'Deleting…' : 'Delete My Account'}
+          </Button>
+        </Box>
+        <Box sx={{ ml: 'auto' }}>
+          <Button variant="outlined" sx={{ mr: 2 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleSave('Account Details')}
+            sx={{ px: 4, py: 1.25 }}
+          >
+            Save Changes
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
@@ -452,6 +508,47 @@ const UserSettings = () => {
 
         {/* Main content */}
         <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
+
+        {/* Confirm deletion dialog */}
+        <ConfirmationDialog
+          open={deleteDialogOpen}
+          title="Delete Account"
+          message={
+            <>
+              This action will permanently delete your account and all associated data. This cannot be undone.
+            </>
+          }
+          confirmText={deleteBusy ? 'Deleting…' : 'Delete'}
+          cancelText="Cancel"
+          confirmColor="error"
+          cancelColor="primary"
+          confirm={async () => {
+            if (!currentUserId) return;
+            setDeleteBusy(true);
+            setDeleteError('');
+            try {
+              const res = await fetch(`${API_BASE}/users/${currentUserId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+              });
+              if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `HTTP ${res.status}`);
+              }
+              // Best-effort logout to invalidate cookie on server
+              try { await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' }); } catch (_) {}
+
+              setDeleteDialogOpen(false);
+              // Navigate to login
+              navigate('/login');
+            } catch (err) {
+              setDeleteError(err?.message || 'Failed to delete account');
+            } finally {
+              setDeleteBusy(false);
+            }
+          }}
+          cancel={() => setDeleteDialogOpen(false)}
+        />
   </Box>
   );
 };
