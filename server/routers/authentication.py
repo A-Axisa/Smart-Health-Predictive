@@ -21,6 +21,7 @@ MERCHANT_ACCOUNT_ROLE_ID = 3
 VALIDATION_TOKEN_LENGTH = 128
 VALIDATION_EXPIRATION_IN_HOURS = 24
 PASSWORD_MAX_LENGTH = 64
+PASSWORD_MIN_LENGTH = 15
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -211,7 +212,9 @@ def invalidate_access_token(email: str, db_conn: Session):
     db_conn.commit()
 
 def is_password_valid(password: str): 
-    return len(password) <= PASSWORD_MAX_LENGTH 
+    password_length = len(password)
+    return password_length <= PASSWORD_MAX_LENGTH and \
+        password_length >= PASSWORD_MIN_LENGTH
 
 def is_email_valid(email: str):
     try:
