@@ -7,6 +7,7 @@ import bcrypt
 import jwt
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
+from fastapi.responses import HTMLResponse
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -150,7 +151,25 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     
     db_conn.commit()
 
-    return {"message": "Email validated successfully."}
+    html_content = """
+    <html>
+        <head>
+            <title>Email Validation</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+                .container { display: inline-block; text-align: left; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+                h1 { color: #4CAF50; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Email Validated Successfully!</h1>
+                <p>Your email has been successfully validated. You can now close this window and log in to your account.</p>
+            </div>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
