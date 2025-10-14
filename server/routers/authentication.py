@@ -5,6 +5,7 @@ from secrets import token_urlsafe
 
 import bcrypt
 import jwt
+import phonenumbers
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from jwt.exceptions import InvalidTokenError
@@ -24,6 +25,8 @@ PASSWORD_MAX_LENGTH = 64
 PASSWORD_MIN_LENGTH = 15
 EMAIL_MAX_LENGTH = 255
 NAME_MAX_LENGTH = 255
+PHONE_MAX_LENGTH = 20
+
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -224,6 +227,21 @@ def is_email_valid(email: str):
     except Exception as e:
         return False
     return len(email) < EMAIL_MAX_LENGTH
+
+def format_phone_number(phone: str):
+    '''Removes spaces, hyphens, and brackets from strings'''
+    return phone.replace('-', '').replace(' ', ''). \
+        replace('(', '').replace(')', '')
+
+def is_formatted_phone_valid(phone: str):
+    # Only allow for numbers after the plus sign.
+    if not phone[1:].isalpha: 
+        return False
+    try:
+        validated_phone = phonenumbers.parse(phone)
+    except Exception as e:
+        return False
+    return True
 
 def is_name_valid(name: str):
     return name or len(name) > NAME_MAX_LENGTH
