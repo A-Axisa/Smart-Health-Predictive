@@ -16,7 +16,7 @@ from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
 from ..utils.email_service import send_email
 
-EMAIL_VALIDATION_ENABLED = True
+EMAIL_VALIDATION_ENABLED = False
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 STANDARD_ACCOUNT_ROLE_ID = 1
