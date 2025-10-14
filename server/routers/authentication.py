@@ -26,7 +26,10 @@ PASSWORD_MIN_LENGTH = 15
 EMAIL_MAX_LENGTH = 255
 NAME_MAX_LENGTH = 255
 PHONE_MAX_LENGTH = 20
-
+ACCOUNT_TYPE = {
+    'user': 1,
+    'merchant': 3
+}
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -51,6 +54,15 @@ router = APIRouter()
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
+    formatted_phone = format_phone_number(user_reg.password)
+
+    # Validate input before proceeding
+    if(not is_email_valid(user_reg.email) or
+        not is_password_valid(user_reg.password) or
+        not is_name_valid(user_reg.name) or \
+        not is_formatted_phone_valid(user_reg.phone) or \
+        not is_role_valid(user_reg.account_type)):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     # Always hash the password to obfuscate success and failure.
     password_hash = bcrypt.hashpw(user_reg.password.encode('utf-8'), \
@@ -246,3 +258,5 @@ def is_formatted_phone_valid(phone: str):
 def is_name_valid(name: str):
     return name or len(name) > NAME_MAX_LENGTH
 
+def is_role_valid(role: str):
+    return role in ACCOUNT_TYPE.keys()
