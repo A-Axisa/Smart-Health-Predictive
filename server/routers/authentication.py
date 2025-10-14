@@ -5,6 +5,7 @@ from secrets import token_urlsafe
 
 import bcrypt
 import jwt
+from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ STANDARD_ACCOUNT_ROLE_ID = 1
 MERCHANT_ACCOUNT_ROLE_ID = 3
 VALIDATION_TOKEN_LENGTH = 128
 VALIDATION_EXPIRATION_IN_HOURS = 24
+PASSWORD_MAX_LENGTH = 64
 
 class UserRegistrationDetails(BaseModel):
     username: str
@@ -91,12 +93,18 @@ async def register(user_reg: UserRegistrationDetails, \
 
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Incorrect username or password',
+    )    
+    
+    if not is_password_valid(user_cred.password) or \
+        not is_email_valid(user_cred.email):
+        raise credentials_exception
+
     user = authenticate_user(user_cred.email, user_cred.password, db_conn)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect username or password',
-        )
+        raise credentials_exception
 
     # Update the token version number in the db.
     user.TokenVersion += 1
@@ -201,3 +209,14 @@ def invalidate_access_token(email: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     user.TokenVersion += 1
     db_conn.commit()
+
+def is_password_valid(password: str): 
+    return len(password) <= PASSWORD_MAX_LENGTH 
+
+def is_email_valid(email: str):
+    try:
+        is_valid_email = validate_email(email, check_deliverability=True)
+    except Exception as e:
+        return False
+    return True
+

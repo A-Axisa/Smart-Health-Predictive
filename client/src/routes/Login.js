@@ -2,17 +2,29 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react'
 import { Box, Container, Stack, TextField, Button, Typography, 
     Link, Alert } from '@mui/material'
+import PasswordInputField from '../components/authentication/PasswordInputField';
+import EmailInputField from '../components/authentication/EmailInputField';
 
 const Login = ({}) => {
   const navigate = useNavigate();
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
+  const [password, setPassword] = useState(null)
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
+  const [email, setEmail] = useState(null)
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const [alertEmailRequired, setAlertEmailRequired] = useState(false)
 
   function validateEmail(e) {
-    console.log('Email validated.');
+    setAlertEmailRequired(false);
+    setIsEmailValid(e.isValid);
+    setEmail(e.email.trim());
   }
 
   function validatePassword(e) {
-    console.log('Password validated.');
+    setAlertPasswordRequired(false);
+    setIsPasswordValid(e.isValid);
+    setPassword(e.password);
   }
 
   function generateUnsuccessfulLoginAlert() {
@@ -25,14 +37,23 @@ const Login = ({}) => {
   async function handleLogin(e) {
     e.preventDefault();
 
+    if(!isEmailValid) {
+      setAlertEmailRequired(email === null);
+      return;
+    }
+    if(!isPasswordValid){
+      setAlertPasswordRequired(password === null);
+      return;
+    }
+
     await fetch('http://localhost:8000/login', {
       method: 'POST',
       headers:{
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        email: e.target.email.value,
-        password: e.target.password.value
+        email: email,
+        password: password
       }),
       credentials: 'include'
     }).then(response => {
@@ -79,10 +100,10 @@ const Login = ({}) => {
             <Stack spacing={{xs:2}}>
               <h1>Sign In</h1>
               {generateUnsuccessfulLoginAlert()}
-              <TextField id='outlined-input' name='email' label='Email' 
-                  onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' name='password' label='Password' 
-                  type='password' onChange={validatePassword}></TextField>
+              <EmailInputField onChange={validateEmail} 
+                showRequired={alertEmailRequired} />
+              <PasswordInputField onChange={validatePassword} truncate={true}
+                restrictLength={false} showRequired={alertPasswordRequired}/>
               <Button type='submit' variant="contained">Login</Button>
               <Button href='/register' variant="outlined">Sign up</Button>
               <Stack direction='row' spacing={{xs:1}} 
