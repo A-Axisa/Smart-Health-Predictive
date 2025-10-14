@@ -34,7 +34,7 @@ class UserRegistrationDetails(BaseModel):
     password: str
     email: str
     phone: str
-    account_type: int
+    account_type: str
 
 class LoginCredentials(BaseModel):
     email: str
