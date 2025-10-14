@@ -22,6 +22,7 @@ VALIDATION_TOKEN_LENGTH = 128
 VALIDATION_EXPIRATION_IN_HOURS = 24
 PASSWORD_MAX_LENGTH = 64
 PASSWORD_MIN_LENGTH = 15
+EMAIL_MAX_LENGTH = 255
 NAME_MAX_LENGTH = 255
 
 class UserRegistrationDetails(BaseModel):
@@ -222,7 +223,7 @@ def is_email_valid(email: str):
         is_valid_email = validate_email(email, check_deliverability=True)
     except Exception as e:
         return False
-    return True
+    return len(email) < EMAIL_MAX_LENGTH
 
 def is_name_valid(name: str):
     return name or len(name) > NAME_MAX_LENGTH
