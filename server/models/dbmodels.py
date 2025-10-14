@@ -5,6 +5,18 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
+class TestTable(Base):
+    __tablename__ = 'TestTable'
+    TestID = Column(Integer, primary_key = True)
+    Name = Column(String(255))
+
+    def __init__(self, name):
+        self.Name = name
+
+    def __repr__(self):
+        return f'TestTable(TestID={self.TestID}, Name={self.Name})'
+    
+
 class UserAccount(Base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key = True)
