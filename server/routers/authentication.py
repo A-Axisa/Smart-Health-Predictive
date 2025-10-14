@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
 from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
+from ..utils.email_service import send_email
 
+EMAIL_VALIDATION_ENABLED = True
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 STANDARD_ACCOUNT_ROLE_ID = 1
@@ -76,7 +78,7 @@ async def register(user_reg: UserRegistrationDetails, \
 
     # Create account validation token
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-    expires_at = datetime.now(timezone.utc) + \
+    expires_at = datetime.utcnow() + \
         timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
     acc_validation_token = UserAccountValidationToken(new_user_id, \
                                                       validation_token,
@@ -86,10 +88,69 @@ async def register(user_reg: UserRegistrationDetails, \
     if not user:
         db_conn.add(role)
         db_conn.add(acc_validation_token)
+        db_conn.commit()
 
-    db_conn.commit()
+        # Send validation email
+        if EMAIL_VALIDATION_ENABLED:
+            validation_url = f"http://localhost:8000/validate-email?token={validation_token}"
+            email_subject = "Validate your account"
+            email_content = f"""
+            <html>
+                <body>
+                    <h1>Welcome to Smart Health Predictive!</h1>
+                    <p>Please click the link below to validate your email address:</p>
+                    <a href="{validation_url}">{validation_url}</a>
+                </body>
+            </html>
+            """
+            send_email(
+                recipient=new_user.Email,
+                subject=email_subject,
+                content=email_content,
+                content_type="html"
+            )
+    else:
+        db_conn.commit()
 
     return {'message': 'User successfully created.'}
+
+@router.get("/validate-email")
+async def validate_email_address(token: str, db_conn: Session = Depends(get_db)):
+    # Find the token in the database
+    validation_token_entry = db_conn.query(UserAccountValidationToken).filter_by(ValidationToken=token).first()
+
+    # Check if the token exists
+    if not validation_token_entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid validation token."
+        )
+
+    # Check if the token has expired
+    if validation_token_entry.ExpiresAt < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Validation token has expired."
+        )
+
+    # Get the user associated with the token
+    user = db_conn.query(UserAccount).filter_by(UserID=validation_token_entry.UserID).first()
+    if not user:
+        # This should not happen if database integrity is maintained
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User not found for the validation token."
+        )
+
+    # Update the user's validation status
+    user.IsValidated = True
+    
+    # Optionally, delete the token after use
+    db_conn.delete(validation_token_entry)
+    
+    db_conn.commit()
+
+    return {"message": "Email validated successfully."}
 
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
@@ -133,6 +194,10 @@ def authenticate_user(email: str, password: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
+    
+    if EMAIL_VALIDATION_ENABLED and not user.IsValidated:
+        return False
+
     if not verify_password(password, user.PasswordHash):
         return False
     return user
