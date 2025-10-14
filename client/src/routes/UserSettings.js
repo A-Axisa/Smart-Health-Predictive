@@ -66,27 +66,20 @@ const UserSettings = () => {
   // Resolve API base from environment variable
   const API_BASE = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:8000', []);
 
-  // Get current user id by resolving email -> id (backend exposes /user/me returning email)
+  // Get current user id directly from /user/me (backend returns { id, email })
   useEffect(() => {
     let mounted = true;
     async function loadCurrentUserId() {
       try {
-        // 1) get current email from cookie-auth protected endpoint
+        // Fetch current user info from cookie-auth protected endpoint
         const meRes = await fetch(`${API_BASE}/user/me`, {
           method: 'GET',
           credentials: 'include',
         });
         if (!meRes.ok) throw new Error(`me ${meRes.status}`);
         const me = await meRes.json();
-        const email = me?.email;
-        if (!email) throw new Error('Missing email');
-
-        // 2) fetch users list and find matching email for id
-        const usersRes = await fetch(`${API_BASE}/users`, { credentials: 'include' });
-        if (!usersRes.ok) throw new Error(`users ${usersRes.status}`);
-        const users = await usersRes.json();
-        const self = Array.isArray(users) ? users.find(u => u.email === email) : null;
-        if (mounted) setCurrentUserId(self?.id ?? null);
+        const id = me?.id;
+        if (mounted) setCurrentUserId(typeof id === 'number' ? id : null);
       } catch (e) {
         if (mounted) setCurrentUserId(null);
       }
