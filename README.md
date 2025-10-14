@@ -46,3 +46,13 @@
 ```docker exec -i shp-mysql mysql -uadmin -padmin user-db < server/src/migrations/01_init_schema.sql```
 7. Verify table creations in database.   
 ```docker exec -it shp-mysql mysql -uadmin -padmin user-db -e "SHOW TABLES;"```
+
+### Alembic setup
+1. Navigate to the server directory.
+2. Run the following command to run the migrations:     
+```alembic upgrade head```  
+- **Warning:** If encountering operational errors during upgrade, reset the database with:  
+```alembic downgrade 81a354f03cae```    
+- This will drop ALL existing tables and data inclusive.
+3. After downgrading run the following command again:   
+```alembic upgrade head```
