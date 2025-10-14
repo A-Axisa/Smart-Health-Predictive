@@ -8,10 +8,10 @@ Base = declarative_base()
 class UserAccount(Base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key = True)
-    FullName = Column(String, nullable=False)
-    Email = Column(String, unique=True)
-    PasswordHash = Column(String, nullable=False)
-    PhoneNumber = Column(String)
+    FullName = Column(String(255), nullable=False)
+    Email = Column(String(255), unique=True)
+    PasswordHash = Column(String(255), nullable=False)
+    PhoneNumber = Column(String(20))
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     IsValidated = Column(Boolean, default=False)
     TokenVersion = Column(Integer, nullable=False, default=0)
@@ -34,7 +34,7 @@ class UserAccount(Base):
 class AccountRole(Base):
     __tablename__ = 'AccountRole'
     RoleID = Column(Integer, primary_key = True)
-    RoleName = Column(String)
+    RoleName = Column(String(100))
 
     userRoles = relationship("UserAccountRole", back_populates = "role")
     rolePermissions = relationship("RolePermission", back_populates = "role")
@@ -49,7 +49,7 @@ class AccountRole(Base):
 class Permission(Base):
     __tablename__ = 'Permission'
     PermissionID = Column(Integer, primary_key = True)
-    PermissionName = Column(String)
+    PermissionName = Column(String(100))
 
     permissionRoles = relationship("RolePermission", back_populates = "permission")
     
