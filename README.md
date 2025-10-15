@@ -50,6 +50,8 @@
 ## Alembic
 ### Setup
 1. Navigate to the server directory.
+2. Run the following upgrade command:      
+```alembic upgrade head```  
 2. Run the following command to downgrade the database:     
     ***Warning:** This command will drop ALL existing tables and their associated data.*    
 ```alembic downgrade 81a354f03cae```  
