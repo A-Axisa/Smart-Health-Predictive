@@ -9,12 +9,14 @@ class TestTable(Base):
     __tablename__ = 'TestTable'
     TestID = Column(Integer, primary_key = True)
     Name = Column(String(255))
+    Number = Column(String(20))
 
-    def __init__(self, name):
+    def __init__(self, name, number):
         self.Name = name
+        self.Number = number
 
     def __repr__(self):
-        return f'TestTable(TestID={self.TestID}, Name={self.Name})'
+        return f'TestTable(TestID={self.TestID}, Name={self.Name}, Number={self.Number})'
     
 
 class UserAccount(Base):
