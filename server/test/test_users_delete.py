@@ -4,13 +4,12 @@ from fastapi.testclient import TestClient
 
 from server.main import app
 
-# 与 test_auth 一样，模块级共享一个 TestClient，保留 Cookie 会话
 client = TestClient(app)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_once_for_all_tests():
-    # 与 test_auth 保持一致的固定账号；若已存在，后端可能返回非 200，这里不做强断言
+    # Similar to test_auth
     credentials = {
         "username": "Test Delete",
         "password": "thisisavalidpassword",
