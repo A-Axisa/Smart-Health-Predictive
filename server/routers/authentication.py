@@ -93,55 +93,55 @@ async def register(user_reg: UserRegistrationDetails, \
 
         # Send validation email
         if EMAIL_VALIDATION_ENABLED:
-            validation_url = f"http://localhost:8000/validate-email?token={validation_token}"
-            email_subject = "Validate your account"
-            email_content = f"""
-            <html>
-                <body>
-                    <h1>Welcome to Smart Health Predictive!</h1>
-                    <p>Please click the link below to validate your email address:</p>
-                    <a href="{validation_url}">{validation_url}</a>
-                </body>
-            </html>
-            """
-            send_email(
-                recipient=new_user.Email,
-                subject=email_subject,
-                content=email_content,
-                content_type="html"
-            )
+            _send_validation_email(new_user, validation_token)
     else:
         db_conn.commit()
 
     return {'message': 'User successfully created.'}
 
+def _send_validation_email(user: UserAccount, token: str):
+    """Helper function to send a validation email."""
+    validation_url = f"http://localhost:8000/validate-email?token={token}"
+    email_subject = "Validate your account"
+    email_content = f"""
+    <html>
+        <body>
+            <h1>Welcome to Smart Health Predictive!</h1>
+            <p>Please click the link below to validate your email address:</p>
+            <a href="{validation_url}">{validation_url}</a>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=user.Email,
+        subject=email_subject,
+        content=email_content,
+        content_type="html"
+    )
+
 @router.get("/validate-email")
 async def validate_email_address(token: str, db_conn: Session = Depends(get_db)):
+    validation_failure_exception = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired validation token."
+    )
+
     # Find the token in the database
     validation_token_entry = db_conn.query(UserAccountValidationToken).filter_by(ValidationToken=token).first()
 
     # Check if the token exists
     if not validation_token_entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invalid validation token."
-        )
+        raise validation_failure_exception
 
     # Check if the token has expired
     if validation_token_entry.ExpiresAt < datetime.utcnow():
-        raise HTTPException(
-            status_code=status.HTTP_410_GONE,
-            detail="Validation token has expired."
-        )
+        raise validation_failure_exception
 
     # Get the user associated with the token
     user = db_conn.query(UserAccount).filter_by(UserID=validation_token_entry.UserID).first()
     if not user:
         # This should not happen if database integrity is maintained
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="User not found for the validation token."
-        )
+        raise validation_failure_exception
 
     # Update the user's validation status
     user.IsValidated = True
@@ -158,7 +158,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
             <style>
                 body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
                 .container { display: inline-block; text-align: left; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
-                h1 { color: #4CAF50; }
+                h1 { color: #127067; }
             </style>
         </head>
         <body>
