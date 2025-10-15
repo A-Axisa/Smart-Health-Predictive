@@ -59,9 +59,10 @@
 
 ### Adding a Migration
 **For auto-generated migrations:**
-1. Navigate to ```/server/models/dbmodels.py```
-2. Modify/create tables as necessary.
-3. Navigate to the server directory.
+1. Navigate to ```/server/models/dbmodels.py``` and modify/create tables as necessary.
+2. Navigate to the server directory.
+3. Run the following command to ensure you are on the current version:      
+```alembic upgrade head```  
 4. Run the following command to create the migration:   
 ```alembic revision --autogenerate -m "Description of migration"```
 
