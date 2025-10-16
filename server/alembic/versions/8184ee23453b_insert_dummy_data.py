@@ -42,7 +42,7 @@ def upgrade() -> None:
             {
                 'UserID': 1963533055,
                 'FullName': 'SHP-Head-Admin',
-                'Email': 'SHP_Admin@busimail.com',
+                'Email': 'SHP_Admin@example.com',
                 'PasswordHash' : '$2b$15$I5cEDYmItSkfuDdOn84ea.xo7p.frR2AcUJJHvbdncSqLzikWRfM2',
                 'PhoneNumber': '44758313798',
                 'CreatedAt': '2025-03-19 01:53:13',
@@ -52,7 +52,7 @@ def upgrade() -> None:
             {
                 'UserID': 151742614,
                 'FullName': 'Audrey Young',
-                'Email': 'audrey.young@mockmail.com',
+                'Email': 'audrey.young@example.com',
                 'PasswordHash' : '$2b$15$kTilTOlpiC5JePcdrdJZV.b9v0A0sErHdBo1.k87NtOYzjiJvbIiK',
                 'PhoneNumber': '19171025615',
                 'CreatedAt': '2025-05-13 05:24:31',
@@ -62,7 +62,7 @@ def upgrade() -> None:
             {
                 'UserID': 68849883,
                 'FullName': 'Steven Wallace',
-                'Email': 'steven.wallace@mockmail.com',
+                'Email': 'steven.wallace@example.com',
                 'PasswordHash' : '$2b$15$B2OR4eo81un71q2F1KjcquTsWy7LHXeIHUfOgv8NfAXbisQoNp8wu',
                 'PhoneNumber': '18057045603',
                 'CreatedAt': '2025-05-27 20:07:55',
@@ -72,7 +72,7 @@ def upgrade() -> None:
             {
                 'UserID': 1424460213,
                 'FullName': 'Adam Peake',
-                'Email': 'adam.peake@teepost.com',
+                'Email': 'adam.peake@example.com',
                 'PasswordHash' : '$2b$15$.ZJLl4X3h3Z15oIIucWoOOFakZOQ4MvqtqwoDJ6wqXUX7NXpA82KK',
                 'PhoneNumber': '4915194494606',
                 'CreatedAt': '2025-07-04 11:41:03',
@@ -82,7 +82,7 @@ def upgrade() -> None:
             {
                 'UserID': 938812579,
                 'FullName': 'Keith Hart',
-                'Email': 'keith.hart@inlook.com',
+                'Email': 'keith.hart@example.com',
                 'PasswordHash' : '$2b$15$rE07ZSIyqSLC5ut7cWiUs.vfWsY3Vs48Uu.n5.R765t0X.oJ7UUZG',
                 'PhoneNumber': '61463531525',
                 'CreatedAt': '2025-09-22 00:30:22',
@@ -92,7 +92,7 @@ def upgrade() -> None:
             {
                 'UserID': 401920695,
                 'FullName': 'MyMock Health Center',
-                'Email': 'service@mymo.com',
+                'Email': 'service@example.com',
                 'PasswordHash' : '$2b$15$04gH6ssM5h/lefF1u9RxnO1e.k1fTH/ZaH73NFw.ZYcw3l/nxWlM6',
                 'PhoneNumber': '61492923497',
                 'CreatedAt': '2025-06-01 15:25:30',
@@ -102,7 +102,7 @@ def upgrade() -> None:
             {
                 'UserID': 120989818,
                 'FullName': 'Some-Sample Clinic',
-                'Email': 'analysis@some.com',
+                'Email': 'analysis@example.com',
                 'PasswordHash' : '$2b$15$JlqYLN7li1qTgdSCcb.cKuWR09485.tnieY/NSN0ZRSKWhT9Iddt2',
                 'PhoneNumber': '819029061947',
                 'CreatedAt': '2025-08-19 03:10:56',
