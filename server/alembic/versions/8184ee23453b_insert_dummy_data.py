@@ -252,7 +252,7 @@ def upgrade() -> None:
                 'HeightMeters': 1.7,
                 'Gender': 1,
                 'BloodGlucose': 7.1,
-                'APHigh': 1140.0,
+                'APHigh': 140.0,
                 'APLow': 128.0,
                 'HighCholesterol': 0,
                 'Exercise': 0,
