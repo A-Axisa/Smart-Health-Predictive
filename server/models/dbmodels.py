@@ -134,10 +134,11 @@ class HealthData(Base):
     MaritalStatus = Column(Boolean)
     WorkingStatus = Column(Boolean)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    MerchantID = Column(Integer,nullable=True)
 
     def __init__(self, UserID, age, weight, height, gender, bloodGlucose, ap_hi, 
                 ap_lo, highCholesterol, exercise, hyperTension, heartDisease,
-                diabetes, alcohol, smoker, maritalStatus, workingStatus):
+                diabetes, alcohol, smoker, maritalStatus, workingStatus,merchantID):
         self.UserID = UserID
         self.Age= age
         self.WeightKilograms = weight
@@ -155,6 +156,7 @@ class HealthData(Base):
         self.SmokingStatus = smoker
         self.MaritalStatus = maritalStatus
         self.WorkingStatus = workingStatus
+        self.MerchantID = merchantID
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
@@ -162,7 +164,7 @@ class HealthData(Base):
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             exercise={self.Exercise}, hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
-            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt} )'
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  MerchantID={self.MerchantID} )'
 
 
 class Prediction(Base):
