@@ -61,30 +61,27 @@ const UserSettings = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   // Resolve API base from environment variable
   const API_BASE = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:8000', []);
 
-  // Get current user id directly from /user/me (backend returns { id, email })
+  // Check if the user is logged in by calling the /user/me endpoint
   useEffect(() => {
     let mounted = true;
-    async function loadCurrentUserId() {
+    async function checkLoginStatus() {
       try {
         // Fetch current user info from cookie-auth protected endpoint
         const meRes = await fetch(`${API_BASE}/user/me`, {
           method: 'GET',
           credentials: 'include',
         });
-        if (!meRes.ok) throw new Error(`me ${meRes.status}`);
-        const me = await meRes.json();
-        const id = me?.id;
-        if (mounted) setCurrentUserId(typeof id === 'number' ? id : null);
+        if (mounted) setIsUserLoggedIn(meRes.ok);
       } catch (e) {
-        if (mounted) setCurrentUserId(null);
+        if (mounted) setIsUserLoggedIn(false);
       }
     }
-    loadCurrentUserId();
+    checkLoginStatus();
     return () => { mounted = false; };
   }, [API_BASE]);
 
@@ -185,7 +182,7 @@ const UserSettings = () => {
           <Button
             variant="contained"
             color="error"
-            disabled={!currentUserId || deleteBusy}
+            disabled={!isUserLoggedIn || deleteBusy}
             onClick={() => setDeleteDialogOpen(true)}
             sx={{ mt: 1 }}
           >
@@ -516,11 +513,11 @@ const UserSettings = () => {
           confirmColor="error"
           cancelColor="primary"
           confirm={async () => {
-            if (!currentUserId) return;
+            if (!isUserLoggedIn) return;
             setDeleteBusy(true);
             setDeleteError('');
             try {
-              const res = await fetch(`${API_BASE}/users/${currentUserId}`, {
+              const res = await fetch(`${API_BASE}/users/`, {
                 method: 'DELETE',
                 credentials: 'include',
               });

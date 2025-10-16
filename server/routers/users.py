@@ -41,36 +41,19 @@ async def getUsers(db_conn: Session = Depends(get_db)):
 
     return result
 
-@router.delete("/users/{user_id}")
-async def delete_user(user_id: int, request: Request, db_conn: Session = Depends(get_db)):
+@router.delete("/users/")
+async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     # Current request user
     current = get_current_user(request, db_conn)
     request_user_email = current.get('email') if isinstance(current, dict) else None
     if not isinstance(request_user_email, str) or request_user_email.strip() == "":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    request_user = get_user(request_user_email, db_conn)
-    if request_user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-    # User to delete
-    user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
+    user_to_delete = get_user(request_user_email, db_conn)
     if user_to_delete is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    # Permission check: self or administrator
-    user_role = (
-        db_conn.query(AccountRole)
-        .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID) 
-        .filter(UserAccountRole.UserID == request_user.UserID)
-        .first()
-    )
-    role_name = getattr(user_role, 'RoleName', None) if user_role is not None else None
-    is_admin = (role_name == "administrator")  # TODO: confirm admin role name
-
-    req_user_id = int(request_user.UserID)
-    if (req_user_id != int(user_id)) and (not is_admin):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this user")
+    user_id = user_to_delete.UserID
 
     # Delete related data in an ordered, atomic way
     try:
@@ -94,9 +77,8 @@ async def delete_user(user_id: int, request: Request, db_conn: Session = Depends
         db_conn.delete(user_to_delete)
 
         db_conn.commit()
-    except Exception as ex:
+    except Exception:
         db_conn.rollback()
-        # Propagate the exception to the client
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete user: {ex}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete user data.")
 
     return {"message": "User and all related data deleted successfully"}

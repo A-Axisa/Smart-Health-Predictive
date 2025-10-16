@@ -189,7 +189,6 @@ def get_current_user(request: Request, db_conn: Session):
         raise credentials_exception
     
     return {
-        'id': user.UserID,
         'email': user.Email,
     }
 

@@ -22,7 +22,7 @@ def setup_once_for_all_tests():
 
 def test_delete_requires_authentication():
     fresh = TestClient(app)
-    res = fresh.delete("/users/999999")
+    res = fresh.delete("/users/")
     assert res.status_code == status.HTTP_401_UNAUTHORIZED, res.text
 
 
@@ -33,8 +33,7 @@ def test_login_and_self_delete_like_auth_flow():
 
     me = client.get("/user/me")
     assert me.status_code == status.HTTP_200_OK, f"/user/me failed: {me.status_code} {me.text}"
-    user_id = me.json()["id"]
 
-    delete_res = client.delete(f"/users/{user_id}")
+    delete_res = client.delete("/users/")
     assert delete_res.status_code == status.HTTP_200_OK, f"delete failed: {delete_res.status_code} {delete_res.text}"
     assert delete_res.json()["message"].startswith("User and all related data deleted successfully")
