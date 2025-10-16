@@ -469,7 +469,7 @@ def upgrade() -> None:
                 'CreatedAt': '2025-08-03 19:11:09',
             },
             {
-                'PredictionID': 216360073,
+                'PredictionID': 1098100917,
                 'HealthDataID': 2099391310,
                 'StrokeChance': 24,
                 'DiabetesChance': 19.75,
