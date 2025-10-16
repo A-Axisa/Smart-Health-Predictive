@@ -43,7 +43,7 @@ def upgrade() -> None:
                 'UserID': 1963533055,
                 'FullName': 'SHP-Head-Admin',
                 'Email': 'SHP_Admin@busimail.com',
-                'PasswordHash' : '$2b$15$ekun6872qM4ayNJbsQsETO2fED7SY5CsJYw00BbLb1UDrKoBiRl2K',
+                'PasswordHash' : '$2b$15$I5cEDYmItSkfuDdOn84ea.xo7p.frR2AcUJJHvbdncSqLzikWRfM2',
                 'PhoneNumber': '44758313798',
                 'CreatedAt': '2025-03-19 01:53:13',
                 'Validated': True,
@@ -53,7 +53,7 @@ def upgrade() -> None:
                 'UserID': 151742614,
                 'FullName': 'Audrey Young',
                 'Email': 'audrey.young@mockmail.com',
-                'PasswordHash' : '$2b$15$vNsnWzyYk3.xk6hCcfUcYuE0.blXtKSHWoFFEL2gx48XCViBMr87S',
+                'PasswordHash' : '$2b$15$kTilTOlpiC5JePcdrdJZV.b9v0A0sErHdBo1.k87NtOYzjiJvbIiK',
                 'PhoneNumber': '19171025615',
                 'CreatedAt': '2025-05-13 05:24:31',
                 'Validated': True,
@@ -63,7 +63,7 @@ def upgrade() -> None:
                 'UserID': 68849883,
                 'FullName': 'Steven Wallace',
                 'Email': 'steven.wallace@mockmail.com',
-                'PasswordHash' : '$2b$15$9q1j6AvupOu3C4dRSDsv..JBGeBkE91oOVHDARL8rVQZFscqnHXEO',
+                'PasswordHash' : '$2b$15$B2OR4eo81un71q2F1KjcquTsWy7LHXeIHUfOgv8NfAXbisQoNp8wu',
                 'PhoneNumber': '18057045603',
                 'CreatedAt': '2025-05-27 20:07:55',
                 'Validated': True,
@@ -83,7 +83,7 @@ def upgrade() -> None:
                 'UserID': 938812579,
                 'FullName': 'Keith Hart',
                 'Email': 'keith.hart@inlook.com',
-                'PasswordHash' : '$2b$15$u94J57mmYqjGBrGwOqS6lO9f0Dh28VnboT7bdEiu4zObKiAPNmjOG',
+                'PasswordHash' : '$2b$15$rE07ZSIyqSLC5ut7cWiUs.vfWsY3Vs48Uu.n5.R765t0X.oJ7UUZG',
                 'PhoneNumber': '61463531525',
                 'CreatedAt': '2025-09-22 00:30:22',
                 'Validated': True,
@@ -704,5 +704,4 @@ def upgrade() -> None:
     )
 
 def downgrade() -> None:
-
     pass
