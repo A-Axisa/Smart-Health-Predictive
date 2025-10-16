@@ -14,8 +14,10 @@ const UserManagementTable = () => {
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
 
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
   useEffect(() => {
-    fetch('http://localhost:8000/users')
+    fetch(`${API_BASE}/users`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
@@ -26,10 +28,10 @@ const UserManagementTable = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [API_BASE]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/roles')
+    fetch(`${API_BASE}/roles`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
@@ -40,12 +42,12 @@ const UserManagementTable = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [API_BASE]);
 
   async function confirmRoleChange(e) {
     e.preventDefault();
 
-    await fetch(`http://localhost:8000/users/${selectedRow}/roles/${newRole}`, {
+    await fetch(`${API_BASE}/users/${selectedRow}/roles/${newRole}`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -143,8 +145,16 @@ const UserManagementTable = () => {
 
     <ConfirmationDialog
       open={dialogOpen}
-      role={newRole}
-      user={userData.find((user) => user.id === selectedRow)?.fullName}
+      title={'Confirm Role Change'}
+      message={
+        <>
+          Are you sure you want to change <b>{userData.find((user) => user.id === selectedRow)?.fullName}'s</b> role to <b>{newRole}</b>?
+        </>
+      }
+      confirmText={'Confirm'}
+      cancelText={'Cancel'}
+      confirmColor={'primary'}
+      cancelColor={'error'}
       confirm={confirmRoleChange}
       cancel={cancelRoleChange}
     />
