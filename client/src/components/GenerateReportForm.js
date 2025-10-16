@@ -44,7 +44,8 @@ const GenerateReportForm = () => {
 				alcohol: e.target.alcohol.value,
 				smoker: e.target.smoker.value,
 				maritalStatus: e.target.maritalStatus.value,
-				workingStatus: e.target.workingStatus.value
+				workingStatus: e.target.workingStatus.value,
+				merchantID: null
 			})
 		}).then(response => {
 			if (!response.ok) {

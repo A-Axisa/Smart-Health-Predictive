@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
+from typing import Optional
 from pydantic import BaseModel
 import joblib
 import pandas as pd
@@ -28,6 +29,7 @@ class HealthDataInput(BaseModel):
     smoker: int
     maritalStatus: int
     workingStatus: int
+    merchantID:Optional[int] = None
 
 
 #Load AI prediction models
@@ -49,7 +51,7 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
     healthData = HealthData(data.userId, data.age, data.weight, data.height, data.gender, 
                         data.bloodGlucose, data.ap_hi,data.ap_lo,data.highCholesterol,
                         data.exercise,data.hyperTension, data.heartDisease, data.diabetes, data.alcohol, 
-                        data.smoker, data.maritalStatus,data.workingStatus)
+                        data.smoker, data.maritalStatus,data.workingStatus,data.merchantID)
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit() 
