@@ -80,7 +80,6 @@ const Register = ({}) => {
 
     updateAllInputFieldAlerts();
     if (!isAllInputsValid()) {
-      setShowFailMessage(true);
       return;
     }
 
@@ -102,7 +101,7 @@ const Register = ({}) => {
       })
     }).then(response => {
       if (!response.ok) {
-        throw new Error(response.status)
+        setShowFailMessage(true);
       }
       return response.json()
     }).then(data => {
