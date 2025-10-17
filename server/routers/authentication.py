@@ -225,7 +225,7 @@ def is_password_valid(password: str):
 
 def is_email_valid(email: str):
     try:
-        is_valid_email = validate_email(email, check_deliverability=True)
+        is_valid_email = validate_email(email, check_deliverability=False)
     except Exception as e:
         return False
     return len(email) < EMAIL_MAX_LENGTH
