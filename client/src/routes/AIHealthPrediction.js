@@ -2,6 +2,8 @@ import ReportTemplate from "../components/ReportTemplate";
 import DownloadReportButton from "../components/DownloadReportButton";
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
+
+import ConfirmationDialog from '../components/confirmationDialog';
 import React, { useState, useEffect } from 'react';
 
 import {
@@ -16,6 +18,7 @@ const AIHealthPrediction = ({ }) => {
 	const [reportDates, setReportDates] = useState([]);
 	const [selectedDate, setSelectedDate] = useState();
 	const [reportData, setReportData] = useState();
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	// Fetch the users health data ID and Dates
 	React.useEffect(() => {
@@ -42,12 +45,10 @@ const AIHealthPrediction = ({ }) => {
 			.catch(err => console.log(err));
 	}, [selectedDate]);
 
-	function deleteReport() {
-
-		return (
-			console.log("Delete")
-		)
-	};
+	async function deleteReport() {
+		console.log("Delete" + selectedDate.healthDataID);
+		setDeleteDialogOpen(false);
+	}
 
 	// Prevents page from loading if the user has no health record
 	if (!reportData) {
@@ -90,7 +91,7 @@ const AIHealthPrediction = ({ }) => {
 								/>
 								{/* Delete Report Button */}
 								{(selectedDate.healthDataID === item.healthDataID) &&
-									<IconButton aria-label="delete" color="error" onClick={(e) => deleteReport()}>
+									<IconButton aria-label="delete" color="error" onClick={(e) => setDeleteDialogOpen(true)}>
 										<CloseIcon />
 									</IconButton>
 								}
@@ -109,6 +110,23 @@ const AIHealthPrediction = ({ }) => {
 					</Box>
 					<ReportTemplate report={reportData} date={selectedDate.date} />
 				</Box>
+				<ConfirmationDialog
+					open={deleteDialogOpen}
+					title="Delete Report"
+					message={
+						<>
+							This action will permanently delete the selected health report and all related health data.
+							Are you sure you want to delete this health report?.
+						</>
+					}
+					confirmText="Delete"
+					cancelText="Cancel"
+					confirmColor="error"
+					cancelColor="primary"
+					confirm={() => deleteReport()}
+					cancel={() => setDeleteDialogOpen(false)}
+				/>
+
 			</Box>
 		);
 	}

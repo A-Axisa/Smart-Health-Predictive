@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -37,8 +37,8 @@ class Report(BaseModel):
 
 router = APIRouter()
 
-@router.get("/getReportData/{healthDataId}")
-async def getReportData(healthDataId:int, db_conn: Session = Depends(get_db)):
+@router.get("/reportData/{healthDataId}")
+async def get_report_data(healthDataId:int, db_conn: Session = Depends(get_db)):
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == healthDataId).first()
     predictionData = db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == healthDataId).first()
@@ -74,3 +74,24 @@ async def getReportData(healthDataId:int, db_conn: Session = Depends(get_db)):
     # Return reportData object
     return reportData
 
+@router.delete("/reportData/{healthDataId}")
+async def delete_report_data(healthDataId:int, db_conn: Session = Depends(get_db)):
+   
+   # Raise exception if health data is not in the DB
+    health_data = db_conn.query(HealthData).filter_by(HealthDataID=healthDataId).first()
+    if not health_data:
+        raise HTTPException(status_code=404, detail="Health report not found")
+   
+    try:
+        # Delete recommendation and prediction data first to avoid a foreign key error
+        db_conn.query(Recommendation).filter(getattr(Recommendation, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        # Delete health data
+        db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        
+        db_conn.commit()
+    except Exception:
+        db_conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete health data.")
+
+    return {"message": "Health report data successfully deleted"}
