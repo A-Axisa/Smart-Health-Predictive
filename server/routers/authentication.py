@@ -41,6 +41,11 @@ class TokenData(BaseModel):
     ip_address: str
     version: int
 
+class ChangePasswordDetails(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_new_password: str
+
 load_dotenv()
 
 router = APIRouter()
@@ -290,6 +295,7 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
         secure=False, # Set to false for development
         samesite='Strict'
     )
+    
 
 def invalidate_access_token(email: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
@@ -306,3 +312,24 @@ def is_email_valid(email: str):
         return False
     return True
 
+@router.post('/changePassword')
+def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve current user data
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+
+    # Check the password is correct
+    if not verify_password(password_details.current_password, user.PasswordHash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+    # Check the new password is confirmed correct
+    if password_details.new_password != password_details.confirm_new_password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+   
+    # Hash password
+    new_password_hash = bcrypt.hashpw(password_details.new_password.encode('utf-8'), \
+                                  bcrypt.gensalt(rounds=15))
+    # Change current password to new password
+    user.PasswordHash = new_password_hash
+    db_conn.commit()
+
+    return {'message': 'User successfully changed password.'}
