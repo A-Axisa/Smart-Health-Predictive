@@ -9,8 +9,8 @@ import { useState } from 'react'
 const FULL_NAME_MAX_LENGTH = 255
 
 const ACCOUNT_TYPES = Object.freeze({
-  STANDARD: 1,
-  MERCHANT: 3,
+  STANDARD: 'user',
+  MERCHANT: 'merchant',
 })
 
 const Register = ({}) => {
