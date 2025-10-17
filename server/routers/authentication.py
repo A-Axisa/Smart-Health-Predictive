@@ -25,8 +25,8 @@ EMAIL_MAX_LENGTH = 255
 NAME_MAX_LENGTH = 255
 PHONE_MAX_LENGTH = 20
 ACCOUNT_TYPE = {
-    'user': 1,
-    'merchant': 3
+    'user': 331928555,
+    'merchant': 62809281
 }
 
 class UserRegistrationDetails(BaseModel):
