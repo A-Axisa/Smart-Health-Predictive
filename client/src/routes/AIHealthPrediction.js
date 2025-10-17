@@ -20,8 +20,7 @@ const AIHealthPrediction = ({ }) => {
 	const [reportData, setReportData] = useState();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-	// Fetch the users health data ID and Dates
-	React.useEffect(() => {
+	function fetchReportDates() {
 		fetch(`http://localhost:8000/getHealthDataDates/1`) // TODO Change 1 to the current users ID
 			.then(response => response.json())
 			.then(data => {
@@ -34,20 +33,50 @@ const AIHealthPrediction = ({ }) => {
 			.catch(err => {
 				console.log(err);
 			});
-	}, []);
+	};
+
+	// Fetch the users health data ID and Dates
+	React.useEffect(() => {
+		fetchReportDates();
+	},[]);
+
+	
 
 	// Fetch report data
 	useEffect(() => {
 		if (!selectedDate) return;
-		fetch(`http://localhost:8000/getReportData/${selectedDate.healthDataID}`)
+		fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+			method: "GET", 
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
 			.then(res => res.json())
 			.then(data => setReportData(data))
 			.catch(err => console.log(err));
 	}, [selectedDate]);
 
+	// Delete report data
 	async function deleteReport() {
-		console.log("Delete" + selectedDate.healthDataID);
-		setDeleteDialogOpen(false);
+		if (!selectedDate) return;
+		try {
+			fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(res => res.json())
+				.then(data => setReportData(data))
+				.catch(err => console.log(err));
+
+		} catch (err) {
+			console.log(err);
+		}
+		// Reload reports
+		fetchReportDates()
+		// Close Dialog
+		setDeleteDialogOpen(false)
 	}
 
 	// Prevents page from loading if the user has no health record
