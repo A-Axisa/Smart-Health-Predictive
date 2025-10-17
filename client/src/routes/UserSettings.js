@@ -36,8 +36,8 @@ const UserSettings = () => {
     firstName: 'John',
     lastName: 'Doe',
     dateOfBirth: '1990-01-01',
-  height: '', // cm
-  weight: '', // kg
+    height: '', // cm
+    weight: '', // kg
   });
 
   // Password state
@@ -46,6 +46,8 @@ const UserSettings = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   // Notification state
   const [notifications, setNotifications] = useState({
@@ -84,6 +86,30 @@ const UserSettings = () => {
     checkLoginStatus();
     return () => { mounted = false; };
   }, [API_BASE]);
+  function handleChangePassword() {
+    setPasswordChanged(false)
+    fetch(`${API_BASE}/changePassword`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          current_password: passwordData.currentPassword,
+          new_password: passwordData.newPassword,
+          confirm_new_password: passwordData.confirmPassword
+        })
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error(response.status)
+        }
+        setPasswordChanged(true)
+        return response.json()
+      }).catch(error => {
+        console.log(error)
+      });
+  }
 
   const updateForm = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
   const updatePwd = (k, v) => setPasswordData((p) => ({ ...p, [k]: v }));
@@ -333,11 +359,14 @@ const UserSettings = () => {
             Use at least 8 characters including upper/lowercase, numbers and
             symbols.
           </Typography>
+          {passwordChanged && (<Typography variant="body2" color="success">
+            Your password has been successfully changed!
+          </Typography>)}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               disabled={disabled}
-              onClick={() => handleSave('Password')}
+              onClick={() => handleChangePassword()}
               sx={{ px: 4, py: 1.25 }}
             >
               Update Password
@@ -444,102 +473,102 @@ const UserSettings = () => {
   const renderContent = () => {
     switch (selectedSection) {
       case 'Account Details':
-  return AccountDetails();
+        return AccountDetails();
       case 'Profile':
-  return Profile();
+        return Profile();
       case 'Password':
-  return Password();
+        return Password();
       case 'Notifications':
-  return Notifications();
+        return Notifications();
       default:
         return null;
     }
   };
 
   return (
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* Sidebar */}
-        <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
-          <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Settings
-            </Typography>
-          </Box>
-          <List component="nav" sx={{ p: 0 }}>
-            {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
-              <ListItem
-                key={item}
-                button
-                selected={selectedSection === item}
-                onClick={() => setSelectedSection(item)}
-                sx={{
-                  py: 2,
-                  px: 3,
-                  borderLeft:
-                    selectedSection === item ? '4px solid' : '4px solid transparent',
-                  borderLeftColor: 'primary.main',
-                  bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
-                }}
-              >
-                <ListItemText
-                  primary={item}
-                  slotProps={{
-                    primary: {
-                      style: {
-                        fontWeight: selectedSection === item ? 600 : 400,
-                      },
-                    },
-                  }}
-                />
-              </ListItem>
-            ))}
-          </List>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Sidebar */}
+      <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Settings
+          </Typography>
         </Box>
+        <List component="nav" sx={{ p: 0 }}>
+          {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
+            <ListItem
+              key={item}
+              button
+              selected={selectedSection === item}
+              onClick={() => setSelectedSection(item)}
+              sx={{
+                py: 2,
+                px: 3,
+                borderLeft:
+                  selectedSection === item ? '4px solid' : '4px solid transparent',
+                borderLeftColor: 'primary.main',
+                bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
+              }}
+            >
+              <ListItemText
+                primary={item}
+                slotProps={{
+                  primary: {
+                    style: {
+                      fontWeight: selectedSection === item ? 600 : 400,
+                    },
+                  },
+                }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
 
-        {/* Main content */}
-        <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
+      {/* Main content */}
+      <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
 
-        {/* Confirm deletion dialog */}
-        <ConfirmationDialog
-          open={deleteDialogOpen}
-          title="Delete Account"
-          message={
-            <>
-              This action will permanently delete your account and all associated data. This cannot be undone.
-            </>
-          }
-          confirmText={deleteBusy ? 'Deleting…' : 'Delete'}
-          cancelText="Cancel"
-          confirmColor="error"
-          cancelColor="primary"
-          confirm={async () => {
-            if (!isUserLoggedIn) return;
-            setDeleteBusy(true);
-            setDeleteError('');
-            try {
-              const res = await fetch(`${API_BASE}/users/`, {
-                method: 'DELETE',
-                credentials: 'include',
-              });
-              if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || `HTTP ${res.status}`);
-              }
-              // Best-effort logout to invalidate cookie on server
-              try { await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' }); } catch (_) {}
-
-              setDeleteDialogOpen(false);
-              // Navigate to login
-              navigate('/login');
-            } catch (err) {
-              setDeleteError(err?.message || 'Failed to delete account');
-            } finally {
-              setDeleteBusy(false);
+      {/* Confirm deletion dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Delete Account"
+        message={
+          <>
+            This action will permanently delete your account and all associated data. This cannot be undone.
+          </>
+        }
+        confirmText={deleteBusy ? 'Deleting…' : 'Delete'}
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={async () => {
+          if (!isUserLoggedIn) return;
+          setDeleteBusy(true);
+          setDeleteError('');
+          try {
+            const res = await fetch(`${API_BASE}/users/`, {
+              method: 'DELETE',
+              credentials: 'include',
+            });
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(text || `HTTP ${res.status}`);
             }
-          }}
-          cancel={() => setDeleteDialogOpen(false)}
-        />
-  </Box>
+            // Best-effort logout to invalidate cookie on server
+            try { await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' }); } catch (_) { }
+
+            setDeleteDialogOpen(false);
+            // Navigate to login
+            navigate('/login');
+          } catch (err) {
+            setDeleteError(err?.message || 'Failed to delete account');
+          } finally {
+            setDeleteBusy(false);
+          }
+        }}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
+    </Box>
   );
 };
 
