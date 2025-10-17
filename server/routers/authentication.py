@@ -236,6 +236,9 @@ def format_phone_number(phone: str):
         replace('(', '').replace(')', '')
 
 def is_formatted_phone_valid(phone: str):
+    if phone == '':
+        return True
+
     # Only allow for numbers after the plus sign.
     if not phone[1:].isalpha: 
         return False
