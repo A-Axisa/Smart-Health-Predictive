@@ -39,6 +39,12 @@ router = APIRouter()
 
 @router.get("/reportData/{healthDataId}")
 async def get_report_data(healthDataId:int, db_conn: Session = Depends(get_db)):
+   
+    validID = db_conn.query(HealthData).filter_by(HealthDataID=healthDataId).first()
+    if not validID:
+        raise HTTPException(status_code=404, detail="Report data not found")
+   
+   
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == healthDataId).first()
     predictionData = db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == healthDataId).first()
