@@ -21,7 +21,10 @@ const AIHealthPrediction = ({ }) => {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	function fetchReportDates() {
-		fetch(`http://localhost:8000/getHealthDataDates/1`) // TODO Change 1 to the current users ID
+		fetch(`http://localhost:8000/getHealthDataDates`,{
+			method: 'GET',
+			credentials: 'include',
+		})
 			.then(response => response.json())
 			.then(data => {
 				setReportDates(data);
