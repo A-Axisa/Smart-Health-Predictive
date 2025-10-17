@@ -52,7 +52,7 @@ router = APIRouter()
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
-    formatted_phone = format_phone_number(user_reg.password)
+    formatted_phone = format_phone_number(user_reg.phone)
 
     # Validate input before proceeding
     if(not is_email_valid(user_reg.email) or
