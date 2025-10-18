@@ -24,7 +24,7 @@ const ProtectedRoutes = ({role}) => {
   if (!user) return <Navigate to="/login" />;
 
   // Check if the user should go to the routed page or login
-  return (user.role === role) ? <Outlet /> : <Navigate to="/login" />;
+  return (user.role === role) ? <Outlet /> : <Navigate to="/landing" />;
 };
 
 export default ProtectedRoutes;

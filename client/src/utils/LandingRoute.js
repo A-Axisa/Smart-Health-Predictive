@@ -29,6 +29,7 @@ const LandingRoute = () => {
 
   if (user.role === "admin") return <Navigate to="/admin-dashboard" />
 
+  // Return to login if the users role is not one of the above
   return <Navigate to="/login"/>
 };
 
