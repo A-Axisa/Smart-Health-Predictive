@@ -24,11 +24,11 @@ const GenerateReportForm = () => {
 		// Fetch request for AI Model
 		await fetch('http://localhost:8000/AIPrediction', {
 			method: 'POST',
+			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				userId: 1, //TODO Retreive user ID for logged in user
 				age: e.target.age.value,
 				weight: e.target.weight.value,
 				height: e.target.height.value,
@@ -58,6 +58,7 @@ const GenerateReportForm = () => {
 			console.log(error)
 		})
 	}
+
 	return (
 		<AppThemeProvider>
 			<Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
