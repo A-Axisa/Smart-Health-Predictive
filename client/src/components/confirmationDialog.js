@@ -1,22 +1,35 @@
 import { Dialog, DialogActions, DialogContent, DialogContentText,
   DialogTitle, Button } from "@mui/material" 
- 
 
-const ConfirmationDialog = ({ open, role, user, confirm, cancel }) => {
+
+// Reusable confirmation dialog with fully controlled content/styles by caller.
+// Props:
+// - open: boolean
+// - title: string | ReactNode
+// - message: string | ReactNode
+// - confirm: () => void
+// - cancel: () => void
+// - confirmText: string
+// - cancelText: string
+// - confirmColor: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+// - cancelColor: same as above
+const ConfirmationDialog = ({ open, title, message, confirm, cancel, confirmText, cancelText, confirmColor, cancelColor }) => {
   return(
   <Dialog open={open} >
     <DialogContent>
-      <DialogTitle>Confirm Role Change</DialogTitle>
-      <DialogContentText>
-        Are you sure you want to change <b>{user}'s</b> role to <b>{role}</b>
-      </DialogContentText>
+      {title && <DialogTitle>{title}</DialogTitle>}
+      {message && (
+        <DialogContentText>
+          {message}
+        </DialogContentText>
+      )}
     </DialogContent>
     <DialogActions>
-      <Button variant="contained" color="primary" onClick={confirm}>
-        Confirm
+      <Button variant="contained" color={confirmColor} onClick={confirm}>
+        {confirmText}
       </Button>
-      <Button variant="contained" color="error" onClick={cancel}>
-        Cancel
+      <Button variant="contained" color={cancelColor} onClick={cancel}>
+        {cancelText}
       </Button>
     </DialogActions>
   </Dialog>

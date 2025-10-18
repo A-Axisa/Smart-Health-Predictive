@@ -1,0 +1,39 @@
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
+
+from server.main import app
+
+client = TestClient(app)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_once_for_all_tests():
+    # Similar to test_auth
+    credentials = {
+        "username": "Test Delete",
+        "password": "thisisavalidpassword",
+        "email": "testdelete@mymail.com",
+        "phone": "11111111112222",
+        "account_type": 1,
+    }
+    client.post("/register/", json=credentials)
+
+
+def test_delete_requires_authentication():
+    fresh = TestClient(app)
+    res = fresh.delete("/users/")
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED, res.text
+
+
+def test_login_and_self_delete_like_auth_flow():
+    credentials = {"email": "testdelete@mymail.com", "password": "thisisavalidpassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK, f"login failed: {login_res.status_code} {login_res.text}"
+
+    me = client.get("/user/me")
+    assert me.status_code == status.HTTP_200_OK, f"/user/me failed: {me.status_code} {me.text}"
+
+    delete_res = client.delete("/users/")
+    assert delete_res.status_code == status.HTTP_200_OK, f"delete failed: {delete_res.status_code} {delete_res.text}"
+    assert delete_res.json()["message"].startswith("User and all related data deleted successfully")

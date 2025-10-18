@@ -1,15 +1,30 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-
+from ..models.dbmodels import UserAccountValidationToken, UserAccount,UserAccountRole
 from . import authentication
 from ..main import app
 from ..utils.database import get_db 
-
 client = TestClient(app)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_once_for_all_tests():
+    db_conn = next(get_db())
+
+    # Delete the account with test credentials to rest for testing
+    prev_account = db_conn.query(UserAccount).filter_by(Email="test@mymail.com").first()
+    if prev_account:
+        user_id = prev_account.UserID
+
+        # Delete user data from tables using user ID as a FK
+        db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user_id).delete(synchronize_session=False)
+        db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user_id).delete(synchronize_session=False)
+
+        # Delete user account
+        db_conn.delete(prev_account)
+        db_conn.commit()
+        
+
     credentials = {'username':'Testable User',
                    'password':'thisisavalidpassword',
                    'email': 'test@mymail.com',
@@ -170,3 +185,26 @@ def test_validate_none_email():
 def test_validate_empty_email():
     result = authentication.is_email_valid("")
     assert not result
+
+def test_change_password():
+    credentials = {'email':'test@mymail.com', 'password':'thisisavalidpassword'}
+    client.post('/login/', json=credentials)
+    change_password = {'current_password':'thisisavalidpassword','new_password':'thisIsSafer','confirm_new_password':'thisIsSafer' }
+    response = client.post('/changePassword/',json=change_password)
+
+    assert response.json() == {'message': 'User successfully changed password.'}
+
+def test_change_password_incorrect_current():
+    credentials = {'email':'test@mymail.com', 'password':'thisisavalidpassword'}
+    client.post('/login/', json=credentials)
+    change_password = {'current_password':'123','new_password':'thisIsSafer','confirm_new_password':'thisIsSafer' }
+    response = client.post('/changePassword/',json=change_password)
+    assert response.json() == {'detail' : 'Invalid password'}
+
+
+def test_change_password_not_matching():
+    credentials = {'email':'test@mymail.com', 'password':'thisisavalidpassword'}
+    client.post('/login/', json=credentials)
+    change_password = {'current_password':'thisIsSafer','new_password':'123','confirm_new_password':'321' }
+    response = client.post('/changePassword/',json=change_password)    
+    assert response.json() == {'detail' : 'Invalid password'}

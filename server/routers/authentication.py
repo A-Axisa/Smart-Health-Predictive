@@ -8,13 +8,16 @@ import jwt
 import phonenumbers
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
+from fastapi.responses import HTMLResponse
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
 from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
+from ..utils.email_service import send_email
 
+EMAIL_VALIDATION_ENABLED = False
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 VALIDATION_TOKEN_LENGTH = 128
@@ -44,6 +47,11 @@ class TokenData(BaseModel):
     email: str
     ip_address: str
     version: int
+
+class ChangePasswordDetails(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_new_password: str
 
 load_dotenv()
 
@@ -84,7 +92,7 @@ async def register(user_reg: UserRegistrationDetails, \
 
     # Create account validation token
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-    expires_at = datetime.now(timezone.utc) + \
+    expires_at = datetime.utcnow() + \
         timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
     acc_validation_token = UserAccountValidationToken(new_user_id, \
                                                       validation_token,
@@ -94,10 +102,87 @@ async def register(user_reg: UserRegistrationDetails, \
     if not user:
         db_conn.add(role)
         db_conn.add(acc_validation_token)
+        db_conn.commit()
 
-    db_conn.commit()
+        # Send validation email
+        if EMAIL_VALIDATION_ENABLED:
+            _send_validation_email(new_user, validation_token)
+    else:
+        db_conn.commit()
 
     return {'message': 'User successfully created.'}
+
+def _send_validation_email(user: UserAccount, token: str):
+    """Helper function to send a validation email."""
+    validation_url = f"http://localhost:8000/validate-email?token={token}"
+    email_subject = "Validate your account"
+    email_content = f"""
+    <html>
+        <body>
+            <h1>Welcome to Smart Health Predictive!</h1>
+            <p>Please click the link below to validate your email address:</p>
+            <a href="{validation_url}">{validation_url}</a>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=user.Email,
+        subject=email_subject,
+        content=email_content,
+        content_type="html"
+    )
+
+@router.get("/validate-email")
+async def validate_email_address(token: str, db_conn: Session = Depends(get_db)):
+    validation_failure_exception = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired validation token."
+    )
+
+    # Find the token in the database
+    validation_token_entry = db_conn.query(UserAccountValidationToken).filter_by(ValidationToken=token).first()
+
+    # Check if the token exists
+    if not validation_token_entry:
+        raise validation_failure_exception
+
+    # Check if the token has expired
+    if validation_token_entry.ExpiresAt < datetime.utcnow():
+        raise validation_failure_exception
+
+    # Get the user associated with the token
+    user = db_conn.query(UserAccount).filter_by(UserID=validation_token_entry.UserID).first()
+    if not user:
+        # This should not happen if database integrity is maintained
+        raise validation_failure_exception
+
+    # Update the user's validation status
+    user.IsValidated = True
+    
+    # Optionally, delete the token after use
+    db_conn.delete(validation_token_entry)
+    
+    db_conn.commit()
+
+    html_content = """
+    <html>
+        <head>
+            <title>Email Validation</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+                .container { display: inline-block; text-align: left; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+                h1 { color: #127067; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Email Validated Successfully!</h1>
+                <p>Your email has been successfully validated. You can now close this window and log in to your account.</p>
+            </div>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
@@ -141,6 +226,10 @@ def authenticate_user(email: str, password: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
+    
+    if EMAIL_VALIDATION_ENABLED and not user.IsValidated:
+        return False
+
     if not verify_password(password, user.PasswordHash):
         return False
     return user
@@ -196,7 +285,9 @@ def get_current_user(request: Request, db_conn: Session):
     if user is None:
         raise credentials_exception
     
-    return {'email': user.Email}
+    return {
+        'email': user.Email,
+    }
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
@@ -212,6 +303,7 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
         secure=False, # Set to false for development
         samesite='Strict'
     )
+    
 
 def invalidate_access_token(email: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
@@ -244,6 +336,7 @@ def is_formatted_phone_valid(phone: str):
         return False
     try:
         validated_phone = phonenumbers.parse(phone)
+        is_valid_email = validate_email(email, check_deliverability=False) # Disable strict testing for dev 
     except Exception as e:
         return False
     return True
@@ -253,3 +346,24 @@ def is_name_valid(name: str):
 
 def is_role_valid(role: str):
     return role in ACCOUNT_TYPE.keys()
+@router.post('/changePassword')
+def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve current user data
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+
+    # Check the password is correct
+    if not verify_password(password_details.current_password, user.PasswordHash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+    # Check the new password is confirmed correct
+    if password_details.new_password != password_details.confirm_new_password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+   
+    # Hash password
+    new_password_hash = bcrypt.hashpw(password_details.new_password.encode('utf-8'), \
+                                  bcrypt.gensalt(rounds=15))
+    # Change current password to new password
+    user.PasswordHash = new_password_hash
+    db_conn.commit()
+
+    return {'message': 'User successfully changed password.'}
