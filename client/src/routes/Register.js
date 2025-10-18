@@ -132,7 +132,7 @@ const Register = ({}) => {
             </Typography>
           </DialogContent>
           <DialogActions>
-              <Button onClick={handleCloseMessage} autoFocus>Okay</Button>
+              <Button onClick={handleCloseMessage} autoFocus>Back to login</Button>
           </DialogActions>
       </Dialog>
 
