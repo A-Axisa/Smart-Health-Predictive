@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Request, HTTPException
 from sqlalchemy.orm import Session
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount
-from authentication import get_user_me
+from .authentication import get_user_me
 from pydantic import BaseModel
 from typing import Optional
 import csv
