@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Stack, TextField, Button, Typography, 
-    Link, FormControlLabel, Checkbox, Alert} from '@mui/material'
+import { Box, Container, Stack, TextField, Button, Typography, Link,
+  FormControlLabel, Checkbox, Alert, Dialog, DialogContent, DialogTitle,
+  DialogActions } from '@mui/material'
 import PasswordInputField from '../components/authentication/PasswordInputField';
 import EmailInputField from '../components/authentication/EmailInputField';
 import PhoneInputField from '../components/authentication/PhoneInputField';
@@ -25,6 +26,7 @@ const Register = ({}) => {
   const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
   const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false)
   const [showFailMessage, setShowFailMessage] = useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
   function updateName(e) {
     const isNameValid = e.target.value !== '';
@@ -105,15 +107,34 @@ const Register = ({}) => {
       }
       return response.json()
     }).then(data => {
-      navigate('/login')
+      setShowSuccessMessage(true)
+      setShowFailMessage(false);
     }).catch(error => {
       console.log(error)
     })
   }
 
+  function handleCloseMessage() {
+    setShowSuccessMessage(false)
+    navigate('/login')
+  } 
+
   return (
     <Box sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
         padding:'0', margin:'0'}}>
+
+      <Dialog open={showSuccessMessage}>
+          <DialogTitle>{'Account Creation Successful!'}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              A verification email has been sent to your inbox. 
+              Please check your email to complete the registration process.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+              <Button onClick={handleCloseMessage} autoFocus>Back to login</Button>
+          </DialogActions>
+      </Dialog>
 
       <Box sx={{backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',
           width:'100%', height:'100%', flex:'inline', float:'left', display:'flex',
