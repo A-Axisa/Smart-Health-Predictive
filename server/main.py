@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import items,AIPrediction, getHealthDataDates, getReportData, authentication, health_analytics, health_analytics, users, roles, userRoles 
+from .routers import items, AIPrediction, getHealthDataDates, getReportData, authentication, health_analytics, health_analytics, users, roles, userRoles, upload
 
 ORIGINS = [
     "http://localhost:3000",
@@ -30,3 +30,4 @@ app.include_router(health_analytics.router)
 app.include_router(users.router)
 app.include_router(roles.router)
 app.include_router(userRoles.router)
+app.include_router(upload.router)
