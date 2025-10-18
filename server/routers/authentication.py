@@ -299,12 +299,12 @@ def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
 def get_user_role(email: str, db_conn: Session):
-    user_role = (db_conn.query(AccountRole)
+    user_role = (db_conn.query(AccountRole.RoleName)
         .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
         .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
         .filter(UserAccount.Email == email)
         .first())
-    return user_role.RoleName
+    return user_role
 
 
 @router.post('/logout')
