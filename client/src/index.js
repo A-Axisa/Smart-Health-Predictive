@@ -16,6 +16,7 @@ import AdministratorDashboard from './routes/AdministratorDashboard';
 import MerchantLanding from './routes/MerchantLanding'
 import AppThemeProvider from './components/AppThemeProvider';
 import ProtectedRoutes from './utils/ProtectedRoutes'
+import LandingRoute from './utils/LandingRoute'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -29,6 +30,9 @@ root.render(
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/*Route to a different landing paged based on the users role*/}
+          <Route path="/landing" element={<LandingRoute />} />
+          
           {/*standard_user routes*/}
           <Route element={<ProtectedRoutes role='standard_user' />}>
             <Route path="/user-landing" element={<UserLanding />} />

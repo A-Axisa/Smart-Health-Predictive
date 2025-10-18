@@ -2,8 +2,8 @@ import { Outlet, Navigate } from "react-router-dom"
 import React, { useEffect, useState } from 'react';
 
 
-const ProtectedRoutes = ({role}) => {
-  
+const LandingRoute = () => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -23,8 +23,13 @@ const ProtectedRoutes = ({role}) => {
 
   if (!user) return <Navigate to="/login" />;
 
-  // Check if the user should go to the routed page or login
-  return (user.role === role) ? <Outlet /> : <Navigate to="/login" />;
+  if (user.role === "standard_user") return <Navigate to="/user-landing" />
+
+  if (user.role === "merchant") return <Navigate to="/merchant-landing" />
+
+  if (user.role === "admin") return <Navigate to="/admin-dashboard" />
+
+  return <Navigate to="/login"/>
 };
 
-export default ProtectedRoutes;
+export default LandingRoute;
