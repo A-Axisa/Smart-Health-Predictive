@@ -1,6 +1,11 @@
 import ReportTemplate from "../components/ReportTemplate";
 import DownloadReportButton from "../components/DownloadReportButton";
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+
+import ConfirmationDialog from '../components/confirmationDialog';
 import React, { useState, useEffect } from 'react';
+
 import {
 	Box,
 	Typography,
@@ -13,10 +18,13 @@ const AIHealthPrediction = ({ }) => {
 	const [reportDates, setReportDates] = useState([]);
 	const [selectedDate, setSelectedDate] = useState();
 	const [reportData, setReportData] = useState();
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-	// Fetch the users health data ID and Dates
-	React.useEffect(() => {
-		fetch(`http://localhost:8000/getHealthDataDates/1`) // TODO Change 1 to the current users ID
+	function fetchReportDates() {
+		fetch(`http://localhost:8000/getHealthDataDates`,{
+			method: 'GET',
+			credentials: 'include',
+		})
 			.then(response => response.json())
 			.then(data => {
 				setReportDates(data);
@@ -28,18 +36,51 @@ const AIHealthPrediction = ({ }) => {
 			.catch(err => {
 				console.log(err);
 			});
-	}, []);
+	};
+
+	// Fetch the users health data ID and Dates
+	React.useEffect(() => {
+		fetchReportDates();
+	},[]);
+
+	
 
 	// Fetch report data
 	useEffect(() => {
 		if (!selectedDate) return;
-		fetch(`http://localhost:8000/getReportData/${selectedDate.healthDataID}`)
+		fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+			method: "GET", 
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
 			.then(res => res.json())
 			.then(data => setReportData(data))
 			.catch(err => console.log(err));
 	}, [selectedDate]);
 
-	
+	// Delete report data
+	async function deleteReport() {
+		if (!selectedDate) return;
+		try {
+			fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(res => res.json())
+				.then(data => setReportData(data))
+				.catch(err => console.log(err));
+
+		} catch (err) {
+			console.log(err);
+		}
+		// Reload reports
+		fetchReportDates()
+		// Close Dialog
+		setDeleteDialogOpen(false)
+	}
 
 	// Prevents page from loading if the user has no health record
 	if (!reportData) {
@@ -59,7 +100,7 @@ const AIHealthPrediction = ({ }) => {
 					<List component="nav" sx={{ p: 0 }}>
 						{reportDates.map((item) =>
 							<ListItem key={item.id} selected={selectedDate.healthDataID === item.healthDataID}
-								onClick={() => setSelectedDate(item)}
+								onClick={(e) => setSelectedDate(item)}
 								button
 								sx={{
 									py: 2,
@@ -71,7 +112,7 @@ const AIHealthPrediction = ({ }) => {
 								}}
 							>
 								<ListItemText
-									primary={`Report: ${new Date(item.date).toLocaleDateString()}`}
+									primary={`Report: ${new Date(item.date).toLocaleDateString('en-AU')}`}
 									slotProps={{
 										primary: {
 											style: {
@@ -80,6 +121,12 @@ const AIHealthPrediction = ({ }) => {
 										},
 									}}
 								/>
+								{/* Delete Report Button */}
+								{(selectedDate.healthDataID === item.healthDataID) &&
+									<IconButton aria-label="delete" color="error" onClick={(e) => setDeleteDialogOpen(true)}>
+										<CloseIcon />
+									</IconButton>
+								}
 							</ListItem>
 						)}
 					</List>
@@ -88,13 +135,30 @@ const AIHealthPrediction = ({ }) => {
 				<Box sx={{ flex: 1 }}>
 					<Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
 						<DownloadReportButton
-						  healthDataId={selectedDate?.healthDataID}
-						  flatReportData={reportData}
-						  meta={{ date: selectedDate?.date, healthDataID: selectedDate?.healthDataID }}
+							healthDataId={selectedDate?.healthDataID}
+							flatReportData={reportData}
+							meta={{ date: selectedDate?.date, healthDataID: selectedDate?.healthDataID }}
 						/>
 					</Box>
 					<ReportTemplate report={reportData} date={selectedDate.date} />
 				</Box>
+				<ConfirmationDialog
+					open={deleteDialogOpen}
+					title="Delete Report"
+					message={
+						<>
+							This action will permanently delete the selected health report and all related health data.
+							Are you sure you want to delete this health report?.
+						</>
+					}
+					confirmText="Delete"
+					cancelText="Cancel"
+					confirmColor="error"
+					cancelColor="primary"
+					confirm={() => deleteReport()}
+					cancel={() => setDeleteDialogOpen(false)}
+				/>
+
 			</Box>
 		);
 	}

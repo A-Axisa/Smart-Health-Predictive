@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import Optional
 from pydantic import BaseModel
 import joblib
@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 from ..utils.database import get_db 
 from ..models.dbmodels import HealthData, Prediction, Recommendation
 from ..services.health_recommendation_service import get_health_recommendations
+from .authentication import get_current_user, get_user
 
 # HealthData
 class HealthDataInput(BaseModel):
-    userId: int
     age: int
     weight: float           # kg
     height: float           # m
@@ -40,7 +40,7 @@ diabetesModel = joblib.load("predictionModels/model_diabetes_h.joblib")
 router = APIRouter()
 
 @router.post("/AIPrediction/")
-async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
+async def predict(data: HealthDataInput,request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if user input is valid
     if (
@@ -62,15 +62,18 @@ async def predict(data: HealthDataInput, db_conn: Session = Depends(get_db)):
         not is_workingStatus_valid(data.workingStatus)):
 
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-
     #Calculate BMI
     if(data.height == 0):
         BMI = 0
     else:
         BMI = (data.weight/(data.height**2))
     
-    healthData = HealthData(data.userId, data.age, data.weight, data.height, data.gender, 
+    # Retrieve user current user information
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+
+
+    healthData = HealthData(user.UserID, data.age, data.weight, data.height, data.gender, 
                         data.bloodGlucose, data.ap_hi,data.ap_lo,data.highCholesterol,
                         data.exercise,data.hyperTension, data.heartDisease, data.diabetes, data.alcohol, 
                         data.smoker, data.maritalStatus,data.workingStatus,data.merchantID)
