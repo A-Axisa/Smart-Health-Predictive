@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
-from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken
+from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken, AccountRole
 from ..utils.email_service import send_email
 
 EMAIL_VALIDATION_ENABLED = False
@@ -195,10 +195,16 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     user.TokenVersion += 1
     db_conn.commit()
 
+    # Retrieve user role form the DB
+    user_role = get_user_role(user.Email,db_conn)
+    if user_role is None:
+         raise credentials_exception
+    
     # Create the jwt token
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
+        'role' : user_role,
         'ip_address': request.client.host,
         'version': user.TokenVersion
     }
@@ -259,6 +265,7 @@ def get_current_user(request: Request, db_conn: Session):
         payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
             email=payload.get('sub'),
+            role=payload.get('role'),
             ip_address=payload.get('ip_address'),
             version=payload.get('version')
         )
@@ -277,12 +284,28 @@ def get_current_user(request: Request, db_conn: Session):
     if user is None:
         raise credentials_exception
     
+    # Retrieve user role form the DB
+    user_role = get_user_role(user.Email,db_conn)
+    if user_role is None:
+         raise credentials_exception
+
+
     return {
         'email': user.Email,
+        'role' : user_role
     }
 
 def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
+def get_user_role(email: str, db_conn: Session):
+    user_role = (db_conn.query(AccountRole)
+        .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+        .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
+        .filter(UserAccount.Email == email)
+        .first())
+    return user_role.RoleName
+
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
