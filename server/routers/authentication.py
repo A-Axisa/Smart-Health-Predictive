@@ -194,17 +194,11 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     # Update the token version number in the db.
     user.TokenVersion += 1
     db_conn.commit()
-
-    # Retrieve user role form the DB
-    user_role = get_user_role(user.Email,db_conn)
-    if user_role is None:
-         raise credentials_exception
     
     # Create the jwt token
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
-        'role' : user_role,
         'ip_address': request.client.host,
         'version': user.TokenVersion
     }
@@ -265,7 +259,6 @@ def get_current_user(request: Request, db_conn: Session):
         payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
             email=payload.get('sub'),
-            role=payload.get('role'),
             ip_address=payload.get('ip_address'),
             version=payload.get('version')
         )
@@ -284,7 +277,7 @@ def get_current_user(request: Request, db_conn: Session):
     if user is None:
         raise credentials_exception
     
-    # Retrieve user role form the DB
+     # Retrieve user role form the DB
     user_role = get_user_role(user.Email,db_conn)
     if user_role is None:
          raise credentials_exception
@@ -292,7 +285,7 @@ def get_current_user(request: Request, db_conn: Session):
 
     return {
         'email': user.Email,
-        'role' : user_role
+        'role': user_role
     }
 
 def get_user(email: str, db_conn: Session):
@@ -304,8 +297,7 @@ def get_user_role(email: str, db_conn: Session):
         .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
         .filter(UserAccount.Email == email)
         .first())
-    return user_role
-
+    return user_role[0]
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):

@@ -1,11 +1,30 @@
-import { Box, Typography, List, ListItem, ListItemText, Container } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Container,Button  } from '@mui/material';
 import UserManagementTable from '../components/UserManagementTable';
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 
 const AdministratorDashboard = () => {
 
   const [page, setPage] = useState({});
+
+  const navigate = useNavigate();
+
+  async function logout(e) {
+    e.preventDefault();
+
+    await fetch('http://localhost:8000/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/login')
+    })
+  }
 
   const UserManagement = () => (
       <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
@@ -42,7 +61,12 @@ const AdministratorDashboard = () => {
                 <ListItemText primary={obj}/>
               </ListItem>
             ))}
+            <ListItem>
+              <Button variant="outlined" onClick={logout}>Logout</Button>
+            </ListItem>
+            
           </List>
+         
         </Box>
         <Box>
           {pages[page]}
