@@ -56,6 +56,7 @@ async def uploadCSV(request: Request, file: UploadFile = File(...), \
         userEmail = row.get('Email')
         if not userEmail:
             continue
+        userEmail = userEmail.strip()
         
         # Retrieve the user from their email
         user = db_conn.query(UserAccount).filter_by(Email=userEmail).first()
