@@ -34,7 +34,8 @@ const ReportUpload = ({}) => {
     // Sends the file to the upload endpoint for parsing
     await fetch(`http://localhost:8000/upload`, {
       method: 'POST',
-      body: formData, 
+      body: formData,
+      credentials: 'include',
     }).then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
