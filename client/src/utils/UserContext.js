@@ -5,10 +5,11 @@ export const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:8000/user/me`, {
+    fetch(`${API_BASE}/user/me`, {
       method: "GET",
       credentials: "include"
     })
