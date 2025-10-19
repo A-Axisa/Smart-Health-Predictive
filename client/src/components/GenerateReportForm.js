@@ -50,15 +50,15 @@ const GenerateReportForm = () => {
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] = useState(false);
 
   function updateAge(e) {
-    const ageValue = e.target.value;
-    const isAgeValid = ageValue !== "" && ageValue >= 0 && ageValue <= 100;
+    const ageValue = Number(e.target.value);
+    const isAgeValid = Number.isInteger(ageValue) && ageValue !== "" && ageValue >= 0 && ageValue <= 100;
     setAge({ isValid: isAgeValid, value: ageValue });
     setAlertAgeRequired(!isAgeValid);
   }
 
   function updateWeight(e) {
     const weightValue = e.target.value;
-    const isWeightValid = weightValue !== "" && weightValue >= 0 && weightValue <= 300;
+    const isWeightValid = weightValue !== "" && weightValue >= 0 && weightValue <= 200;
     setWeight({ isValid: isWeightValid, value: weightValue });
     setAlertWeightRequired(!isWeightValid);
   }
@@ -72,7 +72,7 @@ const GenerateReportForm = () => {
 
   function updateBloodGlucose(e) {
     const bloodGlucoseValue = e.target.value;
-    const isBloodGlucoseValid = bloodGlucoseValue !== "" && bloodGlucoseValue >= 0 && bloodGlucoseValue <= 33;
+    const isBloodGlucoseValid = bloodGlucoseValue !== "" && bloodGlucoseValue >= 0 && bloodGlucoseValue <= 20;
     setBloodGlucose({ isValid: isBloodGlucoseValid, value: bloodGlucoseValue });
     setAlertBloodGlucoseRequired(!isBloodGlucoseValid);
   }
@@ -223,13 +223,13 @@ const GenerateReportForm = () => {
               Age & Physique
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, }}>
-              <TextField name="weight" label="Weight (Kg)" type="number" inputProps={{ step: "0.01", min: 0, max: 300, maxLength: 3 }} onChange={updateWeight}
-                error={alertWeightRequired} helperText={alertWeightRequired ? '*Please enter a valid weight (0-300kg)' : null} />
+              <TextField name="weight" label="Weight (Kg)" type="text" inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }} onChange={updateWeight}
+                error={alertWeightRequired} helperText={alertWeightRequired ? '*Please enter a valid weight (0-200kg)' : null} />
 
-              <TextField name="age" label="Age" type="number" inputProps={{ min: 0, max: 100, maxLength: 3 }} fullWidth onChange={updateAge}
+              <TextField name="age" label="Age" type="text" inputProps={{ min: 0, max: 100, maxLength: 3 }} fullWidth onChange={updateAge}
                 error={alertAgeRequired} helperText={alertAgeRequired ? '*Please enter a valid age (0-100)' : null} />
 
-              <TextField name="height" label="Height (m)" type="number" inputProps={{ step: "0.01", min: 0, max: 3 }} fullWidth onChange={updateHeight}
+              <TextField name="height" label="Height (m)" type="text" inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }} fullWidth onChange={updateHeight}
                 error={alertHeightRequired} helperText={alertHeightRequired ? '*Please enter a valid height (0-3m)' : null} />
             </Box>
             {/* Fitness Section */}
@@ -237,15 +237,15 @@ const GenerateReportForm = () => {
               Fitness
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3, }}>
-              <TextField name="bloodGlucose" label="Blood Glucose" type="number" inputProps={{ step: "0.01", min: 0, max: 20 }} fullWidth
+              <TextField name="bloodGlucose" label="Blood Glucose" type="text" inputProps={{ step: "0.01", min: 0, max: 20, maxLength: 4 }} fullWidth
                 onChange={updateBloodGlucose}
                 error={alertBloodGlucoseRequired} helperText={alertBloodGlucoseRequired ? '*Please enter a valid BloodGlucose (0-20mmol/L)' : null} />
 
-              <TextField name="apLow" label="AP Low" type="number" inputProps={{ step: "0.1", min: 0, max: 200 }} fullWidth
+              <TextField name="apLow" label="AP Low" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
                 onChange={updateApLow}
                 error={alertApLowRequired} helperText={alertApLowRequired ? '*Please enter a valid AP Low (0-200 mmHg)' : null} />
 
-              <TextField name="apHigh" label="AP High" type="number" inputProps={{ step: "0.1", min: 0, max: 200 }} fullWidth
+              <TextField name="apHigh" label="AP High" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
                 onChange={updateApHigh}
                 error={alertApHighRequired} helperText={alertApHighRequired ? '*Please enter a valid AP High (0-200 mmHg)' : null} />
 
