@@ -1,8 +1,10 @@
-import {Box, Button, Typography} from '@mui/material'
+import {Box, Button, Typography, ListItem, List} from '@mui/material'
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { styled } from '@mui/material/styles';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-
+// Styles for upload button
 const HiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
   clipPath: 'inset(50%)',
@@ -16,17 +18,51 @@ const HiddenInput = styled('input')({
 });
 
 const ReportUpload = ({}) => {
+
+  const [data, setData] = useState([]); // Stores the uploaded health data
+  
+  const navigate = useNavigate();
+
+  const handleUpload = async (e) => {
+    // Retrieve the selcted file from upload
+    const file = e.target.files[0];
+
+    // Add file to FormData object for request
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Sends the file to the upload endpoint for parsing
+    await fetch(`http://localhost:8000/upload`, {
+      method: 'POST',
+      body: formData, 
+    }).then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(data => setData(data))
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
   return (
     <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center'}}>
-      <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or Excel (.csv) files are accepted.</Typography>
+      <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or CSV (.csv) files are accepted.</Typography>
       <Button component='label' role='undefined' variant='contained' tabIndex={-1} color='info' size='large' startIcon={<FileUploadIcon/>}>
         Upload File
         <HiddenInput
           type='file'
-          // onChange={(event) => console.log(event.target.files)}
-          multiple
+          accept='.csv'
+          onChange={handleUpload}
         />
       </Button>
+      <Box>
+        <Button variant='contained' color='primary' sx={{mt:'20px'}} onClick={handleSubmit}>
+          Submit
+        </Button>
+      </Box>
     </Box>
   )
 }
