@@ -78,17 +78,21 @@ const RegistrationForm = ({}) => {
     return null;
   }
 
+  function handleCloseMessage() {
+    setShowSuccessMessage(false)
+    navigate('/login')
+  } 
+
   async function handleRegistration(e) {
     e.preventDefault();
 
+    // Show error message for empty required fields.
     updateAllInputFieldAlerts();
     if (!isAllInputsValid()) {
       return;
     }
 
-    const new_account_type = e.target.account_type.value;
-    const phoneNumber = phoneState !== null ? phoneState.phone : '';
-
+    // Post the fetch request with the supplied details.
     await fetch('http://localhost:8000/register', {
       method: 'POST',
       headers:{
@@ -98,8 +102,8 @@ const RegistrationForm = ({}) => {
         username: nameState.name,
         password: passwordState.password,
         email: emailState.email,
-        phone: phoneNumber,
-        account_type: new_account_type
+        phone:  phoneState !== null ? phoneState.phone : '',
+        account_type: e.target.account_type.value
       })
     }).then(response => {
       if (!response.ok) {
@@ -114,67 +118,75 @@ const RegistrationForm = ({}) => {
     })
   }
 
-  function handleCloseMessage() {
-    setShowSuccessMessage(false)
-    navigate('/login')
-  } 
-
   return (
-      <Container sx={{ borderRadius:{xs:0, sm:2}, padding:'25px', alignItems:'center', 
-        boxShadow:24, backgroundColor:'#ffffff', width:{xs:'auto', sm:'500px'}, flexGrow:{xs:1, sm:0} }}>
-        <Dialog open={showSuccessMessage}>
-            <DialogTitle>{'Account Creation Successful!'}</DialogTitle>
-            <DialogContent>
-                <Typography>
-                A verification email has been sent to your inbox. 
-                Please check your email to complete the registration process.
-                </Typography>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCloseMessage} autoFocus>Back to login</Button>
-            </DialogActions>
-        </Dialog>
+    <Container sx={{ borderRadius:{xs:0, sm:2}, padding:'25px', 
+      alignItems:'center',  boxShadow:24, backgroundColor:'#ffffff', 
+      width:{xs:'auto', sm:'500px'}, flexGrow:{xs:1, sm:0} }}>
 
-        <Container component='form' onSubmit={handleRegistration}>
-          <Stack spacing={{xs:2}}>
-            {generateUnsuccessfulCreationAlert()}
-            <Divider variant='middle' aria-hidden='true' sx={{fontWeight:'bold', py:'5px'}}>Account Type</Divider>
-            <Container display='flex' justifyContent='center'>
-              <RadioGroup row defaultValue={ACCOUNT_TYPES.STANDARD} name='account_type' align='center' sx={{ gap:5}}>
-                <FormControlLabel value={ACCOUNT_TYPES.STANDARD} control={<Radio />} label='Standard User' />
-                <FormControlLabel value={ACCOUNT_TYPES.MERCHANT} control={<Radio />} label='Merchant' />
-              </RadioGroup>
-            </Container>
-            <Divider variant='middle' aria-hidden='true' sx={{fontWeight:'bold', py:'5px'}}>Details</Divider>
-            <TextField id='outlined-input' name='full_name' label='Full Name' 
-              onChange={updateName} 
-              slotProps={{ htmlInput: {maxLength:FULL_NAME_MAX_LENGTH},}}
-              error={alertNameRequired} helperText={alertNameRequired ? '*Required':null}>
-            </TextField>
-            <PhoneInputField onChange={setPhoneState} />
-            <EmailInputField onChange={updateEmail} showRequired={alertEmailRequired} />
-            <PasswordInputField onChange={updatePassword} truncate={true} 
-              showRequired={alertPasswordRequired}/>
-            <TextField id='outlined-password-input' name='confirmPassword'
-              label='Confirm Password' onChange={updateConfirmPassword} type='password'
-              error={alertPasswordsDontMatch} 
-              helperText={alertPasswordsDontMatch ? '*Passwords do not match' : null}>
-            </TextField>
-            <Button type='submit' variant='contained' sx={{ 
-              py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
-              Create Account
-            </Button>
-            <Stack direction='row' spacing={{xs:1}} 
-                style={{ justifyContent:'center'}}> 
-              <Typography noWrap={true}  align='center' style={{ color:'#888888' }}>Already 
-                  have an account?</Typography>
-              <Link href="/login" align='center' fontWeight='bold' >Log in</Link>
-            </Stack>
+      <Dialog open={showSuccessMessage}>
+        <DialogTitle>{'Account Creation Successful!'}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            A verification email has been sent to your inbox. 
+            Please check your email to complete the registration process.
+          </Typography>
+          </DialogContent>
+          <DialogActions>
+          <Button onClick={handleCloseMessage} autoFocus>Back to login</Button>
+        </DialogActions>
+      </Dialog>
 
+      <Container component='form' onSubmit={handleRegistration}>
+        <Stack spacing={{xs:2}}>
+          {generateUnsuccessfulCreationAlert()}
+          <Divider variant='middle' aria-hidden='true' sx={{fontWeight:'bold',
+            py:'5px'}}>
+            Account Type
+          </Divider>
+          <Container display='flex' justifyContent='center'>
+            <RadioGroup row defaultValue={ACCOUNT_TYPES.STANDARD} 
+              name='account_type' align='center' sx={{ gap:5}}>
+              <FormControlLabel value={ACCOUNT_TYPES.STANDARD} control={<Radio />}
+                label='Standard User' />
+              <FormControlLabel value={ACCOUNT_TYPES.MERCHANT} control={<Radio />}
+                label='Merchant' />
+            </RadioGroup>
+          </Container>
+
+          <Divider variant='middle' aria-hidden='true' sx={{fontWeight:'bold', 
+            py:'5px'}}>
+            Details
+          </Divider>
+          <TextField id='outlined-input' name='full_name' label='Full Name' 
+            onChange={updateName} 
+            slotProps={{ htmlInput: {maxLength:FULL_NAME_MAX_LENGTH},}}
+            error={alertNameRequired} helperText={alertNameRequired ? '*Required':null}>
+          </TextField>
+          <PhoneInputField onChange={setPhoneState} />
+          <EmailInputField onChange={updateEmail} showRequired={alertEmailRequired} />
+          <PasswordInputField onChange={updatePassword} truncate={true} 
+            showRequired={alertPasswordRequired}/>
+          <TextField id='outlined-password-input' name='confirmPassword'
+            label='Confirm Password' onChange={updateConfirmPassword} 
+            type='password' error={alertPasswordsDontMatch} 
+            helperText={alertPasswordsDontMatch ? '*Passwords do not match' : null}>
+          </TextField>
+
+          <Button type='submit' variant='contained' sx={{ 
+            py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
+            Create Account
+          </Button>
+          <Stack direction='row' spacing={{xs:1}} 
+            style={{ justifyContent:'center'}}> 
+            <Typography noWrap={true}  align='center' style={{ color:'#888888' }}>
+              Already have an account?
+            </Typography>
+            <Link href="/login" align='center' fontWeight='bold' >Log in</Link>
           </Stack>
-        </Container>
-      </Container>
 
+        </Stack>
+      </Container>
+    </Container>
   )
 }
 
