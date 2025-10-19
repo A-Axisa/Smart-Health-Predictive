@@ -15,5 +15,6 @@ pydantic-extra-types==2.10.5
 phonenumbers==9.0.15
 pyjwt==2.10.1
 openai==2.0.0
+email-validator==2.3.0
 alembic==1.17.0
 azure-communication-email==1.0.0

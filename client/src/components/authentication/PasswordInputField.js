@@ -11,7 +11,7 @@ import { TextField } from '@mui/material';
  * @param {boolean} [props.showRequired] - Force the component to show the error state.
  */
 const PasswordInputField = ({ onChange, restrictLength=true, truncate=false, 
-    showRequired=false }) => {
+    showRequired=false, label='Password' }) => {
     
     const [password, setPassword] = useState('');
     const [isValid, setIsValid] = useState(false);
@@ -69,7 +69,7 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
 
     return (
         <TextField error={isErrorActive()} id='outlined-password-input' 
-            name='password' label='Password' type='password' 
+            name='password' label={label} type='password' 
             helperText={displayErrorText()} onChange={updateState} />
     );
 }

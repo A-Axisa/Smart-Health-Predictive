@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -18,8 +18,11 @@ import {
   Alert,
   Stack,
 } from '@mui/material';
+import ConfirmationDialog from '../components/confirmationDialog';
+import { useNavigate } from 'react-router-dom';
 
 const UserSettings = () => {
+  const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState('Account Details');
 
   // Account/Profile state
@@ -33,8 +36,8 @@ const UserSettings = () => {
     firstName: 'John',
     lastName: 'Doe',
     dateOfBirth: '1990-01-01',
-  height: '', // cm
-  weight: '', // kg
+    height: '', // cm
+    weight: '', // kg
   });
 
   // Password state
@@ -43,6 +46,8 @@ const UserSettings = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   // Notification state
   const [notifications, setNotifications] = useState({
@@ -55,6 +60,56 @@ const UserSettings = () => {
   });
 
   const [saveMessage, setSaveMessage] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+  // Resolve API base from environment variable
+  const API_BASE = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:8000', []);
+
+  // Check if the user is logged in by calling the /user/me endpoint
+  useEffect(() => {
+    let mounted = true;
+    async function checkLoginStatus() {
+      try {
+        // Fetch current user info from cookie-auth protected endpoint
+        const meRes = await fetch(`${API_BASE}/user/me`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (mounted) setIsUserLoggedIn(meRes.ok);
+      } catch (e) {
+        if (mounted) setIsUserLoggedIn(false);
+      }
+    }
+    checkLoginStatus();
+    return () => { mounted = false; };
+  }, [API_BASE]);
+  function handleChangePassword() {
+    setPasswordChanged(false)
+    fetch(`${API_BASE}/changePassword`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          current_password: passwordData.currentPassword,
+          new_password: passwordData.newPassword,
+          confirm_new_password: passwordData.confirmPassword
+        })
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error(response.status)
+        }
+        setPasswordChanged(true)
+        return response.json()
+      }).catch(error => {
+        console.log(error)
+      });
+  }
 
   const updateForm = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
   const updatePwd = (k, v) => setPasswordData((p) => ({ ...p, [k]: v }));
@@ -144,17 +199,34 @@ const UserSettings = () => {
         </FormControl>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-  <Button variant="outlined" sx={{ mr: 2 }}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => handleSave('Account Details')}
-          sx={{ px: 4, py: 1.25 }}
-        >
-          Save Changes
-        </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="subtitle1" color="error" sx={{ fontWeight: 600 }}>Danger Zone</Typography>
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 1, maxWidth: 500 }}>{deleteError}</Alert>
+          )}
+          <Button
+            variant="contained"
+            color="error"
+            disabled={!isUserLoggedIn || deleteBusy}
+            onClick={() => setDeleteDialogOpen(true)}
+            sx={{ mt: 1 }}
+          >
+            {deleteBusy ? 'Deleting…' : 'Delete My Account'}
+          </Button>
+        </Box>
+        <Box sx={{ ml: 'auto' }}>
+          <Button variant="outlined" sx={{ mr: 2 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleSave('Account Details')}
+            sx={{ px: 4, py: 1.25 }}
+          >
+            Save Changes
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
@@ -287,11 +359,14 @@ const UserSettings = () => {
             Use at least 8 characters including upper/lowercase, numbers and
             symbols.
           </Typography>
+          {passwordChanged && (<Typography variant="body2" color="success">
+            Your password has been successfully changed!
+          </Typography>)}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               disabled={disabled}
-              onClick={() => handleSave('Password')}
+              onClick={() => handleChangePassword()}
               sx={{ px: 4, py: 1.25 }}
             >
               Update Password
@@ -398,61 +473,102 @@ const UserSettings = () => {
   const renderContent = () => {
     switch (selectedSection) {
       case 'Account Details':
-  return AccountDetails();
+        return AccountDetails();
       case 'Profile':
-  return Profile();
+        return Profile();
       case 'Password':
-  return Password();
+        return Password();
       case 'Notifications':
-  return Notifications();
+        return Notifications();
       default:
         return null;
     }
   };
 
   return (
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* Sidebar */}
-        <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
-          <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Settings
-            </Typography>
-          </Box>
-          <List component="nav" sx={{ p: 0 }}>
-            {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
-              <ListItem
-                key={item}
-                button
-                selected={selectedSection === item}
-                onClick={() => setSelectedSection(item)}
-                sx={{
-                  py: 2,
-                  px: 3,
-                  borderLeft:
-                    selectedSection === item ? '4px solid' : '4px solid transparent',
-                  borderLeftColor: 'primary.main',
-                  bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
-                }}
-              >
-                <ListItemText
-                  primary={item}
-                  slotProps={{
-                    primary: {
-                      style: {
-                        fontWeight: selectedSection === item ? 600 : 400,
-                      },
-                    },
-                  }}
-                />
-              </ListItem>
-            ))}
-          </List>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Sidebar */}
+      <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Settings
+          </Typography>
         </Box>
+        <List component="nav" sx={{ p: 0 }}>
+          {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
+            <ListItem
+              key={item}
+              button
+              selected={selectedSection === item}
+              onClick={() => setSelectedSection(item)}
+              sx={{
+                py: 2,
+                px: 3,
+                borderLeft:
+                  selectedSection === item ? '4px solid' : '4px solid transparent',
+                borderLeftColor: 'primary.main',
+                bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
+              }}
+            >
+              <ListItemText
+                primary={item}
+                slotProps={{
+                  primary: {
+                    style: {
+                      fontWeight: selectedSection === item ? 600 : 400,
+                    },
+                  },
+                }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
 
-        {/* Main content */}
-        <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
-  </Box>
+      {/* Main content */}
+      <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
+
+      {/* Confirm deletion dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Delete Account"
+        message={
+          <>
+            This action will permanently delete your account and all associated data. This cannot be undone.
+          </>
+        }
+        confirmText={deleteBusy ? 'Deleting…' : 'Delete'}
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={async () => {
+          if (!isUserLoggedIn) return;
+          setDeleteBusy(true);
+          setDeleteError('');
+          try {
+            const res = await fetch(`${API_BASE}/users/`, {
+              method: 'DELETE',
+              credentials: 'include',
+            });
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(text || `HTTP ${res.status}`);
+            }
+            // Best-effort logout to invalidate cookie on server
+            try { await fetch(`${API_BASE}/logout`, { method: 'POST', credentials: 'include' }); } catch (_) { }
+
+            setDeleteDialogOpen(false);
+            // Navigate to login
+            navigate('/login');
+          } catch (err) {
+            setDeleteError(err?.message || 'Failed to delete account');
+          } finally {
+            setDeleteBusy(false);
+          }
+        }}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
+    </Box>
   );
 };
 

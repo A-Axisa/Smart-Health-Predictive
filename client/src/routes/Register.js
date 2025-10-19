@@ -1,36 +1,93 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Stack, TextField, Button, Typography, 
-    Link, FormControlLabel, Checkbox } from '@mui/material'
+import { Box, Container, Stack, TextField, Button, Typography, Link,
+  FormControlLabel, Checkbox, Alert, Dialog, DialogContent, DialogTitle,
+  DialogActions } from '@mui/material'
+import PasswordInputField from '../components/authentication/PasswordInputField';
+import EmailInputField from '../components/authentication/EmailInputField';
+import PhoneInputField from '../components/authentication/PhoneInputField';
+import { useState } from 'react'
+
+const FULL_NAME_MAX_LENGTH = 255
 
 const ACCOUNT_TYPES = Object.freeze({
-  STANDARD: 1,
-  MERCHANT: 3,
+  STANDARD: 'user',
+  MERCHANT: 'merchant',
 })
 
 const Register = ({}) => {
   const navigate = useNavigate();
+  const [nameState, setNameState] = useState(null)
+  const [emailState, setEmailState] = useState(null)
+  const [phoneState, setPhoneState] = useState(null)
+  const [passwordState, setPasswordState] = useState(null)
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [alertNameRequired, setAlertNameRequired] = useState(false)
+  const [alertEmailRequired, setAlertEmailRequired] = useState(false)
+  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
+  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false)
+  const [showFailMessage, setShowFailMessage] = useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
-  function validateName(e) {
-    console.log('Name validated.');
+  function updateName(e) {
+    const isNameValid = e.target.value !== '';
+    setNameState({ 'isValid': isNameValid, 'name':e.target.value });
+    setAlertNameRequired(!isNameValid);
   }
 
-  function validatePhone(e) {
-    console.log('Phone validated.');
+  function updateEmail(e) {
+    setAlertEmailRequired(false);
+    setEmailState(e)
   }
 
-  function validateEmail(e) {
-    console.log('Email validated.');
+  function updatePassword(e){
+    setAlertPasswordRequired(false);
+    setPasswordState(e)
+    setAlertPasswordsDontMatch(confirmPassword != e.password ||
+      e.password == '')
   }
 
-  function validatePassword(e) {
-    console.log('Password validated.');
+  function updateConfirmPassword(e) {
+    const confirmPasswordInput = e.target.value;
+    setConfirmPassword(confirmPasswordInput)
+    setAlertPasswordsDontMatch(confirmPasswordInput != passwordState.password ||
+      confirmPasswordInput == '')
+  }
+
+  function updateAllInputFieldAlerts() {
+    setAlertNameRequired(nameState === null || !nameState.isValid)
+    setAlertEmailRequired(emailState === null)
+    setAlertPasswordRequired(passwordState === null)
+    setAlertPasswordsDontMatch(passwordState === null || 
+      confirmPassword != passwordState.password ||
+      confirmPassword == '')
+  }
+
+  function isAllInputsValid() {
+    return nameState !== null && nameState.isValid &&
+      emailState !== null && emailState.isValid &&
+      (phoneState === null || phoneState.isValid) &&
+      passwordState !== null && passwordState.isValid &&
+      passwordState.password == confirmPassword
+  }
+
+  function generateUnsuccessfulCreationAlert() {
+    if (showFailMessage){
+      return <Alert variant="filled" severity="error"> Account creation unsuccessful.</Alert>
+    }
+    return null;
   }
 
   async function handleRegistration(e) {
     e.preventDefault();
-    
+
+    updateAllInputFieldAlerts();
+    if (!isAllInputsValid()) {
+      return;
+    }
+
     const new_account_type = e.target.is_merchant_account.checked ? 
-      ACCOUNT_TYPES.MERCHANT : ACCOUNT_TYPES.STANDARD
+      ACCOUNT_TYPES.MERCHANT : ACCOUNT_TYPES.STANDARD;
+    const phoneNumber = phoneState !== null ? phoneState.phone : '';
 
     await fetch('http://localhost:8000/register', {
       method: 'POST',
@@ -38,27 +95,46 @@ const Register = ({}) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: e.target.full_name.value,
-        password: e.target.password.value,
-        email: e.target.email.value,
-        phone: e.target.phone.value,
+        username: nameState.name,
+        password: passwordState.password,
+        email: emailState.email,
+        phone: phoneNumber,
         account_type: new_account_type
       })
     }).then(response => {
       if (!response.ok) {
-        throw new Error(response.status)
+        setShowFailMessage(true);
       }
       return response.json()
     }).then(data => {
-      navigate('/login')
+      setShowSuccessMessage(true)
+      setShowFailMessage(false);
     }).catch(error => {
       console.log(error)
     })
   }
 
+  function handleCloseMessage() {
+    setShowSuccessMessage(false)
+    navigate('/login')
+  } 
+
   return (
     <Box sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
         padding:'0', margin:'0'}}>
+
+      <Dialog open={showSuccessMessage}>
+          <DialogTitle>{'Account Creation Successful!'}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              A verification email has been sent to your inbox. 
+              Please check your email to complete the registration process.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+              <Button onClick={handleCloseMessage} autoFocus>Back to login</Button>
+          </DialogActions>
+      </Dialog>
 
       <Box sx={{backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',
           width:'100%', height:'100%', flex:'inline', float:'left', display:'flex',
@@ -68,17 +144,23 @@ const Register = ({}) => {
           <Box component='form' onSubmit={handleRegistration}>
             <Stack spacing={{xs:2}}>
               <h1>Create Account</h1>
+              {generateUnsuccessfulCreationAlert()}
               <TextField id='outlined-input' name='full_name' label='Full Name' 
-                  onChange={validateName}></TextField>
-              <TextField id='outlined-input' name='phone' label='Phone' 
-                  onChange={validatePhone}></TextField>
-              <TextField id='outlined-input' name='email' label='Email' 
-                  onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' name='password' label='Password' 
-                  type='password' onChange={validatePassword}></TextField>
-              <TextField id='outlined-password-input' name='confirm_password' label='Confirm Password' 
-                  type='password' onChange={validatePassword}></TextField>
-              <FormControlLabel control={<Checkbox name='is_merchant_account' />} label='Merchant Account' />
+                onChange={updateName} 
+                slotProps={{ htmlInput: {maxLength:FULL_NAME_MAX_LENGTH},}}
+                error={alertNameRequired} helperText={alertNameRequired ? '*Required':null}>
+              </TextField>
+              <PhoneInputField onChange={setPhoneState} />
+              <EmailInputField onChange={updateEmail} showRequired={alertEmailRequired} />
+              <PasswordInputField onChange={updatePassword} truncate={true} 
+                showRequired={alertPasswordRequired}/>
+              <TextField id='outlined-password-input' name='confirmPassword'
+                label='Confirm Password' onChange={updateConfirmPassword} type='password'
+                error={alertPasswordsDontMatch} 
+                helperText={alertPasswordsDontMatch ? '*Passwords do not match' : null}>
+              </TextField>
+              <FormControlLabel control={<Checkbox name='is_merchant_account' />} 
+                label='Merchant Account' />
               <Button type='submit' variant="contained">Create</Button>
               <Stack direction='row' spacing={{xs:1}} 
                   style={{ justifyContent:"center"}}> 

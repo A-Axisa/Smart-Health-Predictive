@@ -34,6 +34,8 @@ const Login = ({}) => {
     return null
   }
 
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
   async function handleLogin(e) {
     e.preventDefault();
 
@@ -62,7 +64,7 @@ const Login = ({}) => {
       }
       return response.json()
     }).then(data => {
-      navigate('/user-landing')
+      navigate('/landing')
     }).catch(error => {
       setIsLoginUnsuccessful(true)
     })
