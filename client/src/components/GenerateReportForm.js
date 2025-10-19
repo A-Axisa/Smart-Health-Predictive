@@ -175,11 +175,11 @@ const GenerateReportForm = () => {
     // Fetch request for AI Model
     await fetch('http://localhost:8000/AIPrediction', {
       method: 'POST',
+      credentials: "include",
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        userId: 68849883, //TODO Retreive user ID for logged in user
         age: e.target.age.value,
         weight: e.target.weight.value,
         height: e.target.height.value,
