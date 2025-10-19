@@ -33,7 +33,7 @@ class HealthDataInput(BaseModel):
 router = APIRouter()
 
 
-@router.post("/upload/")
+@router.post("/upload")
 async def uploadCSV(request: Request, file: UploadFile = File(...), \
                     db_conn: Session = Depends(get_db)):
 
