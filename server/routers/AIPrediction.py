@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import Optional
 from pydantic import BaseModel
 import joblib
@@ -13,12 +13,12 @@ from .authentication import get_current_user, get_user
 # HealthData
 class HealthDataInput(BaseModel):
     age: int
-    weight: float
-    height: float
-    gender: int
-    bloodGlucose: float
-    ap_hi: float            # Value provided in model unsure what it is
-    ap_lo: float            # Value provided in model unsure what it is
+    weight: float           # kg
+    height: float           # m
+    gender: int             # Female: 0, Male: = 1
+    bloodGlucose: float     # mmol/L
+    ap_hi: float            # Systolic Blood Pressure (mmHg)
+    ap_lo: float            # Diastolic Blood Pressure (mmHg)
     highCholesterol: int    # The last 9 variables are either True or False where True = 1 and False = 0
     exercise: int
     hyperTension: int
@@ -41,6 +41,27 @@ router = APIRouter()
 
 @router.post("/AIPrediction/")
 async def predict(data: HealthDataInput,request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if user input is valid
+    if (
+        not is_age_valid(data.age) or
+        not is_weight_valid(data.weight) or
+        not is_height_valid(data.height) or
+        not is_gender_valid(data.gender) or
+        not is_bloodGlucose_valid(data.bloodGlucose) or
+        not is_ap_hi_valid(data.ap_hi) or
+        not is_ap_lo_valid(data.ap_lo) or
+        not is_highCholesterol_valid(data.highCholesterol) or
+        not is_exercise_valid(data.exercise) or
+        not is_hyperTension_valid(data.hyperTension) or
+        not is_heartDisease_valid(data.heartDisease) or
+        not is_diabetes_valid(data.diabetes) or
+        not is_alcohol_valid(data.alcohol) or
+        not is_smoker_valid(data.smoker) or
+        not is_maritalStatus_valid(data.maritalStatus) or
+        not is_workingStatus_valid(data.workingStatus)):
+
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
     #Calculate BMI
     if(data.height == 0):
         BMI = 0
@@ -160,3 +181,51 @@ async def predict(data: HealthDataInput,request: Request, db_conn: Session = Dep
             "diet_to_avoid": diet_to_avoid_rec
         }
     }
+
+def is_age_valid(age: int):
+    return age >= 0 and age <= 100
+
+def is_weight_valid(weight: float):
+    return weight >= 0.0 and weight <= 200.0
+
+def is_height_valid(height: float):
+    return height >= 0.0 and height <= 3.0
+
+def is_gender_valid(gender: int):
+    return gender == 0 or gender == 1
+
+def is_bloodGlucose_valid(bloodGlucose: float):
+    return bloodGlucose >= 0.0 and bloodGlucose <= 20.0
+
+def is_ap_hi_valid(ap_hi: float):
+    return ap_hi >= 0.0 and ap_hi <= 200.0
+
+def is_ap_lo_valid(ap_lo: float):
+    return ap_lo >= 0.0 and ap_lo <= 200.0
+
+def is_highCholesterol_valid(highCholesterol: int):
+    return highCholesterol == 0 or highCholesterol == 1
+
+def is_exercise_valid(exercise: int):
+    return exercise == 0 or exercise == 1
+
+def is_hyperTension_valid(hyperTension: int):
+    return hyperTension == 0 or hyperTension == 1
+
+def is_heartDisease_valid(heartDisease: int):
+    return heartDisease == 0 or heartDisease == 1
+
+def is_diabetes_valid(diabetes: int):
+    return diabetes == 0 or diabetes == 1
+
+def is_alcohol_valid(alcohol: int):
+    return alcohol == 0 or alcohol == 1
+
+def is_smoker_valid(smoker: int):
+    return smoker == 0 or smoker == 1
+
+def is_maritalStatus_valid(maritalStatus: int):
+    return maritalStatus == 0 or maritalStatus == 1
+
+def is_workingStatus_valid(workingStatus: int):
+    return workingStatus == 0 or workingStatus == 1
