@@ -47,6 +47,18 @@ const ReportUpload = ({}) => {
       });
   }
 
+  // Passes uploaded data to the AIPrediction endpoint
+  const handleSubmit = async () => {
+    for (const entry of data) {
+      await fetch(`http://localhost:8000/AIPrediction`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(entry),
+      });
+    }
+    navigate('/ai-health-prediction')
+  }
+
   return (
     <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center'}}>
       <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or CSV (.csv) files are accepted.</Typography>
