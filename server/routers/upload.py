@@ -38,7 +38,8 @@ async def uploadCSV(request: Request, file: UploadFile = File(...), \
                     db_conn: Session = Depends(get_db)):
 
     # Retrieve current user to pass their merchantID
-    merchantEmail = get_user_me(request, db_conn)
+    currentUser = await get_user_me(request, db_conn)
+    merchantEmail = currentUser.get('email')
     merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
     
     # Validate that the upload file is in .csv format
