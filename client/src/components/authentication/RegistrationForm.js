@@ -28,6 +28,7 @@ const RegistrationForm = ({}) => {
   const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false)
   const [showFailMessage, setShowFailMessage] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   function updateName(e) {
     const isNameValid = e.target.value !== '';
@@ -92,6 +93,8 @@ const RegistrationForm = ({}) => {
       return;
     }
 
+    setIsLoading(true)
+
     // Post the fetch request with the supplied details.
     await fetch('http://localhost:8000/register', {
       method: 'POST',
@@ -116,6 +119,7 @@ const RegistrationForm = ({}) => {
     }).catch(error => {
       console.log(error)
     })
+    setIsLoading(false)
   }
 
   return (
@@ -172,9 +176,9 @@ const RegistrationForm = ({}) => {
             helperText={alertPasswordsDontMatch ? '*Passwords do not match' : null}>
           </TextField>
 
-          <Button type='submit' variant='contained' sx={{ 
+          <Button loading={isLoading} type='submit' variant='contained' sx={{ 
             py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
-            Create Account
+            Create Account 
           </Button>
           <Stack direction='row' spacing={{xs:1}} 
             style={{ justifyContent:'center'}}> 
