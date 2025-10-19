@@ -19,6 +19,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState(null)
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [alertEmailRequired, setAlertEmailRequired] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   function validateEmail(e) {
     setAlertEmailRequired(false);
@@ -53,6 +54,8 @@ const LoginForm = () => {
       return;
     }
 
+    setIsLoading(true)
+
     // Post the fetch request with the supplied credentials.
     await fetch('http://localhost:8000/login', {
       method: 'POST',
@@ -72,11 +75,13 @@ const LoginForm = () => {
     }).catch(error => {
       setIsLoginUnsuccessful(true)
     })
+
+    setIsLoading(false)
   }
 
   return (
-        <Container sx={{ borderRadius:{xs:0, sm:2}, padding:'25px', alignItems:'center', boxShadow:24, 
-          backgroundColor:'#ffffff', }}>
+        <Container sx={{ borderRadius:{xs:0, sm:2}, padding:'25px', 
+          alignItems:'center', boxShadow:24, backgroundColor:'#ffffff', }}>
           <Box component='form' onSubmit={handleLogin}>
             <Stack spacing={{xs:2}}>
               {generateUnsuccessfulLoginAlert()}
@@ -84,7 +89,7 @@ const LoginForm = () => {
                 showRequired={alertEmailRequired} />
               <PasswordInputField onChange={validatePassword} truncate={true}
                 restrictLength={false} showRequired={alertPasswordRequired}/>
-              <Button type='submit' variant="contained" sx={{ 
+              <Button loading={isLoading} type='submit' variant="contained" sx={{ 
                 py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
                 Login
               </Button>
