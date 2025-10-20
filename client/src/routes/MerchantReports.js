@@ -19,6 +19,28 @@ const AIHealthPrediction = ({ }) => {
 	const [selectedDate, setSelectedDate] = useState();
 	const [reportData, setReportData] = useState();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [patients, setPatients] = useState([]); // Stores list of patients
+	const [selectedPatient, setSelectedPatient] = useState(null); // Stores the selected patient
+
+	function fetchMerchantReports() {
+		fetch(`http://localhost:8000/merchants/reports`, {
+			credentials: 'include',
+		}).then((response) => {
+			if (!response.ok) {
+				throw new Error(response.status);
+        }
+		return response.json();
+		})
+		.then((data) => {
+			if (data.length > 0) {
+			setPatients(data);
+			setSelectedPatient(data[0]);
+			}
+		})
+		.catch((err) => {
+			console.log(err);
+		}, []);
+	}
 
 	function fetchReportDates() {
 		fetch(`http://localhost:8000/getHealthDataDates`,{
@@ -40,6 +62,7 @@ const AIHealthPrediction = ({ }) => {
 
 	// Fetch the users health data ID and Dates
 	React.useEffect(() => {
+		fetchMerchantReports
 		fetchReportDates();
 	},[]);
 
