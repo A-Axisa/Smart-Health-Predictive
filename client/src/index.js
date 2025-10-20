@@ -14,6 +14,7 @@ import UserSettings from './routes/UserSettings';
 import MerchantGenerateReport from './routes/MerchantGenerateReport';
 import AdministratorDashboard from './routes/AdministratorDashboard';
 import MerchantLanding from './routes/MerchantLanding'
+import MerchantReports from './routes/MerchantReports'
 import AppThemeProvider from './components/AppThemeProvider';
 import ProtectedRoutes from './utils/ProtectedRoutes'
 import LandingRoute from './utils/LandingRoute'
@@ -48,7 +49,9 @@ root.render(
             <Route element={<ProtectedRoutes role='merchant' />}>
               <Route path="/merchant-generate-report" element={<MerchantGenerateReport />} />  
               <Route path="/merchant-landing" element={<MerchantLanding />} />
+              <Route path="merchant-reports" element={ <MerchantReports />} />
             </Route>
+
             {/*Admin routes*/}
             <Route element={<ProtectedRoutes role='admin' />}>
               <Route path="/admin-dashboard" element={<AdministratorDashboard />} />
