@@ -36,28 +36,19 @@ const ReportUpload = ({}) => {
       method: 'POST',
       body: formData,
       credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
     }).then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
         }
         return response.json();
+      }).then(data => {
+        // navigate('/merchant-reports');
+      }).catch(error => {
+        console.log(error);
       })
-      .then(data => setData(data))
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-
-  // Passes uploaded data to the AIPrediction endpoint
-  const handleSubmit = async () => {
-    for (const entry of data) {
-      await fetch(`http://localhost:8000/AIPrediction`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(entry),
-      });
-    }
-    navigate('/ai-health-prediction')
   }
 
   return (
@@ -71,11 +62,11 @@ const ReportUpload = ({}) => {
           onChange={handleUpload}
         />
       </Button>
-      <Box>
+      {/* <Box>
         <Button variant='contained' color='primary' sx={{mt:'20px'}} onClick={handleSubmit}>
           Submit
         </Button>
-      </Box>
+      </Box> */}
     </Box>
   )
 }
