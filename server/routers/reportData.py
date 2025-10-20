@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..utils.database import get_db 
-from ..models.dbmodels import HealthData, Prediction, Recommendation
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
+from .authentication import get_user_me
 
 class Report(BaseModel):
     age: int
@@ -101,3 +102,29 @@ async def delete_report_data(healthDataId:int, db_conn: Session = Depends(get_db
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete health data.")
 
     return {"message": "Health report data successfully deleted"}
+
+@router.get("/merchants/reports")
+async def get_patient_reports(request: Request, db_conn: Session = Depends(get_db)):
+    #  Retrieve the current merchant
+    currentUser = await get_user_me(request, db_conn)
+    merchantEmail = currentUser.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
+    
+    # Filter health data submitted by the merchant
+    patientData = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
+                .order_by(HealthData.CreatedAt.asc()).all()
+    
+    data = []
+
+    # Add each user and their corrosponding health data
+    for row in patientData:
+        # Query to access patient name
+        patient = db_conn.query(UserAccount).filter_by(UserID=row.UserID).first()
+
+        data.append({
+            "name" : patient.FullName,
+            "healthDataID" : row.HealthDataID,
+            "date" : row.CreatedAt
+        })
+
+    return data
