@@ -1,7 +1,25 @@
 import { Container, Box, Typography, Button } from '@mui/material'
+import { useNavigate } from "react-router-dom";
 
+const MerchantLanding = ({ }) => {
+  const navigate = useNavigate();
 
-const MerchantLanding = ({}) => {
+  async function logout(e) {
+    e.preventDefault();
+
+    await fetch('http://localhost:8000/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/login')
+    })
+  }
+
   return (
     <Container sx={{ minHeight: '75vh', justifyContent: 'center', display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'relative'}}>
       <Box sx={{ justifyContent: 'right', top: 20, right: 20, position: 'absolute'}}>
@@ -11,6 +29,7 @@ const MerchantLanding = ({}) => {
         <Typography variant='h2' fontWeight={700}>
           Welcome, [Username]
         </Typography>
+        <Button variant="outlined" onClick={logout}>Logout</Button>
         <Typography variant='h6' color='gray'>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at ante at erat tempus laoreet. 
         </Typography>

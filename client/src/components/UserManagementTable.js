@@ -1,7 +1,8 @@
-import { Paper, Box, MenuItem, Select, IconButton } from '@mui/material';
+import { Paper, Box, MenuItem, Select, IconButton, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationDialog from '../components/confirmationDialog'
 
 
@@ -13,9 +14,15 @@ const UserManagementTable = () => {
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    fetch('http://localhost:8000/users')
+    fetch(`${API_BASE}/users`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
@@ -26,10 +33,10 @@ const UserManagementTable = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [API_BASE]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/roles')
+    fetch(`${API_BASE}/roles`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
@@ -40,12 +47,12 @@ const UserManagementTable = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [API_BASE]);
 
   async function confirmRoleChange(e) {
     e.preventDefault();
 
-    await fetch(`http://localhost:8000/users/${selectedRow}/roles/${newRole}`, {
+    await fetch(`${API_BASE}/users/${selectedRow}/roles/${newRole}`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -84,6 +91,51 @@ const UserManagementTable = () => {
     setNewRole(newRole);
     setDialogOpen(true);
   }
+
+  const handleDeleteUser = (userId) => {
+    const user = userData.find(u => u.id === userId);
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+  
+    try {
+      const response = await fetch(`${API_BASE}/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to delete user: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      
+      // Generate a detailed message from the deletion report
+      const report = result.deletion_report;
+      let reportMessage = `User '${userToDelete.fullName}' deleted.`;
+      if (report) {
+        const details = Object.entries(report)
+          .filter(([, value]) => value > 0)
+          .map(([key, value]) => `${value} ${key.replace(/_/g, ' ')}`)
+          .join(', ');
+        if (details) {
+          reportMessage += ` Cleaned up: ${details}.`;
+        }
+      }
+  
+      setSnackbar({ open: true, message: reportMessage, severity: 'success' });
+      setUserData(prev => prev.filter(user => user.id !== userToDelete.id));
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (error) {
+      console.error("Delete user error:", error);
+      setSnackbar({ open: true, message: error.message, severity: 'error' });
+    }
+  };
 
   const columns = [
     { field: 'id', headerName: 'User ID', width: 100, sortable: true},
@@ -125,11 +177,25 @@ const UserManagementTable = () => {
         )
       },
     },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      sortable: false,
+      renderCell: (params) => (
+        <IconButton
+          onClick={() => handleDeleteUser(params.row.id)}
+          color="error"
+        >
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
   ];
 
   return (
     <>
-    <Paper sx={{ width: '1040px'}}>
+    <Paper sx={{ width: '1140px'}}>
       <DataGrid
         rows={userData}
         columns={columns}
@@ -143,11 +209,40 @@ const UserManagementTable = () => {
 
     <ConfirmationDialog
       open={dialogOpen}
-      role={newRole}
-      user={userData.find((user) => user.id === selectedRow)?.fullName}
+      title={'Confirm Role Change'}
+      message={
+        <>
+          Are you sure you want to change <b>{userData.find((user) => user.id === selectedRow)?.fullName}'s</b> role to <b>{newRole}</b>?
+        </>
+      }
+      confirmText={'Confirm'}
+      cancelText={'Cancel'}
+      confirmColor={'primary'}
+      cancelColor={'error'}
       confirm={confirmRoleChange}
       cancel={cancelRoleChange}
     />
+    <ConfirmationDialog
+      open={deleteDialogOpen}
+      title="Confirm Deletion"
+      message={`Are you sure you want to delete the user ${userToDelete?.fullName}? This action cannot be undone.`}
+      confirmText="Delete"
+      cancelText="Cancel"
+      confirmColor="error"
+      cancelColor="primary"
+      confirm={confirmDeleteUser}
+      cancel={() => setDeleteDialogOpen(false)}
+    />
+    <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+    >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+        </Alert>
+    </Snackbar>
     </>
   )
 };

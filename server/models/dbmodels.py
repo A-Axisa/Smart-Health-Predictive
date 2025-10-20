@@ -5,13 +5,27 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
+class TestTable(Base):
+    __tablename__ = 'TestTable'
+    TestID = Column(Integer, primary_key = True)
+    Name = Column(String(255))
+    Number = Column(String(20))
+
+    def __init__(self, name, number):
+        self.Name = name
+        self.Number = number
+
+    def __repr__(self):
+        return f'TestTable(TestID={self.TestID}, Name={self.Name}, Number={self.Number})'
+    
+
 class UserAccount(Base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key = True)
-    FullName = Column(String, nullable=False)
-    Email = Column(String, unique=True)
-    PasswordHash = Column(String, nullable=False)
-    PhoneNumber = Column(String)
+    FullName = Column(String(255), nullable=False)
+    Email = Column(String(255), unique=True)
+    PasswordHash = Column(String(255), nullable=False)
+    PhoneNumber = Column(String(20))
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     IsValidated = Column(Boolean, default=False)
     TokenVersion = Column(Integer, nullable=False, default=0)
@@ -34,7 +48,7 @@ class UserAccount(Base):
 class AccountRole(Base):
     __tablename__ = 'AccountRole'
     RoleID = Column(Integer, primary_key = True)
-    RoleName = Column(String)
+    RoleName = Column(String(100))
 
     userRoles = relationship("UserAccountRole", back_populates = "role")
     rolePermissions = relationship("RolePermission", back_populates = "role")
@@ -49,7 +63,7 @@ class AccountRole(Base):
 class Permission(Base):
     __tablename__ = 'Permission'
     PermissionID = Column(Integer, primary_key = True)
-    PermissionName = Column(String)
+    PermissionName = Column(String(100))
 
     permissionRoles = relationship("RolePermission", back_populates = "permission")
     
@@ -120,10 +134,11 @@ class HealthData(Base):
     MaritalStatus = Column(Boolean)
     WorkingStatus = Column(Boolean)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    MerchantID = Column(Integer,nullable=True)
 
     def __init__(self, UserID, age, weight, height, gender, bloodGlucose, ap_hi, 
                 ap_lo, highCholesterol, exercise, hyperTension, heartDisease,
-                diabetes, alcohol, smoker, maritalStatus, workingStatus):
+                diabetes, alcohol, smoker, maritalStatus, workingStatus,merchantID):
         self.UserID = UserID
         self.Age= age
         self.WeightKilograms = weight
@@ -141,6 +156,7 @@ class HealthData(Base):
         self.SmokingStatus = smoker
         self.MaritalStatus = maritalStatus
         self.WorkingStatus = workingStatus
+        self.MerchantID = merchantID
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
@@ -148,7 +164,7 @@ class HealthData(Base):
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             exercise={self.Exercise}, hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
-            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt} )'
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  MerchantID={self.MerchantID} )'
 
 
 class Prediction(Base):
@@ -178,7 +194,7 @@ class Prediction(Base):
 class UserAccountValidationToken(Base):
     __tablename__ = 'UserAccountValidationToken'
     UserID = Column(Integer, ForeignKey('UserAccount.UserID'), primary_key=True, nullable=False)
-    ValidationToken = Column(String(128), nullable=False)
+    ValidationToken = Column(String(999), nullable=False)
     ExpiresAt = Column(DateTime, nullable=False)
 
     def __init__(self, user_id, validation_token, expires_at):

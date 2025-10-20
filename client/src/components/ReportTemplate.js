@@ -17,7 +17,7 @@ const ReportTemplate = ({ report, date }) => {
 			<Typography
 				variant="h3"
 				sx={{ fontWeight: 600, textAlign: "center", mt: 3, mb: 3, color: 'primary.main' }}>
-				Report {new Date(date).toLocaleDateString()}
+				Report {new Date(date).toLocaleDateString('en-AU')}
 			</Typography>
 			<Divider sx={{ borderColor: '#e0e0e0' }} />
 
