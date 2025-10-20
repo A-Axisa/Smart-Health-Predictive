@@ -36,19 +36,16 @@ const ReportUpload = ({}) => {
       method: 'POST',
       body: formData,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
     }).then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
         }
         return response.json();
-      }).then(data => {
-        // navigate('/merchant-reports');
-      }).catch(error => {
+      })
+      .catch((error) => {
         console.log(error);
       })
+      // navigate('/merchant-reports');
   }
 
   return (
