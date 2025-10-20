@@ -103,15 +103,17 @@ const AIHealthPrediction = ({ }) => {
 					"Content-Type": "application/json"
 				}
 			})
-				.then(res => res.json())
-				.then(data => setReportData(data))
-				.catch(err => console.log(err));
+			// Filter remaining reports and uptate state
+			let updatedReports = reports.filter((r) => r.healthDataID  !== selectedDate.healthDataID);
+			setReportData(updatedReports);
+			// Re-select the patient reports and update state
+			let patientReports = updatedReports.filter((r) => r.name === selectedPatient);
+			setReportDates(patientReports);
+			setSelectedDate(patientReports[0]);
 
 		} catch (err) {
 			console.log(err);
 		}
-		// Reload reports
-		fetchReportDates()
 		// Close Dialog
 		setDeleteDialogOpen(false)
 	}
