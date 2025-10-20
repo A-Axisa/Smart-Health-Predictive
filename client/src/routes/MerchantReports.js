@@ -12,6 +12,10 @@ import {
 	List,
 	ListItem,
 	ListItemText,
+	MenuItem,
+	FormControl,
+	InputLabel,
+	Select,
 } from '@mui/material';
 
 const AIHealthPrediction = ({ }) => {
@@ -21,6 +25,7 @@ const AIHealthPrediction = ({ }) => {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [patients, setPatients] = useState([]); // Stores list of patients
 	const [selectedPatient, setSelectedPatient] = useState(null); // Stores the selected patient
+	const [reports, setReports] = useState([]); // Stores all report data
 
 	function fetchMerchantReports() {
 		fetch(`http://localhost:8000/merchants/reports`, {
@@ -33,8 +38,16 @@ const AIHealthPrediction = ({ }) => {
 		})
 		.then((data) => {
 			if (data.length > 0) {
-			setPatients(data);
-			setSelectedPatient(data[0]);
+				setReports(data);
+				setReportDates(data);
+				// Creates an array of distinct patient names
+				let distinctPatientNames = [...new Set(data.map((r) => r.name))];
+				setPatients(distinctPatientNames);
+				setSelectedPatient(distinctPatientNames[0]);
+				// Sets the report data for the selected patient
+				let firstPatientReports = data.filter((r) => r.name === distinctPatientNames[0]);
+				setReportDates(firstPatientReports);
+				setSelectedDate(firstPatientReports[0]);
 			}
 		})
 		.catch((err) => {
@@ -43,30 +56,28 @@ const AIHealthPrediction = ({ }) => {
 	}
 
 	function fetchReportDates() {
-		fetch(`http://localhost:8000/getHealthDataDates`,{
-			method: 'GET',
-			credentials: 'include',
+	fetch(`http://localhost:8000/getHealthDataDates`,{
+		method: 'GET',
+		credentials: 'include',
+	})
+		.then(response => response.json())
+		.then(data => {
+			setReportDates(data);
+			if (data.length > 0) {
+				setSelectedDate(data[0])
+				console.log("The selected date is: " + selectedDate)
+			}
 		})
-			.then(response => response.json())
-			.then(data => {
-				setReportDates(data);
-				if (data.length > 0) {
-					setSelectedDate(data[0])
-					console.log("The selected date is: " + selectedDate)
-				}
-			})
-			.catch(err => {
-				console.log(err);
-			});
+		.catch(err => {
+			console.log(err);
+		});
 	};
 
-	// Fetch the users health data ID and Dates
-	React.useEffect(() => {
-		fetchMerchantReports
+	// Fetch the merchant reports
+	useEffect(() => {
+		fetchMerchantReports();
 		fetchReportDates();
-	},[]);
-
-	
+	}, []);
 
 	// Fetch report data
 	useEffect(() => {
@@ -105,57 +116,79 @@ const AIHealthPrediction = ({ }) => {
 		setDeleteDialogOpen(false)
 	}
 
-	// Prevents page from loading if the user has no health record
-	if (!reportData) {
-		return <h1>User has no Health Prediction Reports</h1>;
-	}
-	else {
-
-		return (
-			<Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-				{/* Sidebar */}
-				<Box sx={{ width: 400, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
-					<Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
-						<Typography variant="h6" sx={{ fontWeight: 600 }}>
-							Report History
-						</Typography>
-					</Box>
-					<List component="nav" sx={{ p: 0 }}>
-						{reportDates.map((item) =>
-							<ListItem key={item.id} selected={selectedDate.healthDataID === item.healthDataID}
-								onClick={(e) => setSelectedDate(item)}
-								button
-								sx={{
-									py: 2,
-									px: 3,
-									borderLeft:
-										selectedDate.healthDataID === item.healthDataID ? '4px solid' : '4px solid transparent',
-									borderLeftColor: 'primary.main',
-									bgcolor: selectedDate.healthDataID === item.healthDataID ? 'action.selected' : 'transparent',
-								}}
-							>
-								<ListItemText
-									primary={`Report: ${new Date(item.date).toLocaleDateString('en-AU')}`}
-									slotProps={{
-										primary: {
-											style: {
-												fontWeight: selectedDate.healthDataID === item.healthDataID ? 600 : 400,
-											},
-										},
-									}}
-								/>
-								{/* Delete Report Button */}
-								{(selectedDate.healthDataID === item.healthDataID) &&
-									<IconButton aria-label="delete" color="error" onClick={(e) => setDeleteDialogOpen(true)}>
-										<CloseIcon />
-									</IconButton>
-								}
-							</ListItem>
-						)}
-					</List>
+	return (
+		<Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+			{/* Sidebar */}
+			<Box sx={{ width: 400, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
+				<Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+					<Typography variant="h6" sx={{ fontWeight: 600 }}>
+						Report History
+					</Typography>
 				</Box>
-				{/* Report Content */}
-				<Box sx={{ flex: 1 }}>
+				{/* Patient List */}
+				<Box sx={{ p: 2 }}>
+					<FormControl fullWidth>
+						<InputLabel id="patient-select-label">Patient</InputLabel>
+						<Select
+							labelId="patient-select-label"
+							label={selectedPatient}
+							value={selectedPatient}
+							onChange={(e) => {
+								{/* filter reports by selected user */}
+								const selectedReports = reports.filter((r) => r.name === e.target.value);
+								setSelectedPatient(e.target.value);
+								setReportDates(selectedReports);
+								setSelectedDate(selectedReports[0]); // Select first report
+							}}
+						>
+							{/* List of available patients */}
+							{patients.map((name) => (
+								<MenuItem key={name} value={name}>
+									{name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+				<List component="nav" sx={{ p: 0 }}>
+					{reportDates.map((item) =>
+						<ListItem key={item.healthDataID} selected={selectedDate?.healthDataID === item.healthDataID}
+							onClick={(e) => setSelectedDate(item)}
+							button
+							sx={{
+								py: 2,
+								px: 3,
+								borderLeft:
+									selectedDate?.healthDataID === item.healthDataID ? '4px solid' : '4px solid transparent',
+								borderLeftColor: 'primary.main',
+								bgcolor: selectedDate?.healthDataID === item.healthDataID ? 'action.selected' : 'transparent',
+							}}
+						>
+							<ListItemText
+								primary={`Report: ${new Date(item.date).toLocaleDateString('en-AU')}`}
+								slotProps={{
+									primary: {
+										style: {
+											fontWeight: selectedDate?.healthDataID === item.healthDataID ? 600 : 400,
+										},
+									},
+								}}
+							/>
+							{/* Delete Report Button */}
+							{(selectedDate?.healthDataID === item.healthDataID) &&
+								<IconButton aria-label="delete" color="error" onClick={(e) => setDeleteDialogOpen(true)}>
+									<CloseIcon />
+								</IconButton>
+							}
+						</ListItem>
+					)}
+				</List>
+			</Box>
+			{/* Report Content */}
+			<Box sx={{ flex: 1 }}>
+				{/* Render if there are reports for the selected patient */}
+				{selectedDate && reportData ? (
+					<>
 					<Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
 						<DownloadReportButton
 							healthDataId={selectedDate?.healthDataID}
@@ -164,27 +197,32 @@ const AIHealthPrediction = ({ }) => {
 						/>
 					</Box>
 					<ReportTemplate report={reportData} date={selectedDate.date} />
-				</Box>
-				<ConfirmationDialog
-					open={deleteDialogOpen}
-					title="Delete Report"
-					message={
-						<>
-							This action will permanently delete the selected health report and all related health data.
-							Are you sure you want to delete this health report?.
-						</>
-					}
-					confirmText="Delete"
-					cancelText="Cancel"
-					confirmColor="error"
-					cancelColor="primary"
-					confirm={() => deleteReport()}
-					cancel={() => setDeleteDialogOpen(false)}
-				/>
-
+					</>
+				) : (
+					<Typography sx={{ p: 3 }}>
+    		 			No reports available for this patient.
+   					 </Typography>
+ 				 )}
 			</Box>
-		);
-	}
+			<ConfirmationDialog
+				open={deleteDialogOpen}
+				title="Delete Report"
+				message={
+					<>
+						This action will permanently delete the selected health report and all related health data.
+						Are you sure you want to delete this health report?.
+					</>
+				}
+				confirmText="Delete"
+				cancelText="Cancel"
+				confirmColor="error"
+				cancelColor="primary"
+				confirm={() => deleteReport()}
+				cancel={() => setDeleteDialogOpen(false)}
+			/>
+
+		</Box>
+	);
 }
 
-export default AIHealthPrediction
+export default AIHealthPrediction;
