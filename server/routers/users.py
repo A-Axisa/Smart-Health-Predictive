@@ -148,7 +148,7 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
                             .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
                             .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
                             .filter(AccountRole.RoleName == "merchant") \
-                            .filter(UserAccount.IsValidated == False) \
+                            .filter(UserAccount.IsValidated == 0) \
                             .all()
     
     data = []
