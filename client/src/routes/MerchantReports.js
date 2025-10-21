@@ -84,7 +84,7 @@ const AIHealthPrediction = ({ }) => {
 					"Content-Type": "application/json"
 				}
 			})
-			// Filter remaining reports and uptate state
+			// Filter remaining reports and update state
 			let updatedReports = reports.filter((r) => r.healthDataID  !== selectedDate.healthDataID);
 			setReports(updatedReports);
 			// Re-select the patient reports and update state
@@ -117,7 +117,7 @@ const AIHealthPrediction = ({ }) => {
 							label={selectedPatient}
 							value={selectedPatient}
 							onChange={(e) => {
-								{/* filter reports by selected user */}
+								// Filter reports by selected user
 								const selectedReports = reports.filter((r) => r.name === e.target.value);
 								setSelectedPatient(e.target.value);
 								setReportDates(selectedReports);
