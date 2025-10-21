@@ -3,7 +3,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ConfirmationDialog from '../components/confirmationDialog'
+import ConfirmationDialog from '../confirmationDialog'
 
 
 const UserManagementTable = () => {

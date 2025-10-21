@@ -1,6 +1,6 @@
 import { Box, Typography, List, ListItem, ListItemText, Container,Button  } from '@mui/material';
-import UserManagementTable from '../components/UserManagementTable';
-import AccountApprovalTable from '../components/AccountApprovalTable';
+import UserManagementTable from '../components/administrator/UserManagementTable';
+import AccountApprovalTable from '../components/administrator/AccountApprovalTable';
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
