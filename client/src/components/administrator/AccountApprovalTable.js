@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paper } from '@mui/material';
+import { Paper, Button } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import ConfirmationDialog from '../confirmationDialog'
 
@@ -9,7 +9,7 @@ const AccountApprovalTable = ({}) => {
   const [selectedUser, setselectedUser] = useState(); // Stores the selected user
   const [dialogOpen, setDialogOpen] = useState(false); // Stores dialog state
   
-  useEffect(() => {
+  const fetchMerchants = () => {
     fetch(`http://localhost:8000/users/merchants/`)
     .then((response) => {
       if (!response.ok) {
@@ -21,15 +21,25 @@ const AccountApprovalTable = ({}) => {
     .catch((err) => {
       console.log(err);
     });
-  }, []);
+  };
 
   const handleConfirmation = () => {
-    fetch(`http://localhost:8000/merchants/${selectedUser}`)
+    fetch(`http://localhost:8000/users/merchants/${selectedUser}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
     .then((response) => {
       if (!response.ok) {
           throw new Error(response.status);
       }
       return response.json();
+    })
+    .then(() => {
+      setDialogOpen(false);
+      setselectedUser(null);
+      fetchMerchants();
     })
     .catch((err) => {
       console.log(err);
@@ -37,7 +47,7 @@ const AccountApprovalTable = ({}) => {
   };
 
   const columns = [
-    { field: 'id', headerName: 'User ID', width: 250, sortable: true },
+    { field: 'id', headerName: 'User ID', width: 100, sortable: true },
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
     { field: 'email', headerName: 'Email', width: 250, sortable: false },
     { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
@@ -45,13 +55,25 @@ const AccountApprovalTable = ({}) => {
       field: 'confirm',
       headerName: 'Confirm',
       width: 200, sortable: false,
-      // renderCell: (params) => {
-      //   return (
-      //     params
-      //   );
-      // }
+      renderCell: (params) => {
+        return (
+          <Button
+            variant='contained'
+            onClick={() => {
+              setselectedUser(params.row.id);
+              setDialogOpen(true)
+            }}
+          >
+            Confirm
+          </Button>
+        )
+      }
     },
   ]
+
+  useEffect(() => {
+    fetchMerchants();
+  }, []);
 
   return (
     <>
