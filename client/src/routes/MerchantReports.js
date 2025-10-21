@@ -18,7 +18,7 @@ import {
 	Select,
 } from '@mui/material';
 
-const AIHealthPrediction = ({ }) => {
+const MerchantReports = ({ }) => {
 	const [reportDates, setReportDates] = useState([]);
 	const [selectedDate, setSelectedDate] = useState();
 	const [reportData, setReportData] = useState();
@@ -208,4 +208,4 @@ const AIHealthPrediction = ({ }) => {
 	);
 }
 
-export default AIHealthPrediction;
+export default MerchantReports;
