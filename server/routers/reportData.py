@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..utils.database import get_db 
-from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, AccountRole, UserAccountRole
 from .authentication import get_user_me
 
 class Report(BaseModel):
@@ -105,11 +105,18 @@ async def delete_report_data(healthDataId:int, db_conn: Session = Depends(get_db
 
 @router.get("/merchants/reports")
 async def get_patient_reports(request: Request, db_conn: Session = Depends(get_db)):
-    #  Retrieve the current merchant
+    # Retrieve the current merchant
     currentUser = await get_user_me(request, db_conn)
     merchantEmail = currentUser.get('email')
     merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
+
+    # Verify that the user making the request is a merchant
+    merchant_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
+        .filter(UserAccountRole.UserID == merchant.UserID).first()
     
+    if not merchant_role or merchant_role.RoleName.lower() != "merchant":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to perform this action.")
+
     # Filter health data submitted by the merchant
     patientData = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
                 .order_by(HealthData.CreatedAt.asc()).all()
