@@ -45,7 +45,7 @@ const UserLanding = ({ }) => {
 
 			{/*Main information Section*/}
 			<Card variant="outlined" sx={{
-				height: "90%",
+				minHeight: { xs: "auto", md: "90vh" },
 				boxShadow: 10,
 				borderRadius: 5,
 				marginLeft: "2rem",
@@ -86,7 +86,7 @@ const UserLanding = ({ }) => {
 				}}>
 				{/*Account Information Section*/}
 				<Card sx={{
-					height: "40vh",
+					minHeight: { xs: "auto", md: "40vh" },
 					boxShadow: 10,
 					borderRadius: 5,
 					marginLeft: "2rem",
@@ -116,6 +116,7 @@ const UserLanding = ({ }) => {
 
 				{/*Analytics Section*/}
 				<Card sx={{
+					minHeight: { xs: "auto", md: "40vh" },
 					boxShadow: 10,
 					borderRadius: 5,
 					marginLeft: "2rem",

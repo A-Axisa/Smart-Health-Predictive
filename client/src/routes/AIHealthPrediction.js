@@ -53,8 +53,6 @@ const AIHealthPrediction = ({ }) => {
     fetchReportDates();
   }, []);
 
-
-
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
@@ -92,19 +90,16 @@ const AIHealthPrediction = ({ }) => {
     setDeleteDialogOpen(false)
   }
 
-
-
   // Prevents page from loading if the user has no health record
   if (!reportData) {
     return <h1>User has no Health Prediction Reports</h1>;
   }
   else {
-
     return (
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
         {/* Sidebar */}
         {openSideBar && (
-          <Box sx={{ width: 400, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
+          <Box sx={{ width: { xs: 300, md: 400 }, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
             <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -185,7 +180,6 @@ const AIHealthPrediction = ({ }) => {
           confirm={() => deleteReport()}
           cancel={() => setDeleteDialogOpen(false)}
         />
-
       </Box>
     );
   }
