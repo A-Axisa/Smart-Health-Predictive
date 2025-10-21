@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile
 from typing import Optional
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 from sqlalchemy.orm import Session
+import csv
+import codecs
 
 from ..utils.database import get_db 
-from ..models.dbmodels import HealthData, Prediction, Recommendation
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
 from ..services.health_recommendation_service import get_health_recommendations
-from .authentication import get_current_user, get_user
+from .authentication import get_current_user, get_user, get_user_me
 
 # HealthData
 class HealthDataInput(BaseModel):
@@ -40,7 +42,8 @@ diabetesModel = joblib.load("predictionModels/model_diabetes_h.joblib")
 router = APIRouter()
 
 @router.post("/AIPrediction/")
-async def predict(data: HealthDataInput,request: Request, db_conn: Session = Depends(get_db)):
+async def predict(data: HealthDataInput,request: Request, db_conn: Session = Depends(get_db), \
+                  CSVUserID: Optional[int] = None):
 
     # Check if user input is valid
     if (
@@ -72,8 +75,10 @@ async def predict(data: HealthDataInput,request: Request, db_conn: Session = Dep
     user_email = get_current_user(request, db_conn)
     user = get_user(user_email["email"], db_conn)
 
+    # Check if a UserID was passed in from CSV
+    userID = CSVUserID if CSVUserID is not None else user.UserID
 
-    healthData = HealthData(user.UserID, data.age, data.weight, data.height, data.gender, 
+    healthData = HealthData(userID, data.age, data.weight, data.height, data.gender, 
                         data.bloodGlucose, data.ap_hi,data.ap_lo,data.highCholesterol,
                         data.exercise,data.hyperTension, data.heartDisease, data.diabetes, data.alcohol, 
                         data.smoker, data.maritalStatus,data.workingStatus,data.merchantID)
@@ -181,6 +186,65 @@ async def predict(data: HealthDataInput,request: Request, db_conn: Session = Dep
             "diet_to_avoid": diet_to_avoid_rec
         }
     }
+
+@router.post("/upload")
+async def uploadCSV(request: Request, file: UploadFile = File(...), \
+                    db_conn: Session = Depends(get_db)):
+
+    # Retrieve current user to pass their merchantID
+    currentUser = await get_user_me(request, db_conn)
+    merchantEmail = currentUser.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
+    
+    # Validate that the upload file is in .csv format
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be in .csv format")
+    
+    # Decode and wrap in a DictReader for reading each row
+    csvReader = csv.DictReader(codecs.iterdecode(file.file, 'utf-8'))
+
+    rowIndex = 0 # For a nicer return message
+    for row in csvReader:
+        # Store email if supplied, otherwise parse the next user's data
+        userEmail = row.get('Email')
+        if not userEmail:
+            continue
+        userEmail = userEmail.strip()
+        
+        # Retrieve the user from their email
+        user = db_conn.query(UserAccount).filter_by(Email=userEmail).first()
+        if not user:
+            continue
+
+        # Parse row data into JSON format
+        healthData = HealthDataInput(
+            UserID=user.UserID,
+            age=int(row["Age"]) if row.get("Age") else 0,
+            weight=float(row["WeightInKilograms"]) if row.get("WeightInKilograms") else 0,
+            height=float(row["HeightMeters"]) if row.get("HeightMeters") else 0,
+            gender=bool(int(row["Gender"])) if row.get("Gender") else 0,
+            bloodGlucose=float(row["BloodGlucose"]) if row.get("BloodGlucose") else 0,
+            ap_hi=float(row["APHigh"]) if row.get("APHigh") else 0,
+            ap_lo=float(row["APLow"]) if row.get("APLow") else 0,
+            highCholesterol=bool(int(row["HighCholesterol"])) if row.get("HighCholesterol") else 0,
+            exercise=bool(int(row["Exercise"])) if row.get("Exercise") else 0,
+            hyperTension=bool(int(row["HyperTension"])) if row.get("HyperTension") else 0,
+            heartDisease=bool(int(row["HeartDisease"])) if row.get("HeartDisease") else 0,
+            diabetes=bool(int(row["Diabetes"])) if row.get("Diabetes") else 0,
+            alcohol=bool(int(row["Alcohol"])) if row.get("Alcohol") else 0,
+            smoker=bool(int(row["SmokingStatus"])) if row.get("SmokingStatus") else 0,
+            maritalStatus=bool(int(row["MaritalStatus"])) if row.get("MaritalStatus") else 0,
+            workingStatus=bool(int(row["WorkingStatus"])) if row.get("WorkingStatus") else 0,
+            merchantID=merchant.UserID,
+        )
+        # Call predict endpoint for each entry
+        prediction = await predict(healthData, request, db_conn, user.UserID)
+        rowIndex += 1
+
+    file.file.close()
+
+    return {"message" : f"Successfully uploaded {rowIndex} patient entries."}
+
 
 def is_age_valid(age: int):
     return age >= 0 and age <= 100
