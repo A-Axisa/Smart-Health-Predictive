@@ -169,7 +169,7 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 async def validate_merchant(merchant_id: int, request: Request, db_conn: Session = Depends(get_db)):
     # Validate the requesting user
     admin_email = get_current_user(request, db_conn)
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email"))
+    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
 
     # Verify the requesting user is an administrator
     if not admin:
