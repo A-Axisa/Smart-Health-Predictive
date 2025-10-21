@@ -42,7 +42,7 @@ const AdministratorDashboard = () => {
       <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
         <Box>
           <Typography variant='h4' color='primary' sx={{fontWeight: 600, mb: 4}}>
-            Pending Accounts
+            Merchant Account Requests
           </Typography>
         </Box>
         <AccountApprovalTable/>
@@ -51,7 +51,7 @@ const AdministratorDashboard = () => {
 
   const pages = {
     Users: <UserManagement/>,
-    AccountApproval: <AccountApproval/>
+    Requests: <AccountApproval/>
   };
 
   return (
@@ -64,7 +64,7 @@ const AdministratorDashboard = () => {
               Admin Dashboard
             </Typography>
             </Box>
-            {['Users', 'AccountApproval'].map((obj) => (
+            {['Users', 'Requests'].map((obj) => (
               <ListItem
                 button
                 key={obj}

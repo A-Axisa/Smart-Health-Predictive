@@ -55,7 +55,7 @@ const AccountApprovalTable = ({}) => {
     { 
       field: 'confirm',
       headerName: 'Confirm',
-      width: 200, sortable: false,
+      width: 130, sortable: false,
       renderCell: (params) => {
         return (
           <Button
@@ -78,7 +78,7 @@ const AccountApprovalTable = ({}) => {
 
   return (
     <>
-    <Paper sx={{ width: '1140px'}}>
+    <Paper sx={{ width: '950px'}}>
       <DataGrid
         rows={userData}
         columns={columns}
