@@ -45,6 +45,9 @@ const MerchantLanding = ({ }) => {
           <Typography variant='h7' color='gray'>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </Typography>
+            <Button size="large" variant="contained" sx={{display: 'flex', width: "150px", mt: "10px"}}>
+              View
+            </Button>
         </Box>
         <Box sx={{p:3, borderRadius: 3, boxShadow: 3}}>
           <Typography variant='h5'>
@@ -53,6 +56,9 @@ const MerchantLanding = ({ }) => {
           <Typography variant='h7' color='gray'>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </Typography>
+            <Button href="/merchant-reports" size="large" variant="contained" sx={{display: 'flex', width: "150px",  mt: "10px"}}>
+              View
+            </Button>
         </Box>
       </Box>
     </Container>
