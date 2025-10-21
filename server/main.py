@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import items, AIPrediction, getHealthDataDates, authentication, health_analytics, reportData, users, roles, userRoles
-
+from .routers import items,AIPrediction, getHealthDataDates, authentication, health_analytics, health_analytics, reportData, users, roles, userRoles 
 
 ORIGINS = [
     "http://localhost:3000",
