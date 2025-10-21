@@ -155,6 +155,7 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
     for merchant in invalid_merchant_accounts:
         data.append({
+            "id" : merchant.UserID,
             "fullName": merchant.FullName,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
