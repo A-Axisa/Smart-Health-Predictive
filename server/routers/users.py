@@ -140,3 +140,25 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     _delete_user_data(user_id, db_conn)
 
     return {"message": "User and all related data deleted successfully"}
+
+
+@router.get("/users/merchants/")
+async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
+    invalid_merchant_accounts = db_conn.query(UserAccount) \
+                            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+                            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+                            .filter(AccountRole.RoleName == "merchant") \
+                            .filter(UserAccount.IsValidated == False) \
+                            .all()
+    
+    data = []
+
+    for merchant in invalid_merchant_accounts:
+        data.append({
+            "fullName": merchant.FullName,
+            "email": merchant.Email,
+            "phoneNumber": merchant.PhoneNumber,
+            "createdAt": merchant.CreatedAt,
+        })
+
+    return data
