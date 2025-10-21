@@ -162,3 +162,33 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
         })
 
     return data
+
+
+@router.get("/users/merchants/{merchant_id}")
+async def validate_merchant(merchant_id: int, request: Request, db_conn: Session = Depends(get_db)):
+    # Validate the requesting user
+    admin = get_current_user(request, db_conn)
+    admin_email = db_conn.query(UserAccount).filer(UserAccount.Email == admin.get("email"))
+
+    # Verify the requesting user is an administrator
+    admin_user = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email).first()
+    if not admin_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
+
+    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
+        .filter(UserAccountRole.UserID == admin_user.UserID).first()
+
+    if not user_role or user_role.RoleName.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
+    
+    # Begin merchant Validation
+    merchant = db_conn.query(UserAccount).filter(UserAccount.UserID == merchant_id).first()
+
+    # Ensure that user is a merchant
+    if not merchant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
+    
+    merchant.IsValidated = True
+    db_conn.commit()
+
+    return {"message" : f"Merchant: {merchant.FullName} has been successfully validated."}
