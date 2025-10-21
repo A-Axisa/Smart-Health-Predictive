@@ -55,28 +55,9 @@ const AIHealthPrediction = ({ }) => {
 		}, []);
 	}
 
-	function fetchReportDates() {
-	fetch(`http://localhost:8000/getHealthDataDates`,{
-		method: 'GET',
-		credentials: 'include',
-	})
-		.then(response => response.json())
-		.then(data => {
-			setReportDates(data);
-			if (data.length > 0) {
-				setSelectedDate(data[0])
-				console.log("The selected date is: " + selectedDate)
-			}
-		})
-		.catch(err => {
-			console.log(err);
-		});
-	};
-
 	// Fetch the merchant reports
 	useEffect(() => {
 		fetchMerchantReports();
-		fetchReportDates();
 	}, []);
 
 	// Fetch report data
@@ -105,7 +86,7 @@ const AIHealthPrediction = ({ }) => {
 			})
 			// Filter remaining reports and uptate state
 			let updatedReports = reports.filter((r) => r.healthDataID  !== selectedDate.healthDataID);
-			setReportData(updatedReports);
+			setReports(updatedReports);
 			// Re-select the patient reports and update state
 			let patientReports = updatedReports.filter((r) => r.name === selectedPatient);
 			setReportDates(patientReports);
