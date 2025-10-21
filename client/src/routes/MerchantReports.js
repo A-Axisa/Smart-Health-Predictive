@@ -115,7 +115,6 @@ const MerchantReports = ({ }) => {
 						<Select
 							labelId="patient-select-label"
 							label={selectedPatient}
-							value={selectedPatient}
 							onChange={(e) => {
 								// Filter reports by selected user
 								const selectedReports = reports.filter((r) => r.name === e.target.value);
