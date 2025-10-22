@@ -17,6 +17,10 @@ import {
   MenuItem,
   Alert,
   Stack,
+  useTheme,
+  useMediaQuery,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import ConfirmationDialog from '../components/confirmationDialog';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +28,9 @@ import { useNavigate } from 'react-router-dom';
 const UserSettings = () => {
   const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState('Account Details');
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Account/Profile state
   const [formData, setFormData] = useState({
@@ -210,19 +217,37 @@ const UserSettings = () => {
             color="error"
             disabled={!isUserLoggedIn || deleteBusy}
             onClick={() => setDeleteDialogOpen(true)}
-            sx={{ mt: 1 }}
+            sx={{ 
+              mt: 1,
+              py: { xs: '0.8rem', sm: '0.6rem' },
+              fontSize: { xs: '1rem', sm: '0.875rem' },
+              fontWeight: 500,
+            }}
           >
             {deleteBusy ? 'Deleting…' : 'Delete My Account'}
           </Button>
         </Box>
         <Box sx={{ ml: 'auto' }}>
-          <Button variant="outlined" sx={{ mr: 2 }}>
+          <Button 
+            variant="outlined" 
+            sx={{ 
+              mr: 2,
+              py: { xs: '0.8rem', sm: '0.6rem' },
+              fontSize: { xs: '1rem', sm: '0.875rem' },
+              fontWeight: 500,
+            }}
+          >
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={() => handleSave('Account Details')}
-            sx={{ px: 4, py: 1.25 }}
+            sx={{ 
+              px: 4, 
+              py: { xs: '0.8rem', sm: '0.6rem' },
+              fontSize: { xs: '1rem', sm: '0.875rem' },
+              fontWeight: 500,
+            }}
           >
             Save Changes
           </Button>
@@ -305,7 +330,12 @@ const UserSettings = () => {
         <Button
           variant="contained"
           onClick={() => handleSave('Profile')}
-          sx={{ px: 4, py: 1.25 }}
+          sx={{ 
+            px: 4, 
+            py: { xs: '0.8rem', sm: '0.6rem' },
+            fontSize: { xs: '1rem', sm: '0.875rem' },
+            fontWeight: 500,
+          }}
         >
           Save Profile
         </Button>
@@ -367,7 +397,12 @@ const UserSettings = () => {
               variant="contained"
               disabled={disabled}
               onClick={() => handleChangePassword()}
-              sx={{ px: 4, py: 1.25 }}
+              sx={{ 
+                px: 4, 
+                py: { xs: '0.8rem', sm: '0.6rem' },
+                fontSize: { xs: '1rem', sm: '0.875rem' },
+                fontWeight: 500,
+              }}
             >
               Update Password
             </Button>
@@ -461,7 +496,12 @@ const UserSettings = () => {
           <Button
             variant="contained"
             onClick={() => handleSave('Notifications')}
-            sx={{ px: 4, py: 1.25 }}
+            sx={{ 
+              px: 4, 
+              py: { xs: '0.8rem', sm: '0.6rem' },
+              fontSize: { xs: '1rem', sm: '0.875rem' },
+              fontWeight: 500,
+            }}
           >
             Save Preferences
           </Button>
@@ -469,6 +509,10 @@ const UserSettings = () => {
       </Stack>
     </Box>
   );
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedSection(newValue);
+  };
 
   const renderContent = () => {
     switch (selectedSection) {
@@ -486,47 +530,81 @@ const UserSettings = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* Sidebar */}
-      <Box sx={{ width: 260, bgcolor: 'background.paper', borderRight: '1px solid #e0e0e0' }}>
-        <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Settings
-          </Typography>
+    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      {isMobile ? (
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#ffffff', boxShadow: 1 }}>
+          <Tabs
+            value={selectedSection}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            aria-label="user settings sections"
+            sx={{
+              '& .MuiTab-root': {
+                fontWeight: 500,
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+              },
+            }}
+          >
+            <Tab label="Account Details" value="Account Details" />
+            <Tab label="Profile" value="Profile" />
+            <Tab label="Password" value="Password" />
+            <Tab label="Notifications" value="Notifications" />
+          </Tabs>
         </Box>
-        <List component="nav" sx={{ p: 0 }}>
-          {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
-            <ListItem
-              key={item}
-              button
-              selected={selectedSection === item}
-              onClick={() => setSelectedSection(item)}
-              sx={{
-                py: 2,
-                px: 3,
-                borderLeft:
-                  selectedSection === item ? '4px solid' : '4px solid transparent',
-                borderLeftColor: 'primary.main',
-                bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
-              }}
-            >
-              <ListItemText
-                primary={item}
-                slotProps={{
-                  primary: {
-                    style: {
-                      fontWeight: selectedSection === item ? 600 : 400,
-                    },
+      ) : (
+        <Box sx={{ width: 260, bgcolor: '#ffffff', borderRight: '1px solid #e0e0e0', boxShadow: 1 }}>
+          <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Settings
+            </Typography>
+          </Box>
+          <List component="nav" sx={{ p: 0 }}>
+            {['Account Details', 'Profile', 'Password', 'Notifications'].map((item) => (
+              <ListItem
+                key={item}
+                button
+                selected={selectedSection === item}
+                onClick={() => setSelectedSection(item)}
+                sx={{
+                  py: 2,
+                  px: 3,
+                  borderLeft:
+                    selectedSection === item ? '4px solid' : '4px solid transparent',
+                  borderLeftColor: 'primary.main',
+                  bgcolor: selectedSection === item ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
                   },
                 }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
+              >
+                <ListItemText
+                  primary={item}
+                  primaryTypographyProps={{
+                    fontWeight: selectedSection === item ? 600 : 400,
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      )}
 
       {/* Main content */}
-      <Box sx={{ flex: 1, p: 4, bgcolor: 'background.paper' }}>{renderContent()}</Box>
+      <Box sx={{ 
+        flex: 1, 
+        p: { xs: 2, sm: 3, md: 4 }, 
+        bgcolor: '#f5f5f5',
+      }}>
+        <Box sx={{
+          bgcolor: '#ffffff',
+          borderRadius: 2,
+          boxShadow: 24,
+          p: { xs: 2, sm: 3, md: 4 },
+        }}>
+          {renderContent()}
+        </Box>
+      </Box>
 
       {/* Confirm deletion dialog */}
       <ConfirmationDialog

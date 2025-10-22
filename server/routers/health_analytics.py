@@ -1,20 +1,15 @@
 from datetime import datetime
 from decimal import Decimal
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from typing import List
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
 from ..models.dbmodels import HealthData, Prediction
+from .authentication import get_current_user, get_user
 
 router = APIRouter()
-
-# Temporary current user resolver until authentication is implemented
-async def get_current_user():
-    # TODO: replace with real authentication. For now default to user id 1.
-    return {"username": "testuser", "user_id": 1}
-
 
 class HealthMetric(BaseModel):
     # ISO datetime string of the prediction creation time
@@ -36,14 +31,18 @@ def _to_float(val) -> float:
 
 @router.get("/api/health-analytics", response_model=List[HealthMetric])
 async def get_health_analytics(
-    current_user: dict = Depends(get_current_user),
+    request: Request,
     db_conn: Session = Depends(get_db),
 ):
     """
     Returns time-series health risk probabilities for the current user
     using historical predictions stored in the database.
     """
-    user_id = int(current_user.get("user_id", 1))
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+    if not user:
+        return []
+    user_id = user.UserID
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
