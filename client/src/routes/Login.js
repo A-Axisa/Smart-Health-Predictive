@@ -1,102 +1,26 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react'
-import { Box, Container, Stack, TextField, Button, Typography, 
-    Link, Alert } from '@mui/material'
+import { Box, Container, Stack, Typography } from '@mui/material'
+import LoginForm from '../components/authentication/LoginForm'
+import WelcomePanel from '../components/WelcomePanel'
 
 const Login = ({}) => {
-  const navigate = useNavigate();
-  const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
-
-  function validateEmail(e) {
-    console.log('Email validated.');
-  }
-
-  function validatePassword(e) {
-    console.log('Password validated.');
-  }
-
-  function generateUnsuccessfulLoginAlert() {
-    if (isLoginUnsuccessful){
-      return <Alert variant="filled" severity="error"> Login details are incorrect</Alert>
-    }
-    return null
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-
-    await fetch('http://localhost:8000/login', {
-      method: 'POST',
-      headers:{
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: e.target.email.value,
-        password: e.target.password.value
-      }),
-      credentials: 'include'
-    }).then(response => {
-      if (!response.ok) {
-        throw new Error(response.status)
-      }
-      return response.json()
-    }).then(data => {
-      navigate('/user-landing')
-    }).catch(error => {
-      setIsLoginUnsuccessful(true)
-    })
-  }
-
   return (
-    <Box sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
-        padding:'0', margin:'0'}}>
-
-      <Box sx={{ backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',
-            width:'60%', height:'100vh', flex:'inline', float:'left'}}>
-        <Container style={{padding:'100px'}}>
-          <Stack>
-            <Typography style={{ color:"#e7f1f1ff", fontWeight:'bold', 
-                fontSize:'100px' }}>Welcome</Typography>
-            <Typography style={{ color:"#cae4e4ff" }}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut 
-              facilisis arcu et ex tristique, ut hendrerit est posuere. Nunc 
-              fringilla commodo neque vel scelerisque. Sed id dictum massa, eu 
-              tristique enim. Vestibulum pellentesque quis nibh et egestas. 
-              Nulla efficitur quam et venenatis rhoncus. Quisque nec odio a 
-              ligula facilisis semper vel ut mi. Quisque ac nulla tortor. 
-              Curabitur egestas dictum risus, ac efficitur diam vulputate sed. 
-              Vivamus sed tortor nunc.
-            </Typography>
-          </Stack>  
-        </Container>
+    <Stack direction='row' sx={{ backgroundColor:'#127067',  width:'100vw', height:'100vh', 
+      padding:'0', margin:'0'}}>
+      <WelcomePanel />
+      <Box sx={{px:{xs:0, sm:5, md:20, lg:10, xl:10,}, display: 'flex', 
+        alignItems:'center', justifyContent:'center', height:'100vh', 
+        backgroundColor:'#efefef', flexGrow:{xs:1, sm:1, md:1, lg:0}}}>
+        <Stack direction={'column'} sx={{px:0, mx:0, flexGrow:{xs:1, sm:0}, 
+          width:{xs:'auto', sm:'500px' }}} >
+          <Container sx={{ display:{ md:'block', lg:'none'}}} >
+            <Typography align='center' sx={{py:3, fontSize:'2.4rem', fontWeight:'bold'}}>
+              Smart Health Predictive
+          </Typography>
+          </Container>
+          <LoginForm/>
+        </Stack>
       </Box>
-
-      <Box sx={{ backgroundColor:'#ffffff', width:'40%', height:'100%', 
-            flex:'inline', float:'left', display:'flex', alignItems:'center'}}>
-        <Container sx={{ width:'70%', borderRadius:2, padding:'25px', 
-                alignItems:'center', boxShadow:24}}>
-          <Box component='form' onSubmit={handleLogin}>
-            <Stack spacing={{xs:2}}>
-              <h1>Sign In</h1>
-              {generateUnsuccessfulLoginAlert()}
-              <TextField id='outlined-input' name='email' label='Email' 
-                  onChange={validateEmail}></TextField>
-              <TextField id='outlined-password-input' name='password' label='Password' 
-                  type='password' onChange={validatePassword}></TextField>
-              <Button type='submit' variant="contained">Login</Button>
-              <Button href='/register' variant="outlined">Sign up</Button>
-              <Stack direction='row' spacing={{xs:1}} 
-                  style={{ justifyContent:"center"}}> 
-                <Typography align='center' style={{ color:'#888888' }}>Forgot 
-                    your password?</Typography>
-                <Link href="" align='center' fontWeight='bold' >Click Here</Link>
-              </Stack>
-            </Stack>
-          </Box>
-        </Container>
-      </Box>
-      
-    </Box>
+    </Stack>
   )
 }
 

@@ -46,3 +46,31 @@
 ```docker exec -i shp-mysql mysql -uadmin -padmin user-db < server/src/migrations/01_init_schema.sql```
 7. Verify table creations in database.   
 ```docker exec -it shp-mysql mysql -uadmin -padmin user-db -e "SHOW TABLES;"```
+
+## Alembic
+### Setup
+1. Navigate to the server directory.
+2. Run the following upgrade command:      
+```alembic upgrade head```  
+2. Run the following command to downgrade the database:     
+    ***Warning:** This command will drop ALL existing tables and their associated data.*    
+```alembic downgrade 81a354f03cae```  
+3. Run the following command to rebuild the tables:   
+```alembic upgrade head``` 
+4. When receiving pull requests with new versions, resume from step 3.
+
+### Adding a Migration
+**For auto-generated migrations:**
+1. Navigate to ```/server/models/dbmodels.py``` and modify/create tables as necessary.
+2. Navigate to the server directory.
+3. Run the following command to ensure you are on the current version:      
+```alembic upgrade head```  
+4. Run the following command to create the migration:   
+```alembic revision --autogenerate -m "Description of migration"```
+
+**For manual migrations:**
+1. Navigate to the server directory.
+2. Run the following command to add a new version:  
+```alembic revision -m "Description of migration"```
+3. Navigate to ```/server/alembic/versions/versionName.py``` and locate the created version file.
+4. Refer to *https://alembic.sqlalchemy.org/en/latest/ops.html* for detail on creating/dropping tables.

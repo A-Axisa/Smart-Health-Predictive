@@ -1,11 +1,31 @@
-import { Box, Typography, List, ListItem, ListItemText, Container } from '@mui/material';
-import UserManagementTable from '../components/UserManagementTable';
+import { Box, Typography, List, ListItem, ListItemText, Container,Button  } from '@mui/material';
+import UserManagementTable from '../components/administrator/UserManagementTable';
+import AccountApprovalTable from '../components/administrator/AccountApprovalTable';
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 
 const AdministratorDashboard = () => {
 
   const [page, setPage] = useState({});
+
+  const navigate = useNavigate();
+
+  async function logout(e) {
+    e.preventDefault();
+
+    await fetch('http://localhost:8000/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.status)
+      }
+      return response.json()
+    }).then(data => {
+      navigate('/login')
+    })
+  }
 
   const UserManagement = () => (
       <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
@@ -18,8 +38,20 @@ const AdministratorDashboard = () => {
       </Box>
   );
 
+    const AccountApproval = () => (
+      <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
+        <Box>
+          <Typography variant='h4' color='primary' sx={{fontWeight: 600, mb: 4}}>
+            Merchant Account Requests
+          </Typography>
+        </Box>
+        <AccountApprovalTable/>
+      </Box>
+  );
+
   const pages = {
-    Users: <UserManagement/>
+    Users: <UserManagement/>,
+    Requests: <AccountApproval/>
   };
 
   return (
@@ -32,7 +64,7 @@ const AdministratorDashboard = () => {
               Admin Dashboard
             </Typography>
             </Box>
-            {['Users'].map((obj) => (
+            {['Users', 'Requests'].map((obj) => (
               <ListItem
                 button
                 key={obj}
@@ -42,7 +74,12 @@ const AdministratorDashboard = () => {
                 <ListItemText primary={obj}/>
               </ListItem>
             ))}
+            <ListItem>
+              <Button variant="outlined" onClick={logout}>Logout</Button>
+            </ListItem>
+            
           </List>
+         
         </Box>
         <Box>
           {pages[page]}
