@@ -155,7 +155,6 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
     for merchant in invalid_merchant_accounts:
         data.append({
-            "id" : merchant.UserID,
             "fullName": merchant.FullName,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
@@ -165,8 +164,8 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
     return data
 
 
-@router.post("/users/merchants/{merchant_id}")
-async def validate_merchant(merchant_id: int, request: Request, db_conn: Session = Depends(get_db)):
+@router.post("/users/merchants/{merchant_email}")
+async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
     # Validate the requesting user
     admin_email = get_current_user(request, db_conn)
     admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
@@ -182,7 +181,7 @@ async def validate_merchant(merchant_id: int, request: Request, db_conn: Session
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
     
     # Begin merchant Validation
-    merchant = db_conn.query(UserAccount).filter(UserAccount.UserID == merchant_id).first()
+    merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
 
     # Ensure that user is a merchant
     if not merchant:

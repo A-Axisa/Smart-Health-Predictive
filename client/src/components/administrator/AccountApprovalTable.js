@@ -48,9 +48,8 @@ const AccountApprovalTable = ({}) => {
   };
 
   const columns = [
-    { field: 'id', headerName: 'User ID', width: 100, sortable: true },
+    { field: 'email', headerName: 'Email', width: 250, sortable: true },
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
-    { field: 'email', headerName: 'Email', width: 250, sortable: false },
     { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
     { 
       field: 'confirm',
@@ -61,7 +60,7 @@ const AccountApprovalTable = ({}) => {
           <Button
             variant='contained'
             onClick={() => {
-              setselectedUser(params.row.id);
+              setselectedUser(params.row.email);
               setDialogOpen(true)
             }}
           >
@@ -82,6 +81,7 @@ const AccountApprovalTable = ({}) => {
       <DataGrid
         rows={userData}
         columns={columns}
+        getRowId={(row) => row.email}
         pageSizeOptions={[50, 100, 1000]}
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
