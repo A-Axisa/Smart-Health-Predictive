@@ -140,3 +140,54 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     _delete_user_data(user_id, db_conn)
 
     return {"message": "User and all related data deleted successfully"}
+
+
+@router.get("/users/merchants/")
+async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
+    invalid_merchant_accounts = db_conn.query(UserAccount) \
+                            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+                            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+                            .filter(AccountRole.RoleName == "merchant") \
+                            .filter(UserAccount.IsValidated == 0) \
+                            .all()
+    
+    data = []
+
+    for merchant in invalid_merchant_accounts:
+        data.append({
+            "fullName": merchant.FullName,
+            "email": merchant.Email,
+            "phoneNumber": merchant.PhoneNumber,
+            "createdAt": merchant.CreatedAt,
+        })
+
+    return data
+
+
+@router.post("/users/merchants/{merchant_email}")
+async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
+    # Validate the requesting user
+    admin_email = get_current_user(request, db_conn)
+    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
+
+    # Verify the requesting user is an administrator
+    if not admin:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
+
+    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
+        .filter(UserAccountRole.UserID == admin.UserID).first()
+
+    if not user_role or user_role.RoleName.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
+    
+    # Begin merchant Validation
+    merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
+
+    # Ensure that user is a merchant
+    if not merchant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
+    
+    merchant.IsValidated = 1
+    db_conn.commit()
+
+    return {"message" : f"Merchant: {merchant.FullName} has been successfully validated."}

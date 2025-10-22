@@ -1,5 +1,6 @@
 import { Box, Typography, List, ListItem, ListItemText, Container,Button  } from '@mui/material';
-import UserManagementTable from '../components/UserManagementTable';
+import UserManagementTable from '../components/administrator/UserManagementTable';
+import AccountApprovalTable from '../components/administrator/AccountApprovalTable';
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
@@ -37,8 +38,20 @@ const AdministratorDashboard = () => {
       </Box>
   );
 
+    const AccountApproval = () => (
+      <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', p:10, alignItems: 'center'}}>
+        <Box>
+          <Typography variant='h4' color='primary' sx={{fontWeight: 600, mb: 4}}>
+            Merchant Account Requests
+          </Typography>
+        </Box>
+        <AccountApprovalTable/>
+      </Box>
+  );
+
   const pages = {
-    Users: <UserManagement/>
+    Users: <UserManagement/>,
+    Requests: <AccountApproval/>
   };
 
   return (
@@ -51,7 +64,7 @@ const AdministratorDashboard = () => {
               Admin Dashboard
             </Typography>
             </Box>
-            {['Users'].map((obj) => (
+            {['Users', 'Requests'].map((obj) => (
               <ListItem
                 button
                 key={obj}
