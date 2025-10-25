@@ -2,9 +2,9 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from ...main import app
 from ...models.dbmodels import UserAccount, UserAccountRole, \
     UserAccountValidationToken
-from ...main import app
 from ...routers.authentication import *
 from ...utils.database import get_db
 
