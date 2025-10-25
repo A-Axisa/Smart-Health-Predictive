@@ -5,6 +5,7 @@ from ...models.dbmodels import UserAccountValidationToken, UserAccount,UserAccou
 from ...routers import authentication
 from ...main import app
 from ...utils.database import get_db 
+from ...routers.authentication import *
 client = TestClient(app)
 
 @pytest.fixture(scope="session", autouse=True)
@@ -97,51 +98,51 @@ def test_sql_injection_password_bypass():
     assert response.json() == {'detail':'Incorrect username or password'}
 
 def test_get_user_matching_email():
-    user = authentication.get_user('test@example.com', next(get_db()))
+    user = get_user('test@example.com', next(get_db()))
     assert user.Email == 'test@example.com'
 
 def test_get_user_not_in_database():
-    user = authentication.get_user("", next(get_db()))
+    user = get_user("", next(get_db()))
     assert user == None
 
 def test_authenticate_user_success():
-    result = authentication.authenticate_user('test@example.com', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('test@example.com', 'thisisavalidpassword', next(get_db()))
     assert result
 
 def test_authentication_incorrect_email():
-    result = authentication.authenticate_user('notmyemail@mail.com', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('notmyemail@mail.com', 'thisisavalidpassword', next(get_db()))
     assert not result
 
 def test_authentication_incorrect_password():
-    result = authentication.authenticate_user('test@example.com', 'incorrectpassword', next(get_db()))
+    result = authenticate_user('test@example.com', 'incorrectpassword', next(get_db()))
     assert not result
 
 def test_authentication_incorrect_credentials():
-    result = authentication.authenticate_user('notmyemail@mail.com', 'incorrectpassword', next(get_db()))
+    result = authenticate_user('notmyemail@mail.com', 'incorrectpassword', next(get_db()))
     assert not result
 
 def test_authentication_empty_email():
-    result = authentication.authenticate_user('', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('', 'thisisavalidpassword', next(get_db()))
     assert not result
 
 def test_authentication_empty_password():
-    result = authentication.authenticate_user('test@example.com', '', next(get_db()))
+    result = authenticate_user('test@example.com', '', next(get_db()))
     assert not result
 
 def test_authentication_empty_password():
-    result = authentication.authenticate_user('', '', next(get_db()))
+    result = authenticate_user('', '', next(get_db()))
     assert not result    
 
 def test_authentication_no_email():
-    result = authentication.authenticate_user(None, 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user(None, 'thisisavalidpassword', next(get_db()))
     assert not result
 
 def test_authentication_no_password():
     with pytest.raises(AttributeError):
-        authentication.authenticate_user('test@example.com', None, next(get_db()))
+        authenticate_user('test@example.com', None, next(get_db()))
     
 def test_authentication_no_credentials():
-    result = authentication.authenticate_user(None, None, next(get_db()))
+    result = authenticate_user(None, None, next(get_db()))
     assert not result
 
 def test_get_current_user_success():
@@ -154,7 +155,7 @@ def test_get_current_user_success():
 def test_get_current_user_no_cookie():
     credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
     client.post('/login/', json=credentials)
-    authentication.invalidate_access_token(credentials['email'], next(get_db()))
+    invalidate_access_token(credentials['email'], next(get_db()))
     response = client.get('/user/me')
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Could not validate credentials'}
@@ -166,24 +167,24 @@ def test_logout_current_user():
     assert response.json() == {'detail': 'Could not validate credentials'}
 
 def test_valid_password():
-    result = authentication.is_password_valid('Amf0fFKp_43rQv$3')
+    result = is_password_valid('Amf0fFKp_43rQv$3')
     assert result
 
 def test_password_too_long():
-    result = authentication.is_password_valid(
+    result = is_password_valid(
         'Amf0fFKp_43rQv$3L$M^mEG;ag;aejp5mpjiga;oigaA$W$?gw?GhawH<whhaA463_)es2')
     assert not result
 
 def test_valid_email():
-    result = authentication.is_email_valid("newemail@test.com")
+    result = is_email_valid("newemail@test.com")
     assert result
 
 def test_validate_none_email():
-    result = authentication.is_email_valid(None)
+    result = is_email_valid(None)
     assert not result
 
 def test_validate_empty_email():
-    result = authentication.is_email_valid("")
+    result = is_email_valid("")
     assert not result
 
 def test_change_password():
