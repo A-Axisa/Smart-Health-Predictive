@@ -12,7 +12,7 @@ client = TestClient(app)
 def setup_once_for_all_tests():
     db_conn = next(get_db())
 
-    # Delete the account with test credentials to rest for testing
+    # Delete the test account if it exists to prepare for test 
     prev_account = db_conn.query(UserAccount).filter_by(Email="test@example.com").first()
     if prev_account:
         user_id = prev_account.UserID
