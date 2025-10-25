@@ -18,8 +18,12 @@ def setup_once_for_all_tests():
         user_id = prev_account.UserID
 
         # Delete user data from tables using user ID as a FK
-        db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user_id).delete(synchronize_session=False)
-        db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user_id).delete(synchronize_session=False)
+        db_conn.query(UserAccountValidationToken) \
+            .filter(UserAccountValidationToken.UserID == user_id) \
+            .delete(synchronize_session=False)
+        db_conn.query(UserAccountRole) \
+            .filter(UserAccountRole.UserID == user_id) \
+            .delete(synchronize_session=False)
 
         # Delete user account
         db_conn.delete(prev_account)
