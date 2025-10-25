@@ -10,7 +10,7 @@ from ...utils.database import get_db
 
 client = TestClient(app)
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def setup_once_for_all_tests():
     db_conn = next(get_db())
 
