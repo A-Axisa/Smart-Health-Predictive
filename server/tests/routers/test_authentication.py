@@ -1,11 +1,13 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from ...models.dbmodels import UserAccountValidationToken, UserAccount,UserAccountRole
-from ...routers import authentication
+
+from ...models.dbmodels import UserAccount, UserAccountRole, \
+    UserAccountValidationToken
 from ...main import app
-from ...utils.database import get_db 
 from ...routers.authentication import *
+from ...utils.database import get_db
+
 client = TestClient(app)
 
 @pytest.fixture(scope="session", autouse=True)
