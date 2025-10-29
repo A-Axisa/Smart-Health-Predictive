@@ -19,6 +19,35 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { LineChart } from '@mui/x-charts/LineChart';
 
+const formatXAxisLabel = (label, index, total, isMobile) => {
+  if (!label) {
+    return label;
+  }
+
+  if (!isMobile) {
+    return label;
+  }
+
+  // Thin out middle ticks for crowded datasets on smaller screens
+  if (total > 4 && index > 0 && index < total - 1) {
+    if (total > 6 && index % 2 === 1) {
+      return '';
+    }
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
+    const [, month, day] = label.split('-');
+    return `${month}/${day}`;
+  }
+
+  const parts = label.split(' ');
+  if (parts.length === 2 && parts[1].length === 4) {
+    return parts[0];
+  }
+
+  return label;
+};
+
 const HealthAnalytics = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -90,9 +119,9 @@ const HealthAnalytics = () => {
     }
   }), [isMobile]);
 
-  const { xAxisData, mobileXAxisData, chartSeries, yAxisMax } = useMemo(() => {
+  const { xAxisData, chartSeries, yAxisMax } = useMemo(() => {
     if (!healthData || healthData.length === 0) {
-      return { xAxisData: [], mobileXAxisData: [], chartSeries: [], yAxisMax: 60 };
+      return { xAxisData: [], chartSeries: [], yAxisMax: 60 };
     }
 
     // Parse dates and sort ascending
@@ -105,7 +134,7 @@ const HealthAnalytics = () => {
       .sort((a, b) => a._dateObj - b._dateObj);
 
     if (parsed.length === 0) {
-      return { xAxisData: [], mobileXAxisData: [], chartSeries: [], yAxisMax: 60 };
+      return { xAxisData: [], chartSeries: [], yAxisMax: 60 };
     }
 
     const minDate = parsed[0]._dateObj;
@@ -191,32 +220,22 @@ const HealthAnalytics = () => {
     const padded = Math.min(100, Math.max(0, maxVal + 5));
     const yMax = Math.max(10, Math.min(100, Math.ceil(padded / 10) * 10));
 
-    const shortLabels = xLabels.map((label, index) => {
-      if (!label) return label;
-      
-      // For mobile, show fewer labels to prevent crowding
-      if (xLabels.length > 4 && index > 0 && index < xLabels.length - 1) {
-        // Skip middle labels if we have many data points
-        if (xLabels.length > 6 && index % 2 === 1) {
-          return '';
-        }
-      }
-      
-      // Shorten date format
-      if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
-        const [, month, day] = label.split('-');
-        return `${month}/${day}`;
-      }
-      // Shorten month-year format
-      const parts = label.split(' ');
-      if (parts.length === 2 && parts[1].length === 4) {
-        return parts[0];
-      }
-      return label;
-    });
-
-    return { xAxisData: xLabels, mobileXAxisData: shortLabels, chartSeries: series, yAxisMax: yMax };
+    return { xAxisData: xLabels, chartSeries: series, yAxisMax: yMax };
   }, [healthData, selectedMetrics, colors]);
+
+  const xAxisValueFormatter = useMemo(() => {
+    if (!xAxisData || xAxisData.length === 0) {
+      return undefined;
+    }
+
+    return (value) => {
+      const index = xAxisData.indexOf(value);
+      if (index === -1) {
+        return value;
+      }
+      return formatXAxisLabel(value, index, xAxisData.length, isMobile);
+    };
+  }, [xAxisData, isMobile]);
 
   return (
     <Container maxWidth="lg" sx={{ py: isMobile ? 3 : 4, px: isMobile ? 2 : 3 }}>
@@ -316,8 +335,9 @@ const HealthAnalytics = () => {
               <LineChart
                 series={chartSeries}
                 xAxis={[{ 
-                  data: isMobile ? mobileXAxisData : xAxisData,
+                  data: xAxisData,
                   scaleType: 'point',
+                  valueFormatter: xAxisValueFormatter,
                   tickLabelStyle: {
                     angle: 0,
                     textAnchor: 'middle',
