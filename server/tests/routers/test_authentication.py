@@ -40,19 +40,19 @@ def setup_once_for_all_tests():
     }
     response = client.post('/register/', json=credentials)
 
-    yield # Wait until all test have finished.
+    yield # Wait until all tests have finished.
 
     # Perform clean-up after all tests.
     # Remove the test user.
     user = db_conn.query(UserAccount).filter_by(Email="test@example.com").first()
     if user:
         db_conn.query(UserAccountValidationToken) \
-            .filter(UserAccountValidationToken.UserID == user_id) \
+            .filter(UserAccountValidationToken.UserID == user.UserID) \
             .delete(synchronize_session=False)
         db_conn.query(UserAccountRole). \
-            filter(UserAccountRole.UserID == user_id). \
+            filter(UserAccountRole.UserID == user.UserID). \
             delete(synchronize_session=False)
-        db_conn.delete(prev_account)
+        db_conn.delete(user)
         db_conn.commit()     
 
 def test_login_with_valid_credentials():
