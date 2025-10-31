@@ -1,8 +1,12 @@
 import { Box, Container, Stack, Typography } from '@mui/material'
 import LoginForm from '../components/authentication/LoginForm'
-import WelcomePanel from '../components/WelcomePanel'
 import Logo from '../assets/WellAiLogoTR.png'
+import WelcomePanel from '../components/WelcomePanel'
 
+/**
+ * Introduces the services and provides forms for logging in to 
+ * the service.
+ */
 const Login = ({}) => {
   return (
     <Stack direction='row' sx={{ backgroundColor:'#127067'}}>
@@ -24,7 +28,7 @@ const Login = ({}) => {
         </Stack>
       </Box>
     </Stack>
-  )
+  );
 }
 
-export default Login
+export default Login;
