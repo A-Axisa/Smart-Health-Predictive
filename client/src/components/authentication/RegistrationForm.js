@@ -1,12 +1,12 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Container, Stack, TextField, Button, Typography, Link,
-  FormControlLabel, Alert, Dialog, DialogContent, DialogTitle,
-  DialogActions, Divider, Radio, 
-  RadioGroup} from '@mui/material'
+         FormControlLabel, Alert, Dialog, DialogContent, DialogTitle,
+         DialogActions, Divider, Radio, 
+         RadioGroup} from '@mui/material'
 import PasswordInputField from '../authentication/PasswordInputField';
 import EmailInputField from '../authentication/EmailInputField';
 import PhoneInputField from '../authentication/PhoneInputField';
-import { useState } from 'react'
 
 const FULL_NAME_MAX_LENGTH = 255
 
