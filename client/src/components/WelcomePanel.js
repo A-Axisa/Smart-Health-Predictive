@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material'
 /**
- * An panel that .   
+ * An panel that introduce the web service.
  */
 const WelcomePanel = ({}) => {
   return (
