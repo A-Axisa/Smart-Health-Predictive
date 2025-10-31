@@ -13,12 +13,11 @@ import { TextField } from '@mui/material';
 const PasswordInputField = ({ onChange, restrictLength=true, truncate=false, 
   showRequired=false, label='Password' }) => {
   
+  const MIN_LENGTH = 14;
+  const MAX_LENGTH = 65;
   const [password, setPassword] = useState('');
   const [isValid, setIsValid] = useState(false);
   const [isAltered, setIsAltered] = useState(false);
-
-  const MIN_LENGTH = 14;
-  const MAX_LENGTH = 65;
 
   async function updateState(e) {
     setIsAltered(true);
@@ -34,7 +33,7 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
       'isValid': isInputValid,
       'password': output_password
     });
-  };
+  }
 
   function isPasswordValid(inputPassword) {
     if(inputPassword.length === 0 ) { return false; }
