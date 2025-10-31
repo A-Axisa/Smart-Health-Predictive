@@ -5,8 +5,9 @@ import { TextField } from '@mui/material';
  * An input field that provides basic validation for an entered password. 
  * 
  * @param {Object} props
- * @param {function} [props.onChange] - Callback function to pass data to parent component.
- * @param {boolean} [props.restrictLength] - Display errors when password is outside the suitable length.
+ * @param {function} [props.onChange] - Callback function called when input is changed.
+ * @param {boolean} [props.restrictLength] - Display an error when password is 
+ *   outside the suitable length.
  * @param {boolean} [props.truncate] - Truncate the password in the onChange callback.
  * @param {boolean} [props.showRequired] - Force the component to show the error state.
  */
