@@ -17,18 +17,18 @@ const ACCOUNT_TYPES = Object.freeze({
 
 const RegistrationForm = ({}) => {
   const navigate = useNavigate();
-  const [nameState, setNameState] = useState(null)
-  const [emailState, setEmailState] = useState(null)
-  const [phoneState, setPhoneState] = useState(null)
-  const [passwordState, setPasswordState] = useState(null)
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [alertNameRequired, setAlertNameRequired] = useState(false)
-  const [alertEmailRequired, setAlertEmailRequired] = useState(false)
-  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
-  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false)
-  const [showFailMessage, setShowFailMessage] = useState(false)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [nameState, setNameState] = useState(null);
+  const [emailState, setEmailState] = useState(null);
+  const [phoneState, setPhoneState] = useState(null);
+  const [passwordState, setPasswordState] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [alertNameRequired, setAlertNameRequired] = useState(false);
+  const [alertEmailRequired, setAlertEmailRequired] = useState(false);
+  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false);
+  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false);
+  const [showFailMessage, setShowFailMessage] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function updateName(e) {
     const isNameValid = e.target.value !== '';
@@ -38,30 +38,30 @@ const RegistrationForm = ({}) => {
 
   function updateEmail(e) {
     setAlertEmailRequired(false);
-    setEmailState(e)
+    setEmailState(e);
   }
 
   function updatePassword(e){
     setAlertPasswordRequired(false);
-    setPasswordState(e)
+    setPasswordState(e);
     setAlertPasswordsDontMatch(confirmPassword != e.password ||
-      e.password == '')
+      e.password == '');
   }
 
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
-    setConfirmPassword(confirmPasswordInput)
+    setConfirmPassword(confirmPasswordInput);
     setAlertPasswordsDontMatch(confirmPasswordInput != passwordState.password ||
-      confirmPasswordInput == '')
+      confirmPasswordInput == '');
   }
 
   function updateAllInputFieldAlerts() {
-    setAlertNameRequired(nameState === null || !nameState.isValid)
-    setAlertEmailRequired(emailState === null)
-    setAlertPasswordRequired(passwordState === null)
+    setAlertNameRequired(nameState === null || !nameState.isValid);
+    setAlertEmailRequired(emailState === null);
+    setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(passwordState === null || 
       confirmPassword != passwordState.password ||
-      confirmPassword == '')
+      confirmPassword == '');
   }
 
   function isAllInputsValid() {
@@ -69,7 +69,7 @@ const RegistrationForm = ({}) => {
       emailState !== null && emailState.isValid &&
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null && passwordState.isValid &&
-      passwordState.password == confirmPassword
+      passwordState.password == confirmPassword;
   }
 
   function generateUnsuccessfulCreationAlert() {
@@ -80,8 +80,8 @@ const RegistrationForm = ({}) => {
   }
 
   function handleCloseMessage() {
-    setShowSuccessMessage(false)
-    navigate('/login')
+    setShowSuccessMessage(false);
+    navigate('/login');
   } 
 
   async function handleRegistration(e) {
@@ -93,7 +93,7 @@ const RegistrationForm = ({}) => {
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Post the fetch request with the supplied details.
     await fetch('http://localhost:8000/register', {
@@ -118,8 +118,8 @@ const RegistrationForm = ({}) => {
       setShowFailMessage(false);
     }).catch(error => {
       console.log(error)
-    })
-    setIsLoading(false)
+    });
+    setIsLoading(false);
   }
 
   return (
@@ -191,7 +191,7 @@ const RegistrationForm = ({}) => {
         </Stack>
       </Container>
     </Container>
-  )
+  );
 }
 
-export default RegistrationForm
+export default RegistrationForm;
