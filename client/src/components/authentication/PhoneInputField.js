@@ -8,7 +8,8 @@ import { getCountries, parsePhoneNumberFromString} from 'libphonenumber-js';
  * selection for the country code.
  * 
  * @param {Object} props
- * @param {function} [props.onChange] - Callback function to pass data to parent component.
+ * @param {function} [props.onChange] - Callback function called when input 
+ *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
   const [selectedCountry, setSelectedCountry] = useState('');
