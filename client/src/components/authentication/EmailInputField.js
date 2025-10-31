@@ -24,7 +24,7 @@ const EmailInputField = ({ onChange, showRequired=false }) => {
       'isValid': isInputValid,
       'email': inputEmail
     });
-  };
+  }
 
   function displayErrorText() {
     if (!isAltered && !showRequired) { return null; }
