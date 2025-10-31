@@ -9,7 +9,6 @@ import EmailInputField from '../authentication/EmailInputField';
 import PhoneInputField from '../authentication/PhoneInputField';
 
 const FULL_NAME_MAX_LENGTH = 255
-
 const ACCOUNT_TYPES = Object.freeze({
   STANDARD: 'user',
   MERCHANT: 'merchant',
@@ -74,7 +73,8 @@ const RegistrationForm = ({}) => {
 
   function generateUnsuccessfulCreationAlert() {
     if (showFailMessage){
-      return <Alert variant="filled" severity="error"> Account creation unsuccessful.</Alert>
+      return <Alert variant="filled" severity="error"> 
+        Account creation unsuccessful.</Alert>
     }
     return null;
   }
