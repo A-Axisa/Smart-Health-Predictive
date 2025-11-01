@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import health_prediction, authentication, users, roles, userRoles 
+from .routers import health_prediction, authentication, users, admin 
 
 ORIGINS = [
     "http://localhost:3000",
@@ -24,5 +24,4 @@ async def root():
 app.include_router(health_prediction.router)
 app.include_router(authentication.router)
 app.include_router(users.router)
-app.include_router(roles.router)
-app.include_router(userRoles.router)
+app.include_router(admin.router)
