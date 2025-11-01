@@ -3,10 +3,9 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone, UTC
 from secrets import token_urlsafe
 
-import bcrypt
 import jwt
 import phonenumbers
-from email_validator import validate_email, EmailNotValidError
+from email_validator import validate_email
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.responses import HTMLResponse
 from jwt.exceptions import InvalidTokenError
