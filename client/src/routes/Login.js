@@ -7,7 +7,7 @@ import WelcomePanel from '../components/WelcomePanel'
  * Introduces the services and provides forms for logging in to 
  * the service.
  */
-const Login = ({}) => {
+const Login = () => {
   return (
     <Stack direction='row' sx={{ backgroundColor:'#127067'}}>
       <WelcomePanel />

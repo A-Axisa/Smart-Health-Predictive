@@ -3,7 +3,7 @@ import { Box, Stack, Typography } from '@mui/material'
 /**
  * An panel that introduce the web service.
  */
-const WelcomePanel = ({}) => {
+const WelcomePanel = () => {
   return (
     <Box sx={{ display:{xs:'none', sm:'none', md:'none', lg:'block'}, 
       backgroundImage:'linear-gradient(to top left, #133a37ff, #127067)',

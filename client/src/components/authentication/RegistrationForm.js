@@ -14,7 +14,7 @@ const ACCOUNT_TYPES = Object.freeze({
   MERCHANT: 'merchant',
 })
 
-const RegistrationForm = ({}) => {
+const RegistrationForm = () => {
   const navigate = useNavigate();
   const [nameState, setNameState] = useState(null);
   const [emailState, setEmailState] = useState(null);
