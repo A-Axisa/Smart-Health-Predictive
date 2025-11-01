@@ -41,7 +41,7 @@ diabetesModel = joblib.load("predictionModels/model_diabetes_h.joblib")
 
 router = APIRouter()
 
-@router.post("/AIPrediction/")
+@router.post("/healthPrediction/")
 async def predict(data: HealthDataInput,request: Request, db_conn: Session = Depends(get_db), \
                   CSVUserID: Optional[int] = None):
 

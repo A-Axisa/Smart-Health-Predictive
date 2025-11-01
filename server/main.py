@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import items,AIPrediction, getHealthDataDates, authentication, health_analytics, health_analytics, reportData, users, roles, userRoles 
+from .routers import health_prediction, items,getHealthDataDates, authentication, health_analytics, health_analytics, reportData, users, roles, userRoles 
 
 ORIGINS = [
     "http://localhost:3000",
@@ -22,7 +22,7 @@ async def root():
     return {"message": "Hello World"}
 
 app.include_router(items.router)
-app.include_router(AIPrediction.router)
+app.include_router(health_prediction.router)
 app.include_router(getHealthDataDates.router)
 app.include_router(reportData.router)
 app.include_router(authentication.router)

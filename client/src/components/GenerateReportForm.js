@@ -182,7 +182,7 @@ const GenerateReportForm = () => {
 
 
     // Fetch request for AI Model
-    await fetch('http://localhost:8000/AIPrediction', {
+    await fetch('http://localhost:8000/healthPrediction', {
       method: 'POST',
       credentials: "include",
       headers: {

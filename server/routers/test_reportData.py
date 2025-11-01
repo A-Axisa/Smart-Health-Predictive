@@ -31,7 +31,7 @@ def setup_once_for_all_tests():
     "merchantID": None
     }
 
-    client.post("/AIPrediction/", json=testHealthData)
+    client.post("/healthPrediction/", json=testHealthData)
     # Return the testHeatlhData to use in tests
     yield testHealthData
 
