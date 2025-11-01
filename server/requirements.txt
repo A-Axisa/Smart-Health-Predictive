@@ -18,3 +18,6 @@ openai==2.0.0
 email-validator==2.3.0
 alembic==1.17.0
 azure-communication-email==1.0.0
+argon2-cffi==23.1.0
+argon2-cffi-bindings==25.1.0
+pwdlib==0.2.1

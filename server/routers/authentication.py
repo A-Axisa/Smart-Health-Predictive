@@ -10,6 +10,8 @@ from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.responses import HTMLResponse
 from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -56,6 +58,12 @@ class ChangePasswordDetails(BaseModel):
 load_dotenv()
 
 router = APIRouter()
+owasp_argon2_hasher = Argon2Hasher(
+    memory_cost=19456, # 19 MiB
+    time_cost=2,
+    parallelism=1,
+)
+password_hasher = PasswordHash((owasp_argon2_hasher,))
 
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
@@ -71,8 +79,7 @@ async def register(user_reg: UserRegistrationDetails, \
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     # Always hash the password to obfuscate success and failure.
-    password_hash = bcrypt.hashpw(user_reg.password.encode('utf-8'), \
-                                  bcrypt.gensalt(rounds=15))
+    password_hash = password_hasher.hash(user_reg.password)
     new_user = UserAccount(
         user_reg.username,
         user_reg.email,
@@ -235,7 +242,7 @@ def authenticate_user(email: str, password: str, db_conn: Session):
     return user
 
 def verify_password(password_text: str, password_hash: str) -> bool:
-    return bcrypt.checkpw(password_text.encode('utf-8'), password_hash.encode('utf-8'))
+    return password_hasher.verify(password_text, password_hash)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -360,6 +367,7 @@ def is_name_valid(name: str):
 
 def is_role_valid(role: str):
     return role in ACCOUNT_TYPE.keys()
+
 @router.post('/changePassword')
 def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve current user data
@@ -374,8 +382,8 @@ def change_password_current_user(password_details: ChangePasswordDetails,request
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
    
     # Hash password
-    new_password_hash = bcrypt.hashpw(password_details.new_password.encode('utf-8'), \
-                                  bcrypt.gensalt(rounds=15))
+    new_password_hash = password_hasher.hash(password_details.new_password.encode('utf-8'))
+    
     # Change current password to new password
     user.PasswordHash = new_password_hash
     db_conn.commit()
