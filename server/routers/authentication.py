@@ -351,7 +351,6 @@ def is_formatted_phone_valid(phone: str):
         return False
     try:
         validated_phone = phonenumbers.parse(phone)
-        is_valid_email = validate_email(email, check_deliverability=False) # Disable strict testing for dev 
     except Exception as e:
         return False
     return True
