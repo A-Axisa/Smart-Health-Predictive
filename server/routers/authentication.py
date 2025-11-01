@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from secrets import token_urlsafe
 
 import bcrypt
@@ -92,7 +92,7 @@ async def register(user_reg: UserRegistrationDetails, \
 
     # Create account validation token
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-    expires_at = datetime.utcnow() + \
+    expires_at = datetime.now(UTC) + \
         timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
     acc_validation_token = UserAccountValidationToken(new_user_id, \
                                                       validation_token,
