@@ -71,8 +71,8 @@ const UserLanding = ({ }) => {
 				<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
 					<Stack spacing={2}>
 						<Button variant="outlined" onClick={logout}>Logout</Button>
-						<Button type='submit' href="generate-report" variant="contained" size="large">Generate Report </Button>
-						<Button type='submit' href="ai-health-prediction" variant="contained" size="large">Health Prediction History</Button>
+						<Button type='submit' onClick={() => navigate("/generate-report")} variant="contained" size="large">Generate Report </Button>
+						<Button type='submit' onClick={() => navigate("/ai-health-prediction")}  variant="contained" size="large">Health Prediction History</Button>
 					</Stack>
 				</CardActions>
 			</Card>
@@ -110,7 +110,7 @@ const UserLanding = ({ }) => {
 						</Typography>
 					</CardContent>
 					<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-						<Button variant="contained" href="user-settings">User Settings</Button>
+						<Button variant="contained" onClick={() => navigate("/user-settings")} >User Settings</Button>
 					</CardActions>
 				</Card>
 
@@ -140,7 +140,7 @@ const UserLanding = ({ }) => {
 						</Typography>
 					</CardContent>
 					<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-						<Button variant="contained" href="health-analytics">Health Analytics</Button>
+						<Button variant="contained" nClick={() => navigate("/health-analytics")}>Health Analytics</Button>
 					</CardActions>
 				</Card>
 			</Box>

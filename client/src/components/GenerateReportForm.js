@@ -24,6 +24,8 @@ const GenerateReportForm = () => {
   const [alertAgeRequired, setAlertAgeRequired] = useState(false)
   const [height, setHeight] = useState(null)
   const [alertHeightRequired, setAlertHeightRequired] = useState(false)
+  const [gender, setGender] = useState(null)
+  const [alertGenderRequired, setAlertGenderRequired] = useState(false)
   const [bloodGlucose, setBloodGlucose] = useState(null);
   const [alertBloodGlucoseRequired, setAlertBloodGlucoseRequired] = useState(false);
   const [apLow, setApLow] = useState(null);
@@ -68,6 +70,11 @@ const GenerateReportForm = () => {
     const isHeightValid = heightValue !== "" && heightValue >= 0 && heightValue <= 3;
     setHeight({ isValid: isHeightValid, value: heightValue });
     setAlertHeightRequired(!isHeightValid);
+  }
+
+  function updateGender(e) {
+    setGender(e.target.value);
+    setAlertGenderRequired(false);
   }
 
   function updateBloodGlucose(e) {
@@ -132,6 +139,7 @@ const GenerateReportForm = () => {
     return weight !== null && weight.isValid &&
       age !== null && age.isValid &&
       height !== null && height.isValid &&
+      gender !== null &&
       bloodGlucose !== null && bloodGlucose.isValid &&
       apLow !== null && apLow.isValid &&
       apHigh !== null && apHigh.isValid &&
@@ -149,6 +157,7 @@ const GenerateReportForm = () => {
     setAlertWeightRequired(weight === null || !weight.isValid);
     setAlertAgeRequired(age === null || !age.isValid);
     setAlertHeightRequired(height === null || !height.isValid);
+    setAlertGenderRequired(gender === null);
     setAlertBloodGlucoseRequired(bloodGlucose === null || !bloodGlucose.isValid);
     setAlertApLowRequired(apLow === null || !apLow.isValid);
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
@@ -183,7 +192,7 @@ const GenerateReportForm = () => {
         age: e.target.age.value,
         weight: e.target.weight.value,
         height: e.target.height.value,
-        gender: 1,
+        gender: e.target.gender.value,
         bloodGlucose: e.target.bloodGlucose.value,
         ap_hi: e.target.apHigh.value,
         ap_lo: e.target.apLow.value,
@@ -231,6 +240,19 @@ const GenerateReportForm = () => {
 
               <TextField name="height" label="Height (m)" type="text" inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }} fullWidth onChange={updateHeight}
                 error={alertHeightRequired} helperText={alertHeightRequired ? '*Please enter a valid height (0-3m)' : null} />
+
+              <FormLabel>Gender
+                <RadioGroup row name="gender" onChange={updateGender}>
+                  <FormControlLabel value="1" control={<Radio />} label="Male" />
+                  <FormControlLabel value="0" control={<Radio />} label="Female" />
+                </RadioGroup>
+
+                {alertGenderRequired && (
+                  <Typography color="error" variant="caption">
+                    *Please select an option
+                  </Typography>
+                )}
+              </FormLabel>
             </Box>
             {/* Fitness Section */}
             <Typography variant="h5" sx={{ mb: 2, mt: 2, color: 'primary.main', fontWeight: 600, textAlign: 'center' }} >
@@ -240,14 +262,16 @@ const GenerateReportForm = () => {
               <TextField name="bloodGlucose" label="Blood Glucose" type="text" inputProps={{ step: "0.01", min: 0, max: 20, maxLength: 4 }} fullWidth
                 onChange={updateBloodGlucose}
                 error={alertBloodGlucoseRequired} helperText={alertBloodGlucoseRequired ? '*Please enter a valid BloodGlucose (0-20mmol/L)' : null} />
-
-              <TextField name="apLow" label="AP Low" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
-                onChange={updateApLow}
-                error={alertApLowRequired} helperText={alertApLowRequired ? '*Please enter a valid AP Low (0-200 mmHg)' : null} />
-
-              <TextField name="apHigh" label="AP High" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
+              <TextField name="apHigh" label="Systolic Blood Pressure" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
                 onChange={updateApHigh}
                 error={alertApHighRequired} helperText={alertApHighRequired ? '*Please enter a valid AP High (0-200 mmHg)' : null} />
+
+
+              <TextField name="apLow" label="Diastolic Blood Pressure" type="text" inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }} fullWidth
+                onChange={updateApLow}
+                error={alertApLowRequired} helperText={alertApLowRequired ? '*Please enter a valid Diastolic Pressure (0-200 mmHg)' : null} />
+
+            
 
               {/* Fitness Section */}
               <FormLabel>Exercise

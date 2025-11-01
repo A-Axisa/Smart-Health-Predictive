@@ -19,6 +19,7 @@ import AppThemeProvider from './components/AppThemeProvider';
 import ProtectedRoutes from './utils/ProtectedRoutes'
 import LandingRoute from './utils/LandingRoute'
 import { UserProvider } from './utils/UserContext';
+import ErrorPage from './routes/ErrorPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -27,11 +28,16 @@ root.render(
       <UserProvider>
         <BrowserRouter>
           <Routes>
-            {/*This can be changed later. This will make login render on loading*/}
-            <Route path="/" element={<Login />} />
+           
+            
 
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route element={<ProtectedRoutes />}>
+              {/*This can be changed later. This will make login render on loading*/}
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+
 
             {/*Route to a different landing paged based on the users role*/}
             <Route path="/landing" element={<LandingRoute />} />
@@ -56,9 +62,9 @@ root.render(
             <Route element={<ProtectedRoutes role='admin' />}>
               <Route path="/admin-dashboard" element={<AdministratorDashboard />} />
             </Route>
-          
-            <Route path="" element={<App />} />
-            <Route path="*" element={<App />} />
+
+            <Route path="" element={<ErrorPage />} />
+            <Route path="*" element={<ErrorPage />} />
           </Routes>
         </BrowserRouter>
       </UserProvider>
