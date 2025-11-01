@@ -140,7 +140,7 @@ const UserLanding = ({ }) => {
 						</Typography>
 					</CardContent>
 					<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-						<Button variant="contained" nClick={() => navigate("/health-analytics")}>Health Analytics</Button>
+						<Button variant="contained" onClick={() => navigate("/health-analytics")}>Health Analytics</Button>
 					</CardActions>
 				</Card>
 			</Box>
