@@ -1,34 +1,33 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Container, Stack, TextField, Button, Typography, Link,
-  FormControlLabel, Alert, Dialog, DialogContent, DialogTitle,
-  DialogActions, Divider, Radio, 
-  RadioGroup} from '@mui/material'
+         FormControlLabel, Alert, Dialog, DialogContent, DialogTitle,
+         DialogActions, Divider, Radio, 
+         RadioGroup} from '@mui/material'
 import PasswordInputField from '../authentication/PasswordInputField';
 import EmailInputField from '../authentication/EmailInputField';
 import PhoneInputField from '../authentication/PhoneInputField';
-import { useState } from 'react'
 
 const FULL_NAME_MAX_LENGTH = 255
-
 const ACCOUNT_TYPES = Object.freeze({
   STANDARD: 'user',
   MERCHANT: 'merchant',
 })
 
-const RegistrationForm = ({}) => {
+const RegistrationForm = () => {
   const navigate = useNavigate();
-  const [nameState, setNameState] = useState(null)
-  const [emailState, setEmailState] = useState(null)
-  const [phoneState, setPhoneState] = useState(null)
-  const [passwordState, setPasswordState] = useState(null)
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [alertNameRequired, setAlertNameRequired] = useState(false)
-  const [alertEmailRequired, setAlertEmailRequired] = useState(false)
-  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
-  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false)
-  const [showFailMessage, setShowFailMessage] = useState(false)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [nameState, setNameState] = useState(null);
+  const [emailState, setEmailState] = useState(null);
+  const [phoneState, setPhoneState] = useState(null);
+  const [passwordState, setPasswordState] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [alertNameRequired, setAlertNameRequired] = useState(false);
+  const [alertEmailRequired, setAlertEmailRequired] = useState(false);
+  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false);
+  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false);
+  const [showFailMessage, setShowFailMessage] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function updateName(e) {
     const isNameValid = e.target.value !== '';
@@ -38,30 +37,30 @@ const RegistrationForm = ({}) => {
 
   function updateEmail(e) {
     setAlertEmailRequired(false);
-    setEmailState(e)
+    setEmailState(e);
   }
 
   function updatePassword(e){
     setAlertPasswordRequired(false);
-    setPasswordState(e)
-    setAlertPasswordsDontMatch(confirmPassword != e.password ||
-      e.password == '')
+    setPasswordState(e);
+    setAlertPasswordsDontMatch(confirmPassword !== e.password ||
+      e.password === '');
   }
 
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
-    setConfirmPassword(confirmPasswordInput)
-    setAlertPasswordsDontMatch(confirmPasswordInput != passwordState.password ||
-      confirmPasswordInput == '')
+    setConfirmPassword(confirmPasswordInput);
+    setAlertPasswordsDontMatch(confirmPasswordInput !== passwordState.password ||
+      confirmPasswordInput === '');
   }
 
   function updateAllInputFieldAlerts() {
-    setAlertNameRequired(nameState === null || !nameState.isValid)
-    setAlertEmailRequired(emailState === null)
-    setAlertPasswordRequired(passwordState === null)
+    setAlertNameRequired(nameState === null || !nameState.isValid);
+    setAlertEmailRequired(emailState === null);
+    setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(passwordState === null || 
-      confirmPassword != passwordState.password ||
-      confirmPassword == '')
+      confirmPassword !== passwordState.password ||
+      confirmPassword === '');
   }
 
   function isAllInputsValid() {
@@ -69,19 +68,20 @@ const RegistrationForm = ({}) => {
       emailState !== null && emailState.isValid &&
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null && passwordState.isValid &&
-      passwordState.password == confirmPassword
+      passwordState.password === confirmPassword;
   }
 
   function generateUnsuccessfulCreationAlert() {
     if (showFailMessage){
-      return <Alert variant="filled" severity="error"> Account creation unsuccessful.</Alert>
+      return <Alert variant="filled" severity="error"> 
+        Account creation unsuccessful.</Alert>
     }
     return null;
   }
 
   function handleCloseMessage() {
-    setShowSuccessMessage(false)
-    navigate('/login')
+    setShowSuccessMessage(false);
+    navigate('/login');
   } 
 
   async function handleRegistration(e) {
@@ -93,7 +93,7 @@ const RegistrationForm = ({}) => {
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Post the fetch request with the supplied details.
     await fetch('http://localhost:8000/register', {
@@ -118,8 +118,8 @@ const RegistrationForm = ({}) => {
       setShowFailMessage(false);
     }).catch(error => {
       console.log(error)
-    })
-    setIsLoading(false)
+    });
+    setIsLoading(false);
   }
 
   return (
@@ -191,7 +191,7 @@ const RegistrationForm = ({}) => {
         </Stack>
       </Container>
     </Container>
-  )
+  );
 }
 
-export default RegistrationForm
+export default RegistrationForm;
