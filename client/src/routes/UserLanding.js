@@ -10,9 +10,22 @@ import {
 	CardActions
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
 
 const UserLanding = ({ }) => {
 	const navigate = useNavigate();
+	const [name, setName] = useState(null)
+
+	useEffect(() => {
+		fetch(`http://localhost:8000/user/me`, {
+			method: "GET",
+			credentials: "include"
+		})
+			.then(response => response.json())
+			.then(user => {
+				setName(user.name);
+			})
+	}, []);
 
 	async function logout(e) {
 		e.preventDefault();
@@ -29,6 +42,7 @@ const UserLanding = ({ }) => {
 			navigate('/login')
 		})
 	}
+
 
 	return (
 		<Box
@@ -54,7 +68,7 @@ const UserLanding = ({ }) => {
 				flexDirection: "column"
 			}}>
 				<Typography variant="h3" fontWeight={600} color="primary" align="center">
-					Welcome, [First Name]
+					Welcome{ name ? "," + name.split(' ')[0] : ""} 
 				</Typography>
 				<CardContent>
 					<Typography variant="h6">

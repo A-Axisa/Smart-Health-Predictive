@@ -292,6 +292,7 @@ def get_current_user(request: Request, db_conn: Session):
 
 
     return {
+        'name': user.FullName,
         'email': user.Email,
         'role': user_role
     }
