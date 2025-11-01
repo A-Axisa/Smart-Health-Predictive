@@ -1,45 +1,72 @@
+from datetime import datetime
+from decimal import Decimal
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import List
 
 from ..utils.database import get_db
 from ..models.dbmodels import (
     UserAccount,
     UserAccountRole,
     AccountRole,
-    HealthData,
     UserAccountValidationToken,
+    HealthData,
     Prediction,
     Recommendation,
 )
-from ..routers.authentication import get_current_user, get_user
+from ..routers.authentication import get_current_user, get_user, get_user_me
+
+# Health Analysis
+class HealthMetric(BaseModel):
+    # ISO datetime string of the prediction creation time
+    date: str
+    month: str
+    strokeProbability: float
+    cardioProbability: float
+    diabetesProbability: float
+
+class Report(BaseModel):
+    age: int
+    weight: float
+    height: float
+    gender: int
+    bloodGlucose: float
+    ap_hi: float            
+    ap_lo: float            
+    highCholesterol: int    
+    exercise: int
+    hyperTension: int
+    heartDisease: int
+    diabetes: int
+    alcohol: int
+    smoker: int
+    maritalStatus: int
+    workingStatus: int
+    strokeChance: float
+    CVDChance : float
+    diabetesChance : float
+    # Optional recommendations
+    exerciseRecommendation: Optional[str] = None
+    dietRecommendation: Optional[str] = None
+    lifestyleRecommendation: Optional[str] = None
+    dietToAvoidRecommendation: Optional[str] = None
+
+class HealthDataDates(BaseModel):
+    healthDataID: int
+    date: datetime
+
+def _to_float(val) -> float:
+    if isinstance(val, Decimal):
+        return float(val)
+    try:
+        return float(val)
+    except Exception:
+        return 0.0
 
 
 router = APIRouter()
-
-@router.get("/users/")
-async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount, AccountRole). \
-        outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
-        outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
-        all()
-    
-    result = []
-
-    for user, role in users:
-        result.append({
-            "id": user.UserID,
-            "fullName": user.FullName,
-            "email": user.Email,
-            "phoneNumber": user.PhoneNumber,
-            "createdAt": user.CreatedAt,
-            "role": {
-                "id": role.RoleID if role else None,
-                "name": role.RoleName if role else None
-            }
-        })
-
-    return result
 
 def _delete_user_data(user_id: int, db_conn: Session):
     """
@@ -88,40 +115,6 @@ def _delete_user_data(user_id: int, db_conn: Session):
         # Log the exception e for debugging if needed
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete user data: {str(e)}")
 
-@router.delete("/users/{user_id}")
-async def delete_user_by_admin(user_id: int, request: Request, db_conn: Session = Depends(get_db)):
-    # Get the current user making the request
-    current_user_data = get_current_user(request, db_conn)
-    requesting_user_email = current_user_data.get('email')
-    
-    # Verify the requesting user is an administrator
-    admin_user = db_conn.query(UserAccount).filter(UserAccount.Email == requesting_user_email).first()
-    if not admin_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
-
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID).filter(UserAccountRole.UserID == admin_user.UserID).first()
-
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
-
-    # Prevent admin from deleting themselves
-    if admin_user.UserID == user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Administrators cannot delete their own accounts.")
-
-    # Find the user to delete to get their details before deletion
-    user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
-    if not user_to_delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User to delete not found.")
-    
-    # Perform the deletion and get the report
-    deletion_report = _delete_user_data(user_id, db_conn)
-
-    return {
-        "message": f"User with ID {user_id} and all related data deleted successfully",
-        "deletion_report": deletion_report
-    }
-
-
 @router.delete("/users/")
 async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     # Current request user
@@ -142,52 +135,170 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     return {"message": "User and all related data deleted successfully"}
 
 
-@router.get("/users/merchants/")
-async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
-    invalid_merchant_accounts = db_conn.query(UserAccount) \
-                            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
-                            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
-                            .filter(AccountRole.RoleName == "merchant") \
-                            .filter(UserAccount.IsValidated == 0) \
-                            .all()
+
+# Health analytics
+@router.get("/api/health-analytics", response_model=List[HealthMetric])
+async def get_health_analytics(
+    request: Request,
+    db_conn: Session = Depends(get_db),
+):
+    """
+    Returns time-series health risk probabilities for the current user
+    using historical predictions stored in the database.
+    """
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+    if not user:
+        return []
+    user_id = user.UserID
+
+    # Join predictions with health data to scope by user, order by prediction time
+    rows = (
+        db_conn.query(
+            getattr(Prediction, 'CreatedAt'),
+            getattr(Prediction, 'StrokeChance'),
+            getattr(Prediction, 'CVDChance'),
+            getattr(Prediction, 'DiabetesChance'),
+        )
+        .join(
+            HealthData,
+            getattr(Prediction, 'HealthDataID') == getattr(HealthData, 'HealthDataID'),
+        )
+        .filter(getattr(HealthData, 'UserID') == user_id)
+        .order_by(getattr(Prediction, 'CreatedAt').asc())
+        .all()
+    )
+
+    def month_label(dt: datetime) -> str:
+        # e.g., 'Jan 2025' to help distinguish years if data spans multiple years
+        try:
+            return dt.strftime("%b %Y")
+        except Exception:
+            return str(dt)
+
+    data: List[HealthMetric] = []
+    for created_at, stroke, cvd, diab in rows:
+        data.append(
+            HealthMetric(
+                date=(created_at.isoformat() if isinstance(created_at, datetime) else str(created_at)),
+                month=month_label(created_at),
+                strokeProbability=_to_float(stroke),
+                cardioProbability=_to_float(cvd),
+                diabetesProbability=_to_float(diab),
+            )
+        )
+
+    return data
+
+# Report Data
+@router.get("/reportData/{healthDataId}")
+async def get_report_data(healthDataId:int, db_conn: Session = Depends(get_db)):
+   
+    validID = db_conn.query(HealthData).filter_by(HealthDataID=healthDataId).first()
+    if not validID:
+        raise HTTPException(status_code=404, detail="Report data not found")
+   
+   
+    # Retrieve user health data
+    healthData = db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == healthDataId).first()
+    predictionData = db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == healthDataId).first()
+    recommendationData = db_conn.query(Recommendation).filter(getattr(Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
+    
+    # Create health report data to return
+    reportData = Report(
+        age=int(getattr(healthData, 'Age', 0) or 0),
+        weight=float(getattr(healthData, 'WeightKilograms', 0) or 0),
+        height=float(getattr(healthData, 'HeightMeters', 0) or 0),
+        gender=int(1 if bool(getattr(healthData, 'Gender', False) or False) else 0),
+        bloodGlucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
+        ap_hi=float(getattr(healthData, 'APHigh', 0) or 0),
+        ap_lo=float(getattr(healthData, 'APLow', 0) or 0),
+        highCholesterol=int(1 if bool(getattr(healthData, 'HighCholesterol', False) or False) else 0),
+        exercise=int(1 if bool(getattr(healthData, 'Exercise', False) or False) else 0),
+        hyperTension=int(1 if bool(getattr(healthData, 'HyperTension', False) or False) else 0),
+        heartDisease=int(1 if bool(getattr(healthData, 'HeartDisease', False) or False) else 0),
+        diabetes=int(1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
+        alcohol=int(1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
+        smoker=int(1 if bool(getattr(healthData, 'SmokingStatus', False) or False) else 0),
+        maritalStatus=int(1 if bool(getattr(healthData, 'MaritalStatus', False) or False) else 0),
+        workingStatus=int(1 if bool(getattr(healthData, 'WorkingStatus', False) or False) else 0),
+        strokeChance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
+        CVDChance=float(getattr(predictionData, 'CVDChance', 0) or 0),
+        diabetesChance=float(getattr(predictionData, 'DiabetesChance', 0) or 0),
+        exerciseRecommendation=getattr(recommendationData, 'ExerciseRecommendation', None) if recommendationData else None,
+        dietRecommendation=getattr(recommendationData, 'DietRecommendation', None) if recommendationData else None,
+        lifestyleRecommendation=getattr(recommendationData, 'LifestyleRecommendation', None) if recommendationData else None,
+        dietToAvoidRecommendation=getattr(recommendationData, 'DietToAvoidRecommendation', None) if recommendationData else None,
+    )
+
+    # Return reportData object
+    return reportData
+
+@router.delete("/reportData/{healthDataId}")
+async def delete_report_data(healthDataId:int, db_conn: Session = Depends(get_db)):
+   
+   # Raise exception if health data is not in the DB
+    health_data = db_conn.query(HealthData).filter_by(HealthDataID=healthDataId).first()
+    if not health_data:
+        raise HTTPException(status_code=404, detail="Health report not found")
+   
+    try:
+        # Delete recommendation and prediction data first to avoid a foreign key error
+        db_conn.query(Recommendation).filter(getattr(Recommendation, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        # Delete health data
+        db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        
+        db_conn.commit()
+    except Exception:
+        db_conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete health data.")
+
+    return {"message": "Health report data successfully deleted"}
+
+@router.get("/merchants/reports")
+async def get_patient_reports(request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve the current merchant
+    currentUser = await get_user_me(request, db_conn)
+    merchantEmail = currentUser.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
+
+    # Verify that the user making the request is a merchant
+    merchant_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
+        .filter(UserAccountRole.UserID == merchant.UserID).first()
+    
+    if not merchant_role or merchant_role.RoleName.lower() != "merchant":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to perform this action.")
+
+    # Filter health data submitted by the merchant
+    patientData = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
+                .order_by(HealthData.CreatedAt.desc()).all()
     
     data = []
 
-    for merchant in invalid_merchant_accounts:
+    # Add each user and their corrosponding health data
+    for row in patientData:
+        # Query to access patient name
+        patient = db_conn.query(UserAccount).filter_by(UserID=row.UserID).first()
+
         data.append({
-            "fullName": merchant.FullName,
-            "email": merchant.Email,
-            "phoneNumber": merchant.PhoneNumber,
-            "createdAt": merchant.CreatedAt,
+            "name" : patient.FullName,
+            "healthDataID" : row.HealthDataID,
+            "date" : row.CreatedAt
         })
 
     return data
 
+@router.get("/getHealthDataDates/")
+async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve user current user information
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
 
-@router.post("/users/merchants/{merchant_email}")
-async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    # Validate the requesting user
-    admin_email = get_current_user(request, db_conn)
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
-
-    # Verify the requesting user is an administrator
-    if not admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
-
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
-        .filter(UserAccountRole.UserID == admin.UserID).first()
-
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
+    # Retrieve user health data
+    healthData = db_conn.query(HealthData).filter(HealthData.UserID == user.UserID).order_by(HealthData.CreatedAt.desc()).all()
     
-    # Begin merchant Validation
-    merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
+    # Filter by ID and date create to return
+    healthDataDates = [HealthDataDates(healthDataID=data.HealthDataID,date=data.CreatedAt) for data in healthData]
 
-    # Ensure that user is a merchant
-    if not merchant:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
-    
-    merchant.IsValidated = 1
-    db_conn.commit()
-
-    return {"message" : f"Merchant: {merchant.FullName} has been successfully validated."}
+    return healthDataDates
