@@ -43,15 +43,15 @@ const RegistrationForm = () => {
   function updatePassword(e){
     setAlertPasswordRequired(false);
     setPasswordState(e);
-    setAlertPasswordsDontMatch(confirmPassword != e.password ||
-      e.password == '');
+    setAlertPasswordsDontMatch(confirmPassword !== e.password ||
+      e.password === '');
   }
 
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
-    setAlertPasswordsDontMatch(confirmPasswordInput != passwordState.password ||
-      confirmPasswordInput == '');
+    setAlertPasswordsDontMatch(confirmPasswordInput !== passwordState.password ||
+      confirmPasswordInput === '');
   }
 
   function updateAllInputFieldAlerts() {
@@ -59,8 +59,8 @@ const RegistrationForm = () => {
     setAlertEmailRequired(emailState === null);
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(passwordState === null || 
-      confirmPassword != passwordState.password ||
-      confirmPassword == '');
+      confirmPassword !== passwordState.password ||
+      confirmPassword === '');
   }
 
   function isAllInputsValid() {
@@ -68,7 +68,7 @@ const RegistrationForm = () => {
       emailState !== null && emailState.isValid &&
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null && passwordState.isValid &&
-      passwordState.password == confirmPassword;
+      passwordState.password === confirmPassword;
   }
 
   function generateUnsuccessfulCreationAlert() {
