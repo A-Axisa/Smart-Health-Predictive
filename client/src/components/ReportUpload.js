@@ -45,7 +45,7 @@ const ReportUpload = ({}) => {
       .catch((error) => {
         console.log(error);
       })
-      // navigate('/merchant-reports');
+      navigate('/merchant-reports');
   }
 
   return (
