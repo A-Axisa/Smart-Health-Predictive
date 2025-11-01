@@ -53,6 +53,10 @@ class Report(BaseModel):
     lifestyleRecommendation: Optional[str] = None
     dietToAvoidRecommendation: Optional[str] = None
 
+class HealthDataDates(BaseModel):
+    healthDataID: int
+    date: datetime
+
 def _to_float(val) -> float:
     if isinstance(val, Decimal):
         return float(val)
@@ -391,3 +395,17 @@ async def get_patient_reports(request: Request, db_conn: Session = Depends(get_d
         })
 
     return data
+
+@router.get("/getHealthDataDates/")
+async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve user current user information
+    user_email = get_current_user(request, db_conn)
+    user = get_user(user_email["email"], db_conn)
+
+    # Retrieve user health data
+    healthData = db_conn.query(HealthData).filter(HealthData.UserID == user.UserID).order_by(HealthData.CreatedAt.desc()).all()
+    
+    # Filter by ID and date create to return
+    healthDataDates = [HealthDataDates(healthDataID=data.HealthDataID,date=data.CreatedAt) for data in healthData]
+
+    return healthDataDates
