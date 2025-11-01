@@ -221,8 +221,7 @@ const GenerateReportForm = () => {
 
   }
   return (
-    <AppThemeProvider>
-      <Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2 }}>
+    <Card variant="outlined" sx={{ maxWidth: 800, margin: "2rem auto", padding: 2, boxShadow: 24  }}>
         <CardHeader title="Generate Report" sx={{ mb: 3, color: 'primary.main', fontWeight: 600, textAlign: 'center' }} />
         <CardContent>
           <Box component="form" onSubmit={handleSubmit}>
@@ -383,15 +382,11 @@ const GenerateReportForm = () => {
                   </Typography>
                 )}
               </FormLabel>
-
-
             </Box>
             <Button variant="contained" type="submit" size="large">Submit</Button>
           </Box>
-
         </CardContent>
       </Card>
-    </AppThemeProvider>
   );
 }
 

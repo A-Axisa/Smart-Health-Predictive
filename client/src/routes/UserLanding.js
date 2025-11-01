@@ -54,7 +54,8 @@ const UserLanding = ({ }) => {
 				justifyContent: "center",
 				alignItems: "start",
 				p: 3,
-				backgroundColor: "#127067"
+				bgcolor: '#f5f5f5', //bgcolor: "#127067", (Green background)
+				boxShadow: 24
 			}}>
 
 			{/*Main information Section*/}
@@ -68,7 +69,7 @@ const UserLanding = ({ }) => {
 				flexDirection: "column"
 			}}>
 				<Typography variant="h3" fontWeight={600} color="primary" align="center">
-					Welcome{ name ? "," + name.split(' ')[0] : ""} 
+					Welcome{ name ? ", " + name.split(' ')[0] : ""} 
 				</Typography>
 				<CardContent>
 					<Typography variant="h6">
