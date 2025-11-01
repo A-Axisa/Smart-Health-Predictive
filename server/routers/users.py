@@ -272,7 +272,7 @@ async def get_patient_reports(request: Request, db_conn: Session = Depends(get_d
 
     # Filter health data submitted by the merchant
     patientData = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
-                .order_by(HealthData.CreatedAt.asc()).all()
+                .order_by(HealthData.CreatedAt.desc()).all()
     
     data = []
 
