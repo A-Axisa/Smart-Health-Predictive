@@ -212,7 +212,8 @@ const UserManagementTable = () => {
       title={'Confirm Role Change'}
       message={
         <>
-          Are you sure you want to change <b>{userData.find((user) => user.id === selectedRow)?.fullName}'s</b> role to <b>{newRole}</b>?
+          Are you sure you want to change <b>{userData.find((user) => user.id === selectedRow)?.fullName}'s</b> role to
+          <b> {roleData.find((role) => role.id === newRole)?.roleName}</b>?
         </>
       }
       confirmText={'Confirm'}
