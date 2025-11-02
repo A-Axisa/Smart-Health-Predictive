@@ -30,22 +30,22 @@ async def getRoles(db_conn: Session = Depends(get_db)):
     return result
 
 
-@router.post("/users/{userID}/roles/{roleID}")
-async def updateUserRole(userID: int, roleID: int, db_conn: Session = Depends(get_db)):
+@router.post("/users/{user_email}/roles/{roleID}")
+async def updateUserRole(user_email: str, roleID: int, db_conn: Session = Depends(get_db)):
     
     # Validate that user exists
-    user = db_conn.query(UserAccount).filter(UserAccount.UserID == userID).first()
+    user = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
     # Validate that the role exists
     role = db_conn.query(AccountRole).filter(AccountRole.RoleID == roleID).first()
     # Validate if user has a role
-    userRole = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == userID).first()
+    userRole = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID).first()
 
     if userRole:
         # Update current role with new roleID
         userRole.RoleID = roleID
     else:
         # If the user doesn't have a role, create a new association
-        db_conn.add(UserAccountRole(UserID=userID, RoleID=roleID))
+        db_conn.add(UserAccountRole(UserID=user.userID, RoleID=roleID))
 
     db_conn.commit()
 
@@ -64,7 +64,6 @@ async def getUsers(db_conn: Session = Depends(get_db)):
 
     for user, role in users:
         result.append({
-            "id": user.UserID,
             "fullName": user.FullName,
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
