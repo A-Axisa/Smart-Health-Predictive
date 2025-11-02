@@ -194,7 +194,7 @@ const UserManagementTable = () => {
 
   return (
     <>
-    <Paper sx={{ width: '1140px'}}>
+    <Paper sx={{ width: '1036px'}}>
       <DataGrid
         rows={userData}
         columns={columns}
