@@ -25,11 +25,15 @@ const MerchantLanding = ({ }) => {
       <Box sx={{ justifyContent: 'right', top: 20, right: 20, position: 'absolute'}}>
         <Button href="/user-settings" variant='outlined'>Settings</Button>
       </Box>
-      <Box sx={{mb:6}}>
-        <Typography variant='h2' fontWeight={700}>
-          Welcome, [Username]
-        </Typography>
+      <Box sx={{ justifyContent: 'left', top: 20, left: 20, position: 'absolute' }}>
         <Button variant="outlined" onClick={logout}>Logout</Button>
+      </Box>
+
+      <Box sx={{mb:6}}>
+        <Typography variant='h2' align="center" fontWeight={700}>
+          Welcome
+        </Typography>
+        
         <Typography variant='h6' color='gray'>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at ante at erat tempus laoreet. 
         </Typography>
@@ -38,17 +42,17 @@ const MerchantLanding = ({ }) => {
       <Button href="/merchant-generate-report" size="large" variant="contained">Get Started</Button>
 
       <Box sx={{display: 'flex', flexDirection: 'row', mt: 4, gap: 3}}>
-        <Box sx={{p:3, borderRadius: 3, boxShadow: 3}}>
-          <Typography variant='h5'>
-            View analytics
-          </Typography>
-          <Typography variant='h7' color='gray'>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          </Typography>
-            <Button size="large" variant="contained" sx={{display: 'flex', width: "150px", mt: "10px"}}>
-              View
-            </Button>
-        </Box>
+        {/*<Box sx={{p:3, borderRadius: 3, boxShadow: 3}}>*/}
+        {/*  <Typography variant='h5'>*/}
+        {/*    View analytics*/}
+        {/*  </Typography>*/}
+        {/*  <Typography variant='h7' color='gray'>*/}
+        {/*    Lorem ipsum dolor sit amet, consectetur adipiscing elit.*/}
+        {/*  </Typography>*/}
+        {/*    <Button size="large" variant="contained" sx={{display: 'flex', width: "150px", mt: "10px"}}>*/}
+        {/*      View*/}
+        {/*    </Button>*/}
+        {/*</Box>*/}
         <Box sx={{p:3, borderRadius: 3, boxShadow: 3}}>
           <Typography variant='h5'>
             View Report History
