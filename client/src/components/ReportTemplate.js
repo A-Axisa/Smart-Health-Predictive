@@ -11,7 +11,6 @@ import {
 
 
 const ReportTemplate = ({ report, date }) => {
-console.log(report)
 	return (
 		<Box>
 			<Typography
