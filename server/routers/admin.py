@@ -76,7 +76,7 @@ async def getUsers(db_conn: Session = Depends(get_db)):
 
     return result
 
-def _delete_user_data(user_id: int, db_conn: Session):
+def _delete_user_data(user_email: str, db_conn: Session):
     """
     Deletes a user and all their associated data, returning a report of the deletion.
     """
@@ -84,13 +84,13 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
     try:
         # Find the user to ensure they exist before proceeding
-        user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
+        user_to_delete = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
         if not user_to_delete:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
         # Collect all HealthDataIDs for this user
         health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_id).all()
+            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_to_delete.UserID).all()
         ]
 
         if health_ids:
@@ -102,14 +102,14 @@ def _delete_user_data(user_id: int, db_conn: Session):
             deletion_report['predictions_deleted'] = preds_deleted
             
             # Then delete HealthData records
-            health_data_deleted = db_conn.query(HealthData).filter(HealthData.UserID == user_id).delete(synchronize_session=False)
+            health_data_deleted = db_conn.query(HealthData).filter(HealthData.UserID == user_to_delete.UserID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user
-        tokens_deleted = db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user_id).delete(synchronize_session=False)
+        tokens_deleted = db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user_to_delete.UserID).delete(synchronize_session=False)
         deletion_report['validation_tokens_deleted'] = tokens_deleted
 
-        roles_deleted = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user_id).delete(synchronize_session=False)
+        roles_deleted = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user_to_delete.UserID).delete(synchronize_session=False)
         deletion_report['user_roles_deleted'] = roles_deleted
 
         # Delete the user record itself
@@ -123,8 +123,8 @@ def _delete_user_data(user_id: int, db_conn: Session):
         # Log the exception e for debugging if needed
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete user data: {str(e)}")
 
-@router.delete("/users/{user_id}")
-async def delete_user_by_admin(user_id: int, request: Request, db_conn: Session = Depends(get_db)):
+@router.delete("/users/{user_email}")
+async def delete_user_by_admin(user_email: str, request: Request, db_conn: Session = Depends(get_db)):
     # Get the current user making the request
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -139,20 +139,20 @@ async def delete_user_by_admin(user_id: int, request: Request, db_conn: Session 
     if not user_role or user_role.RoleName.lower() != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
 
-    # Prevent admin from deleting themselves
-    if admin_user.UserID == user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Administrators cannot delete their own accounts.")
-
     # Find the user to delete to get their details before deletion
-    user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
+    user_to_delete = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
     if not user_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User to delete not found.")
     
+    # Prevent admin from deleting themselves
+    if admin_user.UserID == user_to_delete.UserID:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Administrators cannot delete their own accounts.")
+    
     # Perform the deletion and get the report
-    deletion_report = _delete_user_data(user_id, db_conn)
+    deletion_report = _delete_user_data(user_email, db_conn)
 
     return {
-        "message": f"User with ID {user_id} and all related data deleted successfully",
+        "message": f"User with Email {user_email} and all related data deleted successfully",
         "deletion_report": deletion_report
     }
 

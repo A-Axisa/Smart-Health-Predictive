@@ -92,8 +92,8 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   }
 
-  const handleDeleteUser = (userId) => {
-    const user = userData.find(u => u.id === userId);
+  const handleDeleteUser = (userEmail) => {
+    const user = userData.find(u => u.email === userEmail);
     setUserToDelete(user);
     setDeleteDialogOpen(true);
   };
@@ -102,7 +102,7 @@ const UserManagementTable = () => {
     if (!userToDelete) return;
   
     try {
-      const response = await fetch(`${API_BASE}/users/${userToDelete.id}`, {
+      const response = await fetch(`${API_BASE}/users/${userToDelete.email}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -128,7 +128,7 @@ const UserManagementTable = () => {
       }
   
       setSnackbar({ open: true, message: reportMessage, severity: 'success' });
-      setUserData(prev => prev.filter(user => user.id !== userToDelete.id));
+      setUserData(prev => prev.filter(user => user.email !== userToDelete.email));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     } catch (error) {
@@ -183,7 +183,7 @@ const UserManagementTable = () => {
       sortable: false,
       renderCell: (params) => (
         <IconButton
-          onClick={() => handleDeleteUser(params.row.id)}
+          onClick={() => handleDeleteUser(params.row.email)}
           color="error"
         >
           <DeleteIcon />
