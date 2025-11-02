@@ -65,7 +65,7 @@ const UserManagementTable = () => {
     }).then(data => {
       setUserData((prev) =>
           prev.map((user) =>
-            user.id === selectedRow ? { ...user, role: { id:newRole, name: data.role.name }} : user
+            user.email === selectedRow ? { ...user, role: { id:newRole, name: data.role.name }} : user
           )
         );
       setDialogOpen(false);
@@ -92,8 +92,8 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   }
 
-  const handleDeleteUser = (userId) => {
-    const user = userData.find(u => u.id === userId);
+  const handleDeleteUser = (userEmail) => {
+    const user = userData.find(u => u.email === userEmail);
     setUserToDelete(user);
     setDeleteDialogOpen(true);
   };
@@ -102,7 +102,7 @@ const UserManagementTable = () => {
     if (!userToDelete) return;
   
     try {
-      const response = await fetch(`${API_BASE}/users/${userToDelete.id}`, {
+      const response = await fetch(`${API_BASE}/users/${userToDelete.email}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -128,7 +128,7 @@ const UserManagementTable = () => {
       }
   
       setSnackbar({ open: true, message: reportMessage, severity: 'success' });
-      setUserData(prev => prev.filter(user => user.id !== userToDelete.id));
+      setUserData(prev => prev.filter(user => user.email !== userToDelete.email));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     } catch (error) {
@@ -138,9 +138,8 @@ const UserManagementTable = () => {
   };
 
   const columns = [
-    { field: 'id', headerName: 'User ID', width: 100, sortable: true},
+    { field: 'email', headerName: 'Email', width: 250, sortable: true },
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
-    { field: 'email', headerName: 'Email', width: 250, sortable: false },
     { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
     {
       field: 'role',
@@ -151,13 +150,13 @@ const UserManagementTable = () => {
         return (
         <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
           <Select
-            key={params.row.role.id}
-            value={selectedRow === params.row.id && newRole ? newRole : params.row.role.id}
+            key={params.row.email}
+            value={selectedRow === params.row.email && newRole ? newRole : params.row.role.id}
             size="small"
             sx={{ width: '100%', alignItems: 'center', display: 'flex'}}
-            disabled={selectedRow !== params.row.id}
+            disabled={selectedRow !== params.row.email}
             onChange={(e) => {
-              handleRoleSelect(params.row.id, params.row.role.id, e.target.value);
+              handleRoleSelect(params.row.email, params.row.role.id, e.target.value);
             }}
           >
             {roleData.map((role) =>
@@ -169,7 +168,7 @@ const UserManagementTable = () => {
           <IconButton
             size="small"
             color="info"
-            onClick={() => setSelectedRow(params.row.id)}
+            onClick={() => setSelectedRow(params.row.email)}
             >
             <SettingsIcon />
           </IconButton>
@@ -184,7 +183,7 @@ const UserManagementTable = () => {
       sortable: false,
       renderCell: (params) => (
         <IconButton
-          onClick={() => handleDeleteUser(params.row.id)}
+          onClick={() => handleDeleteUser(params.row.email)}
           color="error"
         >
           <DeleteIcon />
@@ -195,10 +194,11 @@ const UserManagementTable = () => {
 
   return (
     <>
-    <Paper sx={{ width: '1140px'}}>
+    <Paper sx={{ width: '1036px'}}>
       <DataGrid
         rows={userData}
         columns={columns}
+        getRowId={(row) => row.email}
         pageSizeOptions={[50, 100, 1000]}
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
@@ -212,7 +212,8 @@ const UserManagementTable = () => {
       title={'Confirm Role Change'}
       message={
         <>
-          Are you sure you want to change <b>{userData.find((user) => user.id === selectedRow)?.fullName}'s</b> role to <b>{newRole}</b>?
+          Are you sure you want to change <b>{userData.find((user) => user.email === selectedRow)?.fullName}'s</b> role to
+          <b> {roleData.find((role) => role.id === newRole)?.roleName}</b>?
         </>
       }
       confirmText={'Confirm'}

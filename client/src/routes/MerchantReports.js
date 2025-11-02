@@ -39,15 +39,11 @@ const MerchantReports = ({ }) => {
 		.then((data) => {
 			if (data.length > 0) {
 				setReports(data);
-				setReportDates(data);
 				// Creates an array of distinct patient names
 				let distinctPatientNames = [...new Set(data.map((r) => r.name))];
 				setPatients(distinctPatientNames);
-				setSelectedPatient(distinctPatientNames[0]);
-				// Sets the report data for the selected patient
-				let firstPatientReports = data.filter((r) => r.name === distinctPatientNames[0]);
-				setReportDates(firstPatientReports);
-				setSelectedDate(firstPatientReports[0]);
+				setSelectedPatient(null);
+				setSelectedDate(null);
 			}
 		})
 		.catch((err) => {
@@ -114,7 +110,8 @@ const MerchantReports = ({ }) => {
 						<InputLabel id="patient-select-label">Patient</InputLabel>
 						<Select
 							labelId="patient-select-label"
-							label={selectedPatient}
+							value={selectedPatient}
+							label={"Patient"}
 							onChange={(e) => {
 								// Filter reports by selected user
 								const selectedReports = reports.filter((r) => r.name === e.target.value);
@@ -182,7 +179,7 @@ const MerchantReports = ({ }) => {
 					</>
 				) : (
 					<Typography sx={{ p: 3 }}>
-    		 			No reports available for this patient.
+    		 			No patient selected.
    					 </Typography>
  				 )}
 			</Box>
