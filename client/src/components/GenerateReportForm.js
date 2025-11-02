@@ -382,9 +382,11 @@ const GenerateReportForm = () => {
                   </Typography>
                 )}
               </FormLabel>
-            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'end' }}>
             <Button variant="contained" type="submit" size="large">Submit</Button>
           </Box>
+        </Box>
         </CardContent>
       </Card>
   );
