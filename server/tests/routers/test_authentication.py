@@ -59,7 +59,7 @@ def test_login_with_valid_credentials():
     credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
     response = client.post('/login/', json=credentials)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'message': f'HTTP-Only cookie set successfully.'}
+    assert response.json() == {'message': f'Successfully logged in.'}
 
 def test_login_with_incorrect_email():
     credentials = {'email':'notmyemail@mail.com', 'password':'thisisavalidpassword'}
@@ -173,7 +173,7 @@ def test_get_current_user_success():
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['email'] == 'test@example.com'
     
-def test_get_current_user_no_cookie():
+def test_get_current_user_with_invalid_token():
     credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
     client.post('/login/', json=credentials)
     invalidate_access_token(credentials['email'], next(get_db()))

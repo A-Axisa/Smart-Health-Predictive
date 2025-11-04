@@ -1,20 +1,23 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from secrets import token_urlsafe
 
-import bcrypt
 import jwt
 import phonenumbers
-from email_validator import validate_email, EmailNotValidError
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
+from email_validator import validate_email
+from fastapi import APIRouter, Depends, HTTPException, status, Request, \
+    Response
 from fastapi.responses import HTMLResponse
 from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db 
-from ..models.dbmodels import UserAccount, UserAccountRole, UserAccountValidationToken, AccountRole
+from ..models.dbmodels import UserAccount, UserAccountRole, \
+    UserAccountValidationToken, AccountRole
 from ..utils.email_service import send_email
 
 EMAIL_VALIDATION_ENABLED = False
@@ -56,13 +59,19 @@ class ChangePasswordDetails(BaseModel):
 load_dotenv()
 
 router = APIRouter()
+owasp_argon2_hasher = Argon2Hasher(
+    memory_cost=19456, # 19 MiB
+    time_cost=2,
+    parallelism=1,
+)
+password_hasher = PasswordHash((owasp_argon2_hasher,))
 
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
     formatted_phone = format_phone_number(user_reg.phone)
 
-    # Validate input before proceeding
+    # Ensure user inputs are valid.
     if(not is_email_valid(user_reg.email) or
         not is_password_valid(user_reg.password) or
         not is_name_valid(user_reg.username) or \
@@ -70,9 +79,7 @@ async def register(user_reg: UserRegistrationDetails, \
         not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    # Always hash the password to obfuscate success and failure.
-    password_hash = bcrypt.hashpw(user_reg.password.encode('utf-8'), \
-                                  bcrypt.gensalt(rounds=15))
+    password_hash = password_hasher.hash(user_reg.password)
     new_user = UserAccount(
         user_reg.username,
         user_reg.email,
@@ -80,31 +87,28 @@ async def register(user_reg: UserRegistrationDetails, \
         formatted_phone
     )
 
-    # Add the user if the email doesn't already exist.
+    # Only add the user to the database of they don't exist.
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
     if not user:        
         db_conn.add(new_user)
 
-    # Get the ID of the new user
+    # The user's ID is needed for to assign a role.
     new_user_id = db_conn.query(UserAccount.UserID). \
         filter_by(Email=user_reg.email).first()[0]
     role = UserAccountRole(ACCOUNT_TYPE[user_reg.account_type], new_user_id)
 
-    # Create account validation token
+    # Require validation to confirm the user can access the email.
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-    expires_at = datetime.utcnow() + \
+    expires_at = datetime.now(UTC) + \
         timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
     acc_validation_token = UserAccountValidationToken(new_user_id, \
                                                       validation_token,
                                                         expires_at)
 
-    # Add the role and validation token if the user is new.
     if not user:
         db_conn.add(role)
         db_conn.add(acc_validation_token)
         db_conn.commit()
-
-        # Send validation email
         if EMAIL_VALIDATION_ENABLED:
             _send_validation_email(new_user, validation_token)
     else:
@@ -190,7 +194,8 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Incorrect username or password',
     )    
-    
+
+    # Ensure user inputs are valid.
     if not is_password_valid(user_cred.password) or \
         not is_email_valid(user_cred.email):
         raise credentials_exception
@@ -199,11 +204,11 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     if not user:
         raise credentials_exception
 
-    # Update the token version number in the db.
+    # Invalidate previous access token.
     user.TokenVersion += 1
     db_conn.commit()
     
-    # Create the jwt token
+    # Provide the user a new access token.
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
@@ -220,7 +225,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         samesite='Strict'
     )
 
-    return {'message': f'HTTP-Only cookie set successfully.'}
+    return {'message': f'Successfully logged in.'}
 
 def authenticate_user(email: str, password: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
@@ -235,7 +240,7 @@ def authenticate_user(email: str, password: str, db_conn: Session):
     return user
 
 def verify_password(password_text: str, password_hash: str) -> bool:
-    return bcrypt.checkpw(password_text.encode('utf-8'), password_hash.encode('utf-8'))
+    return password_hasher.verify(password_text, password_hash)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -320,7 +325,6 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
         samesite='Strict'
     )
     
-
 def invalidate_access_token(email: str, db_conn: Session):
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     user.TokenVersion += 1
@@ -352,7 +356,6 @@ def is_formatted_phone_valid(phone: str):
         return False
     try:
         validated_phone = phonenumbers.parse(phone)
-        is_valid_email = validate_email(email, check_deliverability=False) # Disable strict testing for dev 
     except Exception as e:
         return False
     return True
@@ -362,6 +365,7 @@ def is_name_valid(name: str):
 
 def is_role_valid(role: str):
     return role in ACCOUNT_TYPE.keys()
+
 @router.post('/changePassword')
 def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve current user data
@@ -376,8 +380,8 @@ def change_password_current_user(password_details: ChangePasswordDetails,request
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
    
     # Hash password
-    new_password_hash = bcrypt.hashpw(password_details.new_password.encode('utf-8'), \
-                                  bcrypt.gensalt(rounds=15))
+    new_password_hash = password_hasher.hash(password_details.new_password.encode('utf-8'))
+    
     # Change current password to new password
     user.PasswordHash = new_password_hash
     db_conn.commit()
