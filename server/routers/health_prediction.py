@@ -10,7 +10,7 @@ import codecs
 from ..utils.database import get_db 
 from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
 from ..services.health_recommendation_service import get_health_recommendations
-from .authentication import get_current_user, get_user, get_user_me
+from .authentication import get_current_user, get_user
 
 # HealthData
 class HealthDataInput(BaseModel):
@@ -202,7 +202,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...), \
     merchant = db_conn.query(UserAccount).filter_by(Email=current_user_email).first()
 
     if not merchant:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Merchant user not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     
     # Decode file stream and iterate rows as dictionaries.
     csv_reader = csv.DictReader(codecs.iterdecode(uploaded_file.file, 'utf-8'))
@@ -253,7 +253,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...), \
 
     return {
         "message" : "Upload successful.",
-        "processed":processed_rows,
+        "processed": processed_rows,
         "skipped": skipped_rows,
     }
 
