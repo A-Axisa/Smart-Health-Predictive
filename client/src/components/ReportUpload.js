@@ -29,7 +29,7 @@ const ReportUpload = ({}) => {
 
     // Add file to FormData object for request
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("uploaded_file", file);
 
     setIsLoading(true);
 
