@@ -30,27 +30,35 @@ async def getRoles(db_conn: Session = Depends(get_db)):
     return result
 
 
-@router.post("/users/{user_email}/roles/{roleID}")
-async def updateUserRole(user_email: str, roleID: int, db_conn: Session = Depends(get_db)):
+@router.patch("/users/{user_email}/roles/{role_id}")
+async def update_user_role(user_email: str, role_id: int, \
+                           db_conn: Session = Depends(get_db)):
     
-    # Validate that user exists
+    # Check if both the user and role exist.
     user = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
-    # Validate that the role exists
-    role = db_conn.query(AccountRole).filter(AccountRole.RoleID == roleID).first()
-    # Validate if user has a role
-    userRole = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    
+    role = db_conn.query(AccountRole).filter(AccountRole.RoleID == role_id).first()
+    if not role:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found.")
 
-    if userRole:
-        # Update current role with new roleID
-        userRole.RoleID = roleID
+    # Check if role mapping exists for the user.
+    current_user_role = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID).first()
+
+    # Update the user's role otherwise make new mapping.
+    if current_user_role:
+        current_user_role.RoleID = role_id
     else:
-        # If the user doesn't have a role, create a new association
-        db_conn.add(UserAccountRole(UserID=user.userID, RoleID=roleID))
+        db_conn.add(UserAccountRole(UserID=user.UserID, RoleID=role_id))
 
     db_conn.commit()
 
-    # Return the updated role information
-    return {"role": {"id": role.RoleID, "name": role.RoleName}}
+    return {"message": f"Update successful.",
+            "role": {
+                "id": role.RoleID,
+                "name": role.RoleName,
+            }}
 
 
 @router.get("/users/")

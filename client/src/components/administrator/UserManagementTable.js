@@ -53,7 +53,7 @@ const UserManagementTable = () => {
     e.preventDefault();
 
     await fetch(`${API_BASE}/users/${selectedRow}/roles/${newRole}`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
           'Content-Type': 'application/json'
       }
@@ -151,7 +151,7 @@ const UserManagementTable = () => {
         <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
           <Select
             key={params.row.email}
-            value={selectedRow === params.row.email && newRole ? newRole : params.row.role.id}
+            value={newRole && selectedRow === params.row.email ? newRole : params.row.role.id}
             size="small"
             sx={{ width: '100%', alignItems: 'center', display: 'flex'}}
             disabled={selectedRow !== params.row.email}
