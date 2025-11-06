@@ -161,7 +161,7 @@ const UserManagementTable = () => {
           >
             {roleData.map((role) =>
               <MenuItem key={role.id} value={role.id}>
-                {role.roleName}
+                {role.name}
               </MenuItem>
             )}
           </Select>
@@ -213,7 +213,7 @@ const UserManagementTable = () => {
       message={
         <>
           Are you sure you want to change <b>{userData.find((user) => user.email === selectedRow)?.fullName}'s</b> role to
-          <b> {roleData.find((role) => role.id === newRole)?.roleName}</b>?
+          <b> {roleData.find((role) => role.id === newRole)?.name}</b>?
         </>
       }
       confirmText={'Confirm'}

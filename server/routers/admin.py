@@ -15,16 +15,17 @@ from ..routers.authentication import get_current_user
 
 router = APIRouter()
 
-@router.get("/roles/")
-async def getRoles(db_conn: Session = Depends(get_db)):
-    roles = db_conn.query(AccountRole).all()
-    
-    result = []
 
+@router.get("/roles")
+async def get_roles(db_conn: Session = Depends(get_db)):
+
+    roles = db_conn.query(AccountRole).all()
+
+    result = []
     for role in roles:
         result.append({
-            "id": role.RoleID,
-            "roleName": role.RoleName,
+            "id": role.RoleID if role else None,
+            "name": role.RoleName if role else None,
         })
 
     return result
