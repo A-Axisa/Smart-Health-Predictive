@@ -187,7 +187,6 @@ async def predict(data: HealthDataInput,request: Request, db_conn: Session = Dep
         }
     }
 
-
 @router.post("/upload")
 async def upload_csv(request: Request, uploaded_file: UploadFile = File(...), \
                     db_conn: Session = Depends(get_db)):
@@ -256,7 +255,6 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...), \
         "processed": processed_rows,
         "skipped": skipped_rows,
     }
-
 
 def is_age_valid(age: int):
     return age >= 0 and age <= 100

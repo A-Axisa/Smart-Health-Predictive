@@ -30,6 +30,30 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
     return result
 
+@router.get("/users")
+async def get_users(db_conn: Session = Depends(get_db)):
+
+    # Query all users and their associated role.
+    users = db_conn.query(UserAccount, AccountRole) \
+        .filter(UserAccount.IsValidated == 1) \
+        .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+        .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+        .all()
+    
+    result = []
+    for user, role in users:
+        result.append({
+            "fullName": user.FullName,
+            "email": user.Email,
+            "phoneNumber": user.PhoneNumber,
+            "createdAt": user.CreatedAt,
+            "role": {
+                "id": role.RoleID if role else None,
+                "name": role.RoleName if role else None
+            }
+        })
+
+    return result
 
 @router.patch("/users/{user_email}/roles/{role_id}")
 async def update_user_role(user_email: str, role_id: int, \
@@ -60,30 +84,6 @@ async def update_user_role(user_email: str, role_id: int, \
                 "id": role.RoleID,
                 "name": role.RoleName,
             }}
-
-
-@router.get("/users/")
-async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount, AccountRole). \
-        outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
-        outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
-        all()
-    
-    result = []
-
-    for user, role in users:
-        result.append({
-            "fullName": user.FullName,
-            "email": user.Email,
-            "phoneNumber": user.PhoneNumber,
-            "createdAt": user.CreatedAt,
-            "role": {
-                "id": role.RoleID if role else None,
-                "name": role.RoleName if role else None
-            }
-        })
-
-    return result
 
 def _delete_user_data(user_email: str, db_conn: Session):
     """
