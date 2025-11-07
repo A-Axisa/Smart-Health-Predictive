@@ -10,13 +10,12 @@ from ..utils.database import get_db
 from ..models.dbmodels import (
     UserAccount,
     UserAccountRole,
-    AccountRole,
     UserAccountValidationToken,
     HealthData,
     Prediction,
     Recommendation,
 )
-from ..routers.authentication import get_current_user, get_user, get_user_me
+from ..routers.authentication import get_current_user, get_user
 
 # Health Analysis
 class HealthMetric(BaseModel):
