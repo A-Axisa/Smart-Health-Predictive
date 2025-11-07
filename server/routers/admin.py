@@ -167,6 +167,8 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
 @router.get("/users/merchants/")
 async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
+
+    # Query all invalid merchant accounts.
     invalid_merchant_accounts = db_conn.query(UserAccount) \
                             .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
                             .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
@@ -174,18 +176,16 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
                             .filter(UserAccount.IsValidated == 0) \
                             .all()
     
-    data = []
-
+    result = []
     for merchant in invalid_merchant_accounts:
-        data.append({
+        result.append({
             "fullName": merchant.FullName,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
             "createdAt": merchant.CreatedAt,
         })
 
-    return data
-
+    return result
 
 @router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
