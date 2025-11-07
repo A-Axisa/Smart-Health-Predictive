@@ -187,29 +187,25 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
     return data
 
 
-@router.post("/users/merchants/{merchant_email}")
+@router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    # Validate the requesting user
-    admin_email = get_current_user(request, db_conn)
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
 
-    # Verify the requesting user is an administrator
+    # Check if requesting user is Admin.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    admin = db_conn.query(UserAccount).filter(UserAccount.Email == current_user_email).first()
     if not admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
-        .filter(UserAccountRole.UserID == admin.UserID).first()
-
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
     
-    # Begin merchant Validation
+    # Validate the merchant account.
     merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
-
-    # Ensure that user is a merchant
     if not merchant:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
     merchant.IsValidated = 1
     db_conn.commit()
 
