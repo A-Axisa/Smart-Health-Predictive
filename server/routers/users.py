@@ -10,13 +10,12 @@ from ..utils.database import get_db
 from ..models.dbmodels import (
     UserAccount,
     UserAccountRole,
-    AccountRole,
     UserAccountValidationToken,
     HealthData,
     Prediction,
     Recommendation,
 )
-from ..routers.authentication import get_current_user, get_user, get_user_me
+from ..routers.authentication import get_current_user, get_user
 
 # Health Analysis
 class HealthMetric(BaseModel):
@@ -65,8 +64,8 @@ def _to_float(val) -> float:
     except Exception:
         return 0.0
 
-
 router = APIRouter()
+
 
 def _delete_user_data(user_id: int, db_conn: Session):
     """
@@ -133,8 +132,6 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     _delete_user_data(user_id, db_conn)
 
     return {"message": "User and all related data deleted successfully"}
-
-
 
 # Health analytics
 @router.get("/api/health-analytics", response_model=List[HealthMetric])
@@ -257,37 +254,36 @@ async def delete_report_data(healthDataId:int, db_conn: Session = Depends(get_db
     return {"message": "Health report data successfully deleted"}
 
 @router.get("/merchants/reports")
-async def get_patient_reports(request: Request, db_conn: Session = Depends(get_db)):
-    # Retrieve the current merchant
-    currentUser = await get_user_me(request, db_conn)
-    merchantEmail = currentUser.get('email')
-    merchant = db_conn.query(UserAccount).filter_by(Email=merchantEmail).first()
+async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_db)):
 
-    # Verify that the user making the request is a merchant
-    merchant_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
-        .filter(UserAccountRole.UserID == merchant.UserID).first()
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(Email=current_user_email).first()
+    if not merchant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Get health data associated with the merchant.
+    patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
+                        .order_by(HealthData.CreatedAt.desc()).all()
     
-    if not merchant_role or merchant_role.RoleName.lower() != "merchant":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to perform this action.")
+    result = []
+    for row in patient_health_data:
 
-    # Filter health data submitted by the merchant
-    patientData = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
-                .order_by(HealthData.CreatedAt.desc()).all()
-    
-    data = []
-
-    # Add each user and their corrosponding health data
-    for row in patientData:
-        # Query to access patient name
+        # Get the patient's name.
         patient = db_conn.query(UserAccount).filter_by(UserID=row.UserID).first()
 
-        data.append({
+        result.append({
             "name" : patient.FullName,
             "healthDataID" : row.HealthDataID,
             "date" : row.CreatedAt
         })
 
-    return data
+    return result
 
 @router.get("/getHealthDataDates/")
 async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):

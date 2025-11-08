@@ -15,53 +15,32 @@ from ..routers.authentication import get_current_user
 
 router = APIRouter()
 
-@router.get("/roles/")
-async def getRoles(db_conn: Session = Depends(get_db)):
-    roles = db_conn.query(AccountRole).all()
-    
-    result = []
 
+@router.get("/roles")
+async def get_roles(db_conn: Session = Depends(get_db)):
+
+    roles = db_conn.query(AccountRole).all()
+
+    result = []
     for role in roles:
         result.append({
-            "id": role.RoleID,
-            "roleName": role.RoleName,
+            "id": role.RoleID if role else None,
+            "name": role.RoleName if role else None,
         })
 
     return result
 
+@router.get("/users")
+async def get_users(db_conn: Session = Depends(get_db)):
 
-@router.post("/users/{user_email}/roles/{roleID}")
-async def updateUserRole(user_email: str, roleID: int, db_conn: Session = Depends(get_db)):
-    
-    # Validate that user exists
-    user = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
-    # Validate that the role exists
-    role = db_conn.query(AccountRole).filter(AccountRole.RoleID == roleID).first()
-    # Validate if user has a role
-    userRole = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID).first()
-
-    if userRole:
-        # Update current role with new roleID
-        userRole.RoleID = roleID
-    else:
-        # If the user doesn't have a role, create a new association
-        db_conn.add(UserAccountRole(UserID=user.userID, RoleID=roleID))
-
-    db_conn.commit()
-
-    # Return the updated role information
-    return {"role": {"id": role.RoleID, "name": role.RoleName}}
-
-
-@router.get("/users/")
-async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount, AccountRole). \
-        outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
-        outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
-        all()
+    # Query all users and their associated role.
+    users = db_conn.query(UserAccount, AccountRole) \
+        .filter(UserAccount.IsValidated == 1) \
+        .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+        .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+        .all()
     
     result = []
-
     for user, role in users:
         result.append({
             "fullName": user.FullName,
@@ -75,6 +54,36 @@ async def getUsers(db_conn: Session = Depends(get_db)):
         })
 
     return result
+
+@router.patch("/users/{user_email}/roles/{role_id}")
+async def update_user_role(user_email: str, role_id: int, \
+                           db_conn: Session = Depends(get_db)):
+    
+    # Check if both the user and role exist.
+    user = db_conn.query(UserAccount).filter(UserAccount.Email == user_email).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    
+    role = db_conn.query(AccountRole).filter(AccountRole.RoleID == role_id).first()
+    if not role:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found.")
+
+    # Check if role mapping exists for the user.
+    current_user_role = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID).first()
+
+    # Update the user's role otherwise make new mapping.
+    if current_user_role:
+        current_user_role.RoleID = role_id
+    else:
+        db_conn.add(UserAccountRole(UserID=user.UserID, RoleID=role_id))
+
+    db_conn.commit()
+
+    return {"message": f"Update successful.",
+            "role": {
+                "id": role.RoleID,
+                "name": role.RoleName,
+            }}
 
 def _delete_user_data(user_email: str, db_conn: Session):
     """
@@ -158,6 +167,8 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
 @router.get("/users/merchants/")
 async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
+
+    # Query all invalid merchant accounts.
     invalid_merchant_accounts = db_conn.query(UserAccount) \
                             .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
                             .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
@@ -165,42 +176,36 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
                             .filter(UserAccount.IsValidated == 0) \
                             .all()
     
-    data = []
-
+    result = []
     for merchant in invalid_merchant_accounts:
-        data.append({
+        result.append({
             "fullName": merchant.FullName,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
             "createdAt": merchant.CreatedAt,
         })
 
-    return data
+    return result
 
-
-@router.post("/users/merchants/{merchant_email}")
+@router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    # Validate the requesting user
-    admin_email = get_current_user(request, db_conn)
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
 
-    # Verify the requesting user is an administrator
+    # Check if requesting user is Admin.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    admin = db_conn.query(UserAccount).filter(UserAccount.Email == current_user_email).first()
     if not admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
-        .filter(UserAccountRole.UserID == admin.UserID).first()
-
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
     
-    # Begin merchant Validation
+    # Validate the merchant account.
     merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
-
-    # Ensure that user is a merchant
     if not merchant:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
     merchant.IsValidated = 1
     db_conn.commit()
 

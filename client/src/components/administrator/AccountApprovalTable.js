@@ -25,7 +25,7 @@ const AccountApprovalTable = ({}) => {
 
   const handleConfirmation = () => {
     fetch(`http://localhost:8000/users/merchants/${selectedUser}`, {
-      method: 'POST',
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
