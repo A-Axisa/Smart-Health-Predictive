@@ -361,7 +361,7 @@ def is_formatted_phone_valid(phone: str):
     return True
 
 def is_name_valid(name: str):
-    return name != None or len(name) <= NAME_MAX_LENGTH
+    return name is not None or len(name) <= NAME_MAX_LENGTH
 
 def is_role_valid(role: str):
     return role in ACCOUNT_TYPE.keys()
