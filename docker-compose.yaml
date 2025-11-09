@@ -6,7 +6,7 @@ services:
     container_name: smart_health_backend
     working_dir: /app/server
     volumes:
-      - /home/ubuntu/shp/Smart-Health-Predictive-main:/app
+      - .:/app
     ports:
       - "8000:8000"
     command: >
@@ -19,7 +19,7 @@ services:
     container_name: smart_health_frontend
     working_dir: /app/client
     volumes:
-      - /home/ubuntu/shp/Smart-Health-Predictive-main:/app
+      - .:/app
     ports:
       - "3000:3000"
     command: sh -c "npm install && npm start"
