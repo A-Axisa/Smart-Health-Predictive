@@ -15,7 +15,7 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ..utils.database import get_db 
+from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
     UserAccountValidationToken, AccountRole
 from ..utils.email_service import send_email
@@ -35,6 +35,7 @@ ACCOUNT_TYPE = {
     'merchant': 62809281
 }
 
+
 class UserRegistrationDetails(BaseModel):
     username: str
     password: str
@@ -42,25 +43,29 @@ class UserRegistrationDetails(BaseModel):
     phone: str
     account_type: str
 
+
 class LoginCredentials(BaseModel):
     email: str
     password: str
+
 
 class TokenData(BaseModel):
     email: str
     ip_address: str
     version: int
 
+
 class ChangePasswordDetails(BaseModel):
     current_password: str
     new_password: str
     confirm_new_password: str
 
+
 load_dotenv()
 
 router = APIRouter()
 owasp_argon2_hasher = Argon2Hasher(
-    memory_cost=19456, # 19 MiB
+    memory_cost=19456,  # 19 MiB
     time_cost=2,
     parallelism=1,
 )
@@ -68,18 +73,18 @@ password_hasher = PasswordHash((owasp_argon2_hasher,))
 
 
 @router.post("/register")
-async def register(user_reg: UserRegistrationDetails, \
+async def register(user_reg: UserRegistrationDetails,
                    db_conn: Session = Depends(get_db)):
     '''Register a new account for the user provided the details are valid.'''
 
     formatted_phone = format_phone_number(user_reg.phone)
 
     # Ensure user inputs are valid.
-    if(not is_email_valid(user_reg.email) or
-        not is_password_valid(user_reg.password) or
-        not is_name_valid(user_reg.username) or \
-        not is_formatted_phone_valid(user_reg.phone) or \
-        not is_role_valid(user_reg.account_type)):
+    if (not is_email_valid(user_reg.email) or
+            not is_password_valid(user_reg.password) or
+            not is_name_valid(user_reg.username) or
+            not is_formatted_phone_valid(user_reg.phone) or
+            not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     password_hash = password_hasher.hash(user_reg.password)
@@ -104,9 +109,9 @@ async def register(user_reg: UserRegistrationDetails, \
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
     expires_at = datetime.now(UTC) + \
         timedelta(hours=VALIDATION_EXPIRATION_IN_HOURS)
-    acc_validation_token = UserAccountValidationToken(new_user_id, \
+    acc_validation_token = UserAccountValidationToken(new_user_id,
                                                       validation_token,
-                                                        expires_at)
+                                                      expires_at)
 
     if not user:
         db_conn.add(role)
@@ -118,6 +123,7 @@ async def register(user_reg: UserRegistrationDetails, \
         db_conn.commit()
 
     return {'message': 'User successfully created.'}
+
 
 def _send_validation_email(user: UserAccount, token: str):
     """Helper function to send a validation email."""
@@ -148,7 +154,8 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     )
 
     # Find the token in the database
-    validation_token_entry = db_conn.query(UserAccountValidationToken).filter_by(ValidationToken=token).first()
+    validation_token_entry = db_conn.query(
+        UserAccountValidationToken).filter_by(ValidationToken=token).first()
 
     # Check if the token exists
     if not validation_token_entry:
@@ -159,7 +166,8 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
         raise validation_failure_exception
 
     # Get the user associated with the token
-    user = db_conn.query(UserAccount).filter_by(UserID=validation_token_entry.UserID).first()
+    user = db_conn.query(UserAccount).filter_by(
+        UserID=validation_token_entry.UserID).first()
     if not user:
         # This should not happen if database integrity is maintained
         raise validation_failure_exception
@@ -201,11 +209,11 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Incorrect username or password',
-    )    
+    )
 
     # Ensure user inputs are valid.
     if not is_password_valid(user_cred.password) or \
-        not is_email_valid(user_cred.email):
+            not is_email_valid(user_cred.email):
         raise credentials_exception
 
     user = authenticate_user(user_cred.email, user_cred.password, db_conn)
@@ -229,11 +237,12 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         key='auth_token',
         value=token,
         httponly=True,
-        secure=False, # Set to false for development
+        secure=False,  # Set to false for development
         samesite='Strict'
     )
 
     return {'message': 'Successfully logged in.'}
+
 
 
 def authenticate_user(email: str, password: str, db_conn: Session):
@@ -262,7 +271,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=10)
-    to_encode.update({'exp':expire})
+    to_encode.update({'exp': expire})
 
     return jwt.encode(to_encode, os.environ['SECRET_KEY'], algorithm=ALGORITHM)
 
@@ -275,7 +284,7 @@ async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
 
 def get_current_user(request: Request, db_conn: Session):
     '''Returns user information from the http-only cookie on their device.'''
-
+    
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -288,14 +297,15 @@ def get_current_user(request: Request, db_conn: Session):
 
     # Extract the data from the jwt token.
     try:
-        payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
             email=payload.get('sub'),
             ip_address=payload.get('ip_address'),
             version=payload.get('version')
         )
         if token_data.email is None or not \
-            token_data.ip_address == request.client.host:
+                token_data.ip_address == request.client.host:
             raise credentials_exception
 
     except InvalidTokenError as exc:
@@ -310,7 +320,7 @@ def get_current_user(request: Request, db_conn: Session):
         raise credentials_exception
 
      # Retrieve user role form the DB
-    user_role = get_user_role(user.Email,db_conn)
+    user_role = get_user_role(user.Email, db_conn)
     if user_role is None:
         raise credentials_exception
 
@@ -329,10 +339,10 @@ def get_user(email: str, db_conn: Session):
 def get_user_role(email: str, db_conn: Session):
     '''Returns the role for a given a user by email.'''
     user_role = (db_conn.query(AccountRole.RoleName)
-        .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
-        .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
-        .filter(UserAccount.Email == email)
-        .first())
+                 .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+                 .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
+                 .filter(UserAccount.Email == email)
+                 .first())
     return user_role[0]
 
 
@@ -345,7 +355,7 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
     response.delete_cookie(
         key='auth_token',
         httponly=True,
-        secure=False, # Set to false for development
+        secure=False,  # Set to false for development
         samesite='Strict'
     )
 
@@ -401,26 +411,30 @@ def is_name_valid(name: str):
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
 
+
 def is_role_valid(role: str):
     '''Verifies the role is valid for registration.'''
     return role in ACCOUNT_TYPE.keys()
 
 
 @router.post('/changePassword')
-def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
+def change_password_current_user(password_details: ChangePasswordDetails, request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve current user data
     user_email = get_current_user(request, db_conn)
     user = get_user(user_email["email"], db_conn)
 
     # Check the password is correct
     if not verify_password(password_details.current_password, user.PasswordHash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
     # Check the new password is confirmed correct
     if password_details.new_password != password_details.confirm_new_password:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
 
     # Hash password
-    new_password_hash = password_hasher.hash(password_details.new_password.encode('utf-8'))
+    new_password_hash = password_hasher.hash(
+        password_details.new_password.encode('utf-8'))
 
     # Change current password to new password
     user.PasswordHash = new_password_hash

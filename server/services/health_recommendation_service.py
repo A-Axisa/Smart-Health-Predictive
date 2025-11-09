@@ -25,7 +25,8 @@ if openai_api_key:
 def _build_health_context(health: HealthData, pred: Prediction) -> Dict:
     """Build the user health context dictionary consumed by the LLM."""
     # Normalize units
-    height_cm = float(getattr(health, 'HeightMeters', 0) or 0) * 100.0
+    height_cm = float(
+        getattr(health, 'HeightCentimetres', 0) or 0) * 100.0
     weight_kg = float(getattr(health, 'WeightKilograms', 0) or 0)
 
     conditions = []
@@ -43,7 +44,8 @@ def _build_health_context(health: HealthData, pred: Prediction) -> Dict:
         conditions.append("Smoking")
 
     # Activity level derived from Exercise flag
-    activity_level = "active" if bool(getattr(health, 'Exercise', False) or False) else "sedentary"
+    activity_level = "active" if bool(
+        getattr(health, 'Exercise', False) or False) else "sedentary"
 
     # Probabilities in 0..1 for the prompt
     probs = {
@@ -52,10 +54,11 @@ def _build_health_context(health: HealthData, pred: Prediction) -> Dict:
         "diabetes": float(getattr(pred, 'DiabetesChance', 0) or 0) / 100.0,
     }
 
-    sex = "Male" if bool(getattr(health, 'Gender', False) or False) else "Female"
+    sex = "Male" if bool(getattr(health, 'Gender', False)
+                         or False) else "Female"
 
     return {
-    "age": int(getattr(health, 'Age', 0) or 0),
+        "age": int(getattr(health, 'Age', 0) or 0),
         "sex": sex,
         "height_cm": round(height_cm, 1),
         "weight_kg": round(weight_kg, 1),
@@ -72,8 +75,10 @@ def get_health_recommendations(db_conn: Session, health_data_id: int):
     Returns a dict with keys: exercise_recommendation, diet_recommendation, lifestyle_recommendation.
     Falls back to rule-based suggestions if OpenAI is not configured.
     """
-    health = db_conn.query(HealthData).filter(getattr(HealthData, 'HealthDataID') == health_data_id).first()
-    pred = db_conn.query(Prediction).filter(getattr(Prediction, 'HealthDataID') == health_data_id).first()
+    health = db_conn.query(HealthData).filter(
+        getattr(HealthData, 'HealthDataID') == health_data_id).first()
+    pred = db_conn.query(Prediction).filter(
+        getattr(Prediction, 'HealthDataID') == health_data_id).first()
 
     if not health or not pred:
         return {"error": "Health or prediction data not found."}
@@ -166,4 +171,3 @@ def _fallback_recommendations(ctx: Dict):
         "lifestyle_recommendation": lifestyle.strip(),
         "diet_to_avoid_recommendation": diet_to_avoid.strip(),
     }
-

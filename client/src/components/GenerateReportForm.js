@@ -32,8 +32,6 @@ const GenerateReportForm = () => {
   const [alertApLowRequired, setAlertApLowRequired] = useState(false);
   const [apHigh, setApHigh] = useState(null);
   const [alertApHighRequired, setAlertApHighRequired] = useState(false);
-  const [exercise, setExercise] = useState(null);
-  const [alertExerciseRequired, setAlertExerciseRequired] = useState(false);
   const [hyperTension, setHyperTension] = useState(null);
   const [alertHyperTensionRequired, setAlertHyperTensionRequired] = useState(false);
   const [heartDisease, setHeartDisease] = useState(null);
@@ -67,7 +65,7 @@ const GenerateReportForm = () => {
 
   function updateHeight(e) {
     const heightValue = e.target.value;
-    const isHeightValid = heightValue !== "" && heightValue >= 0 && heightValue <= 3;
+    const isHeightValid = heightValue !== "" && heightValue >= 0 && heightValue <= 300;
     setHeight({ isValid: isHeightValid, value: heightValue });
     setAlertHeightRequired(!isHeightValid);
   }
@@ -96,11 +94,6 @@ const GenerateReportForm = () => {
     const isApHighValid = apHighValue !== "" && apHighValue >= 0 && apHighValue <= 200;
     setApHigh({ isValid: isApHighValid, value: apHighValue });
     setAlertApHighRequired(!isApHighValid);
-  }
-
-  function updateExercise(e) {
-    setExercise(e.target.value);
-    setAlertExerciseRequired(false);
   }
   function updateHyperTension(e) {
     setHyperTension(e.target.value);
@@ -143,7 +136,6 @@ const GenerateReportForm = () => {
       bloodGlucose !== null && bloodGlucose.isValid &&
       apLow !== null && apLow.isValid &&
       apHigh !== null && apHigh.isValid &&
-      exercise !== null &&
       hyperTension !== null &&
       heartDisease !== null &&
       diabetes !== null &&
@@ -161,7 +153,6 @@ const GenerateReportForm = () => {
     setAlertBloodGlucoseRequired(bloodGlucose === null || !bloodGlucose.isValid);
     setAlertApLowRequired(apLow === null || !apLow.isValid);
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
-    setAlertExerciseRequired(exercise === null);
     setAlertHyperTensionRequired(hyperTension === null);
     setAlertHeartDiseaseRequired(heartDisease === null);
     setAlertDiabetesRequired(diabetes === null);
@@ -197,7 +188,6 @@ const GenerateReportForm = () => {
         ap_hi: e.target.apHigh.value,
         ap_lo: e.target.apLow.value,
         highCholesterol: e.target.highCholesterol.value,
-        exercise: e.target.exercise.value,
         hyperTension: e.target.hyperTension.value,
         heartDisease: e.target.heartDisease.value,
         diabetes: e.target.diabetes.value,
@@ -237,13 +227,13 @@ const GenerateReportForm = () => {
               <TextField name="age" label="Age" type="text" inputProps={{ min: 0, max: 100, maxLength: 3 }} fullWidth onChange={updateAge}
                 error={alertAgeRequired} helperText={alertAgeRequired ? '*Please enter a valid age (0-100)' : null} />
 
-              <TextField name="height" label="Height (m)" type="text" inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }} fullWidth onChange={updateHeight}
-                error={alertHeightRequired} helperText={alertHeightRequired ? '*Please enter a valid height (0-3m)' : null} />
+              <TextField name="height" label="Height (cm)" type="text" inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }} fullWidth onChange={updateHeight}
+                error={alertHeightRequired} helperText={alertHeightRequired ? '*Please enter a valid height (0-300cm)' : null} />
 
               <FormLabel>Gender
                 <RadioGroup row name="gender" onChange={updateGender}>
-                  <FormControlLabel value="1" control={<Radio />} label="Male" />
-                  <FormControlLabel value="0" control={<Radio />} label="Female" />
+                  <FormControlLabel value="Male" control={<Radio />} label="Male" />
+                  <FormControlLabel value="Female" control={<Radio />} label="Female" />
                 </RadioGroup>
 
                 {alertGenderRequired && (
@@ -273,18 +263,6 @@ const GenerateReportForm = () => {
             
 
               {/* Fitness Section */}
-              <FormLabel>Exercise
-                <RadioGroup row name="exercise" onChange={updateExercise}>
-                  <FormControlLabel value="1" control={<Radio />} label="Yes" />
-                  <FormControlLabel value="0" control={<Radio />} label="No" />
-                </RadioGroup>
-                {alertExerciseRequired && (
-                  <Typography color="error" variant="caption">
-                    *Please select an option
-                  </Typography>
-                )}
-              </FormLabel>
-
               <FormLabel>Hyper Tension
                 <RadioGroup row name="hyperTension" onChange={updateHyperTension}>
                   <FormControlLabel value="1" control={<Radio />} label="Yes" />
@@ -348,8 +326,9 @@ const GenerateReportForm = () => {
 
               <FormLabel>Smoker
                 <RadioGroup row name="smoker" onChange={updateSmoker}>
-                  <FormControlLabel value="1" control={<Radio />} label="Yes" />
-                  <FormControlLabel value="0" control={<Radio />} label="No" />
+                  <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                  <FormControlLabel value="No" control={<Radio />} label="No" />
+                  <FormControlLabel value="Former smoker" control={<Radio />} label="Former Smoker" />
                 </RadioGroup>
                 {alertSmokerRequired && (
                   <Typography color="error" variant="caption">
@@ -361,8 +340,8 @@ const GenerateReportForm = () => {
               {/* Life Events Section */}
               <FormLabel>Marital Status
                 <RadioGroup row name="maritalStatus" onChange={updateMaritalStatus}>
-                  <FormControlLabel value="1" control={<Radio />} label="Married" />
-                  <FormControlLabel value="0" control={<Radio />} label="Single" />
+                  <FormControlLabel value="Married" control={<Radio />} label="Married" />
+                  <FormControlLabel value="Single" control={<Radio />} label="Single" />
                 </RadioGroup>
                 {alertMaritalStatusRequired && (
                   <Typography color="error" variant="caption">
@@ -373,8 +352,11 @@ const GenerateReportForm = () => {
 
               <FormLabel>Working Status
                 <RadioGroup row name="workingStatus" onChange={updateWorkingStatus}>
-                  <FormControlLabel value="1" control={<Radio />} label="Private/Public" />
-                  <FormControlLabel value="0" control={<Radio />} label="Student/Unemployed" />
+                  <FormControlLabel value="Unemployed" control={<Radio />} label="Unemployed" />
+                  <FormControlLabel value="Student" control={<Radio />} label="Student" />
+                  <FormControlLabel value="Private" control={<Radio />} label="Private" />
+                  <FormControlLabel value="Public" control={<Radio />} label="Public" />
+                  
                 </RadioGroup>
                 {alertWorkingStatusRequired && (
                   <Typography color="error" variant="caption">

@@ -11,6 +11,19 @@ import {
 
 
 const ReportTemplate = ({ report, date }) => {
+	const workingStatusMap = {
+    0: "Unemployed",
+    1: "Private",
+    2: "Student",
+    4: "Public"
+  };
+
+  const smokingStatusMap = {
+    0: "No",
+    1: "Yes",
+    2: "Former"
+  };
+
 	return (
 		<Box>
 			<Typography
@@ -45,7 +58,7 @@ const ReportTemplate = ({ report, date }) => {
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Height:</Typography>
-					<Typography>{report.height}m</Typography>
+					<Typography>{report.height}cm</Typography>
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
@@ -98,7 +111,7 @@ const ReportTemplate = ({ report, date }) => {
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Smoker:</Typography>
-					<Typography>{report.smoker === 1 ? "Yes" : "No"}</Typography>
+					<Typography>{smokingStatusMap[report.smoker]}</Typography>
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
@@ -108,7 +121,7 @@ const ReportTemplate = ({ report, date }) => {
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Working Status:</Typography>
-					<Typography>{report.workingStatus === 1 ? "Student/Unemployed" : "Public/Private"}</Typography>
+					<Typography>{workingStatusMap[report.workingStatus]}</Typography>
 				</Box>
 			</Box>
 

@@ -19,12 +19,12 @@ DATABASE_URL = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(
 engine = create_engine(DATABASE_URL)
 session_local = sessionmaker(autocommit=False, bind=engine)
 
+
 def get_db():
     '''Returns a session used to communicate with the database with Object 
     Relation Mapper (ORM) Objects.'''
     db = session_local()
     try:
         yield db
-    finally: 
+    finally:
         db.close()
-
