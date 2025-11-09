@@ -124,7 +124,7 @@ class HealthData(Base):
     # Variables
     Age = Column(Integer)
     WeightKilograms = Column(Numeric(5, 2))
-    HeightCentimetreMeters = Column(Numeric(5, 2))
+    HeightCentimetres = Column(Numeric(5, 2))
     Gender = Column(Boolean)
     BloodGlucose = Column(Numeric(5, 2))
     APHigh = Column(Numeric(5, 2))
@@ -146,7 +146,7 @@ class HealthData(Base):
         self.UserID = UserID
         self.Age = age
         self.WeightKilograms = weight
-        self.HeightCentimetreMeters = height
+        self.HeightCentimetres = height
         self.Gender = gender
         self.BloodGlucose = bloodGlucose
         self.APHigh = ap_hi
@@ -163,7 +163,7 @@ class HealthData(Base):
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
-            height={self.HeightCentimetreMeters}, gender={self.Gender}, bloodGlucose={self.BloodGlucose}, \
+            height={self.HeightCentimetres}, gender={self.Gender}, bloodGlucose={self.BloodGlucose}, \
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \

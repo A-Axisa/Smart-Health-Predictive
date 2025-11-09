@@ -26,7 +26,7 @@ def _build_health_context(health: HealthData, pred: Prediction) -> Dict:
     """Build the user health context dictionary consumed by the LLM."""
     # Normalize units
     height_cm = float(
-        getattr(health, 'HeightCentimetreMeters', 0) or 0) * 100.0
+        getattr(health, 'HeightCentimetres', 0) or 0) * 100.0
     weight_kg = float(getattr(health, 'WeightKilograms', 0) or 0)
 
     conditions = []

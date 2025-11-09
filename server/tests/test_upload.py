@@ -10,19 +10,19 @@ app = FastAPI()
 app.include_router(router)
 client = TestClient(app)
 
-test_populated_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetreMeters,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+test_populated_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
 User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
 
-test_one_populated_row_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetreMeters,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+test_one_populated_row_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 ,,,,,,,,,,,,,,,,,,
 User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
 
-test_unpopulated_rows_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetreMeters,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+test_unpopulated_rows_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,"""
 
-test_missing_email_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetreMeters,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+test_missing_email_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
 User 2,,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
 

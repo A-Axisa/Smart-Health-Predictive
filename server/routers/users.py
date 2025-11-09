@@ -231,7 +231,7 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     reportData = Report(
         age=int(getattr(healthData, 'Age', 0) or 0),
         weight=float(getattr(healthData, 'WeightKilograms', 0) or 0),
-        height=float(getattr(healthData, 'HeightCentimetreMeters', 0) or 0),
+        height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
         gender=int(
             1 if bool(getattr(healthData, 'Gender', False) or False) else 0),
         bloodGlucose=float(getattr(healthData, 'bloodGlucose', 0) or 0),

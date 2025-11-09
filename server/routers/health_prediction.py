@@ -231,8 +231,8 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
             age=int(row["Age"]) if row.get("Age") else 0,
             weight=float(row["WeightKilograms"]) if row.get(
                 "WeightKilograms") else 0,
-            height=float(row["HeightCentimetreMeters"]) if row.get(
-                "HeightCentimetreMeters") else 0,
+            height=float(row["HeightCentimetres"]) if row.get(
+                "HeightCentimetres") else 0,
             gender=int(row["Gender"]) if row.get("Gender") else 0,
             bloodGlucose=float(row["BloodGlucose"]) if row.get(
                 "BloodGlucose") else 0,
