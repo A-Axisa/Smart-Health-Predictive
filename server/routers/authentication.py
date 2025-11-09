@@ -66,6 +66,7 @@ owasp_argon2_hasher = Argon2Hasher(
 )
 password_hasher = PasswordHash((owasp_argon2_hasher,))
 
+
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
@@ -91,7 +92,7 @@ async def register(user_reg: UserRegistrationDetails, \
 
     # Only add the user to the database of they don't exist.
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
-    if not user:        
+    if not user:
         db_conn.add(new_user)
 
     # The user's ID is needed for to assign a role.
@@ -138,6 +139,7 @@ def _send_validation_email(user: UserAccount, token: str):
         content_type="html"
     )
 
+
 @router.get("/validate-email")
 async def validate_email_address(token: str, db_conn: Session = Depends(get_db)):
     validation_failure_exception = HTTPException(
@@ -164,10 +166,10 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 
     # Update the user's validation status
     user.IsValidated = True
-    
+
     # Optionally, delete the token after use
     db_conn.delete(validation_token_entry)
-    
+
     db_conn.commit()
 
     html_content = """
@@ -189,6 +191,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     </html>
     """
     return HTMLResponse(content=html_content)
+
 
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials, 
@@ -212,7 +215,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     # Invalidate previous access token.
     user.TokenVersion += 1
     db_conn.commit()
-    
+
     # Provide the user a new access token.
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
@@ -221,7 +224,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         'version': user.TokenVersion
     }
     token = create_access_token(data, expiration)
-    
+
     response.set_cookie(
         key='auth_token',
         value=token,
@@ -230,14 +233,15 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         samesite='Strict'
     )
 
-    return {'message': f'Successfully logged in.'}
+    return {'message': 'Successfully logged in.'}
+
 
 def authenticate_user(email: str, password: str, db_conn: Session):
     '''Authenticates a user from the provided email and password.'''
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
-    
+
     if EMAIL_VALIDATION_ENABLED and not user.IsValidated:
         return False
 
@@ -245,9 +249,11 @@ def authenticate_user(email: str, password: str, db_conn: Session):
         return False
     return user
 
+
 def verify_password(password_text: str, password_hash: str) -> bool:
     '''Verifies a given password matches with a password hash.'''
     return password_hasher.verify(password_text, password_hash)
+
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     '''Returns JWT containing the access token with the given data.'''
@@ -259,6 +265,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode.update({'exp':expire})
 
     return jwt.encode(to_encode, os.environ['SECRET_KEY'], algorithm=ALGORITHM)
+
 
 @router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
@@ -278,7 +285,7 @@ def get_current_user(request: Request, db_conn: Session):
     token = request.cookies.get('auth_token')
     if token is None:
         raise credentials_exception
-    
+
     # Extract the data from the jwt token.
     try:
         payload = jwt.decode(token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
@@ -301,12 +308,11 @@ def get_current_user(request: Request, db_conn: Session):
 
     if user is None:
         raise credentials_exception
-    
+
      # Retrieve user role form the DB
     user_role = get_user_role(user.Email,db_conn)
     if user_role is None:
-         raise credentials_exception
-
+        raise credentials_exception
 
     return {
         'name': user.FullName,
@@ -314,9 +320,11 @@ def get_current_user(request: Request, db_conn: Session):
         'role': user_role
     }
 
+
 def get_user(email: str, db_conn: Session):
     '''Returns user account details from the database using an email.'''
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
 
 def get_user_role(email: str, db_conn: Session):
     '''Returns the role for a given a user by email.'''
@@ -326,6 +334,7 @@ def get_user_role(email: str, db_conn: Session):
         .filter(UserAccount.Email == email)
         .first())
     return user_role[0]
+
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
@@ -339,7 +348,8 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
         secure=False, # Set to false for development
         samesite='Strict'
     )
-    
+
+
 def invalidate_access_token(email: str, db_conn: Session):
     '''Increase the user's token version number.'''
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
@@ -353,6 +363,7 @@ def is_password_valid(password: str):
     return password_length <= PASSWORD_MAX_LENGTH and \
         password_length >= PASSWORD_MIN_LENGTH
 
+
 def is_email_valid(email: str):
     '''Verifies a password follow the pattern xxx@xxx.xxx.'''
     try:
@@ -361,10 +372,12 @@ def is_email_valid(email: str):
         return False
     return len(email) < EMAIL_MAX_LENGTH
 
+
 def format_phone_number(phone: str):
     '''Removes spaces, hyphens, and brackets from a phone number string'''
     return phone.replace('-', '').replace(' ', ''). \
         replace('(', '').replace(')', '')
+
 
 def is_formatted_phone_valid(phone: str):
     '''Verifies a phone number is empty or a valid number.'''
@@ -372,7 +385,7 @@ def is_formatted_phone_valid(phone: str):
         return True
 
     # Only allow for numbers after the plus sign.
-    if not phone[1:].isalpha: 
+    if not phone[1:].isalpha:
         return False
     try:
         phonenumbers.parse(phone)
@@ -380,13 +393,16 @@ def is_formatted_phone_valid(phone: str):
         return False
     return True
 
+
 def is_name_valid(name: str):
     '''Verifies a name is valid.'''
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
+
 def is_role_valid(role: str):
     '''Verifies the role is valid for registration.'''
     return role in ACCOUNT_TYPE.keys()
+
 
 @router.post('/changePassword')
 def change_password_current_user(password_details: ChangePasswordDetails,request: Request, db_conn: Session = Depends(get_db)):
@@ -400,10 +416,10 @@ def change_password_current_user(password_details: ChangePasswordDetails,request
     # Check the new password is confirmed correct
     if password_details.new_password != password_details.confirm_new_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
-   
+
     # Hash password
     new_password_hash = password_hasher.hash(password_details.new_password.encode('utf-8'))
-    
+
     # Change current password to new password
     user.PasswordHash = new_password_hash
     db_conn.commit()
