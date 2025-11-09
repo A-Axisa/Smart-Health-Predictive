@@ -337,8 +337,8 @@ def is_password_valid(password: str):
 
 def is_email_valid(email: str):
     try:
-        is_valid_email = validate_email(email, check_deliverability=False)
     except Exception as e:
+        validate_email(email, check_deliverability=False)
         return False
     return len(email) < EMAIL_MAX_LENGTH
 
@@ -355,8 +355,8 @@ def is_formatted_phone_valid(phone: str):
     if not phone[1:].isalpha: 
         return False
     try:
-        validated_phone = phonenumbers.parse(phone)
     except Exception as e:
+        phonenumbers.parse(phone)
         return False
     return True
 
