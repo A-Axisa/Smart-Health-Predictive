@@ -1,18 +1,15 @@
 import pytest
-from fastapi import status, FastAPI
+from fastapi import status
 from fastapi.testclient import TestClient
-from ..routers.users import router
-from ..utils.database import get_db
-from ..models.dbmodels import UserAccount
+from ..main import app
 import io
 
-app = FastAPI()
-app.include_router(router)
+
 client = TestClient(app)
 
 populated_rows = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
-User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
+User 1,user1@example.com,0412345678,31,50,1.7,Male,4.5,135,120,1,0,1,0,1,0,Yes,Single,Private
+User 2,user2@example.com,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
 
 unpopulated_rows = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 ,,,,,,,,,,,,,,,,,,
@@ -20,11 +17,11 @@ unpopulated_rows = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCen
 
 one_populated_row = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 ,,,,,,,,,,,,,,,,,,
-User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
+User 2,user2@example.com,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
 
 missing_email = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
-User 2,,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
+User 1,user1@example.com,0412345678,31,50,1.7,Male,4.5,135,120,1,0,1,0,1,0,Yes,Single,Private
+User 2,,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
 
 
 @pytest.fixture(scope="session", autouse=True)
