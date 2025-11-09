@@ -4,6 +4,8 @@ import AccountApprovalTable from '../components/administrator/AccountApprovalTab
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 
 const AdministratorDashboard = () => {
 
@@ -14,7 +16,7 @@ const AdministratorDashboard = () => {
   async function logout(e) {
     e.preventDefault();
 
-    await fetch('http://localhost:8000/logout', {
+    await fetch(`${API_BASE}/logout`, {
       method: 'POST',
       credentials: 'include'
     }).then(response => {

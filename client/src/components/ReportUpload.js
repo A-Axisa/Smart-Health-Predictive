@@ -4,6 +4,8 @@ import { styled } from '@mui/material/styles';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 // Styles for upload button
 const HiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -34,7 +36,7 @@ const ReportUpload = ({}) => {
     setIsLoading(true);
 
     // Sends the file to the upload endpoint for parsing
-    await fetch(`http://localhost:8000/upload`, {
+  await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       body: formData,
       credentials: 'include',

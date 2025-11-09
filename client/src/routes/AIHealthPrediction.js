@@ -15,6 +15,8 @@ import {
   ListItemText,
 } from '@mui/material';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const AIHealthPrediction = ({ }) => {
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
@@ -31,7 +33,7 @@ const AIHealthPrediction = ({ }) => {
   }
 
   function fetchReportDates() {
-    fetch(`http://localhost:8000/getHealthDataDates`, {
+  fetch(`${API_BASE}/getHealthDataDates`, {
       method: 'GET',
       credentials: 'include',
     })
@@ -56,7 +58,7 @@ const AIHealthPrediction = ({ }) => {
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
-    fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+  fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -71,7 +73,7 @@ const AIHealthPrediction = ({ }) => {
   async function deleteReport() {
     if (!selectedDate) return;
     try {
-      fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+  fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json"

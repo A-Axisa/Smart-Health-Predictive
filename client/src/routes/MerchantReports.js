@@ -18,6 +18,8 @@ import {
 	Select,
 } from '@mui/material';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const MerchantReports = ({ }) => {
 	const [reportDates, setReportDates] = useState([]);
 	const [selectedDate, setSelectedDate] = useState();
@@ -28,7 +30,7 @@ const MerchantReports = ({ }) => {
 	const [reports, setReports] = useState([]); // Stores all report data
 
 	function fetchMerchantReports() {
-		fetch(`http://localhost:8000/merchants/reports`, {
+		fetch(`${API_BASE}/merchants/reports`, {
 			credentials: 'include',
 		}).then((response) => {
 			if (!response.ok) {
@@ -59,7 +61,7 @@ const MerchantReports = ({ }) => {
 	// Fetch report data
 	useEffect(() => {
 		if (!selectedDate) return;
-		fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+		fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
 			method: "GET", 
 			headers: {
 				"Content-Type": "application/json"
@@ -74,7 +76,7 @@ const MerchantReports = ({ }) => {
 	async function deleteReport() {
 		if (!selectedDate) return;
 		try {
-			fetch(`http://localhost:8000/reportData/${selectedDate.healthDataID}`, {
+			fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json"
