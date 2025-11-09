@@ -366,6 +366,8 @@ def is_password_valid(password: str):
 
 def is_email_valid(email: str):
     '''Verifies a password follow the pattern xxx@xxx.xxx.'''
+    if not email:
+        return False
     try:
         validate_email(email, check_deliverability=False)
     except EmailNotValidError:
