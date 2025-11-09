@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import health_prediction, authentication, users, admin 
+from .routers import health_prediction, authentication, users, admin
 
 ORIGINS = [
     "http://localhost:3000",
@@ -16,6 +16,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 async def root():

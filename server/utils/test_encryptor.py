@@ -17,8 +17,6 @@ def test_round_trip():
     assert recovered == plaintext
 
 
-
-
 if __name__ == "__main__":
     setup_key()
     test_round_trip()
