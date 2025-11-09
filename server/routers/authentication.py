@@ -5,7 +5,7 @@ from secrets import token_urlsafe
 
 import jwt
 import phonenumbers
-from email_validator import validate_email
+from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, \
     Response
 from fastapi.responses import HTMLResponse
@@ -279,9 +279,9 @@ def get_current_user(request: Request, db_conn: Session):
             token_data.ip_address == request.client.host:
             raise credentials_exception
 
-    except InvalidTokenError:
-        raise credentials_exception
-    
+    except InvalidTokenError as exc:
+        raise credentials_exception from exc
+
     # Retrieve the user from the database
     user = get_user(token_data.email, db_conn)
     if not user.TokenVersion == token_data.version:
@@ -337,8 +337,8 @@ def is_password_valid(password: str):
 
 def is_email_valid(email: str):
     try:
-    except Exception as e:
         validate_email(email, check_deliverability=False)
+    except EmailNotValidError:
         return False
     return len(email) < EMAIL_MAX_LENGTH
 
@@ -355,8 +355,8 @@ def is_formatted_phone_valid(phone: str):
     if not phone[1:].isalpha: 
         return False
     try:
-    except Exception as e:
         phonenumbers.parse(phone)
+    except phonenumbers.NumberParseException:
         return False
     return True
 
