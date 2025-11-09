@@ -9,6 +9,8 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    environment:
+      - MYSQL_HOST=mysql
     command: >
       sh -c "pip install --no-cache-dir -r requirements.txt && 
              alembic upgrade head && 
