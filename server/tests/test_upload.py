@@ -102,9 +102,9 @@ def delete_user_and_data(email: str):
 
         # Delete user's role and token.
         db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID) \
-                                    .delete(synchronize_session=False)
+            .delete(synchronize_session=False)
         db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user.UserID) \
-                                                .delete(synchronize_session=False)
+            .delete(synchronize_session=False)
 
         # Delete the user.
         db_conn.delete(user)
