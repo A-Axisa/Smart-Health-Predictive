@@ -1,7 +1,11 @@
 from logging.config import fileConfig
+import os
+import re
+from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy import create_engine
 
 from alembic import context
 
@@ -21,6 +25,8 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+
+load_dotenv()
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -59,11 +65,25 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    # connectable = engine_from_config(
+    #     config.get_section(config.config_ini_section, {}),
+    #     prefix="sqlalchemy.",
+    #     poolclass=pool.NullPool,
+    # )
+    
+    url_tokens = {
+        "MYSQL_USER": os.getenv("MYSQL_USER", "admin"),
+        "MYSQL_PASSWORD": os.getenv("MYSQL_PASSWORD", "admin"),
+        "MYSQL_HOST": os.getenv("MYSQL_HOST", "localhost"),
+        "MYSQL_PORT": os.getenv("MYSQL_PORT", "3307"),
+        "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE", "user-db")
+    }
+
+    url = config.get_main_option("sqlalchemy.url")
+
+    url = re.sub(r"\${(.+?)}", lambda m: url_tokens[m.group(1)], url)
+
+    connectable = create_engine(url)
 
     with connectable.connect() as connection:
         context.configure(
