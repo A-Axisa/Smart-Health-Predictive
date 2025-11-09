@@ -2,8 +2,11 @@
 Env: DATA_CIPHER_KEY (32 bytes, Base64 or raw 32-char utf-8)
 Output: v1:gcm:base64(iv):base64(tag):base64(cipher)
 """
-import os, base64, sys
+import os
+import base64
+import sys
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 
 def load_key():
     raw = os.getenv('DATA_CIPHER_KEY')
@@ -17,8 +20,10 @@ def load_key():
     except Exception:
         raise RuntimeError('Invalid key format')
     if len(key) != 32:
-        raise RuntimeError('DATA_CIPHER_KEY must be 32 bytes, got ' + str(len(key)))
+        raise RuntimeError(
+            'DATA_CIPHER_KEY must be 32 bytes, got ' + str(len(key)))
     return key
+
 
 def encrypt(plain_text):
     if plain_text is None:
@@ -33,11 +38,12 @@ def encrypt(plain_text):
     ct_tag = aes.encrypt(iv, data, None)
     ct, tag = ct_tag[:-16], ct_tag[-16:]
     return ':'.join([
-        'v1','gcm',
+        'v1', 'gcm',
         base64.b64encode(iv).decode(),
         base64.b64encode(tag).decode(),
         base64.b64encode(ct).decode()
     ])
+
 
 def decrypt(payload):
     if not isinstance(payload, str):
@@ -45,7 +51,7 @@ def decrypt(payload):
     parts = payload.split(':')
     if len(parts) != 5 or parts[0] != 'v1' or parts[1] != 'gcm':
         raise RuntimeError('Cipher format invalid')
-    _,_,iv_b64,tag_b64,ct_b64 = parts
+    _, _, iv_b64, tag_b64, ct_b64 = parts
     iv = base64.b64decode(iv_b64)
     tag = base64.b64decode(tag_b64)
     ct = base64.b64decode(ct_b64)
@@ -56,11 +62,13 @@ def decrypt(payload):
     pt = aes.decrypt(iv, ct + tag, None)
     return pt.decode('utf-8')
 
+
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'gen-key':
         print(base64.b64encode(os.urandom(32)).decode())
     else:
         print('Usage: python -m utils.encryptor gen-key')
+
 
 class EncryptionError(Exception):
     pass
