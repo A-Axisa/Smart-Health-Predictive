@@ -233,25 +233,24 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
                 "WeightKilograms") else 0,
             height=float(row["HeightCentimetres"]) if row.get(
                 "HeightCentimetres") else 0,
-            gender=int(row["Gender"]) if row.get("Gender") else 0,
+            gender=str(row["Gender"]) if gender_map[row.get("Gender")] else 0,
             bloodGlucose=float(row["BloodGlucose"]) if row.get(
                 "BloodGlucose") else 0,
             ap_hi=float(row["APHigh"]) if row.get("APHigh") else 0,
             ap_lo=float(row["APLow"]) if row.get("APLow") else 0,
             highCholesterol=int(row["HighCholesterol"]) if row.get(
                 "HighCholesterol") else 0,
-            exercise=int(row["Exercise"]) if row.get("Exercise") else 0,
             hyperTension=int(row["HyperTension"]) if row.get(
                 "HyperTension") else 0,
             heartDisease=int(row["HeartDisease"]) if row.get(
                 "HeartDisease") else 0,
             diabetes=int(row["Diabetes"]) if row.get("Diabetes") else 0,
             alcohol=int(row["Alcohol"]) if row.get("Alcohol") else 0,
-            smoker=int(row["SmokingStatus"]) if row.get(
+            smoker=str(row["SmokingStatus"]) if row.get(
                 "SmokingStatus") else 0,
-            maritalStatus=int(row["MaritalStatus"]) if row.get(
+            maritalStatus=str(row["MaritalStatus"]) if row.get(
                 "MaritalStatus") else 0,
-            workingStatus=int(row["WorkingStatus"]) if row.get(
+            workingStatus=str(row["WorkingStatus"]) if row.get(
                 "WorkingStatus") else 0,
             merchantID=merchant.UserID,
         )
