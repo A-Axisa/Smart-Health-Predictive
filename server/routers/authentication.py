@@ -69,6 +69,8 @@ password_hasher = PasswordHash((owasp_argon2_hasher,))
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails, \
                    db_conn: Session = Depends(get_db)):
+    '''Register a new account for the user provided the details are valid.'''
+
     formatted_phone = format_phone_number(user_reg.phone)
 
     # Ensure user inputs are valid.
@@ -189,7 +191,10 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     return HTMLResponse(content=html_content)
 
 @router.post('/login')
-async def login(request: Request, response: Response, user_cred: LoginCredentials, db_conn: Session = Depends(get_db)):
+async def login(request: Request, response: Response, user_cred: LoginCredentials, 
+                db_conn: Session = Depends(get_db)):
+    '''Authenticates a user with the credentials and provides an access token.'''
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Incorrect username or password',
@@ -228,6 +233,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     return {'message': f'Successfully logged in.'}
 
 def authenticate_user(email: str, password: str, db_conn: Session):
+    '''Authenticates a user from the provided email and password.'''
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
@@ -240,9 +246,11 @@ def authenticate_user(email: str, password: str, db_conn: Session):
     return user
 
 def verify_password(password_text: str, password_hash: str) -> bool:
+    '''Verifies a given password matches with a password hash.'''
     return password_hasher.verify(password_text, password_hash)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    '''Returns JWT containing the access token with the given data.'''
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -254,9 +262,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 @router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
+    '''Endpoint for retrieving the currently active user on a device.'''
     return get_current_user(request, db_conn)
 
-def get_current_user(request: Request, db_conn: Session):  
+
+def get_current_user(request: Request, db_conn: Session):
+    '''Returns user information from the http-only cookie on their device.'''
+
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -303,9 +315,11 @@ def get_current_user(request: Request, db_conn: Session):
     }
 
 def get_user(email: str, db_conn: Session):
+    '''Returns user account details from the database using an email.'''
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
 def get_user_role(email: str, db_conn: Session):
+    '''Returns the role for a given a user by email.'''
     user_role = (db_conn.query(AccountRole.RoleName)
         .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
         .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
@@ -315,6 +329,7 @@ def get_user_role(email: str, db_conn: Session):
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
+    '''Deletes the user cookie and invalidates their access token.'''
     user = get_current_user(request, db_conn)
     invalidate_access_token(user['email'], db_conn)
 
@@ -326,16 +341,20 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
     )
     
 def invalidate_access_token(email: str, db_conn: Session):
+    '''Increase the user's token version number.'''
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     user.TokenVersion += 1
     db_conn.commit()
 
-def is_password_valid(password: str): 
+
+def is_password_valid(password: str):
+    '''Verifies the password follows policy rules.'''
     password_length = len(password)
     return password_length <= PASSWORD_MAX_LENGTH and \
         password_length >= PASSWORD_MIN_LENGTH
 
 def is_email_valid(email: str):
+    '''Verifies a password follow the pattern xxx@xxx.xxx.'''
     try:
         validate_email(email, check_deliverability=False)
     except EmailNotValidError:
@@ -343,11 +362,12 @@ def is_email_valid(email: str):
     return len(email) < EMAIL_MAX_LENGTH
 
 def format_phone_number(phone: str):
-    '''Removes spaces, hyphens, and brackets from strings'''
+    '''Removes spaces, hyphens, and brackets from a phone number string'''
     return phone.replace('-', '').replace(' ', ''). \
         replace('(', '').replace(')', '')
 
 def is_formatted_phone_valid(phone: str):
+    '''Verifies a phone number is empty or a valid number.'''
     if phone == '':
         return True
 
@@ -361,9 +381,11 @@ def is_formatted_phone_valid(phone: str):
     return True
 
 def is_name_valid(name: str):
+    '''Verifies a name is valid.'''
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
 def is_role_valid(role: str):
+    '''Verifies the role is valid for registration.'''
     return role in ACCOUNT_TYPE.keys()
 
 @router.post('/changePassword')
