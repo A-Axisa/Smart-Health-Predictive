@@ -22,8 +22,8 @@
 2. Install the modules listed in the requirements.txt.  
 ```pip3 install -r requirements.txt```
 
-## FastApi
-### First time set up
+## FastApi Setup
+### Initial Setup
 1. Open Command Prompt
 2. Run pip install ```"fastapi[standard]"```
 
@@ -34,33 +34,22 @@
 ```fastapi dev main.py```
 3. Go to http://127.0.0.1:8000/docs to interact with API
 
-### Running the Database (Docker Compose)
-1. Open terminal and navigate to the server folder in the project directory.
-2. Install necessary dependencies.  
-```npm install dotenv mysql2```
-3. Install and run Docker Desktop.
-4. Navigate to the project root directory.
-5. Create and start the Docker container.   
+## Database Setup (Docker Compose + Alembic)
+### Initial Setup
+1. Have Docker running in the background.
+2. Navigate to the server directory.
+3. Create the container with:      
 ```docker compose up -d```
-6. Run the initial migration script.    
-```docker exec -i shp-mysql mysql -uadmin -padmin user-db < server/src/migrations/01_init_schema.sql```
-7. Verify table creations in database.   
-```docker exec -it shp-mysql mysql -uadmin -padmin user-db -e "SHOW TABLES;"```
-
-## Alembic
-### Setup
-1. Navigate to the server directory.
-2. Run the following upgrade command:      
+4. To update your database to the latest version, run the following command:      
 ```alembic upgrade head```  
-2. Run the following command to downgrade the database:     
-    ***Warning:** This command will drop ALL existing tables and their associated data.*    
-```alembic downgrade 81a354f03cae```  
-3. Run the following command to rebuild the tables:   
-```alembic upgrade head``` 
-4. When receiving pull requests with new versions, resume from step 3.
+
+*ADDITIONAL NOTES*:    
+ Run the following command to downgrade the database:     
+**Warning: This command will drop *ALL* existing tables and their associated data**    
+```alembic downgrade base```  
 
 ### Adding a Migration
-**For auto-generated migrations:**
+**Auto-generated migrations**
 1. Navigate to ```/server/models/dbmodels.py``` and modify/create tables as necessary.
 2. Navigate to the server directory.
 3. Run the following command to ensure you are on the current version:      
@@ -68,9 +57,9 @@
 4. Run the following command to create the migration:   
 ```alembic revision --autogenerate -m "Description of migration"```
 
-**For manual migrations:**
+**Manual migrations**
 1. Navigate to the server directory.
 2. Run the following command to add a new version:  
 ```alembic revision -m "Description of migration"```
-3. Navigate to ```/server/alembic/versions/versionName.py``` and locate the created version file.
+3. Navigate to ```/server/alembic/versions/nameOfNewVersion.py``` and locate the created version file.
 4. Refer to *https://alembic.sqlalchemy.org/en/latest/ops.html* for detail on creating/dropping tables.
