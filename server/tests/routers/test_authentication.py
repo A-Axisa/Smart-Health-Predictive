@@ -150,7 +150,7 @@ def test_authentication_empty_password():
     result = authenticate_user('test@example.com', '', next(get_db()))
     assert not result
 
-def test_authentication_empty_password():
+def test_authentication_empty_credentials():
     result = authenticate_user('', '', next(get_db()))
     assert not result    
 
