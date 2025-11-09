@@ -1,98 +1,166 @@
 import pytest
-from fastapi import status, FastAPI
+from fastapi import status
 from fastapi.testclient import TestClient
-from ..routers.users import router
+from ..main import app
 from ..utils.database import get_db
-from ..models.dbmodels import UserAccount
+from ..models.dbmodels import UserAccount, UserAccountRole, \
+    UserAccountValidationToken, HealthData, Recommendation, Prediction
 import io
 
-app = FastAPI()
-app.include_router(router)
+
 client = TestClient(app)
 
-test_populated_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
-User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
+# Test CSV data.
+populated_rows = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+User 1,user1@example.com,0412345678,31,50,1.7,Male,4.5,135,120,1,0,1,0,1,0,Yes,Single,Private
+User 2,user2@example.com,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
 
-test_one_populated_row_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-,,,,,,,,,,,,,,,,,,
-User 2,user2@example.com,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
-
-test_unpopulated_rows_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+unpopulated_rows = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,"""
 
-test_missing_email_csv_data = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-User 1,user1@example.com,0412345678,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
-User 2,,0812345678,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1"""
+one_populated_row = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+,,,,,,,,,,,,,,,,,,
+User 2,user2@example.com,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
+
+missing_email = """FullName,Email,PhoneNumber,Age,WeightInKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
+User 1,user1@example.com,0412345678,31,50,1.7,Male,4.5,135,120,1,0,1,0,1,0,Yes,Single,Private
+User 2,,0812345678,31,60,1.7,Male,6,140,120,0,1,1,0,0,1,No,Married,Private"""
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_users_for_tests():
-    db_conn = next(get_db())
 
-    test_merchant = UserAccount(
-        "Merchant User", "merchant@example.com", "validpassword", "1234567890")
-    test_user1 = UserAccount(
-        "User 1", "user1@example.com", "anothervalidpassword", "0412345678")
-    test_user2 = UserAccount(
-        "User 2", "user2@example.com", "yetanothervalidpassword", "0812345678")
+    emails = [
+        "myreputableclinic@example.com",
+        "user1@example.com",
+        "user2@example.com",
+    ]
 
-    db_conn.add_all([test_merchant, test_user1, test_user2])
-    db_conn.commit()
-    test_merchant.UserID = 123
-    db_conn.commit()
+    # Delete test user's if they still exist.
+    for email in emails:
+        delete_user_and_data(email)
+
+    credentials = [
+        {
+            'username': 'AReputableClinic',
+            'password': 'thisisavalidpassword',
+            'email': 'myreputableclinic@example.com',
+            'phone': '',
+            'account_type': 'merchant'
+        },
+        {
+            'username': 'User 1',
+            'password': 'thisisalongpassword',
+            'email': 'user1@example.com',
+            'phone': '',
+            'account_type': 'user'
+        },
+        {
+            'username': 'User 2',
+            'password': 'thisisareallylongpassword',
+            'email': 'user2@example.com',
+            'phone': '',
+            'account_type': 'user'
+        }
+    ]
+
+    for account in credentials:
+        client.post("/register/", json=account)
+
+    # Create login payload for the test merchant.
+    merchant_credentials = {'email': 'myreputableclinic@example.com',
+                            'password': 'thisisavalidpassword'}
+    
+    client.post("/login/", json=merchant_credentials)
+
     yield
 
-    db_conn.query(UserAccount).filter(
-        UserAccount.Email == "merchant@example.com").delete()
-    db_conn.query(UserAccount).filter(
-        UserAccount.Email == "user1@example.com").delete()
-    db_conn.query(UserAccount).filter(
-        UserAccount.Email == "user2@example.com").delete()
-    db_conn.commit()
+    # Delete each test user after tests.
+    for email in emails:
+        delete_user_and_data(email)
 
+# Helper function to delete a user and all their data.
+def delete_user_and_data(email: str):
+    db_conn = next(get_db())
+
+    # Get the user.
+    user = db_conn.query(UserAccount).filter_by(Email=email).first()
+
+    if user:
+        # Delete user's HealthData.
+        health_ids = [hid for (hid,) in db_conn.query(HealthData.HealthDataID)
+                    .filter(HealthData.UserID == user.UserID).all()]
+
+        if health_ids:
+            db_conn.query(Recommendation).filter(Recommendation.HealthDataID.in_(health_ids)) \
+                .delete(synchronize_session=False)
+            db_conn.query(Prediction).filter(Prediction.HealthDataID.in_(health_ids)) \
+                .delete(synchronize_session=False)
+            db_conn.query(HealthData).filter(HealthData.UserID == user.UserID) \
+                .delete(synchronize_session=False)
+
+        # Delete user's role and token.
+        db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user.UserID) \
+            .delete(synchronize_session=False)
+        db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user.UserID) \
+            .delete(synchronize_session=False)
+
+        # Delete the user.
+        db_conn.delete(user)
+        db_conn.commit()    
+
+# Helper function to upload csv.
+def upload_csv(data: str):
+    file = io.BytesIO(data.encode("utf-8"))
+    encoded_file = {"uploaded_file": ("test.csv", file, "text/csv")}
+    return client.post("/upload/", files=encoded_file)
+
+# Helper function to return a count of all HealthData rows.
+def count_health_data():
+    db_conn = next(get_db())
+    return db_conn.query(HealthData).count()
 
 def test_populated_rows_upload():
-    file = io.BytesIO(test_populated_csv_data.encode("utf-8"))
-    files = {"file": ("test.csv", file, "text/csv")}
-    response = client.post("/upload", files=files,
-                           data={"testMerchantID": 123})
+    pre_count = count_health_data()
+    response = upload_csv(populated_rows)
+    post_count = count_health_data()
+    body = response.json()
+
     assert response.status_code == status.HTTP_200_OK
-
-    data = response.json()
-    assert len(data) == 2
-    assert data[0]["merchantID"] == 123
-    assert data[1]["merchantID"] == 123
-
+    assert body["processed"] == 2
+    assert body["skipped"] == 0
+    assert post_count == pre_count + 2
 
 def test_unpopulated_rows_upload():
-    file = io.BytesIO(test_unpopulated_rows_csv_data.encode("utf-8"))
-    files = {"file": ("test.csv", file, "text/csv")}
-    response = client.post("/upload", files=files,
-                           data={"testMerchantID": 123})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    pre_count = count_health_data()
+    response = upload_csv(unpopulated_rows)
+    post_count = count_health_data()
+    body = response.json()
 
+    assert response.status_code == status.HTTP_200_OK
+    assert body["processed"] == 0
+    assert body["skipped"] == 2
+    assert post_count == pre_count
 
 def test_one_populated_row_upload():
-    file = io.BytesIO(test_one_populated_row_csv_data.encode("utf-8"))
-    files = {"file": ("test.csv", file, "text/csv")}
-    response = client.post("/upload", files=files,
-                           data={"testMerchantID": 123})
+    pre_count = count_health_data()
+    response = upload_csv(one_populated_row)
+    post_count = count_health_data()
+    body = response.json()
+
     assert response.status_code == status.HTTP_200_OK
-
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["merchantID"] == 123
-
+    assert body["processed"] == 1
+    assert body["skipped"] == 1
+    assert post_count == pre_count + 1
 
 def test_missing_email_upload():
-    file = io.BytesIO(test_missing_email_csv_data.encode("utf-8"))
-    files = {"file": ("test.csv", file, "text/csv")}
-    response = client.post("/upload", files=files,
-                           data={"testMerchantID": 123})
-    assert response.status_code == status.HTTP_200_OK
+    pre_count = count_health_data()
+    response = upload_csv(missing_email)
+    post_count = count_health_data()
+    body = response.json()
 
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["merchantID"] == 123
+    assert response.status_code == status.HTTP_200_OK
+    assert body["processed"] == 1
+    assert body["skipped"] == 1
+    assert post_count == pre_count + 1
