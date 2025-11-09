@@ -247,12 +247,9 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
             1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
         alcohol=int(
             1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
-        smoker=int(
-            1 if bool(getattr(healthData, 'SmokingStatus', False) or False) else 0),
-        maritalStatus=int(
-            1 if bool(getattr(healthData, 'MaritalStatus', False) or False) else 0),
-        workingStatus=int(
-            1 if bool(getattr(healthData, 'WorkingStatus', False) or False) else 0),
+        smoker=int(getattr(healthData, 'SmokingStatus', 0) or 0),
+        maritalStatus=int(getattr(healthData, 'MaritalStatus', 0) or 0),
+        workingStatus=int(getattr(healthData, 'WorkingStatus', 0) or 0),
         strokeChance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
         CVDChance=float(getattr(predictionData, 'CVDChance', 0) or 0),
         diabetesChance=float(

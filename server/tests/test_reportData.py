@@ -1,8 +1,7 @@
 import pytest
 from fastapi import status, Depends
 from fastapi.testclient import TestClient
-from ..models.dbmodels import HealthData, Prediction, Recommendation
-from . import reportData
+from ..models.dbmodels import HealthData
 from ..main import app
 from ..utils.database import get_db
 

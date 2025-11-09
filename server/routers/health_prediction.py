@@ -19,7 +19,7 @@ class HealthDataInput(BaseModel):
     age: int
     weight: float           # kg
     height: float           # cm
-    gender: int             # Female: 0, Male: = 1
+    gender: str
     bloodGlucose: float     # mmol/L
     ap_hi: float            # Systolic Blood Pressure (mmHg)
     ap_lo: float            # Diastolic Blood Pressure (mmHg)
@@ -28,9 +28,9 @@ class HealthDataInput(BaseModel):
     heartDisease: int
     diabetes: int
     alcohol: int
-    smoker: int
-    maritalStatus: int
-    workingStatus: int
+    smoker: str
+    maritalStatus: str
+    workingStatus: str
     merchantID: Optional[int] = None
 
 
@@ -49,8 +49,6 @@ working_map = {
     'Working': 3, 'Public': 4
 }
 
-other_map = {'No': 0, 'Yes': 1}
-
 
 router = APIRouter()
 
@@ -60,24 +58,9 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
                   csv_user_id: Optional[int] = None):
 
     # Check if user input is valid
-    if (
-            not is_age_valid(data.age) or
-            not is_weight_valid(data.weight) or
-            not is_height_valid(data.height) or
-            not is_gender_valid(data.gender) or
-            not is_bloodGlucose_valid(data.bloodGlucose) or
-            not is_ap_hi_valid(data.ap_hi) or
-            not is_ap_lo_valid(data.ap_lo) or
-            not is_highCholesterol_valid(data.highCholesterol) or
-            not is_hyperTension_valid(data.hyperTension) or
-            not is_heartDisease_valid(data.heartDisease) or
-            not is_diabetes_valid(data.diabetes) or
-            not is_alcohol_valid(data.alcohol) or
-            not is_smoker_valid(data.smoker) or
-            not is_maritalStatus_valid(data.maritalStatus) or
-            not is_workingStatus_valid(data.workingStatus)):
-
+    if validate_all_input(data) == False:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
     # Calculate BMI
     if (data.height == 0):
         BMI = 0
@@ -91,11 +74,10 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
 
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
     user_id = csv_user_id if csv_user_id is not None else user.UserID
-
-    healthData = HealthData(user_id, data.age, data.weight, data.height, data.gender,
+    healthData = HealthData(user_id, data.age, data.weight, data.height, gender_map[data.gender],
                             data.bloodGlucose, data.ap_hi, data.ap_lo, data.highCholesterol,
                             data.hyperTension, data.heartDisease, data.diabetes, data.alcohol,
-                            data.smoker, data.maritalStatus, data.workingStatus, data.merchantID)
+                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], data.merchantID)
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -105,14 +87,14 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     # Cardio Dataframe
     cardio_df = pd.DataFrame([[
         data.age,
-        data.gender,
+        gender_map[data.gender],
         BMI,
         data.height,
         data.ap_hi,
         data.ap_lo,
         data.highCholesterol,
         data.bloodGlucose,
-        data.smoker,
+        smoker_map[data.smoker],
         data.alcohol
     ]])
     # Cardio prediction
@@ -120,16 +102,16 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     # Stoke Dataframe
     stroke_df = pd.DataFrame([[
-        data.gender,
+        gender_map[data.gender],
         data.age,
         data.heartDisease,
-        data.maritalStatus,
-        data.workingStatus,
+        marital_map[data.maritalStatus],
+        working_map[data.workingStatus],
         data.bloodGlucose,
         data.weight,
         data.height,
         BMI,
-        data.smoker
+        smoker_map[data.smoker]
     ]])
 
     # Stroke Prediction
@@ -137,10 +119,10 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)
     # diabetes Dataframe
     diabetes_df = pd.DataFrame([[
-        data.gender,
+        gender_map[data.gender],
         data.age,
         data.heartDisease,
-        data.smoker,
+        smoker_map[data.smoker],
         data.weight,
         data.height,
         BMI,
@@ -299,7 +281,7 @@ def is_height_valid(height: float):
 
 
 def is_gender_valid(gender: int):
-    return gender == 0 or gender == 1
+    return gender in gender_map
 
 
 def is_bloodGlucose_valid(bloodGlucose: float):
@@ -334,13 +316,35 @@ def is_alcohol_valid(alcohol: int):
     return alcohol == 0 or alcohol == 1
 
 
-def is_smoker_valid(smoker: int):
-    return smoker >= 0 and smoker <= 2
+def is_smoker_valid(smoker: str):
+    return smoker in smoker_map
 
 
-def is_maritalStatus_valid(maritalStatus: int):
-    return maritalStatus >= 0 and maritalStatus <= 2
+def is_maritalStatus_valid(maritalStatus: str):
+    return maritalStatus in marital_map
 
 
-def is_workingStatus_valid(workingStatus: int):
-    return workingStatus >= 0 and workingStatus <= 4
+def is_workingStatus_valid(workingStatus: str):
+    return workingStatus in working_map
+
+
+def validate_all_input(data: HealthDataInput):
+    if (
+            not is_age_valid(data.age) or
+            not is_weight_valid(data.weight) or
+            not is_height_valid(data.height) or
+            not is_gender_valid(data.gender) or
+            not is_bloodGlucose_valid(data.bloodGlucose) or
+            not is_ap_hi_valid(data.ap_hi) or
+            not is_ap_lo_valid(data.ap_lo) or
+            not is_highCholesterol_valid(data.highCholesterol) or
+            not is_hyperTension_valid(data.hyperTension) or
+            not is_heartDisease_valid(data.heartDisease) or
+            not is_diabetes_valid(data.diabetes) or
+            not is_alcohol_valid(data.alcohol) or
+            not is_smoker_valid(data.smoker) or
+            not is_maritalStatus_valid(data.maritalStatus) or
+            not is_workingStatus_valid(data.workingStatus)):
+        return False
+
+    return True

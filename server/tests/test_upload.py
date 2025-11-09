@@ -1,7 +1,7 @@
 import pytest
 from fastapi import status, FastAPI
 from fastapi.testclient import TestClient
-from ..routers.upload import router
+from ..routers.users import router
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount
 import io
