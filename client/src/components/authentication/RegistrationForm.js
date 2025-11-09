@@ -14,6 +14,8 @@ const ACCOUNT_TYPES = Object.freeze({
   MERCHANT: 'merchant',
 })
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const [nameState, setNameState] = useState(null);
@@ -95,8 +97,8 @@ const RegistrationForm = () => {
 
     setIsLoading(true);
 
-    // Post the fetch request with the supplied details.
-    await fetch('http://localhost:8000/register', {
+  // Post the fetch request with the supplied details.
+  await fetch(`${API_BASE}/register`, {
       method: 'POST',
       headers:{
         'Content-Type': 'application/json'

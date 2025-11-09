@@ -16,6 +16,8 @@ import {
 } from "@mui/material";
 import AppThemeProvider from '../components/AppThemeProvider';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const GenerateReportForm = () => {
   const navigate = useNavigate();
   const [weight, setWeight] = useState(null)
@@ -172,8 +174,8 @@ const GenerateReportForm = () => {
     }
 
 
-    // Fetch request for AI Model
-    await fetch('http://localhost:8000/healthPrediction', {
+  // Fetch request for AI Model
+  await fetch(`${API_BASE}/healthPrediction`, {
       method: 'POST',
       credentials: "include",
       headers: {

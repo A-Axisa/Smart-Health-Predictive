@@ -13,12 +13,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const UserLanding = ({ }) => {
   const navigate = useNavigate();
   const [name, setName] = useState(null)
 
   useEffect(() => {
-    fetch(`http://localhost:8000/user/me`, {
+    fetch(`${API_BASE}/user/me`, {
       method: "GET",
       credentials: "include"
     })
@@ -31,7 +33,7 @@ const UserLanding = ({ }) => {
   async function logout(e) {
     e.preventDefault();
 
-    await fetch('http://localhost:8000/logout', {
+  await fetch(`${API_BASE}/logout`, {
       method: 'POST',
       credentials: 'include'
     }).then(response => {
