@@ -65,12 +65,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # connectable = engine_from_config(
-    #     config.get_section(config.config_ini_section, {}),
-    #     prefix="sqlalchemy.",
-    #     poolclass=pool.NullPool,
-    # )
-    
     url_tokens = {
         "MYSQL_USER": os.getenv("MYSQL_USER", "admin"),
         "MYSQL_PASSWORD": os.getenv("MYSQL_PASSWORD", "admin"),
