@@ -37,7 +37,7 @@
 ## Database Setup (Docker Compose + Alembic)
 ### Initial Setup
 1. Have Docker running in the background.
-2. Navigate to the server directory.
+2. Navigate to the root directory.
 3. Create the container with:      
 ```docker compose up -d```
 4. To update your database to the latest version, run the following command:      
