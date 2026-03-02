@@ -3,6 +3,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from server.main import app
+from server.utils.database import session_local
+from server.models.dbmodels import UserAccount
 
 client = TestClient(app)
 
@@ -54,6 +56,13 @@ def test_admin_can_delete_user():
     register_res = client.post("/register/", json=user_to_delete_credentials)
     assert register_res.status_code == status.HTTP_200_OK, f"Failed to create user for deletion test: {register_res.text}"
 
+    # Manually validate the user in DB because the admin /users endpoint filters for IsValidated=1
+    with session_local() as session:
+        user_obj = session.query(UserAccount).filter(UserAccount.Email == user_to_delete_email).first()
+        if user_obj:
+            user_obj.IsValidated = True
+            session.commit()
+    
     # 2. Login as admin
     admin_client = TestClient(app)
     admin_credentials = {"email": "SHP_Admin@example.com",
@@ -62,7 +71,7 @@ def test_admin_can_delete_user():
     assert login_res.status_code == status.HTTP_200_OK, f"Admin login failed: {login_res.text}"
 
     # 3. Get the user ID of the new user
-    users_res = admin_client.get("/users/")
+    users_res = admin_client.get("/users")
     assert users_res.status_code == status.HTTP_200_OK
     users = users_res.json()
     user_found = any(user['email'] == user_to_delete_email for user in users)
@@ -81,7 +90,7 @@ def test_admin_can_delete_user():
     assert response_json["deletion_report"]["users_deleted"] == 1
 
     # 6. Verify the user is actually deleted
-    users_res_after_delete = admin_client.get("/users/")
+    users_res_after_delete = admin_client.get("/users")
     assert users_res_after_delete.status_code == status.HTTP_200_OK
     users_after_delete = users_res_after_delete.json()
     user_found = any(
