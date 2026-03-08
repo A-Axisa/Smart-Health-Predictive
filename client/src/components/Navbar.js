@@ -18,11 +18,11 @@ const NavBar = ({ role }) => {
   // Page options for each user type
   const standardPages = [
     "Generate Report",
-    "Health History",
+    "Report History",
     "Health Analytics",
   ];
   const settings = ["Account", "Logout"];
-  const merchantPages = ["Page"];
+  const merchantPages = ["Generate Report", "Report History"];
   const adminPages = ["Page"];
   // Check if settings menu is open
   const [openMenu, setOpenMenu] = useState(null);
@@ -47,10 +47,20 @@ const NavBar = ({ role }) => {
   // Handle navigation for each page option
   function handleNavigate(page) {
     if (page === "Generate Report") {
-      navigate("/generate-report");
+      if (role === "standard_user") {
+        navigate("/generate-report");
+      }
+      if (role === "merchant") {
+        navigate("/merchant-generate-report");
+      }
     }
-    if (page === "Health History") {
-      navigate("/ai-health-prediction");
+    if (page === "Report History") {
+      if (role === "standard_user") {
+        navigate("/ai-health-prediction");
+      }
+      if (role === "merchant") {
+        navigate("/merchant-reports");
+      }
     }
     if (page === "Health Analytics") {
       navigate("/health-analytics");
@@ -149,7 +159,80 @@ const NavBar = ({ role }) => {
     );
 
   // Navigation Bar for merchant user type
-  if (role === "merchant") return <h1>Hello Merchant</h1>;
+  if (role === "merchant")
+    return (
+      <AppBar position="static">
+        <Toolbar disableGutters>
+          {/*Title/Logo Section*/}
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-start",
+              pl: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              onClick={() => navigate("/merchant-landing")}
+              sx={{
+                color: "inherit",
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Smart Health Predictive
+            </Typography>
+          </Box>
+          {/*Page Options  */}
+          <Box sx={{ display: "flex", alignItems: "center", mx: 1 }}>
+            {merchantPages.map((page) => (
+              <Button
+                key={page}
+                onClick={() => handleNavigate(page)}
+                sx={{ my: 2, color: "inherit", display: "block" }}
+              >
+                {page}
+              </Button>
+            ))}
+          </Box>
+          {/*Account Settings Section  */}
+          <Box sx={{ flexGrow: 0 }}>
+            <Button color="inherit">
+              <AccountCircleIcon
+                fontSize="large"
+                onClick={handleOpenSettings}
+                sx={{ p: 0 }}
+              ></AccountCircleIcon>
+              <Menu
+                sx={{ mt: "45px" }}
+                id="menu-appbar"
+                anchorEl={openMenu}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(openMenu)}
+                onClose={handleCloseSettings}
+              >
+                {settings.map((page) => (
+                  <MenuItem key={page} onClick={() => handleNavigate(page)}>
+                    <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
+    );
   // Navigation Bar for admin user type
   if (role === "admin") return <h1>Hello Admin</h1>;
 };
