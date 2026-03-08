@@ -23,7 +23,7 @@ const NavBar = ({ role }) => {
   ];
   const settings = ["Account", "Logout"];
   const merchantPages = ["Generate Report", "Report History"];
-  const adminPages = ["Page"];
+  const adminPages = ["Users", "Account Requests"];
   // Check if settings menu is open
   const [openMenu, setOpenMenu] = useState(null);
 
@@ -234,7 +234,54 @@ const NavBar = ({ role }) => {
       </AppBar>
     );
   // Navigation Bar for admin user type
-  if (role === "admin") return <h1>Hello Admin</h1>;
+  if (role === "admin")
+    return (
+      <AppBar position="static">
+        <Toolbar disableGutters>
+          {/*Title/Logo Section*/}
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-start",
+              pl: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              onClick={() => navigate("/merchant-landing")}
+              sx={{
+                color: "inherit",
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Admin Dashboard
+            </Typography>
+          </Box>
+          {/*Page Options  */}
+          <Box sx={{ display: "flex", alignItems: "center", mx: 1 }}>
+            {adminPages.map((page) => (
+              <Button
+                key={page}
+                onClick={() => handleNavigate(page)}
+                sx={{ my: 2, color: "inherit", display: "block" }}
+              >
+                {page}
+              </Button>
+            ))}
+          </Box>
+          {/*Account Settings Section  */}
+          <Button
+            onClick={logout}
+            sx={{ my: 2, color: "inherit", display: "block" }}
+          >
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+    );
 };
-
 export default NavBar;
