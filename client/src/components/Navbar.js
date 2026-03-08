@@ -11,6 +11,8 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 const NavBar = ({ role }) => {
   const navigate = useNavigate();
   // Page options for each user type
@@ -24,6 +26,23 @@ const NavBar = ({ role }) => {
   const adminPages = ["Page"];
   // Check if settings menu is open
   const [openMenu, setOpenMenu] = useState(null);
+
+  // User Logout
+  async function logout() {
+    await fetch(`${API_BASE}/logout`, {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        navigate("/login");
+      });
+  }
 
   // Handle navigation for each page option
   function handleNavigate(page) {
@@ -42,7 +61,7 @@ const NavBar = ({ role }) => {
     }
     if (page === "Logout") {
       handleCloseSettings();
-      navigate("/user-landing");
+      logout();
     }
   }
   function handleOpenSettings(e) {
