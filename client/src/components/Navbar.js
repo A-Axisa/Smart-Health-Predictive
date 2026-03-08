@@ -101,7 +101,7 @@ const NavBar = ({ role }) => {
             </Typography>
           </Box>
           {/*Page Options  */}
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          <Box sx={{ display: "flex", alignItems: "center", mx: 1 }}>
             {standardPages.map((page) => (
               <Button
                 key={page}
@@ -116,6 +116,7 @@ const NavBar = ({ role }) => {
           <Box sx={{ flexGrow: 0 }}>
             <Button color="inherit">
               <AccountCircleIcon
+                fontSize="large"
                 onClick={handleOpenSettings}
                 sx={{ p: 0 }}
               ></AccountCircleIcon>
