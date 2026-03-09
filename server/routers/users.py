@@ -353,14 +353,22 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
     # Get health data associated with the merchant.
     patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
         .order_by(HealthData.CreatedAt.desc()).all()
-    # Unique set of patients
-    patients = set()
-    for row in patient_health_data:
-        # Get the patient's name.
-        patients.add(db_conn.query(UserAccount).filter_by(
-            UserID=row.UserID).first().FullName)
 
-    return list(patients)
+    result = []
+    existing_email = set()
+    for row in patient_health_data:
+
+        # Get the patient's name.
+        patient = db_conn.query(UserAccount).filter_by(
+            UserID=row.UserID).first()
+        if patient.Email not in existing_email:
+            result.append({
+                "name": patient.FullName,
+                "email": patient.Email
+            })
+            existing_email.add(patient.Email)
+
+    return result
 
 
 @router.get("/getHealthDataDates/")

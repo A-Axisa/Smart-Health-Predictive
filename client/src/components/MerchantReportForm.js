@@ -243,7 +243,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/healthPrediction`, {
+    await fetch(`${API_BASE}/merchantHealthPrediction`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -265,7 +265,7 @@ const GenerateReportForm = () => {
         smoker: smoker,
         maritalStatus: maritalStatus,
         workingStatus: workingStatus,
-        merchantID: null,
+        patientEmail: selectedPatient,
       }),
     })
       .then((response) => {
@@ -275,7 +275,7 @@ const GenerateReportForm = () => {
         return response.json();
       })
       .then((data) => {
-        navigate("/ai-health-prediction"); // Route the user to the Health prediction page after submission
+        navigate("/merchant-reports"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
         console.log(error);
@@ -313,9 +313,9 @@ const GenerateReportForm = () => {
                   Select a patient
                 </MenuItem>
                 {/* List of available patients */}
-                {patientList.map((name) => (
-                  <MenuItem key={name} value={name}>
-                    {name}
+                {patientList.map((patient) => (
+                  <MenuItem key={patient.name} value={patient.email}>
+                    {patient.name}
                   </MenuItem>
                 ))}
               </Select>
