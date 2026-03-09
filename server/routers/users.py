@@ -333,6 +333,36 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
     return result
 
 
+@router.get("/merchants/patient_names")
+async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(
+        Email=current_user_email).first()
+    if not merchant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Get health data associated with the merchant.
+    patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
+        .order_by(HealthData.CreatedAt.desc()).all()
+    # Unique set of patients
+    patients = set()
+    for row in patient_health_data:
+        # Get the patient's name.
+        patients.add(db_conn.query(UserAccount).filter_by(
+            UserID=row.UserID).first().FullName)
+
+    return list(patients)
+
+
 @router.get("/getHealthDataDates/")
 async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve user current user information
