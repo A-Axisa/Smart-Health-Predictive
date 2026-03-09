@@ -67,9 +67,6 @@ const GenerateReportForm = () => {
   const [alertApLowRequired, setAlertApLowRequired] = useState(false);
   const [apHigh, setApHigh] = useState(null);
   const [alertApHighRequired, setAlertApHighRequired] = useState(false);
-  const [alcohol, setAlcohol] = useState(0);
-  const [smoker, setSmoker] = useState("No");
-
   const [maritalStatus, setMaritalStatus] = useState(null);
   const [alertMaritalStatusRequired, setAlertMaritalStatusRequired] =
     useState(false);
@@ -192,8 +189,6 @@ const GenerateReportForm = () => {
       apLow.isValid &&
       apHigh !== null &&
       apHigh.isValid &&
-      alcohol !== null &&
-      smoker !== null &&
       maritalStatus !== null &&
       workingStatus !== null
     );
@@ -413,7 +408,6 @@ const GenerateReportForm = () => {
                   : null
               }
             />
-
             <TextField
               name="apLow"
               label="Diastolic Blood Pressure"
@@ -462,7 +456,6 @@ const GenerateReportForm = () => {
                   const SelectionIcon = selected
                     ? CheckBoxIcon
                     : CheckBoxOutlineBlankIcon;
-
                   return (
                     <MenuItem key={name} value={name}>
                       <SelectionIcon
@@ -480,6 +473,7 @@ const GenerateReportForm = () => {
               </Select>
             </FormControl>
           </Box>
+
           {/*Multi-select LifeStyle Habits */}
           <Typography
             variant="h5"
@@ -551,6 +545,7 @@ const GenerateReportForm = () => {
                 gap: 3,
               }}
             >
+              {/* Marital Status Selection */}
               <FormControl error={alertMaritalStatusRequired}>
                 <InputLabel id="marital-status-label">
                   Marital Status
@@ -571,7 +566,7 @@ const GenerateReportForm = () => {
                   </FormHelperText>
                 )}
               </FormControl>
-
+              {/* Working Status Selection */}
               <FormControl error={alertWorkingStatusRequired}>
                 <InputLabel id="working-status-label">
                   Working Status
