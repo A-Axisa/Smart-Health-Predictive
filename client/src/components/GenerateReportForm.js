@@ -37,6 +37,7 @@ const GenerateReportForm = () => {
     "High Cholesterol",
   ];
   const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
+
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
   const MenuProps = {
@@ -347,27 +348,22 @@ const GenerateReportForm = () => {
                   : null
               }
             />
-
-            <FormLabel>
-              Gender
-              <RadioGroup row name="gender" onChange={updateGender}>
-                <FormControlLabel
-                  value="Male"
-                  control={<Radio />}
-                  label="Male"
-                />
-                <FormControlLabel
-                  value="Female"
-                  control={<Radio />}
-                  label="Female"
-                />
-              </RadioGroup>
+            <FormControl error={alertGenderRequired}>
+              <InputLabel id="gender-label">Gender</InputLabel>
+              <Select
+                labelId="gender-label"
+                id="gender-required"
+                value={gender}
+                onChange={updateGender}
+                label="Gender"
+              >
+                <MenuItem value={"Male"}>Male</MenuItem>
+                <MenuItem value={"Female"}>Female</MenuItem>
+              </Select>
               {alertGenderRequired && (
-                <Typography color="error" variant="caption">
-                  *Please select an option
-                </Typography>
+                <FormHelperText>*Please select your gender</FormHelperText>
               )}
-            </FormLabel>
+            </FormControl>
           </Box>
           {/* Fitness Section */}
           <Typography
