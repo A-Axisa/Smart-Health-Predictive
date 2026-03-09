@@ -29,14 +29,17 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const GenerateReportForm = () => {
   const navigate = useNavigate();
+  // Patient data for Merchant to select
   const [patientList, setPatientList] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  // List health conditions
   const healthConditions = [
     "Hyper Tension",
     "Heart Disease",
     "Diabetes",
     "High Cholesterol",
   ];
+  // List of lifestyle choices
   const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
 
   const ITEM_HEIGHT = 48;
@@ -49,10 +52,11 @@ const GenerateReportForm = () => {
       },
     },
   };
-
+  // List variables from multiselect lists
   const [condition, setCondition] = useState([]);
   const [lifeStyle, setLifeStyle] = useState([]);
 
+  // Form Variables and alerts for input validation
   const [weight, setWeight] = useState(null);
   const [alertWeightRequired, setAlertWeightRequired] = useState(false);
   const [age, setAge] = useState(null);
@@ -74,6 +78,7 @@ const GenerateReportForm = () => {
   const [workingStatus, setWorkingStatus] = useState(null);
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
+  const [alertPatientRequired, setAlertPatientRequired] = useState(false);
 
   // Retrieve Patient names
   useEffect(() => {
@@ -188,6 +193,10 @@ const GenerateReportForm = () => {
     setWorkingStatus(e.target.value);
     setAlertWorkingStatusRequired(false);
   }
+  function updatePatient(e) {
+    setSelectedPatient(e.target.value);
+    setAlertPatientRequired(false);
+  }
 
   function isAllInputsValid() {
     return (
@@ -205,7 +214,8 @@ const GenerateReportForm = () => {
       apHigh !== null &&
       apHigh.isValid &&
       maritalStatus !== null &&
-      workingStatus !== null
+      workingStatus !== null &&
+      selectedPatient !== null
     );
   }
   function updateAllInputFieldAlerts() {
@@ -220,6 +230,7 @@ const GenerateReportForm = () => {
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
     setAlertMaritalStatusRequired(maritalStatus === null);
     setAlertWorkingStatusRequired(workingStatus === null);
+    setAlertPatientRequired(selectedPatient === null);
   }
 
   async function handleSubmit(e) {
@@ -299,15 +310,13 @@ const GenerateReportForm = () => {
         <Box component="form" onSubmit={handleSubmit}>
           {/* Patient List */}
           <Box sx={{ p: 2 }}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={alertPatientRequired}>
               <InputLabel id="patient-select-label">Patient</InputLabel>
               <Select
                 labelId="patient-select-label"
                 value={selectedPatient}
                 label={"Patient"}
-                onChange={(e) => {
-                  setSelectedPatient(e.target.value);
-                }}
+                onChange={updatePatient}
               >
                 <MenuItem value="" disabled>
                   Select a patient
@@ -319,6 +328,9 @@ const GenerateReportForm = () => {
                   </MenuItem>
                 ))}
               </Select>
+              {alertPatientRequired && (
+                <FormHelperText>*Please enter a patient</FormHelperText>
+              )}
             </FormControl>
           </Box>
           {/* Age & Physique Section */}
