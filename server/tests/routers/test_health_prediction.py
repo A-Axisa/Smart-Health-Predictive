@@ -1,9 +1,9 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from ..main import app
-from ..utils.database import get_db
-from ..models.dbmodels import UserAccount, UserAccountRole, \
+from ...main import app
+from ...utils.database import get_db
+from ...models.dbmodels import UserAccount, UserAccountRole, \
     UserAccountValidationToken, HealthData, Recommendation, Prediction
 import io
 
