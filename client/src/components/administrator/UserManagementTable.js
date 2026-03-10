@@ -204,22 +204,26 @@ const UserManagementTable = () => {
 
   return (
     <>
-    <UserSearchBar
-        placeholder="Search by first name..."
-        onChange={(e) => setSearchQuery(e.target.value)}
-    />
-    <Paper sx={{ width: '1036px'}}>
-      <DataGrid
-        rows={filteredUsers}
-        columns={columns}
-        getRowId={(row) => row.email}
-        pageSizeOptions={[50, 100, 1000]}
-        initialState={{ pagination: { pageSize: 50 } }}
-        disableColumnResize
-        disableRowSelectionOnClick
-        sx={{ border: 0, p: 1 }}
-      />
-    </Paper>
+    <Box>
+      <Paper sx={{ mb: '12px' }}>
+        <UserSearchBar
+          placeholder="Search by name or email"
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </Paper>
+      <Paper sx={{ width: '1036px'}}>
+        <DataGrid
+          rows={filteredUsers}
+          columns={columns}
+          getRowId={(row) => row.email}
+          pageSizeOptions={[50, 100, 1000]}
+          initialState={{ pagination: { pageSize: 50 } }}
+          disableColumnResize
+          disableRowSelectionOnClick
+          sx={{ border: 0, p: 1 }}
+        />
+      </Paper>
+    </Box>
 
     <ConfirmationDialog
       open={dialogOpen}
