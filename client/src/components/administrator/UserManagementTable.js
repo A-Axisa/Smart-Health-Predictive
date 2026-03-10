@@ -195,8 +195,10 @@ const UserManagementTable = () => {
   ];
 
   const filteredUsers = userData.filter((user) => {
+    const query = searchQuery.toLowerCase()
     return (
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+      user.fullName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
     );
   });
 
