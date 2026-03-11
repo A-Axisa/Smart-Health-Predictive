@@ -30,17 +30,17 @@ const BloodReportUpload = ({ onChange }) => {
     let formattedText = text.replace(regexMultipleSpaces, " ").toLowerCase().split(' ');
 
     const HbA1cLabel = ("hba1c");
-    const HbA1cPercentageOffset = 4;
+    const HbA1cPercentageOffset = 2;
     const cholesterolLabel = ("tchol/hdl");
     const cholesterolOffset = 4;
     const diabetesThreshold = 45;
     const highCholesterolThreshold = 5.1;
     let HbA1cLevel = Number(formattedText[formattedText.indexOf(HbA1cLabel) + HbA1cPercentageOffset ]);
-
+    let aveBloodGlucoseLevel = convertHbA1cToAverageBGL(HbA1cLevel)
     let cholesterolLevel = Number(formattedText[formattedText.indexOf(cholesterolLabel) + cholesterolOffset ]);
 
     return {
-      "aveBloodGlucose": HbA1cLevel,
+      "aveBloodGlucose": aveBloodGlucoseLevel,
       "isDiabetic": HbA1cLevel >= diabetesThreshold,
       "hasHighCholesterol": cholesterolLevel >= highCholesterolThreshold,
     };
