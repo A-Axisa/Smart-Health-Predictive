@@ -45,6 +45,11 @@ const BloodReportUpload = ({ onChange }) => {
     };
   }
 
+  // Calculates the average blood glucose level from HbA1c (Glycated hemoglobin) percentage.
+  function convertHbA1cToAverageBGL(HbA1cPercent){
+    return (1.59 * HbA1cPercent) - 2.59;
+  }
+
     return (
         <Button
           component="label"
