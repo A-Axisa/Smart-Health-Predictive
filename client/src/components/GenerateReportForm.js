@@ -302,7 +302,7 @@ const GenerateReportForm = () => {
         }}
       />
       <CardContent>
-        <Box>
+        <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', mb: 5}}>
           <BloodReportUpload onChange={readBloodReport}/>
         </Box>
         <Box component="form" onSubmit={handleSubmit}>
