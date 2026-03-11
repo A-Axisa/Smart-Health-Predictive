@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import pdfToText from 'react-pdftotext'
 
-const BloodReportUpload = ({}) => {
+const BloodReportUpload = ({ onChange }) => {
 
   const HiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -20,7 +20,7 @@ const BloodReportUpload = ({}) => {
   async function processBloodReport(e) {
       const file = e.target.files[0];
       await pdfToText(file)
-        .then(text => console.log(extractPatientInfoAsDict(text)))
+        .then(text => onChange?.(extractPatientInfoAsDict(text)))
         .catch(error => console.error(error));
   }
 
