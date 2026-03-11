@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationDialog from '../confirmationDialog'
+import UserSearchBar from './UserSearchBar';
 
 
 const UserManagementTable = () => {
@@ -17,6 +18,7 @@ const UserManagementTable = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [searchQuery, setSearchQuery] = useState('');
 
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -192,20 +194,36 @@ const UserManagementTable = () => {
     },
   ];
 
+  const filteredUsers = userData.filter((user) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      user.fullName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <>
-    <Paper sx={{ width: '1036px'}}>
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        getRowId={(row) => row.email}
-        pageSizeOptions={[50, 100, 1000]}
-        initialState={{ pagination: { pageSize: 50 } }}
-        disableColumnResize
-        disableRowSelectionOnClick
-        sx={{ border: 0, p: 1 }}
-      />
-    </Paper>
+    <Box>
+      <Paper sx={{ mb: '12px' }}>
+        <UserSearchBar
+          placeholder="Search by name or email"
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </Paper>
+      <Paper sx={{ width: '1036px'}}>
+        <DataGrid
+          rows={filteredUsers}
+          columns={columns}
+          getRowId={(row) => row.email}
+          pageSizeOptions={[50, 100, 1000]}
+          initialState={{ pagination: { pageSize: 50 } }}
+          disableColumnResize
+          disableRowSelectionOnClick
+          sx={{ border: 0, p: 1 }}
+        />
+      </Paper>
+    </Box>
 
     <ConfirmationDialog
       open={dialogOpen}

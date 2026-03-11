@@ -35,7 +35,7 @@ const AdministratorDashboard = () => {
           color="primary"
           sx={{ fontWeight: 600, mb: 4 }}
         >
-          User Management
+          Users
         </Typography>
       </Box>
       <UserManagementTable />
