@@ -1,6 +1,7 @@
 import { Button, Container } from '@mui/material'
 import { styled } from '@mui/material/styles';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import pdfToText from 'react-pdftotext'
 
 const BloodReportUpload = ({}) => {
 
@@ -16,6 +17,13 @@ const BloodReportUpload = ({}) => {
     width: 1,
   });
 
+  async function processBloodReport(e) {
+      const file = e.target.files[0];
+      await pdfToText(file)
+        .then(text => { console.log(text) })
+        .catch(error => console.error(error));
+  }
+
     return (
       <Container>
         <Button
@@ -27,7 +35,7 @@ const BloodReportUpload = ({}) => {
           Upload Blood Report
           <HiddenInput
             type="file"
-            onChange={(event) => console.log(event.target.files)}
+            onChange={processBloodReport}
           />
         </Button>
       </Container>
