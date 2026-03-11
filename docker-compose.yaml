@@ -40,5 +40,28 @@ services:
       - mysql_volumes:/var/lib/mysql
     ports:
       - "${MYSQL_PORT}:3306"
+
+  qwen-api:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: qwen-api
+    ports:
+      - "8001:8001"
+    volumes:
+      - llama_cache:/root/.cache/llama.cpp
+    command: >
+      -hf unsloth/Qwen3.5-2B-GGUF:UD-Q2_K_XL
+      --host 0.0.0.0
+      --port 8001
+      --ctx-size 4096
+      --threads 4
+      --temp 0.7
+      --top-p 0.8 
+      --top-k 20 
+      --min-p 0.00 
+      --chat-template-kwargs '{"enable_thinking":false}'
+      --no-webui
+      --api-key ${OPENAI_API_KEY}
+
 volumes:
   mysql_volumes:
+  llama_cache:

@@ -4,6 +4,7 @@ from typing import Dict
 from openai import OpenAI
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from json import JSONDecodeError
 
 from ..models.dbmodels import HealthData, Prediction
 
@@ -25,8 +26,10 @@ if openai_api_key:
 def _build_health_context(health: HealthData, pred: Prediction) -> Dict:
     """Build the user health context dictionary consumed by the LLM."""
     # Normalize units
-    height_cm = float(
-        getattr(health, 'HeightCentimetres', 0) or 0) * 100.0
+    # `HealthData.HeightCentimetres` is stored in centimeters. Older/alternate inputs
+    # may occasionally provide meters; normalize defensively.
+    _raw_height = float(getattr(health, 'HeightCentimetres', 0) or 0)
+    height_cm = _raw_height * 100.0 if 0 < _raw_height < 3 else _raw_height
     weight_kg = float(getattr(health, 'WeightKilograms', 0) or 0)
 
     conditions = []
@@ -122,7 +125,18 @@ def get_health_recommendations(db_conn: Session, health_data_id: int):
         if not content:
             raise ValueError("Empty response from OpenAI")
 
-        parsed = json.loads(content)
+        # Strip markdown code blocks if the LLM provided them
+        clean_content = content.strip()
+        if clean_content.startswith("```"):
+            # Remove ```json or just ```
+            lines = clean_content.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            clean_content = "\n".join(lines).strip()
+
+        parsed = json.loads(clean_content)
         return {
             "exercise_recommendation": parsed.get("exercise_recommendation", ""),
             "diet_recommendation": parsed.get("diet_recommendation", ""),
@@ -158,7 +172,7 @@ def _fallback_recommendations(ctx: Dict):
     if "high cholesterol" in conditions:
         diet += "Increase soluble fiber (oats, legumes) and healthy fats (olive oil, nuts); reduce saturated fats. "
 
-    lifestyle = "Sleep 7–9 hours nightly, manage stress with short daily breathing or mindfulness. Hydrate adequately. "
+    lifestyle = "[FALLBACK] Sleep 7–9 hours nightly, manage stress with short daily breathing or mindfulness. Hydrate adequately. "
     if "smoking" in conditions:
         lifestyle += "Begin a smoking cessation plan (nicotine replacement or counseling). "
     if "alcohol use" in conditions:
