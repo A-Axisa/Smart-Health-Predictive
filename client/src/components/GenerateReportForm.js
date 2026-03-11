@@ -212,9 +212,9 @@ const GenerateReportForm = () => {
   
   // Fills in fields with information found in the blood reports. 
   async function readBloodReport(e) {
-    if (e.bloodGlucose != NaN) {
+    if (e.aveBloodGlucose != NaN) {
       // Value needs to be in a specific dictionary format to be validated and set.
-      updateBloodGlucose({target: {value: e.bloodGlucose.toString()}})
+      updateBloodGlucose({target: {value: e.aveBloodGlucose.toString()}})
     }
 
     // Create a new conditions array as state arrays cannot be modified.
