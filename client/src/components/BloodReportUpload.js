@@ -20,8 +20,30 @@ const BloodReportUpload = ({}) => {
   async function processBloodReport(e) {
       const file = e.target.files[0];
       await pdfToText(file)
-        .then(text => { console.log(text) })
+        .then(text => console.log(extractPatientInfoAsDict(text)))
         .catch(error => console.error(error));
+  }
+
+  function extractPatientInfoAsDict(text) {
+    // Format text to simplify searching for information.
+    const regexMultipleSpaces = /\s+/g;
+    let formattedText = text.replace(regexMultipleSpaces, " ").toLowerCase().split(' ');
+
+    const bloodGlucoseLabel = ("hba1c");
+    const bloodGlucoseOffset = 4;
+    const cholesterolLabel = ("tchol/hdl");
+    const cholesterolOffset = 4;
+    const diabetesThreshold = 45;
+    const highCholesterolThreshold = 5.1;
+    let bloodGlucoseLevel = Number(formattedText[formattedText.indexOf(bloodGlucoseLabel) + bloodGlucoseOffset ]);
+    let cholesterolLevel = Number(formattedText[formattedText.indexOf(cholesterolLabel) + cholesterolOffset ]);
+
+    return {
+      "bloodGlucose": bloodGlucoseLevel,
+      "isDiabetic": bloodGlucoseLevel >= diabetesThreshold,
+      "cholesterol": cholesterolLevel,
+      "hasHighCholesterol": cholesterolLevel >= highCholesterolThreshold,
+    };
   }
 
     return (
