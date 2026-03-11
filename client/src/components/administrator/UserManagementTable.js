@@ -148,8 +148,7 @@ const UserManagementTable = () => {
       headerName: 'Role',
       width: 220,
       sortable: true,
-      renderCell: (params) => {        
-        return (
+      renderCell: (params) => (        
         <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
           <Select
             key={params.row.email}
@@ -175,8 +174,7 @@ const UserManagementTable = () => {
             <SettingsIcon />
           </IconButton>
         </Box>
-        )
-      },
+      )
     },
     {
       field: 'actions',
@@ -211,7 +209,7 @@ const UserManagementTable = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </Paper>
-      <Paper sx={{ width: '1036px'}}>
+      <Paper sx={{ width: '100%'}}>
         <DataGrid
           rows={filteredUsers}
           columns={columns}
@@ -220,7 +218,20 @@ const UserManagementTable = () => {
           initialState={{ pagination: { pageSize: 50 } }}
           disableColumnResize
           disableRowSelectionOnClick
-          sx={{ border: 0, p: 1 }}
+          checkboxSelection
+          sx={{ 
+            border: 0, 
+            p: 1,
+            '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+              outline: 'none',
+            },
+            '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+              outline: 'none',
+            },
+            '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
+              backgroundColor: '#f1f1f1f1',
+            },
+          }}
         />
       </Paper>
     </Box>
