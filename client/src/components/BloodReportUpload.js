@@ -46,7 +46,6 @@ const BloodReportUpload = ({ onChange }) => {
   }
 
     return (
-      <Container>
         <Button
           component="label"
           variant="contained"
@@ -59,7 +58,6 @@ const BloodReportUpload = ({ onChange }) => {
             onChange={processBloodReport}
           />
         </Button>
-      </Container>
     )
 }
 
