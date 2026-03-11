@@ -179,7 +179,8 @@ const UserManagementTable = () => {
           slots={{ toolbar: ToolBar }}
           slotProps={{
             toolbar: {
-              emailCount: getSelectedEmails().length,
+              rowSelectionModel,
+              totalRowCount: filteredUsers.length,
               onUsersDelete: handleUsersDelete,
               onUsersRoleChange: handleUsersRoleChange,
               roleData,

@@ -1,8 +1,19 @@
-import { Box, Select, Button, MenuItem, Typography } from '@mui/material';
+import { Box, Select, Button, MenuItem } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 
-const ToolBar = ({ emailCount, onUsersDelete, onUsersRoleChange, roleData }) => {
+const ToolBar = ({ rowSelectionModel, totalRowCount, onUsersDelete, onUsersRoleChange, roleData }) => {
+
+  // Return row count instead of set size.
+  const getEmailCount = () => {
+    if (rowSelectionModel?.type === 'exclude') return totalRowCount;
+    if (rowSelectionModel?.ids instanceof Set) return rowSelectionModel.ids.size;
+    if (Array.isArray(rowSelectionModel)) return rowSelectionModel.length;
+    return 0;
+  };
+  
+  const emailCount = getEmailCount()
+
   return (
     <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
       <Select
