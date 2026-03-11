@@ -41,7 +41,6 @@ const BloodReportUpload = ({ onChange }) => {
     return {
       "bloodGlucose": bloodGlucoseLevel,
       "isDiabetic": bloodGlucoseLevel >= diabetesThreshold,
-      "cholesterol": cholesterolLevel,
       "hasHighCholesterol": cholesterolLevel >= highCholesterolThreshold,
     };
   }
