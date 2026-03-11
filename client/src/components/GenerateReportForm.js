@@ -218,10 +218,10 @@ const GenerateReportForm = () => {
 
     // Create a new conditions array as state arrays cannot be modified.
     let newConditions = condition.filter(e => !["Diabetes", "High Cholesterol"].includes(e))
-    if(e.diabetes) {
+    if(e.isDiabetic) {
       newConditions.push("Diabetes")
     }
-    if(e.highCholesterol) {
+    if(e.hasHighCholesterol) {
       newConditions.push("High Cholesterol")
     }
     setCondition(newConditions)
