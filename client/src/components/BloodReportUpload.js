@@ -29,18 +29,19 @@ const BloodReportUpload = ({ onChange }) => {
     const regexMultipleSpaces = /\s+/g;
     let formattedText = text.replace(regexMultipleSpaces, " ").toLowerCase().split(' ');
 
-    const bloodGlucoseLabel = ("hba1c");
-    const bloodGlucoseOffset = 4;
+    const HbA1cLabel = ("hba1c");
+    const HbA1cPercentageOffset = 4;
     const cholesterolLabel = ("tchol/hdl");
     const cholesterolOffset = 4;
     const diabetesThreshold = 45;
     const highCholesterolThreshold = 5.1;
-    let bloodGlucoseLevel = Number(formattedText[formattedText.indexOf(bloodGlucoseLabel) + bloodGlucoseOffset ]);
+    let HbA1cLevel = Number(formattedText[formattedText.indexOf(HbA1cLabel) + HbA1cPercentageOffset ]);
+
     let cholesterolLevel = Number(formattedText[formattedText.indexOf(cholesterolLabel) + cholesterolOffset ]);
 
     return {
-      "bloodGlucose": bloodGlucoseLevel,
-      "isDiabetic": bloodGlucoseLevel >= diabetesThreshold,
+      "aveBloodGlucose": HbA1cLevel,
+      "isDiabetic": HbA1cLevel >= diabetesThreshold,
       "hasHighCholesterol": cholesterolLevel >= highCholesterolThreshold,
     };
   }
