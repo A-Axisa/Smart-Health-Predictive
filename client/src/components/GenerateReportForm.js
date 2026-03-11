@@ -24,6 +24,7 @@ import Select from "@mui/material/Select";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormHelperText from "@mui/material/FormHelperText";
+import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -73,6 +74,7 @@ const GenerateReportForm = () => {
   const [workingStatus, setWorkingStatus] = useState(null);
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
+  const [bloodGlucoseInput, setBloodGlucoseInput] = useState("")
 
   function handleChangeCondition(e) {
     const {
@@ -147,6 +149,7 @@ const GenerateReportForm = () => {
       bloodGlucoseValue <= 20;
     setBloodGlucose({ isValid: isBloodGlucoseValid, value: bloodGlucoseValue });
     setAlertBloodGlucoseRequired(!isBloodGlucoseValid);
+    setBloodGlucoseInput(bloodGlucoseValue)
   }
 
   function updateApLow(e) {
@@ -205,6 +208,23 @@ const GenerateReportForm = () => {
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
     setAlertMaritalStatusRequired(maritalStatus === null);
     setAlertWorkingStatusRequired(workingStatus === null);
+  }
+  
+  // Fills in fields with information found in the blood reports. 
+  async function readBloodReport(e) {
+    if (e.bloodGlucose != NaN){
+      setBloodGlucoseInput(e.bloodGlucose.toString())
+    }
+
+    // Create a new conditions array as state arrays cannot be modified.
+    let newConditions = condition.filter(["Diabetes", "High Cholesterol"])
+    if(e.diabetes) {
+      newConditions.push("Diabetes")
+    }
+    if(e.highCholesterol) {
+      newConditions.push("High Cholesterol")
+    }
+    setCondition(newConditions)
   }
 
   async function handleSubmit(e) {
@@ -266,6 +286,7 @@ const GenerateReportForm = () => {
         console.log(error);
       });
   }
+
   return (
     <Card
       variant="outlined"
@@ -281,6 +302,9 @@ const GenerateReportForm = () => {
         }}
       />
       <CardContent>
+        <Box>
+          <BloodReportUpload onChange={readBloodReport}/>
+        </Box>
         <Box component="form" onSubmit={handleSubmit}>
           {/* Age & Physique Section */}
           <Typography
@@ -393,6 +417,7 @@ const GenerateReportForm = () => {
                   ? "*Please enter a valid BloodGlucose (0-20mmol/L)"
                   : null
               }
+              value={bloodGlucoseInput}
             />
             <TextField
               name="apHigh"
