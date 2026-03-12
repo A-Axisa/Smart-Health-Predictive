@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List
 from ..utils.database import get_db
+from ..utils.audit_log import write_audit_log
 from ..models.dbmodels import (
     UserAccount,
     UserAccountRole,
@@ -10,6 +11,7 @@ from ..models.dbmodels import (
     HealthData,
     Prediction,
     Recommendation,
+    LogEventType
 )
 from ..routers.authentication import get_current_user
 
@@ -141,6 +143,12 @@ def _delete_user_data(user_email: str, db_conn: Session):
         deletion_report['users_deleted'] = 1  # Since we are deleting one user
 
         db_conn.commit()
+        write_audit_log(db_conn,
+                eventType=AuditEventType.ACCOUNT_DELETED,
+                success=True, userEmail=user_email,
+                ipAddress=request.client.host,
+                description=f"Data deleted from account.")
+
         return deletion_report
     except Exception as e:
         db_conn.rollback()
@@ -183,6 +191,12 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
     # Perform the deletion and get the report
     deletion_report = _delete_user_data(user_email, db_conn)
+
+    write_audit_log(db_conn,
+                    eventType=AuditEventType.ACCOUNT_DELETED,
+                    success=True, userEmail=requesting_user_email,
+                    ipAddress=request.client.host,
+                    description=f"Admin deleted account: {user_email}.")
 
     return {
         "message": f"User with Email {user_email} and all related data deleted successfully",
@@ -239,5 +253,10 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
     merchant.IsValidated = 1
     db_conn.commit()
+    write_audit_log(db_conn,
+                    eventType=AuditEventType.MERCHANT_VALIDATED,
+                    success=True, userEmail=current_user_email,
+                    ipAddress=request.client.host,
+                    description=f"Merchant account validated.")
 
     return {"message": f"Merchant: {merchant.FullName} has been successfully validated."}
