@@ -1,17 +1,15 @@
-import { Paper, Box, MenuItem, Select, IconButton, Snackbar, Alert } from '@mui/material';
+import { Paper, Box, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from 'react';
-import SettingsIcon from '@mui/icons-material/Settings';
-import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationDialog from '../confirmationDialog'
 import UserSearchBar from './UserSearchBar';
+import ToolBar from './ToolBar';
+import * as React from 'react';
 
 
 const UserManagementTable = () => {
 
   const [userData, setUserData] = useState([]); // Stores user data
-  const [selectedRow, setSelectedRow] = useState(null); // Stores the current row being edited
-  const [selectedRole, setSelectedRole] = useState(null); // Stores the current role
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
@@ -19,6 +17,7 @@ const UserManagementTable = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({ type: 'include', ids: new Set() });
 
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -51,92 +50,103 @@ const UserManagementTable = () => {
       });
   }, [API_BASE]);
 
-  async function confirmRoleChange(e) {
+  const confirmRoleChange = async (e) => {
     e.preventDefault();
+    const emails = getSelectedEmails();
+    
+    try {
+      await Promise.all(
+        emails.map(async email => {
+          const response = await fetch(`${API_BASE}/users/${email}/roles/${newRole}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (!response.ok) throw new Error(response.status);
+          return response.json();
+        })
+      );
 
-    await fetch(`${API_BASE}/users/${selectedRow}/roles/${newRole}`, {
-      method: 'PATCH',
-      headers: {
-          'Content-Type': 'application/json'
-      }
-    }).then((response) => {
-      if(!response.ok) {
-        throw new Error(response.status);
-      }
-      return response.json();
-    }).then(data => {
-      setUserData((prev) =>
-          prev.map((user) =>
-            user.email === selectedRow ? { ...user, role: { id:newRole, name: data.role.name }} : user
-          )
-        );
+      const roleName = roleData.find(r => r.id === newRole)?.name;
+      setUserData(prev =>
+        prev.map(user =>
+          emails.includes(user.email) ? { ...user, role: { id: newRole, name: roleName } } : user
+        )
+      );
+
+      setSnackbar({ open: true, message: `Role updated to "${roleName}" for ${emails.length} user(s).`, severity: 'success' });
       setDialogOpen(false);
       setNewRole(null);
-      setSelectedRow(null);
-    }).catch(err => {
-      console.log(err)
-    })
-  };
-
-  // Cancels role change and resets state
-  const cancelRoleChange = () => {
-    setDialogOpen(false);
-    setSelectedRow(null);
-    setSelectedRole(null);
-    setNewRole(null);
-  }
-
-  // Updates states when new role is selected
-  const handleRoleSelect = (row, oldRole, newRole) => {
-    setSelectedRow(row);
-    setSelectedRole(oldRole);
-    setNewRole(newRole);
-    setDialogOpen(true);
-  }
-
-  const handleDeleteUser = (userEmail) => {
-    const user = userData.find(u => u.email === userEmail);
-    setUserToDelete(user);
-    setDeleteDialogOpen(true);
+      setRowSelectionModel({ type: 'include', ids: new Set() });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
-  
+    const emails = Array.isArray(userToDelete) ? userToDelete : [userToDelete?.email];
+    if (!emails.length) return;
+    
     try {
-      const response = await fetch(`${API_BASE}/users/${userToDelete.email}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `Failed to delete user: ${response.statusText}`);
-      }
-  
-      const result = await response.json();
-      
+      await Promise.all(
+        emails.map(async email => {
+          const response = await fetch(`${API_BASE}/users/${email}`, { method: 'DELETE', credentials: 'include' });
+          if (!response.ok) throw new Error(response.status);
+          return response.json();
+        })
+      );
+
+      // NOTE: Need to collect deletion reports for each user.
+
       // Generate a detailed message from the deletion report
-      const report = result.deletion_report;
-      let reportMessage = `User '${userToDelete.fullName}' deleted.`;
-      if (report) {
-        const details = Object.entries(report)
-          .filter(([, value]) => value > 0)
-          .map(([key, value]) => `${value} ${key.replace(/_/g, ' ')}`)
-          .join(', ');
-        if (details) {
-          reportMessage += ` Cleaned up: ${details}.`;
-        }
-      }
+      // const result = await response.json();
+      // const report = result.deletion_report;
+      // let reportMessage = `User '${userToDelete.fullName}' deleted.`;
+
+      // if (report) {
+      //   const details = Object.entries(report)
+      //     .filter(([, value]) => value > 0)
+      //     .map(([key, value]) => `${value} ${key.replace(/_/g, ' ')}`)
+      //     .join(', ');
+      //   if (details) {
+      //     reportMessage += ` Cleaned up: ${details}.`;
+      //   }
+      // }
   
-      setSnackbar({ open: true, message: reportMessage, severity: 'success' });
-      setUserData(prev => prev.filter(user => user.email !== userToDelete.email));
+      setSnackbar({ open: true, message: `${emails.length} user(s) deleted.`, severity: 'success' });
+      setUserData(prev => prev.filter(user => !emails.includes(user.email)));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
+      setRowSelectionModel({ type: 'include', ids: new Set() }); // Reset the checkbox after deletion.
     } catch (error) {
       console.error("Delete user error:", error);
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
+  };
+
+  const filteredUsers = userData.filter((user) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      user.fullName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  });
+
+  // Returns array of emails from the selection model.
+  const getSelectedEmails = (model = rowSelectionModel) => {
+    if (model?.ids instanceof Set) return [...model.ids];
+    if (Array.isArray(model)) return model;
+    return [];
+  };
+
+  const handleUsersDelete = () => {
+    setUserToDelete(getSelectedEmails());
+    setDeleteDialogOpen(true);
+  };
+
+  const handleUsersRoleChange = (roleId) => {
+    setNewRole(roleId);
+    setDialogOpen(true);
   };
 
   const columns = [
@@ -148,59 +158,9 @@ const UserManagementTable = () => {
       headerName: 'Role',
       width: 220,
       sortable: true,
-      renderCell: (params) => {        
-        return (
-        <Box sx={{overflow: 'visible', width: '100%', display: 'flex', marginTop: 0.6}}>
-          <Select
-            key={params.row.email}
-            value={newRole && selectedRow === params.row.email ? newRole : params.row.role.id}
-            size="small"
-            sx={{ width: '100%', alignItems: 'center', display: 'flex'}}
-            disabled={selectedRow !== params.row.email}
-            onChange={(e) => {
-              handleRoleSelect(params.row.email, params.row.role.id, e.target.value);
-            }}
-          >
-            {roleData.map((role) =>
-              <MenuItem key={role.id} value={role.id}>
-                {role.name}
-              </MenuItem>
-            )}
-          </Select>
-          <IconButton
-            size="small"
-            color="info"
-            onClick={() => setSelectedRow(params.row.email)}
-            >
-            <SettingsIcon />
-          </IconButton>
-        </Box>
-        )
-      },
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      sortable: false,
-      renderCell: (params) => (
-        <IconButton
-          onClick={() => handleDeleteUser(params.row.email)}
-          color="error"
-        >
-          <DeleteIcon />
-        </IconButton>
-      ),
+      renderCell: (params) => params.row.role.name,
     },
   ];
-
-  const filteredUsers = userData.filter((user) => {
-    const query = searchQuery.toLowerCase()
-    return (
-      user.fullName.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query)
-    );
-  });
 
   return (
     <>
@@ -211,8 +171,21 @@ const UserManagementTable = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </Paper>
-      <Paper sx={{ width: '1036px'}}>
+      <Paper sx={{ width: '100%'}}>
         <DataGrid
+          onRowSelectionModelChange={(newSelection) => setRowSelectionModel(newSelection)}
+          rowSelectionModel={rowSelectionModel}
+          showToolbar
+          slots={{ toolbar: ToolBar }}
+          slotProps={{
+            toolbar: {
+              rowSelectionModel,
+              totalRowCount: filteredUsers.length,
+              onUsersDelete: handleUsersDelete,
+              onUsersRoleChange: handleUsersRoleChange,
+              roleData,
+            },
+          }}
           rows={filteredUsers}
           columns={columns}
           getRowId={(row) => row.email}
@@ -220,18 +193,31 @@ const UserManagementTable = () => {
           initialState={{ pagination: { pageSize: 50 } }}
           disableColumnResize
           disableRowSelectionOnClick
-          sx={{ border: 0, p: 1 }}
+          checkboxSelection
+          sx={{ 
+            border: 0, 
+            p: 1,
+            // Removes cell outline.
+            '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+              outline: 'none',
+            },
+            '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+              outline: 'none',
+            },
+            '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
+              backgroundColor: '#f1f1f1f1',
+            },
+          }}
         />
       </Paper>
     </Box>
-
     <ConfirmationDialog
       open={dialogOpen}
       title={'Confirm Role Change'}
       message={
         <>
-          Are you sure you want to change <b>{userData.find((user) => user.email === selectedRow)?.fullName}'s</b> role to
-          <b> {roleData.find((role) => role.id === newRole)?.name}</b>?
+          Are you sure you want to change the role of <b>{getSelectedEmails().length}</b> user(s) to
+          <b> {roleData.find(role => role.id === newRole)?.name}</b>?
         </>
       }
       confirmText={'Confirm'}
@@ -239,12 +225,15 @@ const UserManagementTable = () => {
       confirmColor={'primary'}
       cancelColor={'error'}
       confirm={confirmRoleChange}
-      cancel={cancelRoleChange}
+      cancel={() => {
+        setDialogOpen(false);
+        setNewRole(null);
+      }}
     />
     <ConfirmationDialog
       open={deleteDialogOpen}
       title="Confirm Deletion"
-      message={`Are you sure you want to delete the user ${userToDelete?.fullName}? This action cannot be undone.`}
+      message={`Are you sure you want to delete ${Array.isArray(userToDelete) ? `${userToDelete.length} user(s)` : userToDelete?.fullName}? This action cannot be undone.`}
       confirmText="Delete"
       cancelText="Cancel"
       confirmColor="error"
