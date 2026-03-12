@@ -236,3 +236,29 @@ class Recommendation(Base):
         return (f'Recommendation(RecommendationID={self.RecommendationID}, '
                 f'HealthDataID={self.HealthDataID}, '
                 f'CreatedAt={self.CreatedAt})')
+
+class AuditLog(Base):
+    __tablename__ = 'AuditLog'
+    LogID = Column(Integer, primary_key=True)
+    EventType = Column(String(50), nullable=False)
+    Success = Column(Boolean, nullable=False)
+    UserID = Column(Integer, ForeignKey('UserAccount.UserID'))
+    UserEmail = Column(String(255))
+    IPAddress = Column(String(40))
+    Device = Column(String(255))
+    Description = Column(Text)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    def __init__(self, eventType, success, userID, userEmail, ipAddress, device, description):
+        self.EventType = eventType
+        self.Success = success
+        self.UserID = userID
+        self.UserEmail = userEmail
+        self.IPAddress = ipAddress
+        self.Device = device
+        self.Description = description
+
+    def __repr__(self):
+        return f'AuditLog(LogID={self.LogID}, EventType={self.EventType}, \
+                Success={self.Success}, UserID={self.UserID}, \
+                CreatedAt={self.CreatedAt})'
