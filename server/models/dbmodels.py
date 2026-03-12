@@ -262,3 +262,14 @@ class AuditLog(Base):
         return f'AuditLog(LogID={self.LogID}, EventType={self.EventType}, \
                 Success={self.Success}, UserID={self.UserID}, \
                 CreatedAt={self.CreatedAt})'
+
+class LogEventType(enum.Enum):
+    LOGIN = "LOGIN"
+    LOGOUT = "LOGOUT"
+    REGISTRATION = "REGISTRATION"
+    EMAIL_VALIDATION = "EMAIL_VALIDATION"
+    PASSWORD_CHANGE = "PASSWORD_CHANGE"
+    ROLE_CHANGED = "ROLE_CHANGED"
+    ACCOUNT_DELETED = "ACCOUNT_DELETED"
+    MERCHANT_VALIDATED = "MERCHANT_VALIDATED"
+    

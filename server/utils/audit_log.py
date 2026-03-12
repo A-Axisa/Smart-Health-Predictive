@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ..models.dbmodels import AuditLog
+from ..models.dbmodels import AuditLog, LogEventType
 
 
 # Utility function for writing audit logs to the database.
 # Call this from any router when a loggable event occurs.
 
-def write_audit_log(db_conn: Session, eventType: str, success: bool, userEmail: str = None,
+def write_audit_log(db_conn: Session, eventType: LogEventType, success: bool, userEmail: str = None,
                     ipAddress: str = None, device: str = None, description: str = None):
     try:
         db_conn.add(AuditLog(
