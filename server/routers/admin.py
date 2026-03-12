@@ -260,3 +260,25 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
                     description=f"Merchant account validated.")
 
     return {"message": f"Merchant: {merchant.FullName} has been successfully validated."}
+
+
+@router.get("/logs")
+async def get_logs(db_conn: Session = Depends(get_db)):
+    logs = db_conn.query(AuditLog).order_by(AuditLog.CreatedAt.desc()).all()
+
+    result = []
+
+    for log in logs:
+        result.append({
+            "logID": log.LogID,
+            "eventType": log.EventType,
+            "success": log.Success,
+            "userID": log.UserID,
+            "userEmail": log.UserEmail,
+            "ipAddress": log.IPAddress,
+            "device": log.Device,
+            "description": log.Description,
+            "createdAt": log.CreatedAt,
+        })
+    
+    return result
