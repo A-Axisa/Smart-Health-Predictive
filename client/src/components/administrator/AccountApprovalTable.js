@@ -79,7 +79,7 @@ const AccountApprovalTable = ({}) => {
 
   return (
     <>
-    <Paper sx={{ width: '850px'}}>
+    <Paper sx={{ width: '100%'}}>
       <DataGrid
         rows={userData}
         columns={columns}
