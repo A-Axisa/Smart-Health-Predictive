@@ -143,11 +143,6 @@ def _delete_user_data(user_email: str, db_conn: Session):
         deletion_report['users_deleted'] = 1  # Since we are deleting one user
 
         db_conn.commit()
-        write_audit_log(db_conn,
-                eventType=AuditEventType.ACCOUNT_DELETED,
-                success=True, userEmail=user_email,
-                ipAddress=request.client.host,
-                description=f"Data deleted from account.")
 
         return deletion_report
     except Exception as e:
@@ -193,7 +188,7 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
     deletion_report = _delete_user_data(user_email, db_conn)
 
     write_audit_log(db_conn,
-                    eventType=AuditEventType.ACCOUNT_DELETED,
+                    eventType=LogEventType.ACCOUNT_DELETED,
                     success=True, userEmail=requesting_user_email,
                     ipAddress=request.client.host,
                     description=f"Admin deleted account: {user_email}.")
@@ -254,7 +249,7 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
     merchant.IsValidated = 1
     db_conn.commit()
     write_audit_log(db_conn,
-                    eventType=AuditEventType.MERCHANT_VALIDATED,
+                    eventType=LogEventType.MERCHANT_VALIDATED,
                     success=True, userEmail=current_user_email,
                     ipAddress=request.client.host,
                     description=f"Merchant account validated.")

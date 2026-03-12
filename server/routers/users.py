@@ -150,7 +150,7 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     # Perform the deletion
     _delete_user_data(user_id, db_conn)
     write_audit_log(db_conn,
-        eventType=AuditEventType.ACCOUNT_DELETED,
+        eventType=LogEventType.ACCOUNT_DELETED,
         success=True, userEmail=user_to_delete.Email,
         ipAddress=request.client.host,
         description=f"Account deleted from database.")
