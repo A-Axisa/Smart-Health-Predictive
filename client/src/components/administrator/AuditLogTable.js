@@ -28,15 +28,14 @@ const AuditLogTable = ({}) => {
   }, []);
 
   const columns = [
-    { field: "logID", headerName: "Log ID" },
-    { field: "eventType", headerName: "Event Type" },
-    { field: "success", headerName: "Success" },
-    { field: "userID", headerName: "User ID" },
-    { field: "userEmail", headerName: "User Email" },
-    { field: "ipAddress", headerName: "IP Address" },
-    { field: "device", headerName: "Device" },
-    { field: "description", headerName: "Description", },
-    { field: 'createdAt', headerName: 'Created At' },
+    { field: "logID", headerName: "Log ID", width: 60 },
+    { field: "eventType", headerName: "Event Type", width: 130 },
+    { field: "success", headerName: "Success", width: 80 },
+    { field: "userEmail", headerName: "User Email", width: 220 },
+    { field: "ipAddress", headerName: "IP Address", width: 130 },
+    { field: "device", headerName: "Device", width: 160 },
+    { field: "createdAt", headerName: "Created At", width: 160 },
+    { field: "description", headerName: "Description", width: 200 },
   ];
 
   return (
@@ -44,13 +43,14 @@ const AuditLogTable = ({}) => {
       <DataGrid
         rows={logData}
         columns={columns}
+        getRowHeight={() => 'auto'}
         getRowId={(row) => row.logID}
         pageSizeOptions={[50, 100, 1000]}
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
         disableRowSelectionOnClick
         sx={{ 
-          border: 0, 
+          border: 0,
           p: 1,
           // Removes cell outline.
           '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
@@ -61,6 +61,12 @@ const AuditLogTable = ({}) => {
           },
           '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
             backgroundColor: '#f1f1f1f1',
+          },
+          '& .MuiDataGrid-cell': {
+            whiteSpace: 'normal',
+            lineHeight: '1.4rem',
+            alignItems: 'flex-start',
+            py: 1
           },
         }}
       />
