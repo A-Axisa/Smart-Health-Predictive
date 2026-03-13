@@ -1,5 +1,5 @@
 import os
-from encryptor import encrypt, decrypt
+from ...utils.encryptor import encrypt, decrypt
 
 
 def setup_key():
