@@ -100,11 +100,6 @@ const AdministratorDashboard = () => {
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
         <Box sx={{ borderRight: "1px solid #e0e0e0" }}>
           <List sx={{ padding: 0 }}>
-            <Box sx={{ p: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Admin Dashboard
-              </Typography>
-            </Box>
             {["Users", "Requests", "Logs"].map((obj) => (
               <ListItem
                 button

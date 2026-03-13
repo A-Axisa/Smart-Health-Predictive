@@ -35,7 +35,7 @@ const AuditLogTable = ({}) => {
     { field: "userEmail", headerName: "User Email" },
     { field: "ipAddress", headerName: "IP Address" },
     { field: "device", headerName: "Device" },
-    { field: "description", headerName: "Description", flex: 1 },
+    { field: "description", headerName: "Description", },
     { field: 'createdAt', headerName: 'Created At' },
   ];
 
@@ -49,7 +49,20 @@ const AuditLogTable = ({}) => {
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
         disableRowSelectionOnClick
-        sx={{ border: 0, p: 1 }}
+        sx={{ 
+          border: 0, 
+          p: 1,
+          // Removes cell outline.
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
+            backgroundColor: '#f1f1f1f1',
+          },
+        }}
       />
     </Paper>
   );
