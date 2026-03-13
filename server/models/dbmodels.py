@@ -262,7 +262,8 @@ class AuditLog(Base):
     Description = Column(Text)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
-    def __init__(self, eventType, success, userID, userEmail, ipAddress, device, description):
+    def __init__(self, eventType, success, userID=None, userEmail=None, ipAddress=None,
+                device=None, description=None):
         self.EventType = eventType
         self.Success = success
         self.UserID = userID

@@ -11,7 +11,8 @@ from ..models.dbmodels import (
     HealthData,
     Prediction,
     Recommendation,
-    LogEventType
+    AuditLog,
+    LogEventType,
 )
 from ..routers.authentication import get_current_user
 

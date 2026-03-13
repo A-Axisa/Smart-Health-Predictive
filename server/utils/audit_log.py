@@ -5,12 +5,13 @@ from ..models.dbmodels import AuditLog, LogEventType
 # Utility function for writing audit logs to the database.
 # Call this from any router when a loggable event occurs.
 
-def write_audit_log(db_conn: Session, eventType: LogEventType, success: bool, userEmail: str = None,
-                    ipAddress: str = None, device: str = None, description: str = None):
+def write_audit_log(db_conn: Session, eventType: LogEventType, success: bool, userID: int = None,
+                     userEmail: str = None, ipAddress: str = None, device: str = None, description: str = None):
     try:
         db_conn.add(AuditLog(
             eventType=eventType,
             success=success,
+            userID=userID,
             userEmail=userEmail,
             ipAddress=ipAddress,
             device=device,
