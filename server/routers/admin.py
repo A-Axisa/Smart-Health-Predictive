@@ -190,7 +190,9 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
     write_audit_log(db_conn,
                     eventType=LogEventType.ACCOUNT_DELETED,
-                    success=True, userEmail=requesting_user_email,
+                    success=True,
+                    userEmail=requesting_user_email,
+                    device=request.headers.get("user-agent"),
                     ipAddress=request.client.host,
                     description=f"Admin deleted account: {user_email}.")
 
@@ -251,7 +253,9 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
     db_conn.commit()
     write_audit_log(db_conn,
                     eventType=LogEventType.MERCHANT_VALIDATED,
-                    success=True, userEmail=current_user_email,
+                    success=True,
+                    userEmail=current_user_email,
+                    device=request.headers.get("user-agent"),
                     ipAddress=request.client.host,
                     description=f"Merchant account validated.")
 
@@ -269,7 +273,6 @@ async def get_logs(db_conn: Session = Depends(get_db)):
             "logID": log.LogID,
             "eventType": log.EventType,
             "success": log.Success,
-            "userID": log.UserID,
             "userEmail": log.UserEmail,
             "ipAddress": log.IPAddress,
             "device": log.Device,

@@ -234,7 +234,9 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         # Log failed login attempts.
         write_audit_log(db_conn,
                         eventType=LogEventType.LOGIN,
-                        success=False, userEmail=user_cred.email,
+                        success=False,
+                        userEmail=user.Email,
+                        device=request.headers.get("user-agent"),
                         ipAddress=request.client.host,
                         description="Login failed with incorrect credentials.")
         raise credentials_exception
@@ -263,6 +265,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
                     eventType=LogEventType.LOGIN,
                     success=True,
                     userEmail=user.Email,
+                    device=request.headers.get("user-agent"),
                     ipAddress=request.client.host,
                     description=f"Successful login attempt.")
 
@@ -467,6 +470,7 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
                     eventType=LogEventType.PASSWORD_CHANGE,
                     success=True,
                     userEmail=user_email["email"],
+                    device=request.headers.get("user-agent"),
                     ipAddress=request.client.host,
                     description=f"Password successfully changed.")
 
