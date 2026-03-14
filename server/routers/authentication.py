@@ -17,8 +17,9 @@ from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole
+    UserAccountValidationToken, AccountRole, LogEventType
 from ..utils.email_service import send_email
+from ..utils.audit_log import write_audit_log
 
 EMAIL_VALIDATION_ENABLED = False
 ALGORITHM = 'HS256'
@@ -117,6 +118,12 @@ async def register(user_reg: UserRegistrationDetails,
         db_conn.add(role)
         db_conn.add(acc_validation_token)
         db_conn.commit()
+        write_audit_log(db_conn,
+                        eventType=LogEventType.REGISTRATION,
+                        success=True,
+                        userEmail=new_user.Email,
+                        description="Successfully registered an account.")
+
         if EMAIL_VALIDATION_ENABLED:
             _send_validation_email(new_user, validation_token)
     else:
@@ -179,6 +186,12 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     db_conn.delete(validation_token_entry)
 
     db_conn.commit()
+    
+    write_audit_log(db_conn,
+                    eventType=LogEventType.EMAIL_VALIDATION,
+                    success=True,
+                    userEmail=user.Email,
+                    description=f"Email successfully validated.")
 
     html_content = """
     <html>
@@ -218,6 +231,14 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
     user = authenticate_user(user_cred.email, user_cred.password, db_conn)
     if not user:
+        # Log failed login attempts.
+        write_audit_log(db_conn,
+                        eventType=LogEventType.LOGIN,
+                        success=False,
+                        userEmail=user.Email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description="Login failed with incorrect credentials.")
         raise credentials_exception
 
     # Invalidate previous access token.
@@ -240,9 +261,15 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         secure=False,  # Set to false for development
         samesite='Strict'
     )
+    write_audit_log(db_conn,
+                    eventType=LogEventType.LOGIN,
+                    success=True,
+                    userEmail=user.Email,
+                    device=request.headers.get("user-agent"),
+                    ipAddress=request.client.host,
+                    description=f"Successful login attempt.")
 
     return {'message': 'Successfully logged in.'}
-
 
 
 def authenticate_user(email: str, password: str, db_conn: Session):
@@ -439,5 +466,12 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
     # Change current password to new password
     user.PasswordHash = new_password_hash
     db_conn.commit()
+    write_audit_log(db_conn,
+                    eventType=LogEventType.PASSWORD_CHANGE,
+                    success=True,
+                    userEmail=user_email["email"],
+                    device=request.headers.get("user-agent"),
+                    ipAddress=request.client.host,
+                    description=f"Password successfully changed.")
 
     return {'message': 'User successfully changed password.'}

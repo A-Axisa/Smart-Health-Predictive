@@ -79,7 +79,7 @@ const AccountApprovalTable = ({}) => {
 
   return (
     <>
-    <Paper sx={{ width: '850px'}}>
+    <Paper sx={{ width: '100%'}}>
       <DataGrid
         rows={userData}
         columns={columns}
@@ -88,7 +88,20 @@ const AccountApprovalTable = ({}) => {
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
         disableRowSelectionOnClick
-        sx={{ border: 0, p: 1 }}
+        sx={{ 
+          border: 0, 
+          p: 1,
+          // Removes cell outline.
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
+            backgroundColor: '#f1f1f1f1',
+          },
+        }}
       />
     </Paper>
     <ConfirmationDialog

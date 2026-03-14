@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship
+import enum
 
 
 Base = declarative_base()
@@ -236,3 +237,42 @@ class Recommendation(Base):
         return (f'Recommendation(RecommendationID={self.RecommendationID}, '
                 f'HealthDataID={self.HealthDataID}, '
                 f'CreatedAt={self.CreatedAt})')
+
+
+class LogEventType(str, enum.Enum):
+    LOGIN = "LOGIN"
+    LOGOUT = "LOGOUT"
+    REGISTRATION = "REGISTRATION"
+    EMAIL_VALIDATION = "EMAIL_VALIDATION"
+    PASSWORD_CHANGE = "PASSWORD_CHANGE"
+    ROLE_CHANGED = "ROLE_CHANGED"
+    ACCOUNT_DELETED = "ACCOUNT_DELETED"
+    MERCHANT_VALIDATED = "MERCHANT_VALIDATED"
+
+
+class AuditLog(Base):
+    __tablename__ = 'AuditLog'
+    LogID = Column(Integer, primary_key=True)
+    EventType = Column(String(50), nullable=False)
+    Success = Column(Boolean, nullable=False)
+    UserID = Column(Integer, ForeignKey('UserAccount.UserID'))
+    UserEmail = Column(String(255))
+    IPAddress = Column(String(40))
+    Device = Column(String(255))
+    Description = Column(Text)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    def __init__(self, eventType, success, userID=None, userEmail=None, ipAddress=None,
+                device=None, description=None):
+        self.EventType = eventType
+        self.Success = success
+        self.UserID = userID
+        self.UserEmail = userEmail
+        self.IPAddress = ipAddress
+        self.Device = device
+        self.Description = description
+
+    def __repr__(self):
+        return f'AuditLog(LogID={self.LogID}, EventType={self.EventType}, \
+                Success={self.Success}, UserID={self.UserID}, \
+                CreatedAt={self.CreatedAt})'

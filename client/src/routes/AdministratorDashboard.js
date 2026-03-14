@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import UserManagementTable from "../components/administrator/UserManagementTable";
 import AccountApprovalTable from "../components/administrator/AccountApprovalTable";
+import AuditLogTable from "../components/administrator/AuditLogTable";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -65,9 +66,33 @@ const AdministratorDashboard = () => {
     </Box>
   );
 
+  const AuditLogs = () => (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        p: 10,
+        alignItems: "center",
+      }}
+    >
+      <Box>
+        <Typography
+          variant="h4"
+          color="primary"
+          sx={{ fontWeight: 600, mb: 4 }}
+        >
+          Logs
+        </Typography>
+      </Box>
+      <AuditLogTable />
+    </Box>
+  );
+
   const pages = {
     Users: <UserManagement />,
     Requests: <AccountApproval />,
+    Logs: <AuditLogs />,
   };
 
   return (
@@ -75,12 +100,7 @@ const AdministratorDashboard = () => {
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
         <Box sx={{ borderRight: "1px solid #e0e0e0" }}>
           <List sx={{ padding: 0 }}>
-            <Box sx={{ p: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Admin Dashboard
-              </Typography>
-            </Box>
-            {["Users", "Requests"].map((obj) => (
+            {["Users", "Requests", "Logs"].map((obj) => (
               <ListItem
                 button
                 key={obj}
