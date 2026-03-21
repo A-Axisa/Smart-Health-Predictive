@@ -15,9 +15,10 @@ from ..models.dbmodels import (
     HealthData,
     Prediction,
     Recommendation,
-    LogEventType
+    LogEventType,
+    Patient
 )
-from ..routers.authentication import get_current_user, get_user
+from ..routers.authentication import get_current_user, get_user, get_patient
 
 # Health Analysis
 
@@ -172,10 +173,10 @@ async def get_health_analytics(
     using historical predictions stored in the database.
     """
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
-    if not user:
+    patient = get_patient(user_email["email"], db_conn)
+    if not patient:
         return []
-    user_id = user.UserID
+    patient_id = patient.PatientID
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
@@ -190,7 +191,7 @@ async def get_health_analytics(
             getattr(Prediction, 'HealthDataID') == getattr(
                 HealthData, 'HealthDataID'),
         )
-        .filter(getattr(HealthData, 'UserID') == user_id)
+        .filter(getattr(HealthData, 'PatientID') == patient_id)
         .order_by(getattr(Prediction, 'CreatedAt').asc())
         .all()
     )
@@ -384,11 +385,11 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
 async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
+    patient = get_patient(user_email["email"], db_conn)
 
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(
-        HealthData.UserID == user.UserID).order_by(HealthData.CreatedAt.desc()).all()
+        HealthData.PatientID == patient.PatientID).order_by(HealthData.CreatedAt.desc()).all()
 
     # Filter by ID and date create to return
     healthDataDates = [HealthDataDates(
