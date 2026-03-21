@@ -380,7 +380,7 @@ def get_user(email: str, db_conn: Session):
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
 
-def get_patient(email: str, db_conn: Session):
+def get_patient_by_email(email: str, db_conn: Session):
     '''Returns patient details from the database using an email.'''
     patient = (
         db_conn.query(Patient)
