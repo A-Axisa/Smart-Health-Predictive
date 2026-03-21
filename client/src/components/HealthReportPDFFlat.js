@@ -1,22 +1,167 @@
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+
+const LOGO_BASE64 = "data:image/png;base64,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"; 
 
 // Styles reused for flat report PDF
 const styles = StyleSheet.create({
-  page: { flexDirection: 'column', backgroundColor: '#FFFFFF', padding: 30 },
-  header: { fontSize: 24, marginBottom: 20, textAlign: 'center', color: 'grey' },
-  section: { marginBottom: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: '#EEEEEE' },
-  title: { fontSize: 18, marginBottom: 10, color: '#333333' },
-  field: { flexDirection: 'row', marginBottom: 5, gap: 6 },
-  label: { fontSize: 12, fontWeight: 'bold' },
-  value: { fontSize: 12 },
-  recommendationText: { fontSize: 12, lineHeight: 1.5 },
-  footer: { position: 'absolute', bottom: 30, left: 30, right: 30, textAlign: 'center', color: 'grey', fontSize: 10 }
+  page: { 
+    flexDirection: 'column', 
+    backgroundColor: '#FFFFFF', 
+    padding: 40,
+    fontFamily: 'Helvetica',
+  },
+  header: { 
+    marginBottom: 20, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#127067',
+    paddingBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  logo: {
+    width: 140, 
+  },
+  headerTextContainer: {
+    alignItems: 'flex-end',
+  },
+  headerTitle: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: '#127067',
+  },
+  headerSubtitle: {
+    fontSize: 10,
+    color: '#666666',
+  },
+  section: { 
+    marginBottom: 15, 
+    padding: 5,
+  },
+  sectionTitle: { 
+    fontSize: 14, 
+    fontWeight: 'bold',
+    marginBottom: 10, 
+    color: '#127067',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+    paddingBottom: 3,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  gridItem: {
+    width: '50%',
+    marginBottom: 6,
+  },
+  field: { 
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  label: { 
+    fontSize: 10, 
+    color: '#333333',
+    fontWeight: 'bold',
+  },
+  value: { 
+    fontSize: 10,
+    color: '#666666',
+  },
+  predictionCardContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 20,
+    marginTop: 5,
+    padding: 10,
+    backgroundColor: '#F4F8F7',
+  },
+  predictionCard: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  predictionLabel: {
+    fontSize: 10,
+    color: '#127067',
+    marginBottom: 2,
+    fontWeight: 'bold',
+  },
+  predictionValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#127067',
+  },
+  recommendationBox: {
+    marginBottom: 10,
+    paddingLeft: 8,
+    borderLeftWidth: 2,
+    borderLeftColor: '#127067',
+  },
+  recommendationTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333333',
+    marginBottom: 2,
+  },
+  recommendationText: { 
+    fontSize: 10, 
+    lineHeight: 1.4,
+    color: '#666666',
+  },
+  disclaimerSection: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#F9F9F9',
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+  },
+  disclaimerTitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#666666',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  disclaimerText: {
+    fontSize: 8,
+    color: '#888888',
+    lineHeight: 1.3,
+  },
+  footer: { 
+    position: 'absolute', 
+    bottom: 30, 
+    left: 40, 
+    right: 40, 
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
+    paddingTop: 10,
+    textAlign: 'center', 
+    color: '#999999', 
+    fontSize: 8,
+  }
 });
 
 const Field = ({ label, value }) => (
-  <View style={styles.field}>
-    <Text style={styles.label}>{label}:</Text>
-    <Text style={styles.value}>{value}</Text>
+  <View style={styles.gridItem}>
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}:</Text>
+      <Text style={styles.value}>{value || 'N/A'}</Text>
+    </View>
+  </View>
+);
+
+const PredictionCard = ({ label, value }) => (
+  <View style={styles.predictionCard}>
+    <Text style={styles.predictionLabel}>{label}</Text>
+    <Text style={styles.predictionValue}>{value}</Text>
+  </View>
+);
+
+const RecommendationSection = ({ title, text }) => (
+  <View style={styles.recommendationBox}>
+    <Text style={styles.recommendationTitle}>{title}</Text>
+    <Text style={styles.recommendationText}>{text || 'No specific recommendation provided.'}</Text>
   </View>
 );
 
@@ -25,63 +170,86 @@ const Field = ({ label, value }) => (
 const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
   const yn = (v) => (v ? 'Yes' : 'No');
   // Values from /getReportData appear to already be percentages (matching UI), so don't multiply.
-  const pct = (v) => `${Number(v || 0).toFixed(0)}%`;
+  const pct = (v) => `${Number(v || 0).toFixed(1)}%`;
   const formatGender = (g) => (Number(g) === 0 ? 'Female' : 'Male');
-  const dateStr = metaDate ? new Date(metaDate).toLocaleString() : '';
+  const dateStr = metaDate ? new Date(metaDate).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  }) : 'N/A';
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text>Health Prediction Report</Text>
+          {LOGO_BASE64 ? (
+            <Image src={LOGO_BASE64} style={styles.logo} />
+          ) : (
+            <View style={[styles.logo, { backgroundColor: '#F0F0F0', justifyContent: 'center', alignItems: 'center' }]}>
+              <Text style={{ fontSize: 8, color: '#999' }}>LOGO</Text>
+            </View>
+          )}
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Health Analysis Report</Text>
+            <Text style={styles.headerSubtitle}>WellAI Personal Health Insights</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.title}>Report Metadata</Text>
-          <Field label="Health Data ID" value={String(metaId ?? '')} />
-          <Field label="Record Date" value={dateStr} />
+          <Text style={styles.sectionTitle}>General Information</Text>
+          <View style={styles.grid}>
+            <Field label="Report ID" value={String(metaId ?? '')} />
+            <Field label="Analysis Date" value={dateStr} />
+            <Field label="Age" value={`${data.age} Years`} />
+            <Field label="Gender" value={formatGender(data.gender)} />
+            <Field label="Height" value={`${data.height} m`} />
+            <Field label="Weight" value={`${data.weight} kg`} />
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.title}>Health Information</Text>
-          <Field label="Age" value={String(data.age ?? '')} />
-          <Field label="Weight (kg)" value={String(data.weight ?? '')} />
-          <Field label="Height (m)" value={String(data.height ?? '')} />
-          <Field label="Gender" value={formatGender(data.gender)} />
-          <Field label="Blood Glucose" value={String(data.bloodGlucose ?? '')} />
-          <Field label="AP High" value={String(data.ap_hi ?? '')} />
-          <Field label="AP Low" value={String(data.ap_lo ?? '')} />
-          <Field label="High Cholesterol" value={yn(Boolean(data.highCholesterol))} />
-          <Field label="Exercise" value={yn(Boolean(data.exercise))} />
-          <Field label="Hypertension" value={yn(Boolean(data.hyperTension))} />
-          <Field label="Heart Disease" value={yn(Boolean(data.heartDisease))} />
-          <Field label="Diabetes" value={yn(Boolean(data.diabetes))} />
-          <Field label="Alcohol" value={yn(Boolean(data.alcohol))} />
-          <Field label="Smoker" value={yn(Boolean(data.smoker))} />
-          <Field label="Marital Status" value={yn(Boolean(data.maritalStatus))} />
-          <Field label="Working Status" value={yn(Boolean(data.workingStatus))} />
+          <Text style={styles.sectionTitle}>Medical Vitals & History</Text>
+          <View style={styles.grid}>
+            <Field label="Blood Glucose" value={String(data.bloodGlucose ?? '')} />
+            <Field label="Systolic BP" value={String(data.ap_hi ?? '')} />
+            <Field label="Diastolic BP" value={String(data.ap_lo ?? '')} />
+            <Field label="High Cholesterol" value={yn(Boolean(data.highCholesterol))} />
+            <Field label="Hypertension" value={yn(Boolean(data.hyperTension))} />
+            <Field label="Heart Disease" value={yn(Boolean(data.heartDisease))} />
+            <Field label="Diabetes History" value={yn(Boolean(data.diabetes))} />
+            <Field label="Physical Exercise" value={yn(Boolean(data.exercise))} />
+            <Field label="Smoking Status" value={yn(Boolean(data.smoker))} />
+            <Field label="Alcohol Intake" value={yn(Boolean(data.alcohol))} />
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.title}>Prediction Results</Text>
-          <Field label="Stroke" value={pct(data.strokeChance)} />
-          <Field label="CVD" value={pct(data.CVDChance)} />
-          <Field label="Diabetes" value={pct(data.diabetesChance)} />
+          <Text style={styles.sectionTitle}>AI Risk Assessment</Text>
+          <View style={styles.predictionCardContainer}>
+            <PredictionCard label="Stroke Risk" value={pct(data.strokeChance)} />
+            <PredictionCard label="CVD Risk" value={pct(data.CVDChance)} />
+            <PredictionCard label="Diabetes Risk" value={pct(data.diabetesChance)} />
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.title}>Recommendations</Text>
-          <Text style={{ ...styles.label, marginBottom: 5 }}>Exercise Recommendation:</Text>
-          <Text style={styles.recommendationText}>{data.exerciseRecommendation || 'N/A'}</Text>
-          <Text style={{ ...styles.label, marginTop: 10, marginBottom: 5 }}>Diet Recommendation:</Text>
-          <Text style={styles.recommendationText}>{data.dietRecommendation || 'N/A'}</Text>
-          <Text style={{ ...styles.label, marginTop: 10, marginBottom: 5 }}>Lifestyle Recommendation:</Text>
-          <Text style={styles.recommendationText}>{data.lifestyleRecommendation || 'N/A'}</Text>
-          <Text style={{ ...styles.label, marginTop: 10, marginBottom: 5 }}>Diet to Avoid:</Text>
-          <Text style={styles.recommendationText}>{data.dietToAvoidRecommendation || 'N/A'}</Text>
+          <Text style={styles.sectionTitle}>Health Recommendations</Text>
+          <RecommendationSection title="Physical Activity" text={data.exerciseRecommendation} />
+          <RecommendationSection title="Dietary Guidelines" text={data.dietRecommendation} />
+          <RecommendationSection title="Lifestyle Adjustments" text={data.lifestyleRecommendation} />
+          <RecommendationSection title="Foods to Avoid" text={data.dietToAvoidRecommendation} />
         </View>
 
-        <Text style={styles.footer}>© 2025 WellAI. All rights reserved.</Text>
+        <View style={styles.disclaimerSection}>
+          <Text style={styles.disclaimerTitle}>Medical Disclaimer</Text>
+          <Text style={styles.disclaimerText}>
+            This report is generated by an artificial intelligence model and is intended for informational purposes only. 
+            It does not constitute medical advice, diagnosis, or treatment. The predictions are based on statistical probabilities 
+            and may not accurately reflect your individual health status. Always seek the advice of a qualified healthcare provider 
+            with any questions you may have regarding a medical condition. Do not disregard professional medical advice or 
+            delay in seeking it because of something you have read in this report.
+          </Text>
+        </View>
+
+        <Text style={styles.footer}>© 2026 WellAI Health Systems. Generated by Smart Health Predictive AI.</Text>
       </Page>
     </Document>
   );
