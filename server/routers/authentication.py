@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import datetime, timedelta, timezone, UTC, date
 from secrets import token_urlsafe
 
 import jwt
@@ -36,9 +36,14 @@ ACCOUNT_TYPE = {
     'merchant': 62809281
 }
 
+gender_map = {'Male': 1, 'Female': 0}
+
 
 class UserRegistrationDetails(BaseModel):
-    username: str
+    given_names: str
+    last_name: str
+    date_of_birth: date
+    gender: str
     password: str
     email: str
     phone: str
@@ -83,17 +88,18 @@ async def register(user_reg: UserRegistrationDetails,
     # Ensure user inputs are valid.
     if (not is_email_valid(user_reg.email) or
             not is_password_valid(user_reg.password) or
-            not is_name_valid(user_reg.username) or
+            not is_name_valid(user_reg.given_names) or
+            not is_name_valid(user_reg.last_name) or
             not is_formatted_phone_valid(user_reg.phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     password_hash = password_hasher.hash(user_reg.password)
     new_user = UserAccount(
-        user_reg.username,
-        user_reg.email,
-        password_hash,
-        formatted_phone
+        clinicID=None,
+        email=user_reg.email,
+        password_hash=password_hash,
+        phone_number=formatted_phone
     )
 
     # Only add the user to the database of they don't exist.
@@ -105,6 +111,18 @@ async def register(user_reg: UserRegistrationDetails,
     new_user_id = db_conn.query(UserAccount.UserID). \
         filter_by(Email=user_reg.email).first()[0]
     role = UserAccountRole(ACCOUNT_TYPE[user_reg.account_type], new_user_id)
+
+    # Create new patient record for the user.
+    new_patient = Patient(
+        user_id=new_user_id,
+        given_names=user_reg.given_names,
+        last_name=user_reg.last_name,
+        gender=gender_map[user_reg.gender],
+        date_of_birth=user_reg.date_of_birth,
+        weight=0,
+        height=0
+    )
+    db_conn.add(new_patient)
 
     # Require validation to confirm the user can access the email.
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
@@ -363,11 +381,11 @@ def get_user(email: str, db_conn: Session):
 
 
 def get_patient(email: str, db_conn: Session):
-    '''Returns user account details from the database using an email.'''
+    '''Returns patient details from the database using an email.'''
     patient = (
-        db_conn.query(Patient)  # <-- query Patient, not UserAccount
+        db_conn.query(Patient)
         .join(UserAccount, Patient.UserID == UserAccount.UserID)
-        .filter(UserAccount.Email == email)  # use filter, not filter_by
+        .filter(UserAccount.Email == email)
         .first()
     )
     return patient
