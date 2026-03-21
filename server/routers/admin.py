@@ -13,6 +13,8 @@ from ..models.dbmodels import (
     Recommendation,
     AuditLog,
     LogEventType,
+    Patient,
+    Clinic
 )
 from ..routers.authentication import get_current_user
 
@@ -46,8 +48,24 @@ async def get_users(db_conn: Session = Depends(get_db)):
 
     result = []
     for user, role in users:
+        full_name = ""
+
+        # Retrieve the patients full name for a standard  user
+        if role.RoleName == "standard_user":
+            patient = (db_conn.query(Patient).filter(
+                user.UserID == Patient.UserID).first())
+
+            full_name = f'{patient.GivenNames} {patient.LastName}'
+
+        # Retrieve Clinic name for a merchant user
+        if role.RoleName == "merchant":
+            clinic = (db_conn.query(Clinic).filter(
+                Clinic.ClinicID == user.ClinicID).first())
+
+            full_name = clinic.ClinicName
+
         result.append({
-            "fullName": user.FullName,
+            "fullName": full_name,
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
             "createdAt": user.CreatedAt,
@@ -279,5 +297,5 @@ async def get_logs(db_conn: Session = Depends(get_db)):
             "description": log.Description,
             "createdAt": log.CreatedAt,
         })
-    
+
     return result
