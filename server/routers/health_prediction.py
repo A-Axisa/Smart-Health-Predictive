@@ -8,7 +8,7 @@ import csv
 import codecs
 
 from ..utils.database import get_db
-from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess
 from ..services.health_recommendation_service import get_health_recommendations
 from .authentication import get_current_user, get_user, get_patient
 
@@ -244,7 +244,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
         user = db_conn.query(UserAccount).filter_by(Email=user_email).first()
         if not user:
             skipped_rows += 1
-            # TODO: Create the user if they don't exist.
+            # TODO: Create the Patient if they don't exist.
             continue
 
         health_data = HealthDataInput(
@@ -309,6 +309,14 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
     if validate_all_input(data) == False:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    # Retrieve patient information
+    patient = get_patient(data.patientEmail, db_conn)
+
+    # Check if the merchant has permission to view the patients record
+    if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
     # Calculate BMI
     if (data.height == 0):
         BMI = 0
@@ -316,14 +324,11 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         # Calculate BMI ( BMI = Weight(kg)/Height(m)^2 )
         BMI = (data.weight/((data.height/100)**2))
 
-    # Retrieve user patient user information
-    patient = get_user(data.patientEmail, db_conn)
-
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
-    healthData = HealthData(patient.UserID, data.age, data.weight, data.height, gender_map[data.gender],
+    healthData = HealthData(patient.PatientID, data.age, data.weight, data.height, gender_map[data.gender],
                             data.bloodGlucose, data.ap_hi, data.ap_lo, data.highCholesterol,
                             data.hyperTension, data.heartDisease, data.diabetes, data.alcohol,
-                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], merchant.UserID)
+                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], data.stroke)
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -497,6 +502,9 @@ def is_stroke_valid(stroke: int):
 
 
 def validate_all_input(data: HealthDataInput):
+    """
+    Validates all user inputs
+    """
     if (
             not is_age_valid(data.age) or
             not is_weight_valid(data.weight) or
@@ -518,3 +526,14 @@ def validate_all_input(data: HealthDataInput):
         return False
 
     return True
+
+
+def merchant_view_patient(user_id: int, patient_id: int, db_conn: Session):
+    """
+    Returns True if the merchant is linked to the patient, False if they can not.
+    """
+    access = db_conn.query(UserPatientAccess).filter_by(
+        UserID=user_id,
+        PatientID=patient_id
+    ).first()
+    return access is not None
