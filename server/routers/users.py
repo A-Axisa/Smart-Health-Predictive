@@ -16,7 +16,8 @@ from ..models.dbmodels import (
     Prediction,
     Recommendation,
     LogEventType,
-    Patient
+    Patient,
+    UserPatientAccess
 )
 from ..routers.authentication import get_current_user, get_user, get_patient
 
@@ -360,23 +361,26 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
-    # Get health data associated with the merchant.
-    patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
-        .order_by(HealthData.CreatedAt.desc()).all()
+    # Get patient data associated with the merchant.
+    patients = (
+        db_conn.query(Patient)
+        .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+        .filter(UserPatientAccess.UserID == merchant.UserID)
+        .order_by(Patient.CreatedAt.desc())
+        .all()
+    )
 
     result = []
-    existing_email = set()
-    for row in patient_health_data:
+    existing_patient = set()
+    for patient in patients:
 
         # Get the patient's name.
-        patient = db_conn.query(UserAccount).filter_by(
-            UserID=row.UserID).first()
-        if patient.Email not in existing_email:
+        if patient.PatientID not in existing_patient:
             result.append({
-                "name": patient.FullName,
-                "email": patient.Email
+                "name": f'{patient.GivenNames} {patient.LastName}',
+                "patientID": patient.PatientID
             })
-            existing_email.add(patient.Email)
+            existing_patient.add(patient.PatientID)
 
     return result
 
