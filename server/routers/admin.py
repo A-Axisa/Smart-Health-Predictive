@@ -233,8 +233,12 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
     result = []
     for merchant in invalid_merchant_accounts:
+
+        full_name = (db_conn.query(Clinic).filter(
+            Clinic.ClinicID == merchant.ClinicID).first()).ClinicName
+
         result.append({
-            "fullName": merchant.FullName,
+            "fullName": full_name,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
             "createdAt": merchant.CreatedAt,
@@ -277,7 +281,7 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
                     ipAddress=request.client.host,
                     description=f"Merchant account validated.")
 
-    return {"message": f"Merchant: {merchant.FullName} has been successfully validated."}
+    return {"message": f"Merchant has been successfully validated."}
 
 
 @router.get("/logs")
