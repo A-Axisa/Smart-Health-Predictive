@@ -374,7 +374,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         if patient.PatientID not in existing_patient:
             result.append({
                 "name": f'{patient.GivenNames} {patient.LastName}',
-                "patientID": patient.PatientID
+                "patient_id": patient.PatientID
             })
             existing_patient.add(patient.PatientID)
 
