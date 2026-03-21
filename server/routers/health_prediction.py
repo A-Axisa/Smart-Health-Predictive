@@ -10,7 +10,7 @@ import codecs
 from ..utils.database import get_db
 from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
 from ..services.health_recommendation_service import get_health_recommendations
-from .authentication import get_current_user, get_user
+from .authentication import get_current_user, get_user, get_patient
 
 # HealthData
 
@@ -31,7 +31,7 @@ class HealthDataInput(BaseModel):
     smoker: str
     maritalStatus: str
     workingStatus: str
-    merchantID: Optional[int] = None
+    stroke: int
 
 
 class MerchantHealthDataInput(BaseModel):
@@ -50,6 +50,7 @@ class MerchantHealthDataInput(BaseModel):
     smoker: str
     maritalStatus: str
     workingStatus: str
+    stroke: int
     patientEmail: str
 
 
@@ -74,7 +75,7 @@ router = APIRouter()
 
 @router.post("/healthPrediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
-                  csv_user_id: Optional[int] = None):
+                  csv_patient_id: Optional[int] = None):
 
     # Check if user input is valid
     if validate_all_input(data) == False:
@@ -89,14 +90,15 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
 
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
+    patient = get_patient(user_email["email"], db_conn)
 
-    # Get the CSV user's ID, otherwise uses the authenticated user's ID.
-    user_id = csv_user_id if csv_user_id is not None else user.UserID
-    healthData = HealthData(user_id, data.age, data.weight, data.height, gender_map[data.gender],
+    # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
+    patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
+    healthData = HealthData(patient_id, data.age, data.weight, data.height, gender_map[data.gender],
                             data.bloodGlucose, data.ap_hi, data.ap_lo, data.highCholesterol,
                             data.hyperTension, data.heartDisease, data.diabetes, data.alcohol,
-                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], data.merchantID)
+                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], data.stroke)
+
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -490,6 +492,10 @@ def is_workingStatus_valid(workingStatus: str):
     return workingStatus in working_map
 
 
+def is_stroke_valid(stroke: int):
+    return stroke == 0 or stroke == 1
+
+
 def validate_all_input(data: HealthDataInput):
     if (
             not is_age_valid(data.age) or
@@ -506,7 +512,9 @@ def validate_all_input(data: HealthDataInput):
             not is_alcohol_valid(data.alcohol) or
             not is_smoker_valid(data.smoker) or
             not is_maritalStatus_valid(data.maritalStatus) or
-            not is_workingStatus_valid(data.workingStatus)):
+            not is_workingStatus_valid(data.workingStatus) or
+            not is_stroke_valid(data.stroke)):
+
         return False
 
     return True

@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole, LogEventType
+    UserAccountValidationToken, AccountRole, LogEventType, Patient
 from ..utils.email_service import send_email
 from ..utils.audit_log import write_audit_log
 
@@ -186,7 +186,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     db_conn.delete(validation_token_entry)
 
     db_conn.commit()
-    
+
     write_audit_log(db_conn,
                     eventType=LogEventType.EMAIL_VALIDATION,
                     success=True,
@@ -215,7 +215,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 
 
 @router.post('/login')
-async def login(request: Request, response: Response, user_cred: LoginCredentials, 
+async def login(request: Request, response: Response, user_cred: LoginCredentials,
                 db_conn: Session = Depends(get_db)):
     '''Authenticates a user with the credentials and provides an access token.'''
 
@@ -311,7 +311,7 @@ async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
 
 def get_current_user(request: Request, db_conn: Session):
     '''Returns user information from the http-only cookie on their device.'''
-    
+
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -352,7 +352,6 @@ def get_current_user(request: Request, db_conn: Session):
         raise credentials_exception
 
     return {
-        'name': user.FullName,
         'email': user.Email,
         'role': user_role
     }
@@ -361,6 +360,17 @@ def get_current_user(request: Request, db_conn: Session):
 def get_user(email: str, db_conn: Session):
     '''Returns user account details from the database using an email.'''
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
+
+def get_patient(email: str, db_conn: Session):
+    '''Returns user account details from the database using an email.'''
+    patient = (
+        db_conn.query(Patient)  # <-- query Patient, not UserAccount
+        .join(UserAccount, Patient.UserID == UserAccount.UserID)
+        .filter(UserAccount.Email == email)  # use filter, not filter_by
+        .first()
+    )
+    return patient
 
 
 def get_user_role(email: str, db_conn: Session):
@@ -436,7 +446,6 @@ def is_formatted_phone_valid(phone: str):
 def is_name_valid(name: str):
     '''Verifies a name is valid.'''
     return name is not None or len(name) <= NAME_MAX_LENGTH
-
 
 
 def is_role_valid(role: str):
