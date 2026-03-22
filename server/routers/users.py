@@ -90,9 +90,12 @@ def _delete_user_data(user_id: int, db_conn: Session):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
+        # Get patient record if it exists
+        patient_record = get_patient_by_email(user_to_delete.Email, db_conn)
+
         # Collect all HealthDataIDs for this user
         health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_id).all()
+            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()
         ]
 
         if health_ids:
@@ -107,7 +110,7 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
             # Then delete HealthData records
             health_data_deleted = db_conn.query(HealthData).filter(
-                HealthData.UserID == user_id).delete(synchronize_session=False)
+                HealthData.PatientID == patient_record.PatientID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user

@@ -6,27 +6,35 @@ from server.main import app
 
 client = TestClient(app)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_once_for_all_tests():
     # Similar to test_auth
     credentials = {
-        "username": "Test Delete",
-        "password": "thisisavalidpassword",
-        "email": "testdelete@mymail.com",
-        "phone": "",
-        "account_type": "user",
+        'given_names': 'Testable',
+        'last_name': 'User',
+        'date_of_birth': '1980-05-24',
+        'gender': 'Male',
+        'password': 'thisisavalidpassword',
+        'email': 'test@example.com',
+        'phone': '',
+        'account_type': 'user'
     }
     client.post("/register/", json=credentials)
+
 
 def test_admin_can_delete_user():
     # 1. Create a new user to be deleted
     user_to_delete_email = "user.to.be.deleted.by.admin@example.com"
     user_to_delete_credentials = {
-        "username": "User ToBeDeleted",
+        "given_names": "User ToBeDeleted",
+        "last_name": "",
+        "date_of_birth": "1980-05-24",
+        "gender": "Male",
         "password": "password123456789",
         "email": user_to_delete_email,
         "phone": "",
-        "account_type": "user",
+        "account_type": "user"
     }
     register_res = client.post("/register/", json=user_to_delete_credentials)
     assert register_res.status_code == status.HTTP_200_OK, f"Failed to create user for deletion test: {register_res.text}"
@@ -39,7 +47,7 @@ def test_admin_can_delete_user():
     assert login_res.status_code == status.HTTP_200_OK, f"Admin login failed: {login_res.text}"
 
     # 3. Get the user ID of the new user
-    users_res = admin_client.get("/users/")
+    users_res = admin_client.get("/users")
     assert users_res.status_code == status.HTTP_200_OK
     users = users_res.json()
     user_found = any(user['email'] == user_to_delete_email for user in users)
@@ -58,7 +66,7 @@ def test_admin_can_delete_user():
     assert response_json["deletion_report"]["users_deleted"] == 1
 
     # 6. Verify the user is actually deleted
-    users_res_after_delete = admin_client.get("/users/")
+    users_res_after_delete = admin_client.get("/users")
     assert users_res_after_delete.status_code == status.HTTP_200_OK
     users_after_delete = users_res_after_delete.json()
     user_found = any(

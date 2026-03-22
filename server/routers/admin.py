@@ -16,7 +16,7 @@ from ..models.dbmodels import (
     Patient,
     Clinic
 )
-from ..routers.authentication import get_current_user
+from ..routers.authentication import get_current_user, get_patient_by_email
 
 router = APIRouter()
 
@@ -129,9 +129,12 @@ def _delete_user_data(user_email: str, db_conn: Session):
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
         # Collect all HealthDataIDs for this user
-        health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_to_delete.UserID).all()
-        ]
+        patient_record = get_patient_by_email(user_email, db_conn)
+
+        if patient_record:
+            health_ids: List[int] = [
+                hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()
+            ]
 
         if health_ids:
             # Delete tables that depend on HealthData first
@@ -145,7 +148,7 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
             # Then delete HealthData records
             health_data_deleted = db_conn.query(HealthData).filter(
-                HealthData.UserID == user_to_delete.UserID).delete(synchronize_session=False)
+                HealthData.PatientID == patient_record.PatientID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user

@@ -95,12 +95,18 @@ async def register(user_reg: UserRegistrationDetails,
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     password_hash = password_hasher.hash(user_reg.password)
+
+    # Set clinic ID to 1. This is a band-aid fix and will need to be changed
+    clinic_id = 1 if user_reg.account_type == "merchant" else None
+
     new_user = UserAccount(
-        clinicID=None,
+        clinicID=clinic_id,
         email=user_reg.email,
         password_hash=password_hash,
         phone_number=formatted_phone
     )
+    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == 'user':
+        new_user.IsValidated = True
 
     # Only add the user to the database of they don't exist.
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
@@ -112,17 +118,18 @@ async def register(user_reg: UserRegistrationDetails,
         filter_by(Email=user_reg.email).first()[0]
     role = UserAccountRole(ACCOUNT_TYPE[user_reg.account_type], new_user_id)
 
-    # Create new patient record for the user.
-    new_patient = Patient(
-        user_id=new_user_id,
-        given_names=user_reg.given_names,
-        last_name=user_reg.last_name,
-        gender=gender_map[user_reg.gender],
-        date_of_birth=user_reg.date_of_birth,
-        weight=0,
-        height=0
-    )
-    db_conn.add(new_patient)
+    # Create new patient record if they are a standard user.
+    if user_reg.account_type == 'user':
+        new_patient = Patient(
+            user_id=new_user_id,
+            given_names=user_reg.given_names,
+            last_name=user_reg.last_name,
+            gender=gender_map[user_reg.gender],
+            date_of_birth=user_reg.date_of_birth,
+            weight=0,
+            height=0
+        )
+        db_conn.add(new_patient)
 
     # Require validation to confirm the user can access the email.
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)

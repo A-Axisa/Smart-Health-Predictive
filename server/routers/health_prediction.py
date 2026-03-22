@@ -241,14 +241,14 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
             continue
 
         user_email = user_email.strip()
-        user = db_conn.query(UserAccount).filter_by(Email=user_email).first()
-        if not user:
+        patient = get_patient_by_email(user_email, db_conn)
+
+        if not patient:
             skipped_rows += 1
             # TODO: Create the Patient if they don't exist.
             continue
 
-        health_data = HealthDataInput(
-            UserID=user.UserID,
+        health_data = MerchantHealthDataInput(
             age=int(row["Age"]) if row.get("Age") else 0,
             weight=float(row["WeightKilograms"]) if row.get(
                 "WeightKilograms") else 0,
@@ -273,10 +273,12 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
                 "MaritalStatus") else 0,
             working_status=str(row["WorkingStatus"]) if row.get(
                 "WorkingStatus") else 0,
-            merchantID=merchant.UserID,
+            stroke=str(row["Stroke"]) if row.get(
+                "Stroke") else 0,
+            patient_id=patient.PatientID
         )
         # Pass each HealthDataInput object to the predict endpoint.
-        await predict(health_data, request, db_conn, user.UserID)
+        await merchant_predict(health_data, request, db_conn)
         processed_rows += 1
 
     uploaded_file.file.close()
@@ -289,7 +291,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
 
 
 @router.post("/merchantHealthPrediction/")
-async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
+async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
