@@ -93,6 +93,14 @@ def _delete_user_data(user_id: int, db_conn: Session):
         # Get patient record if it exists
         patient_record = get_patient_by_email(user_to_delete.Email, db_conn)
 
+        # Delete Merchant Patient access
+        if patient_record:
+            db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
+                                                    patient_record.PatientID).delete(synchronize_session=False)
+        else:
+            db_conn.query(UserPatientAccess).filter(
+                UserPatientAccess.UserID == user_to_delete.UserID).delete(synchronize_session=False)
+
         # Collect all HealthDataIDs for this user
         health_ids: List[int] = [
             hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()

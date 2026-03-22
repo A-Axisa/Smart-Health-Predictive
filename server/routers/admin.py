@@ -14,7 +14,8 @@ from ..models.dbmodels import (
     AuditLog,
     LogEventType,
     Patient,
-    Clinic
+    Clinic,
+    UserPatientAccess
 )
 from ..routers.authentication import get_current_user, get_patient_by_email
 
@@ -130,6 +131,14 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
         # Collect all HealthDataIDs for this user
         patient_record = get_patient_by_email(user_email, db_conn)
+
+        # Delete Merchant access to patient record
+        if patient_record:
+            db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
+                                                    patient_record.PatientID).delete(synchronize_session=False)
+        else:
+            db_conn.query(UserPatientAccess).filter(
+                UserPatientAccess.UserID == user_to_delete.UserID).delete(synchronize_session=False)
 
         if patient_record:
             health_ids: List[int] = [

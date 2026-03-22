@@ -128,6 +128,7 @@ def delete_user_and_data(email: str):
     )
 
     if user:
+        # Delete Merchant Patient access
         if patient_record:
             db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
                                                     patient_record.PatientID).delete(synchronize_session=False)
