@@ -253,7 +253,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         write_audit_log(db_conn,
                         eventType=LogEventType.LOGIN,
                         success=False,
-                        userEmail=user.Email,
+                        userEmail=user_cred.email,
                         device=request.headers.get("user-agent"),
                         ipAddress=request.client.host,
                         description="Login failed with incorrect credentials.")
