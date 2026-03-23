@@ -8,22 +8,19 @@ import {
   Box,
   Typography,
   TextField,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Button,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  FormControl,
+  ListItemText,
+  Select,
+  FormHelperText,
 } from "@mui/material";
 
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import ListItemText from "@mui/material/ListItemText";
-import Select from "@mui/material/Select";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import FormHelperText from "@mui/material/FormHelperText";
+
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -213,7 +210,7 @@ const GenerateReportForm = () => {
 
   // Fills in fields with information found in the blood reports.
   async function readBloodReport(e) {
-    if (e.aveBloodGlucose != NaN) {
+    if (e.aveBloodGlucose !== NaN) {
       // Value needs to be in a specific dictionary format to be validated and set.
       updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
     }
@@ -393,7 +390,7 @@ const GenerateReportForm = () => {
                 <MenuItem value={"Female"}>Female</MenuItem>
               </Select>
               {alertGenderRequired && (
-                <FormHelperText>*Please select your gender</FormHelperText>
+                <FormHelperText>*Required</FormHelperText>
               )}
             </FormControl>
           </Box>
