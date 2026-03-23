@@ -17,7 +17,8 @@ from ..models.dbmodels import (
     Recommendation,
     LogEventType,
     Patient,
-    UserPatientAccess
+    UserPatientAccess,
+    Clinic
 )
 from ..routers.authentication import get_current_user, get_user, get_patient_by_email
 
@@ -62,6 +63,11 @@ class Report(BaseModel):
 class HealthDataDates(BaseModel):
     healthDataID: int
     date: datetime
+
+
+class ClinicDetails(BaseModel):
+    clinic_id: int
+    clinic_name: str
 
 
 def _to_float(val) -> float:
@@ -407,6 +413,24 @@ async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
         healthDataID=data.HealthDataID, date=data.CreatedAt) for data in healthData]
 
     return healthDataDates
+
+
+@router.get("/getClinicNames/")
+async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Retrieve the all clinics
+    clinics = (
+        db_conn.query(Clinic)
+        .order_by(Clinic.ClinicID.asc())
+        .all()
+    )
+    # Filter clinic by name and id
+    clinic_details = [
+        ClinicDetails(clinic_id=clinic.ClinicID, clinic_name=clinic.ClinicName)
+        for clinic in clinics
+    ]
+
+    return clinic_details
 
 
 def get_merchant_patients(merchantID: int, db_conn):
