@@ -45,32 +45,35 @@ def setup_users_for_tests():
         {
             "given_names": "AReputableClinic",
             "last_name": "",
-            "date_of_birth": "2026-03-22",
-            "gender": "Male",
+            "date_of_birth": None,
+            "gender": None,
             "password": "thisisavalidpassword",
             "email": "myreputableclinic@example.com",
             "phone": "",
-            "account_type": "merchant"
+            "account_type": "merchant",
+            "clinic_id": 1
         },
         {
             "given_names": "User",
             "last_name": "1",
-            "date_of_birth": "2026-03-22",
+            "date_of_birth": "2002-03-22",
             "gender": "Male",
             "password": "thisisalongpassword",
             "email": "user1@example.com",
             "phone": "",
-            "account_type": "user"
+            "account_type": "user",
+            "clinic_id": None
         },
         {
             "given_names": "User",
             "last_name": "2",
-            "date_of_birth": "2026-03-22",
+            "date_of_birth": "2000-03-22",
             "gender": "Female",
             "password": "thisisareallylongpassword",
             "email": "user2@example.com",
             "phone": "",
-            "account_type": "user"
+            "account_type": "user",
+            "clinic_id": None
         }
     ]
 
