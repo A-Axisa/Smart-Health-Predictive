@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -54,6 +54,23 @@ const RegistrationForm = () => {
   const [showFailMessage, setShowFailMessage] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [accountType, setAccountType] = useState(ACCOUNT_TYPES.STANDARD);
+  const [clinicList, setClinicList] = useState();
+  const [clinicState, setClinicState] = useState("");
+  const [alertClinicRequired, setAlertClinicRequired] = useState(false);
+
+  // Retrieve Clinic Names
+  useEffect(() => {
+    fetch(`${API_BASE}/getClinicNames/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setClinicList(data))
+      .catch((err) => console.log(err));
+  }, []);
 
   function updateGivenName(e) {
     const isNameValid = e.target.value !== "";
@@ -95,8 +112,15 @@ const RegistrationForm = () => {
     setAlertGenderRequired(false);
     setGenderState(e.target.value);
   }
+  function updateAccountType(e) {
+    setAccountType(e.target.value);
+  }
+  function updateClinic(e) {
+    setAlertClinicRequired(false);
+    setClinicState(e.target.value);
+  }
 
-  function updateAllInputFieldAlerts() {
+  function updateAllStandardInputFieldAlerts() {
     setAlertGivenNameRequired(
       givenNameState === null || !givenNameState.isValid,
     );
@@ -112,7 +136,18 @@ const RegistrationForm = () => {
     setAlertDoBRequired(DoBState === null);
   }
 
-  function isAllInputsValid() {
+  function updateAllMerchantInputFieldAlerts() {
+    setAlertEmailRequired(emailState === null);
+    setAlertPasswordRequired(passwordState === null);
+    setAlertPasswordsDontMatch(
+      passwordState === null ||
+        confirmPassword !== passwordState.password ||
+        confirmPassword === "",
+    );
+    setAlertClinicRequired(clinicState === "");
+  }
+
+  function isAllStandardInputsValid() {
     return (
       givenNameState !== null &&
       givenNameState.isValid &&
@@ -126,6 +161,18 @@ const RegistrationForm = () => {
       passwordState !== null &&
       passwordState.isValid &&
       passwordState.password === confirmPassword
+    );
+  }
+
+  function isAllMerchantInputsValid() {
+    return (
+      emailState !== null &&
+      emailState.isValid &&
+      (phoneState === null || phoneState.isValid) &&
+      passwordState !== null &&
+      passwordState.isValid &&
+      passwordState.password === confirmPassword &&
+      clinicState !== ""
     );
   }
 
@@ -148,11 +195,18 @@ const RegistrationForm = () => {
   async function handleRegistration(e) {
     e.preventDefault();
     // Show error message for empty required fields.
-    updateAllInputFieldAlerts();
-    if (!isAllInputsValid()) {
-      return;
+    if (accountType === ACCOUNT_TYPES.STANDARD) {
+      updateAllStandardInputFieldAlerts();
+      if (!isAllStandardInputsValid()) {
+        return;
+      }
     }
-
+    if (accountType === ACCOUNT_TYPES.MERCHANT) {
+      updateAllMerchantInputFieldAlerts();
+      if (!isAllMerchantInputsValid()) {
+        return;
+      }
+    }
     setIsLoading(true);
     // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/register`, {
@@ -161,14 +215,15 @@ const RegistrationForm = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        given_names: givenNameState.name,
-        last_name: lastNameState.name,
+        given_names: givenNameState ? givenNameState.name : "",
+        last_name: lastNameState ? lastNameState.name : "",
         date_of_birth: DoBState,
         gender: genderState,
         password: passwordState.password,
         email: emailState.email,
         phone: phoneState !== null ? phoneState.phone : "",
         account_type: e.target.account_type.value,
+        clinic_id: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
       }),
     })
       .then((response) => {
@@ -231,6 +286,7 @@ const RegistrationForm = () => {
               name="account_type"
               align="center"
               sx={{ gap: 5 }}
+              onChange={updateAccountType}
             >
               <FormControlLabel
                 value={ACCOUNT_TYPES.STANDARD}
@@ -252,53 +308,82 @@ const RegistrationForm = () => {
           >
             Details
           </Divider>
-          <TextField
-            id="outlined-givenName-input"
-            name="given_names"
-            label="Given Names"
-            onChange={updateGivenName}
-            slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
-            error={alertGivenNameRequired}
-            helperText={alertGivenNameRequired ? "*Required" : null}
-          ></TextField>
+          {accountType === ACCOUNT_TYPES.STANDARD && (
+            <>
+              <TextField
+                id="outlined-givenName-input"
+                name="given_names"
+                label="Given Names"
+                onChange={updateGivenName}
+                slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
+                error={alertGivenNameRequired}
+                helperText={alertGivenNameRequired ? "*Required" : null}
+              ></TextField>
 
-          <TextField
-            id="outlined-lastName-input"
-            name="last_name"
-            label="Last Name"
-            onChange={updateLastName}
-            slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
-            error={alertLastNameRequired}
-            helperText={alertLastNameRequired ? "*Required" : null}
-          ></TextField>
-          <TextField
-            label="Select Date of Birth"
-            name="date_of_birth"
-            type="date"
-            onChange={updateDoB}
-            error={alertDoBRequired}
-            helperText={alertDoBRequired ? "*Required" : null}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-          <FormControl error={alertGenderRequired}>
-            <InputLabel id="gender-label">Gender</InputLabel>
-            <Select
-              labelId="gender-label"
-              id="gender-required"
-              value={genderState}
-              onChange={updateGender}
-              label="Gender"
-            >
-              <MenuItem value={"Male"}>Male</MenuItem>
-              <MenuItem value={"Female"}>Female</MenuItem>
-            </Select>
-            {alertGenderRequired && <FormHelperText>*Required</FormHelperText>}
-          </FormControl>
-
+              <TextField
+                id="outlined-lastName-input"
+                name="last_name"
+                label="Last Name"
+                onChange={updateLastName}
+                slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
+                error={alertLastNameRequired}
+                helperText={alertLastNameRequired ? "*Required" : null}
+              ></TextField>
+              <TextField
+                label="Select Date of Birth"
+                name="date_of_birth"
+                type="date"
+                onChange={updateDoB}
+                error={alertDoBRequired}
+                helperText={alertDoBRequired ? "*Required" : null}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+              <FormControl error={alertGenderRequired}>
+                <InputLabel id="gender-label">Gender</InputLabel>
+                <Select
+                  labelId="gender-label"
+                  id="gender-required"
+                  value={genderState}
+                  onChange={updateGender}
+                  label="Gender"
+                >
+                  <MenuItem value={"Male"}>Male</MenuItem>
+                  <MenuItem value={"Female"}>Female</MenuItem>
+                </Select>
+                {alertGenderRequired && (
+                  <FormHelperText>*Required</FormHelperText>
+                )}
+              </FormControl>
+            </>
+          )}
+          {accountType === ACCOUNT_TYPES.MERCHANT && (
+            <FormControl fullWidth error={alertClinicRequired}>
+              <InputLabel id="clinic-select-label">Clinic</InputLabel>
+              <Select
+                labelId="clinic-select-label"
+                value={clinicState}
+                label={"clinic"}
+                onChange={updateClinic}
+              >
+                <MenuItem value="" disabled>
+                  Select a clinic
+                </MenuItem>
+                {/* List of available clinics */}
+                {clinicList.map((clinic) => (
+                  <MenuItem key={clinic.clinic_name} value={clinic.clinic_id}>
+                    {clinic.clinic_name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {alertClinicRequired && (
+                <FormHelperText>*Required</FormHelperText>
+              )}
+            </FormControl>
+          )}
           <PhoneInputField onChange={setPhoneState} />
           <EmailInputField
             onChange={updateEmail}

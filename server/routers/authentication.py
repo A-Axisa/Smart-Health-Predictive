@@ -13,6 +13,7 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
+from typing import Optional
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
@@ -35,6 +36,7 @@ ACCOUNT_TYPE = {
     'user': 331928555,
     'merchant': 62809281
 }
+MIN_AGE = 18
 
 gender_map = {'Male': 1, 'Female': 0}
 
@@ -42,12 +44,13 @@ gender_map = {'Male': 1, 'Female': 0}
 class UserRegistrationDetails(BaseModel):
     given_names: str
     last_name: str
-    date_of_birth: date
-    gender: str
+    date_of_birth: Optional[date]
+    gender: Optional[str]
     password: str
     email: str
     phone: str
     account_type: str
+    clinic_id: Optional[int] = None
 
 
 class LoginCredentials(BaseModel):
@@ -94,10 +97,15 @@ async def register(user_reg: UserRegistrationDetails,
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    if (user_reg.account_type == "user" and
+        (not is_gender_valid(user_reg.gender) or
+         not is_age_valid(user_reg.date_of_birth))):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
     password_hash = password_hasher.hash(user_reg.password)
 
-    # Set clinic ID to 1. This is a band-aid fix and will need to be changed
-    clinic_id = 1 if user_reg.account_type == "merchant" else None
+    # Ensure only merchant users have clinic ID's
+    clinic_id = user_reg.clinic_id if user_reg.account_type == "merchant" else None
 
     new_user = UserAccount(
         clinicID=clinic_id,
@@ -476,6 +484,24 @@ def is_name_valid(name: str):
 def is_role_valid(role: str):
     '''Verifies the role is valid for registration.'''
     return role in ACCOUNT_TYPE.keys()
+
+
+def is_gender_valid(gender: str):
+    '''Verifies gender is valid'''
+    return gender in gender_map
+
+
+def is_age_valid(date_of_birth: date):
+    '''Verifies age is valid and the user is at least 18'''
+    today = date.today()
+    year_diff = today.year - date_of_birth.year
+
+    # checks if the persons birthday has happened this year
+    birthday_not_passed = ((today.month, today.day) < (
+        date_of_birth.month, date_of_birth.day))
+
+    age = year_diff - birthday_not_passed
+    return age >= MIN_AGE
 
 
 @router.post('/changePassword')

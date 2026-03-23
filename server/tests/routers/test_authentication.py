@@ -41,7 +41,8 @@ def setup_once_for_all_tests():
         'password': 'thisisavalidpassword',
         'email': 'test@example.com',
         'phone': '',
-        'account_type': 'user'
+        'account_type': 'user',
+        'clinic_id': None
     }
     response = client.post('/register/', json=credentials)
 
