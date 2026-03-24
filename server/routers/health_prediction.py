@@ -72,6 +72,13 @@ working_map = {
 router = APIRouter()
 
 
+def build_model_input_df(model, values):
+    feature_names = getattr(model, "feature_names_in_", None)
+    if feature_names is not None and len(feature_names) == len(values):
+        return pd.DataFrame([values], columns=list(feature_names))
+    return pd.DataFrame([values])
+
+
 @router.post("/healthPrediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
                   csv_user_id: Optional[int] = None):
@@ -104,7 +111,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     db_conn.refresh(healthData)
 
     # Cardio Dataframe
-    cardio_df = pd.DataFrame([[
+    cardio_values = [
         data.age,
         gender_map[data.gender],
         BMI,
@@ -115,12 +122,13 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         data.bloodGlucose,
         smoker_map[data.smoker],
         data.alcohol
-    ]])
+    ]
+    cardio_df = build_model_input_df(cardioModel, cardio_values)
     # Cardio prediction
     cardioPrediction = cardioModel.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     # Stoke Dataframe
-    stroke_df = pd.DataFrame([[
+    stroke_values = [
         gender_map[data.gender],
         data.age,
         data.heartDisease,
@@ -131,13 +139,14 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         data.height,
         BMI,
         smoker_map[data.smoker]
-    ]])
+    ]
+    stroke_df = build_model_input_df(strokeModel, stroke_values)
 
     # Stroke Prediction
     strokePrediction = strokeModel.predict_proba(stroke_df)
     strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)
     # diabetes Dataframe
-    diabetes_df = pd.DataFrame([[
+    diabetes_values = [
         gender_map[data.gender],
         data.age,
         data.heartDisease,
@@ -146,7 +155,8 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         data.height,
         BMI,
         data.bloodGlucose
-    ]])
+    ]
+    diabetes_df = build_model_input_df(diabetesModel, diabetes_values)
 
     # diabetes prediction
     diabetesPrediction = diabetesModel.predict_proba(diabetes_df)
@@ -329,7 +339,7 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
     db_conn.refresh(healthData)
 
     # Cardio Dataframe
-    cardio_df = pd.DataFrame([[
+    cardio_values = [
         data.age,
         gender_map[data.gender],
         BMI,
@@ -340,12 +350,13 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         data.bloodGlucose,
         smoker_map[data.smoker],
         data.alcohol
-    ]])
+    ]
+    cardio_df = build_model_input_df(cardioModel, cardio_values)
     # Cardio prediction
     cardioPrediction = cardioModel.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     # Stoke Dataframe
-    stroke_df = pd.DataFrame([[
+    stroke_values = [
         gender_map[data.gender],
         data.age,
         data.heartDisease,
@@ -356,13 +367,14 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         data.height,
         BMI,
         smoker_map[data.smoker]
-    ]])
+    ]
+    stroke_df = build_model_input_df(strokeModel, stroke_values)
 
     # Stroke Prediction
     strokePrediction = strokeModel.predict_proba(stroke_df)
     strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)
     # diabetes Dataframe
-    diabetes_df = pd.DataFrame([[
+    diabetes_values = [
         gender_map[data.gender],
         data.age,
         data.heartDisease,
@@ -371,7 +383,8 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         data.height,
         BMI,
         data.bloodGlucose
-    ]])
+    ]
+    diabetes_df = build_model_input_df(diabetesModel, diabetes_values)
 
     # diabetes prediction
     diabetesPrediction = diabetesModel.predict_proba(diabetes_df)
