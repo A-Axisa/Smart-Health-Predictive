@@ -12,7 +12,7 @@ import { TextField } from '@mui/material';
  * @param {boolean} [props.showRequired] - Force the component to show the error state.
  */
 const PasswordInputField = ({ onChange, restrictLength=true, truncate=false, 
-  showRequired=false, label='Password' }) => {
+  showRequired=false, requireCharacters=true, label='Password' }) => {
   
   const MIN_LENGTH = 14;
   const MAX_LENGTH = 65;
@@ -49,10 +49,12 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
     }
     
     // Confirm the input contains each required characters types.
-    if(!(UPPERCASE_REGEX.test(inputPassword))) { return false; }
-    if(!(LOWERCASE_REGEX.test(inputPassword))) { return false; }
-    if(!(NUMERICAL_REGEX.test(inputPassword))) { return false; }
-    if(!hasCommonCharacter(VALID_SYMBOLS, inputPassword)) { return false; }
+    if(requireCharacters) {
+      if(!(UPPERCASE_REGEX.test(inputPassword))) { return false; }
+      if(!(LOWERCASE_REGEX.test(inputPassword))) { return false; }
+      if(!(NUMERICAL_REGEX.test(inputPassword))) { return false; }
+      if(!hasCommonCharacter(VALID_SYMBOLS, inputPassword)) { return false; }
+    }
 
     return isValidPassword;
   }
@@ -89,17 +91,19 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
     }
 
     let missing_characters = []
-    if(!(UPPERCASE_REGEX.test(password))) {
-      missing_characters.push('an uppercase letter'); 
-    }
-    if(!(LOWERCASE_REGEX.test(password))) {
-      missing_characters.push('a lowercase letter'); 
-    }
-    if(!(NUMERICAL_REGEX.test(password))) {
-      missing_characters.push('a number');
-    }
-    if(!hasCommonCharacter(VALID_SYMBOLS, password)) {
-      missing_characters.push('a symbol');
+    if(requireCharacters) {
+      if(!(UPPERCASE_REGEX.test(password))) {
+        missing_characters.push('an uppercase letter'); 
+      }
+      if(!(LOWERCASE_REGEX.test(password))) {
+        missing_characters.push('a lowercase letter'); 
+      }
+      if(!(NUMERICAL_REGEX.test(password))) {
+        missing_characters.push('a number');
+      }
+      if(!hasCommonCharacter(VALID_SYMBOLS, password)) {
+        missing_characters.push('a symbol');
+      }
     }
 
     // Format the error text correctly.
