@@ -108,7 +108,7 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
 
     // Format the error text correctly.
     let missing_warning = ''
-    if(missing_characters.length == 1) {
+    if(missing_characters.length === 1) {
       missing_warning += 'contain ' + missing_characters[0]
     } else if(missing_characters.length > 1) {
       missing_warning += 'contain '
