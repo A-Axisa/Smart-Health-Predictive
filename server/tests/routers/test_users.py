@@ -32,7 +32,7 @@ def setup_once_for_all_tests():
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
         'password': 'thisisavalidpassword',
-        'email': 'realUser@example.com',
+        'email': 'RealGuy@example.com',
         'phone': '',
         'account_type': 'user'
     }

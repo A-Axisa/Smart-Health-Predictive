@@ -158,7 +158,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         BMI,
         data.blood_glucose
     ]
-    diabetes_df = build_model_input_df(diabetes_model, cardio_values)
+    diabetes_df = build_model_input_df(diabetes_model, diabetes_values)
 
     # diabetes prediction
     diabetesPrediction = diabetes_model.predict_proba(diabetes_df)
