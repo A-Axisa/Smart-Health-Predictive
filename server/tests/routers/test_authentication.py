@@ -8,6 +8,8 @@ from ...models.dbmodels import UserAccount, UserAccountRole, \
 from ...routers.authentication import *
 from ...utils.database import get_db
 
+VALID_PASSWORD = 'thisisavalidpasswordA1!'
+
 client = TestClient(app)
 
 @pytest.fixture(scope="module", autouse=True)
@@ -33,7 +35,7 @@ def setup_once_for_all_tests():
         
     credentials = {
         'username':'Testable User',
-        'password':'thisisavalidpassword',
+        'password': VALID_PASSWORD,
         'email': 'test@example.com',
         'phone': '',
         'account_type': 'user'
@@ -57,14 +59,14 @@ def setup_once_for_all_tests():
 
 
 def test_login_with_valid_credentials():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     response = client.post('/login/', json=credentials)
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'message': f'Successfully logged in.'}
 
 
 def test_login_with_incorrect_email():
-    credentials = {'email':'notmyemail@mail.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'notmyemail@mail.com', 'password':VALID_PASSWORD}
     response = client.post('/login/', json=credentials)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail':'Incorrect username or password'}
@@ -85,7 +87,7 @@ def test_login_with_incorrect_credentials():
 
 
 def test_login_with_empty_username():
-    credentials = {'email':'', 'password':'thisisavalidpassword'}
+    credentials = {'email':'', 'password':VALID_PASSWORD}
     response = client.post('/login/', json=credentials)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail':'Incorrect username or password'}
@@ -106,7 +108,7 @@ def test_login_with_empty_credentials():
 
 
 def test_login_with_no_username():
-    credentials = {'email':None, 'password':'thisisavalidpassword'}
+    credentials = {'email':None, 'password':VALID_PASSWORD}
     response = client.post('/login/', json=credentials)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -141,12 +143,12 @@ def test_get_user_not_in_database():
 
 
 def test_authenticate_user_success():
-    result = authenticate_user('test@example.com', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('test@example.com', VALID_PASSWORD, next(get_db()))
     assert result
 
 
 def test_authentication_incorrect_email():
-    result = authenticate_user('notmyemail@mail.com', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('notmyemail@mail.com', VALID_PASSWORD, next(get_db()))
     assert not result
 
 
@@ -161,7 +163,7 @@ def test_authentication_incorrect_credentials():
 
 
 def test_authentication_empty_email():
-    result = authenticate_user('', 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user('', VALID_PASSWORD, next(get_db()))
     assert not result
 
 
@@ -176,7 +178,7 @@ def test_authentication_empty_credentials():
 
 
 def test_authentication_no_email():
-    result = authenticate_user(None, 'thisisavalidpassword', next(get_db()))
+    result = authenticate_user(None, VALID_PASSWORD, next(get_db()))
     assert not result
 
 
@@ -191,7 +193,7 @@ def test_authentication_no_credentials():
 
 
 def test_get_current_user_success():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     client.post('/login/', json=credentials)
     response = client.get('/user/me')
     assert response.status_code == status.HTTP_200_OK
@@ -199,7 +201,7 @@ def test_get_current_user_success():
 
 
 def test_get_current_user_with_invalid_token():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     client.post('/login/', json=credentials)
     invalidate_access_token(credentials['email'], next(get_db()))
     response = client.get('/user/me')
@@ -241,29 +243,29 @@ def test_validate_empty_email():
 
 
 def test_change_password():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     client.post('/login/', json=credentials)
-    change_password = {'current_password':'thisisavalidpassword',
-                       'new_password':'thisIsSafer',
-                       'confirm_new_password':'thisIsSafer' }
+    change_password = {'current_password':VALID_PASSWORD,
+                       'new_password':'thisIsSafer2#',
+                       'confirm_new_password':'thisIsSafer2#' }
     response = client.post('/changePassword/',json=change_password)
     assert response.json() == {'message': 'User successfully changed password.'}
 
 
 def test_change_password_incorrect_current():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     client.post('/login/', json=credentials)
     change_password = {'current_password':'123',
-                       'new_password':'thisIsSafer',
-                       'confirm_new_password':'thisIsSafer' }
+                       'new_password':'thisIsSafer2#',
+                       'confirm_new_password':'thisIsSafer2#' }
     response = client.post('/changePassword/',json=change_password)
     assert response.json() == {'detail' : 'Invalid password'}
 
 
 def test_change_password_not_matching():
-    credentials = {'email':'test@example.com', 'password':'thisisavalidpassword'}
+    credentials = {'email':'test@example.com', 'password':VALID_PASSWORD}
     client.post('/login/', json=credentials)
-    change_password = {'current_password':'thisIsSafer',
+    change_password = {'current_password':'thisIsSafer2#',
                        'new_password':'123',
                        'confirm_new_password':'321' }
     response = client.post('/changePassword/',json=change_password)
