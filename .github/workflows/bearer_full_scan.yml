@@ -1,0 +1,30 @@
+name: Bearer Full Scan
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
+jobs:
+  rule_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bearer
+        uses: bearer/bearer-action@v2
+        with:
+          format: sarif
+          output: results.sarif
+          exit-code: 0
+
+      - name: Upload SARIF file
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
