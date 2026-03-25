@@ -1,0 +1,22 @@
+name: Bearer PR Security Scan 
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  pr_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bearer STAT Scan
+        uses: bearer/bearer-action@v2
+        with:
+          diff: true
