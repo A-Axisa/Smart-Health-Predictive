@@ -89,7 +89,8 @@ const LoginForm = () => {
               <EmailInputField onChange={validateEmail} 
                 showRequired={alertEmailRequired} />
               <PasswordInputField onChange={validatePassword} truncate={true}
-                restrictLength={false} showRequired={alertPasswordRequired}/>
+                restrictLength={false} showRequired={alertPasswordRequired}
+                requireCharacters={false}/>
               <Button loading={isLoading} type='submit' variant="contained" sx={{ 
                 py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
                 Login
