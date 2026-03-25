@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone, UTC
+from datetime import datetime, timedelta, timezone, UTC, date
 from secrets import token_urlsafe
 
 import jwt
@@ -13,11 +13,12 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
+from typing import Optional
 from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole, LogEventType
+    UserAccountValidationToken, AccountRole, LogEventType, Patient
 from ..utils.email_service import send_email
 from ..utils.audit_log import write_audit_log
 
@@ -35,14 +36,21 @@ ACCOUNT_TYPE = {
     'user': 331928555,
     'merchant': 62809281
 }
+MIN_AGE = 18
+
+gender_map = {'Male': 1, 'Female': 0}
 
 
 class UserRegistrationDetails(BaseModel):
-    username: str
+    given_names: str
+    family_name: str
+    date_of_birth: Optional[date]
+    gender: Optional[str]
     password: str
     email: str
     phone: str
     account_type: str
+    clinic_id: Optional[int] = None
 
 
 class LoginCredentials(BaseModel):
@@ -83,18 +91,30 @@ async def register(user_reg: UserRegistrationDetails,
     # Ensure user inputs are valid.
     if (not is_email_valid(user_reg.email) or
             not is_password_valid(user_reg.password) or
-            not is_name_valid(user_reg.username) or
+            not is_name_valid(user_reg.given_names) or
+            not is_name_valid(user_reg.family_name) or
             not is_formatted_phone_valid(user_reg.phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    if (user_reg.account_type == "user" and
+        (not is_gender_valid(user_reg.gender) or
+         not is_age_valid(user_reg.date_of_birth))):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
     password_hash = password_hasher.hash(user_reg.password)
+
+    # Ensure only merchant users have clinic ID's
+    clinic_id = user_reg.clinic_id if user_reg.account_type == "merchant" else None
+
     new_user = UserAccount(
-        user_reg.username,
-        user_reg.email,
-        password_hash,
-        formatted_phone
+        clinicID=clinic_id,
+        email=user_reg.email,
+        password_hash=password_hash,
+        phone_number=formatted_phone
     )
+    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == 'user':
+        new_user.IsValidated = True
 
     # Only add the user to the database of they don't exist.
     user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
@@ -105,6 +125,19 @@ async def register(user_reg: UserRegistrationDetails,
     new_user_id = db_conn.query(UserAccount.UserID). \
         filter_by(Email=user_reg.email).first()[0]
     role = UserAccountRole(ACCOUNT_TYPE[user_reg.account_type], new_user_id)
+
+    # Create new patient record if they are a standard user.
+    if user_reg.account_type == 'user':
+        new_patient = Patient(
+            user_id=new_user_id,
+            given_names=user_reg.given_names,
+            family_name=user_reg.family_name,
+            gender=gender_map[user_reg.gender],
+            date_of_birth=user_reg.date_of_birth,
+            weight=0,
+            height=0
+        )
+        db_conn.add(new_patient)
 
     # Require validation to confirm the user can access the email.
     validation_token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
@@ -186,7 +219,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
     db_conn.delete(validation_token_entry)
 
     db_conn.commit()
-    
+
     write_audit_log(db_conn,
                     eventType=LogEventType.EMAIL_VALIDATION,
                     success=True,
@@ -215,7 +248,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 
 
 @router.post('/login')
-async def login(request: Request, response: Response, user_cred: LoginCredentials, 
+async def login(request: Request, response: Response, user_cred: LoginCredentials,
                 db_conn: Session = Depends(get_db)):
     '''Authenticates a user with the credentials and provides an access token.'''
 
@@ -235,7 +268,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         write_audit_log(db_conn,
                         eventType=LogEventType.LOGIN,
                         success=False,
-                        userEmail=user.Email,
+                        userEmail=user_cred.email,
                         device=request.headers.get("user-agent"),
                         ipAddress=request.client.host,
                         description="Login failed with incorrect credentials.")
@@ -311,7 +344,7 @@ async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
 
 def get_current_user(request: Request, db_conn: Session):
     '''Returns user information from the http-only cookie on their device.'''
-    
+
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -352,7 +385,6 @@ def get_current_user(request: Request, db_conn: Session):
         raise credentials_exception
 
     return {
-        'name': user.FullName,
         'email': user.Email,
         'role': user_role
     }
@@ -361,6 +393,17 @@ def get_current_user(request: Request, db_conn: Session):
 def get_user(email: str, db_conn: Session):
     '''Returns user account details from the database using an email.'''
     return db_conn.query(UserAccount).filter_by(Email=email).first()
+
+
+def get_patient_by_email(email: str, db_conn: Session):
+    '''Returns patient details from the database using an email.'''
+    patient = (
+        db_conn.query(Patient)
+        .join(UserAccount, Patient.UserID == UserAccount.UserID)
+        .filter(UserAccount.Email == email)
+        .first()
+    )
+    return patient
 
 
 def get_user_role(email: str, db_conn: Session):
@@ -438,10 +481,27 @@ def is_name_valid(name: str):
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
 
-
 def is_role_valid(role: str):
     '''Verifies the role is valid for registration.'''
     return role in ACCOUNT_TYPE.keys()
+
+
+def is_gender_valid(gender: str):
+    '''Verifies gender is valid'''
+    return gender in gender_map
+
+
+def is_age_valid(date_of_birth: date):
+    '''Verifies age is valid and the user is at least 18'''
+    today = date.today()
+    year_diff = today.year - date_of_birth.year
+
+    # checks if the persons birthday has happened this year
+    birthday_not_passed = ((today.month, today.day) < (
+        date_of_birth.month, date_of_birth.day))
+
+    age = year_diff - birthday_not_passed
+    return age >= MIN_AGE
 
 
 @router.post('/changePassword')

@@ -1,29 +1,15 @@
-from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric, ForeignKey, Text, Date
 from sqlalchemy.orm import declarative_base, relationship
 import enum
 
-
 Base = declarative_base()
-
-
-class TestTable(Base):
-    __tablename__ = 'TestTable'
-    TestID = Column(Integer, primary_key=True)
-    Name = Column(String(255))
-    Number = Column(String(20))
-
-    def __init__(self, name, number):
-        self.Name = name
-        self.Number = number
-
-    def __repr__(self):
-        return f'TestTable(TestID={self.TestID}, Name={self.Name}, Number={self.Number})'
 
 
 class UserAccount(Base):
     __tablename__ = 'UserAccount'
     UserID = Column(Integer, primary_key=True)
-    FullName = Column(String(255), nullable=False)
+    ClinicID = Column(Integer, ForeignKey("Clinic.ClinicID"), nullable=True)
+
     Email = Column(String(255), unique=True)
     PasswordHash = Column(String(255), nullable=False)
     PhoneNumber = Column(String(20))
@@ -31,19 +17,35 @@ class UserAccount(Base):
     IsValidated = Column(Boolean, default=False)
     TokenVersion = Column(Integer, nullable=False, default=0)
 
+    clinic = relationship("Clinic", back_populates="users")
     userRoles = relationship("UserAccountRole", back_populates="user")
+    patients = relationship("Patient", back_populates="user")
+    patient_access = relationship("UserPatientAccess", back_populates="user")
 
-    def __init__(self, full_name, email, password_hash, phone_number):
-        self.FullName = full_name
+    def __init__(self, clinicID, email, password_hash, phone_number):
+        self.ClinicID = clinicID
         self.Email = email
         self.PasswordHash = password_hash
         self.PhoneNumber = phone_number
 
     def __repr__(self):
-        return f'UserAccount(UserID={self.UserID}, FullName={self.FullName}, \
+        return f'UserAccount(UserID={self.UserID}, ClinicID={self.ClinicID}, \
             Email={self.Email}, PasswordHash={self.PasswordHash}, \
             Phone={self.PhoneNumber}, Created={self.CreatedAt}, \
             IsValidated={self.IsValidated})'
+
+
+class Clinic(Base):
+    __tablename__ = 'Clinic'
+    ClinicID = Column(Integer, primary_key=True)
+    ClinicName = Column(String(255), unique=True)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    users = relationship("UserAccount", back_populates="clinic")
+
+    def __repr__(self):
+        return f'Clinic(ClinicID={self.ClinicID}, ClinicName={self.ClinicName}, \
+            CreatedAt={self.CreatedAt})'
 
 
 class AccountRole(Base):
@@ -116,11 +118,62 @@ class RolePermission(Base):
                 AssignedAt={self.AssignedAt})'
 
 
+class Patient(Base):
+    __tablename__ = 'Patient'
+    PatientID = Column(Integer, primary_key=True)
+    UserID = Column(Integer, ForeignKey(UserAccount.UserID))
+
+    GivenNames = Column(String(255))
+    FamilyName = Column(String(255))
+    Gender = Column(Integer)
+    Weight = Column(Numeric(5, 2))
+    Height = Column(Numeric(5, 2))
+    DateOfBirth = Column(Date)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    user = relationship("UserAccount", back_populates="patients")
+    health_records = relationship("HealthData", back_populates="patient")
+    user_access = relationship("UserPatientAccess", back_populates="patient")
+
+    def __init__(self, user_id, given_names, family_name, gender, weight, height, date_of_birth):
+        self.UserID = user_id
+        self.GivenNames = given_names
+        self.FamilyName = family_name
+        self.Gender = gender
+        self.Weight = weight
+        self.Height = height
+        self.DateOfBirth = date_of_birth
+
+    def __repr__(self):
+        return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
+        familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
+        dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
+
+
+class UserPatientAccess(Base):
+    __tablename__ = 'UserPatientAccess'
+    UserID = Column(Integer, ForeignKey(UserAccount.UserID), primary_key=True)
+    PatientID = Column(Integer, ForeignKey(
+        Patient.PatientID), primary_key=True)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    user = relationship("UserAccount", back_populates="patient_access")
+    patient = relationship("Patient", back_populates="user_access")
+
+    def __init__(self, user_id, patient_id):
+        self.UserID = user_id
+        self.PatientID = patient_id
+
+    def __repr__(self):
+        return f'UserPatientAccess(UserID={self.UserID}, PatientID={self.PatientID}, \
+            Created={self.CreatedAt})'
+
+
 class HealthData(Base):
     __tablename__ = 'HealthData'
     # Keys
     HealthDataID = Column(Integer, primary_key=True)
-    UserID = Column(Integer, ForeignKey(UserAccount.UserID))
+    PatientID = Column(Integer, ForeignKey(Patient.PatientID))
 
     # Variables
     Age = Column(Integer)
@@ -139,12 +192,17 @@ class HealthData(Base):
     MaritalStatus = Column(Integer)
     WorkingStatus = Column(Integer)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
-    MerchantID = Column(Integer, nullable=True)
+    Stroke = Column(Integer)
 
-    def __init__(self, UserID, age, weight, height, gender, bloodGlucose, ap_hi,
+    patient = relationship("Patient", back_populates="health_records")
+    predictions = relationship("Prediction", back_populates="health_data")
+    recommendations = relationship(
+        "Recommendation", back_populates="health_data")
+
+    def __init__(self, PatientID, age, weight, height, gender, bloodGlucose, ap_hi,
                  ap_lo, highCholesterol, hyperTension, heartDisease,
-                 diabetes, alcohol, smoker, maritalStatus, workingStatus, merchantID):
-        self.UserID = UserID
+                 diabetes, alcohol, smoker, maritalStatus, workingStatus, stroke):
+        self.PatientID = PatientID
         self.Age = age
         self.WeightKilograms = weight
         self.HeightCentimetres = height
@@ -160,7 +218,7 @@ class HealthData(Base):
         self.SmokingStatus = smoker
         self.MaritalStatus = maritalStatus
         self.WorkingStatus = workingStatus
-        self.MerchantID = merchantID
+        self.Stroke = stroke
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
@@ -168,7 +226,7 @@ class HealthData(Base):
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
-            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  MerchantID={self.MerchantID} )'
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  Stroke={self.Stroke} )'
 
 
 class Prediction(Base):
@@ -183,6 +241,8 @@ class Prediction(Base):
     DiabetesChance = Column(Numeric(4, 2))
     CVDChance = Column(Numeric(4, 2))
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+
+    health_data = relationship("HealthData", back_populates="predictions")
 
     def __init__(self, healthDataID, strokeChance, diabetesChance, CVDChance):
         self.HealthDataID = healthDataID
@@ -233,6 +293,8 @@ class Recommendation(Base):
         self.LifestyleRecommendation = lifestyleRecommendation
         self.DietToAvoidRecommendation = dietToAvoidRecommendation
 
+    health_data = relationship("HealthData", back_populates="recommendations")
+
     def __repr__(self):
         return (f'Recommendation(RecommendationID={self.RecommendationID}, '
                 f'HealthDataID={self.HealthDataID}, '
@@ -263,7 +325,7 @@ class AuditLog(Base):
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     def __init__(self, eventType, success, userID=None, userEmail=None, ipAddress=None,
-                device=None, description=None):
+                 device=None, description=None):
         self.EventType = eventType
         self.Success = success
         self.UserID = userID

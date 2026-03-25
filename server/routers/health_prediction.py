@@ -8,9 +8,9 @@ import csv
 import codecs
 
 from ..utils.database import get_db
-from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess, Patient
 from ..services.health_recommendation_service import get_health_recommendations
-from .authentication import get_current_user, get_user
+from .authentication import get_current_user, get_user, get_patient_by_email
 
 # HealthData
 
@@ -20,18 +20,18 @@ class HealthDataInput(BaseModel):
     weight: float           # kg
     height: float           # cm
     gender: str
-    bloodGlucose: float     # mmol/L
+    blood_glucose: float     # mmol/L
     ap_hi: float            # Systolic Blood Pressure (mmHg)
     ap_lo: float            # Diastolic Blood Pressure (mmHg)
-    highCholesterol: int
-    hyperTension: int
-    heartDisease: int
+    high_cholesterol: int
+    hyper_tension: int
+    heart_disease: int
     diabetes: int
     alcohol: int
     smoker: str
-    maritalStatus: str
-    workingStatus: str
-    merchantID: Optional[int] = None
+    marital_status: str
+    working_status: str
+    stroke: int
 
 
 class MerchantHealthDataInput(BaseModel):
@@ -39,24 +39,25 @@ class MerchantHealthDataInput(BaseModel):
     weight: float           # kg
     height: float           # cm
     gender: str
-    bloodGlucose: float     # mmol/L
+    blood_glucose: float     # mmol/L
     ap_hi: float            # Systolic Blood Pressure (mmHg)
     ap_lo: float            # Diastolic Blood Pressure (mmHg)
-    highCholesterol: int
-    hyperTension: int
-    heartDisease: int
+    high_cholesterol: int
+    hyper_tension: int
+    heart_disease: int
     diabetes: int
     alcohol: int
     smoker: str
-    maritalStatus: str
-    workingStatus: str
-    patientEmail: str
+    marital_status: str
+    working_status: str
+    stroke: int
+    patient_id: int
 
 
 # Load AI prediction models
-cardioModel = joblib.load("prediction_models/model_cardio_h.joblib")
-strokeModel = joblib.load("prediction_models/model_stroke_h.joblib")
-diabetesModel = joblib.load("prediction_models/model_diabetes_h.joblib")
+cardio_model = joblib.load("prediction_models/model_cardio_h.joblib")
+stroke_model = joblib.load("prediction_models/model_stroke_h.joblib")
+diabetes_model = joblib.load("prediction_models/model_diabetes_h.joblib")
 
 
 gender_map = {'Male': 1, 'Female': 0}
@@ -81,7 +82,7 @@ def build_model_input_df(model, values):
 
 @router.post("/healthPrediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
-                  csv_user_id: Optional[int] = None):
+                  csv_patient_id: Optional[int] = None):
 
     # Check if user input is valid
     if validate_all_input(data) == False:
@@ -96,14 +97,15 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
 
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
+    patient = get_patient_by_email(user_email["email"], db_conn)
 
-    # Get the CSV user's ID, otherwise uses the authenticated user's ID.
-    user_id = csv_user_id if csv_user_id is not None else user.UserID
-    healthData = HealthData(user_id, data.age, data.weight, data.height, gender_map[data.gender],
-                            data.bloodGlucose, data.ap_hi, data.ap_lo, data.highCholesterol,
-                            data.hyperTension, data.heartDisease, data.diabetes, data.alcohol,
-                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], data.merchantID)
+    # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
+    patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
+    healthData = HealthData(patient_id, data.age, data.weight, data.height, gender_map[data.gender],
+                            data.blood_glucose, data.ap_hi, data.ap_lo, data.high_cholesterol,
+                            data.hyper_tension, data.heart_disease, data.diabetes, data.alcohol,
+                            smoker_map[data.smoker],  marital_map[data.marital_status], working_map[data.working_status], data.stroke)
+
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -118,48 +120,48 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         data.height,
         data.ap_hi,
         data.ap_lo,
-        data.highCholesterol,
-        data.bloodGlucose,
+        data.high_cholesterol,
+        data.blood_glucose,
         smoker_map[data.smoker],
         data.alcohol
     ]
-    cardio_df = build_model_input_df(cardioModel, cardio_values)
+    cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
-    cardioPrediction = cardioModel.predict_proba(cardio_df)
+    cardioPrediction = cardio_model.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     # Stoke Dataframe
     stroke_values = [
         gender_map[data.gender],
         data.age,
-        data.heartDisease,
-        marital_map[data.maritalStatus],
-        working_map[data.workingStatus],
-        data.bloodGlucose,
+        data.heart_disease,
+        marital_map[data.marital_status],
+        working_map[data.working_status],
+        data.blood_glucose,
         data.weight,
         data.height,
         BMI,
         smoker_map[data.smoker]
     ]
-    stroke_df = build_model_input_df(strokeModel, stroke_values)
+    stroke_df = build_model_input_df(stroke_model, stroke_values)
 
     # Stroke Prediction
-    strokePrediction = strokeModel.predict_proba(stroke_df)
+    strokePrediction = stroke_model.predict_proba(stroke_df)
     strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)
     # diabetes Dataframe
     diabetes_values = [
         gender_map[data.gender],
         data.age,
-        data.heartDisease,
+        data.heart_disease,
         smoker_map[data.smoker],
         data.weight,
         data.height,
         BMI,
-        data.bloodGlucose
+        data.blood_glucose
     ]
-    diabetes_df = build_model_input_df(diabetesModel, diabetes_values)
+    diabetes_df = build_model_input_df(diabetes_model, diabetes_values)
 
     # diabetes prediction
-    diabetesPrediction = diabetesModel.predict_proba(diabetes_df)
+    diabetesPrediction = diabetes_model.predict_proba(diabetes_df)
     diabetesPrediction = round(float(diabetesPrediction[0][1]) * 100, 2)
 
     # Create prediction object for storage
@@ -249,42 +251,44 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
             continue
 
         user_email = user_email.strip()
-        user = db_conn.query(UserAccount).filter_by(Email=user_email).first()
-        if not user:
+        patient = get_patient_by_email(user_email, db_conn)
+
+        if not patient:
             skipped_rows += 1
-            # TODO: Create the user if they don't exist.
+            # TODO: Create the Patient if they don't exist.
             continue
 
-        health_data = HealthDataInput(
-            UserID=user.UserID,
+        health_data = MerchantHealthDataInput(
             age=int(row["Age"]) if row.get("Age") else 0,
             weight=float(row["WeightKilograms"]) if row.get(
                 "WeightKilograms") else 0,
             height=float(row["HeightCentimetres"]) if row.get(
                 "HeightCentimetres") else 0,
             gender=str(row["Gender"]) if gender_map[row.get("Gender")] else 0,
-            bloodGlucose=float(row["BloodGlucose"]) if row.get(
+            blood_glucose=float(row["BloodGlucose"]) if row.get(
                 "BloodGlucose") else 0,
             ap_hi=float(row["APHigh"]) if row.get("APHigh") else 0,
             ap_lo=float(row["APLow"]) if row.get("APLow") else 0,
-            highCholesterol=int(row["HighCholesterol"]) if row.get(
+            high_cholesterol=int(row["HighCholesterol"]) if row.get(
                 "HighCholesterol") else 0,
-            hyperTension=int(row["HyperTension"]) if row.get(
+            hyper_tension=int(row["HyperTension"]) if row.get(
                 "HyperTension") else 0,
-            heartDisease=int(row["HeartDisease"]) if row.get(
+            heart_disease=int(row["HeartDisease"]) if row.get(
                 "HeartDisease") else 0,
             diabetes=int(row["Diabetes"]) if row.get("Diabetes") else 0,
             alcohol=int(row["Alcohol"]) if row.get("Alcohol") else 0,
             smoker=str(row["SmokingStatus"]) if row.get(
                 "SmokingStatus") else 0,
-            maritalStatus=str(row["MaritalStatus"]) if row.get(
+            marital_status=str(row["MaritalStatus"]) if row.get(
                 "MaritalStatus") else 0,
-            workingStatus=str(row["WorkingStatus"]) if row.get(
+            working_status=str(row["WorkingStatus"]) if row.get(
                 "WorkingStatus") else 0,
-            merchantID=merchant.UserID,
+            stroke=str(row["Stroke"]) if row.get(
+                "Stroke") else 0,
+            patient_id=patient.PatientID
         )
         # Pass each HealthDataInput object to the predict endpoint.
-        await predict(health_data, request, db_conn, user.UserID)
+        await merchant_predict(health_data, request, db_conn)
         processed_rows += 1
 
     uploaded_file.file.close()
@@ -297,7 +301,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
 
 
 @router.post("/merchantHealthPrediction/")
-async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
+async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
@@ -317,6 +321,15 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
     if validate_all_input(data) == False:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    # Retrieve patient information
+    patient = db_conn.query(Patient).filter(
+        data.patient_id == Patient.PatientID).first()
+
+    # Check if the merchant has permission to view the patients record
+    if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
     # Calculate BMI
     if (data.height == 0):
         BMI = 0
@@ -324,14 +337,11 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         # Calculate BMI ( BMI = Weight(kg)/Height(m)^2 )
         BMI = (data.weight/((data.height/100)**2))
 
-    # Retrieve user patient user information
-    patient = get_user(data.patientEmail, db_conn)
-
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
-    healthData = HealthData(patient.UserID, data.age, data.weight, data.height, gender_map[data.gender],
-                            data.bloodGlucose, data.ap_hi, data.ap_lo, data.highCholesterol,
-                            data.hyperTension, data.heartDisease, data.diabetes, data.alcohol,
-                            smoker_map[data.smoker],  marital_map[data.maritalStatus], working_map[data.workingStatus], merchant.UserID)
+    healthData = HealthData(patient.PatientID, data.age, data.weight, data.height, gender_map[data.gender],
+                            data.blood_glucose, data.ap_hi, data.ap_lo, data.high_cholesterol,
+                            data.hyper_tension, data.heart_disease, data.diabetes, data.alcohol,
+                            smoker_map[data.smoker],  marital_map[data.marital_status], working_map[data.working_status], data.stroke)
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -346,48 +356,48 @@ async def predict(data: MerchantHealthDataInput, request: Request, db_conn: Sess
         data.height,
         data.ap_hi,
         data.ap_lo,
-        data.highCholesterol,
-        data.bloodGlucose,
+        data.high_cholesterol,
+        data.blood_glucose,
         smoker_map[data.smoker],
         data.alcohol
     ]
-    cardio_df = build_model_input_df(cardioModel, cardio_values)
+    cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
-    cardioPrediction = cardioModel.predict_proba(cardio_df)
+    cardioPrediction = cardio_model.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
     # Stoke Dataframe
     stroke_values = [
         gender_map[data.gender],
         data.age,
-        data.heartDisease,
-        marital_map[data.maritalStatus],
-        working_map[data.workingStatus],
-        data.bloodGlucose,
+        data.heart_disease,
+        marital_map[data.marital_status],
+        working_map[data.working_status],
+        data.blood_glucose,
         data.weight,
         data.height,
         BMI,
         smoker_map[data.smoker]
     ]
-    stroke_df = build_model_input_df(strokeModel, stroke_values)
+    stroke_df = build_model_input_df(stroke_model, stroke_values)
 
     # Stroke Prediction
-    strokePrediction = strokeModel.predict_proba(stroke_df)
+    strokePrediction = stroke_model.predict_proba(stroke_df)
     strokePrediction = round(float(strokePrediction[0][1]) * 100, 2)
     # diabetes Dataframe
     diabetes_values = [
         gender_map[data.gender],
         data.age,
-        data.heartDisease,
+        data.heart_disease,
         smoker_map[data.smoker],
         data.weight,
         data.height,
         BMI,
-        data.bloodGlucose
+        data.blood_glucose
     ]
-    diabetes_df = build_model_input_df(diabetesModel, diabetes_values)
+    diabetes_df = build_model_input_df(diabetes_model, diabetes_values)
 
     # diabetes prediction
-    diabetesPrediction = diabetesModel.predict_proba(diabetes_df)
+    diabetesPrediction = diabetes_model.predict_proba(diabetes_df)
     diabetesPrediction = round(float(diabetesPrediction[0][1]) * 100, 2)
 
     # Create prediction object for storage
@@ -459,8 +469,8 @@ def is_gender_valid(gender: int):
     return gender in gender_map
 
 
-def is_bloodGlucose_valid(bloodGlucose: float):
-    return bloodGlucose >= 0.0 and bloodGlucose <= 20.0
+def is_blood_glucose_valid(blood_glucose: float):
+    return blood_glucose >= 0.0 and blood_glucose <= 20.0
 
 
 def is_ap_hi_valid(ap_hi: float):
@@ -471,16 +481,16 @@ def is_ap_lo_valid(ap_lo: float):
     return ap_lo >= 0.0 and ap_lo <= 200.0
 
 
-def is_highCholesterol_valid(highCholesterol: int):
-    return highCholesterol == 0 or highCholesterol == 1
+def is_high_cholesterol_valid(high_cholesterol: int):
+    return high_cholesterol == 0 or high_cholesterol == 1
 
 
-def is_hyperTension_valid(hyperTension: int):
-    return hyperTension == 0 or hyperTension == 1
+def is_hyper_tension_valid(hyper_tension: int):
+    return hyper_tension == 0 or hyper_tension == 1
 
 
-def is_heartDisease_valid(heartDisease: int):
-    return heartDisease == 0 or heartDisease == 1
+def is_heart_disease_valid(heart_disease: int):
+    return heart_disease == 0 or heart_disease == 1
 
 
 def is_diabetes_valid(diabetes: int):
@@ -495,31 +505,51 @@ def is_smoker_valid(smoker: str):
     return smoker in smoker_map
 
 
-def is_maritalStatus_valid(maritalStatus: str):
-    return maritalStatus in marital_map
+def is_marital_status_valid(marital_status: str):
+    return marital_status in marital_map
 
 
-def is_workingStatus_valid(workingStatus: str):
-    return workingStatus in working_map
+def is_working_status_valid(working_status: str):
+    return working_status in working_map
+
+
+def is_stroke_valid(stroke: int):
+    return stroke == 0 or stroke == 1
 
 
 def validate_all_input(data: HealthDataInput):
+    """
+    Validates all user inputs
+    """
     if (
             not is_age_valid(data.age) or
             not is_weight_valid(data.weight) or
             not is_height_valid(data.height) or
             not is_gender_valid(data.gender) or
-            not is_bloodGlucose_valid(data.bloodGlucose) or
+            not is_blood_glucose_valid(data.blood_glucose) or
             not is_ap_hi_valid(data.ap_hi) or
             not is_ap_lo_valid(data.ap_lo) or
-            not is_highCholesterol_valid(data.highCholesterol) or
-            not is_hyperTension_valid(data.hyperTension) or
-            not is_heartDisease_valid(data.heartDisease) or
+            not is_high_cholesterol_valid(data.high_cholesterol) or
+            not is_hyper_tension_valid(data.hyper_tension) or
+            not is_heart_disease_valid(data.heart_disease) or
             not is_diabetes_valid(data.diabetes) or
             not is_alcohol_valid(data.alcohol) or
             not is_smoker_valid(data.smoker) or
-            not is_maritalStatus_valid(data.maritalStatus) or
-            not is_workingStatus_valid(data.workingStatus)):
+            not is_marital_status_valid(data.marital_status) or
+            not is_working_status_valid(data.working_status) or
+            not is_stroke_valid(data.stroke)):
+
         return False
 
     return True
+
+
+def merchant_view_patient(user_id: int, patient_id: int, db_conn: Session):
+    """
+    Returns True if the merchant is linked to the patient, False if they can not.
+    """
+    access = db_conn.query(UserPatientAccess).filter_by(
+        UserID=user_id,
+        PatientID=patient_id
+    ).first()
+    return access is not None
