@@ -85,6 +85,21 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
         return 'Passwords must be shorter than ' + MAX_LENGTH +
           ' characters.';
     }
+
+    let missing_characters = []
+    if(!(UPPERCASE_REGEX.test(password))) {
+      missing_characters.push('an uppercase letter'); 
+    }
+    if(!(LOWERCASE_REGEX.test(password))) {
+      missing_characters.push('a lowercase letter'); 
+    }
+    if(!(NUMERICAL_REGEX.test(password))) {
+      missing_characters.push('a number');
+    }
+    if(!hasCommonCharacter(VALID_SYMBOLS, password)) {
+      missing_characters.push('a symbol');
+    }
+
     return null;
   }
 
