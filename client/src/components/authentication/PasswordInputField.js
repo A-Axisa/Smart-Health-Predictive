@@ -100,6 +100,18 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
       missing_characters.push('a symbol');
     }
 
+    // Format the error text correctly.
+    let missing_warning = ''
+    if(missing_characters.length == 1) {
+      missing_warning += 'contain ' + missing_characters[0]
+    } else if(missing_characters.length > 1) {
+      missing_warning += 'contain '
+      for(let i=0; i<missing_characters.length-1; i++) {
+        missing_warning += missing_characters[i] + ', ' 
+      }
+      missing_warning += ' and ' + missing_characters[missing_characters.length-1] 
+    }
+
     return null;
   }
 
