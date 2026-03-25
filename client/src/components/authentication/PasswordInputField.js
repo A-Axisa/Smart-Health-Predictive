@@ -77,13 +77,15 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
     if(password.length === 0 || password === null || showRequired) {
         return '*Required';
     }
+
+    let length_warning = ''
     if(restrictLength){
       if(password.length <= MIN_LENGTH) {
-        return 'Passwords must be longer than ' + MIN_LENGTH +
-          ' characters.';
+        length_warning += 'be longer than ' + MIN_LENGTH +
+          ' characters';
       } else if(password.length >= MAX_LENGTH)
-        return 'Passwords must be shorter than ' + MAX_LENGTH +
-          ' characters.';
+        length_warning += 'be shorter than ' + MAX_LENGTH +
+          ' characters';
     }
 
     let missing_characters = []
