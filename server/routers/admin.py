@@ -51,6 +51,7 @@ async def get_users(db_conn: Session = Depends(get_db)):
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
             "createdAt": user.CreatedAt,
+            "validated": user.IsValidated,
             "role": {
                 "id": role.RoleID if role else None,
                 "name": role.RoleName if role else None
