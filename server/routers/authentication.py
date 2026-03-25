@@ -397,9 +397,9 @@ def invalidate_access_token(email: str, db_conn: Session):
 def is_password_valid(password: str):
     '''Verifies the password follows policy rules.'''
 
-    contains_lower = any(password.islower() for _ in password)
-    contains_upper = any(password.isupper() for _ in password)
-    contains_number = any(password.isnumeric() for _ in password)
+    contains_lower = any(c.islower() for c in password)
+    contains_upper = any(c.isupper() for c in password)
+    contains_number = any(c.isnumeric() for c in password)
     contains_symbol = any(char in VALID_PASSWORD_SYMBOLS for char in password)
     valid_length = len(password) <= PASSWORD_MAX_LENGTH and \
         len(password) >= PASSWORD_MIN_LENGTH
