@@ -114,6 +114,15 @@ const PasswordInputField = ({ onChange, restrictLength=true, truncate=false,
       missing_warning += ' and ' + missing_characters[missing_characters.length-1] 
     }
 
+    // Combine the warnings into a single message to display.
+    if(length_warning.length !== 0 && missing_characters.length !== 0) {
+      return 'Passwords must ' + length_warning + ' and ' + missing_warning + '.';
+    } else if(length_warning.length !== 0){
+      return 'Passwords must ' + length_warning + '.'
+    } else if(missing_characters.length !== 0){
+      return 'Passwords must ' + missing_warning + '.'
+    }
+
     return null;
   }
 
