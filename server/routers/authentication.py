@@ -43,7 +43,7 @@ gender_map = {'Male': 1, 'Female': 0}
 
 class UserRegistrationDetails(BaseModel):
     given_names: str
-    last_name: str
+    family_name: str
     date_of_birth: Optional[date]
     gender: Optional[str]
     password: str
@@ -92,7 +92,7 @@ async def register(user_reg: UserRegistrationDetails,
     if (not is_email_valid(user_reg.email) or
             not is_password_valid(user_reg.password) or
             not is_name_valid(user_reg.given_names) or
-            not is_name_valid(user_reg.last_name) or
+            not is_name_valid(user_reg.family_name) or
             not is_formatted_phone_valid(user_reg.phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -131,7 +131,7 @@ async def register(user_reg: UserRegistrationDetails,
         new_patient = Patient(
             user_id=new_user_id,
             given_names=user_reg.given_names,
-            last_name=user_reg.last_name,
+            family_name=user_reg.family_name,
             gender=gender_map[user_reg.gender],
             date_of_birth=user_reg.date_of_birth,
             weight=0,

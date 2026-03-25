@@ -12,7 +12,7 @@ def setup_once_for_all_tests():
     # Similar to test_auth
     credentials = {
         'given_names': 'Testable',
-        'last_name': 'User',
+        'family_name': 'User',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
         'password': 'thisisavalidpassword',
@@ -28,7 +28,7 @@ def test_admin_can_delete_user():
     user_to_delete_email = "user.to.be.deleted.by.admin@example.com"
     user_to_delete_credentials = {
         "given_names": "User ToBeDeleted",
-        "last_name": "",
+        "family_name": "",
         "date_of_birth": "1980-05-24",
         "gender": "Male",
         "password": "password123456789",

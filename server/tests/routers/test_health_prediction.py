@@ -44,7 +44,7 @@ def setup_users_for_tests():
     credentials = [
         {
             "given_names": "AReputableClinic",
-            "last_name": "",
+            "family_name": "",
             "date_of_birth": None,
             "gender": None,
             "password": "thisisavalidpassword",
@@ -55,7 +55,7 @@ def setup_users_for_tests():
         },
         {
             "given_names": "User",
-            "last_name": "1",
+            "family_name": "1",
             "date_of_birth": "2002-03-22",
             "gender": "Male",
             "password": "thisisalongpassword",
@@ -66,7 +66,7 @@ def setup_users_for_tests():
         },
         {
             "given_names": "User",
-            "last_name": "2",
+            "family_name": "2",
             "date_of_birth": "2000-03-22",
             "gender": "Female",
             "password": "thisisareallylongpassword",

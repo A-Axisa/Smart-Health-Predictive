@@ -16,7 +16,7 @@ def setup_once_for_all_tests():
     # Delete user details
     credentials = {
         'given_names': 'Testable',
-        'last_name': 'DeleteMe',
+        'family_name': 'DeleteMe',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
         'password': 'thisisavalidpassword',
@@ -28,7 +28,7 @@ def setup_once_for_all_tests():
 
     credentials = {
         'given_names': 'Real',
-        'last_name': 'User',
+        'family_name': 'User',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
         'password': 'thisisavalidpassword',

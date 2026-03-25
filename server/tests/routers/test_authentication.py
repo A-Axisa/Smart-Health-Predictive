@@ -35,7 +35,7 @@ def setup_once_for_all_tests():
 
     credentials = {
         'given_names': 'Testable',
-        'last_name': 'User',
+        'family_name': 'User',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
         'password': 'thisisavalidpassword',

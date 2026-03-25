@@ -56,7 +56,7 @@ async def get_users(db_conn: Session = Depends(get_db)):
             patient = (db_conn.query(Patient).filter(
                 user.UserID == Patient.UserID).first())
 
-            full_name = f'{patient.GivenNames} {patient.LastName}'
+            full_name = f'{patient.GivenNames} {patient.FamilyName}'
 
         # Retrieve Clinic name for a merchant user
         if role.RoleName == "merchant":

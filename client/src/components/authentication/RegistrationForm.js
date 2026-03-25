@@ -37,7 +37,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const [givenNameState, setGivenNameState] = useState(null);
-  const [lastNameState, setLastNameState] = useState(null);
+  const [familyNameState, setFamilyNameState] = useState(null);
   const [DoBState, setDoBState] = useState(null);
   const [genderState, setGenderState] = useState("");
   const [emailState, setEmailState] = useState(null);
@@ -45,7 +45,7 @@ const RegistrationForm = () => {
   const [passwordState, setPasswordState] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [alertGivenNameRequired, setAlertGivenNameRequired] = useState(false);
-  const [alertLastNameRequired, setAlertLastNameRequired] = useState(false);
+  const [alertFamilyNameRequired, setAlertFamilyNameRequired] = useState(false);
   const [alertDoBRequired, setAlertDoBRequired] = useState(false);
   const [alertGenderRequired, setAlertGenderRequired] = useState(false);
   const [alertEmailRequired, setAlertEmailRequired] = useState(false);
@@ -77,10 +77,10 @@ const RegistrationForm = () => {
     setGivenNameState({ isValid: isNameValid, name: e.target.value });
     setAlertGivenNameRequired(!isNameValid);
   }
-  function updateLastName(e) {
+  function updateFamilyName(e) {
     const isNameValid = e.target.value !== "";
-    setLastNameState({ isValid: isNameValid, name: e.target.value });
-    setAlertLastNameRequired(!isNameValid);
+    setFamilyNameState({ isValid: isNameValid, name: e.target.value });
+    setAlertFamilyNameRequired(!isNameValid);
   }
   function updateDoB(e) {
     setAlertDoBRequired(false);
@@ -124,7 +124,9 @@ const RegistrationForm = () => {
     setAlertGivenNameRequired(
       givenNameState === null || !givenNameState.isValid,
     );
-    setAlertLastNameRequired(lastNameState === null || !lastNameState.isValid);
+    setAlertFamilyNameRequired(
+      familyNameState === null || !familyNameState.isValid,
+    );
     setAlertEmailRequired(emailState === null);
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
@@ -151,8 +153,8 @@ const RegistrationForm = () => {
     return (
       givenNameState !== null &&
       givenNameState.isValid &&
-      lastNameState !== null &&
-      lastNameState.isValid &&
+      familyNameState !== null &&
+      familyNameState.isValid &&
       DoBState !== null &&
       genderState !== "" &&
       emailState !== null &&
@@ -216,7 +218,7 @@ const RegistrationForm = () => {
       },
       body: JSON.stringify({
         given_names: givenNameState ? givenNameState.name : "",
-        last_name: lastNameState ? lastNameState.name : "",
+        family_name: familyNameState ? familyNameState.name : "",
         date_of_birth: DoBState,
         gender: genderState,
         password: passwordState.password,
@@ -321,13 +323,13 @@ const RegistrationForm = () => {
               ></TextField>
 
               <TextField
-                id="outlined-lastName-input"
-                name="last_name"
-                label="Last Name"
-                onChange={updateLastName}
+                id="outlined-familyName-input"
+                name="family_name"
+                label="Family Name"
+                onChange={updateFamilyName}
                 slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
-                error={alertLastNameRequired}
-                helperText={alertLastNameRequired ? "*Required" : null}
+                error={alertFamilyNameRequired}
+                helperText={alertFamilyNameRequired ? "*Required" : null}
               ></TextField>
               <TextField
                 label="Select Date of Birth"

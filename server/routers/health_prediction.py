@@ -125,7 +125,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         smoker_map[data.smoker],
         data.alcohol
     ]
-    cardio_df = build_model_input_df(cardioModel, cardio_values)
+    cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
     cardioPrediction = cardio_model.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
@@ -142,7 +142,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         BMI,
         smoker_map[data.smoker]
     ]
-    stroke_df = build_model_input_df(strokeModel, stroke_values)
+    stroke_df = build_model_input_df(stroke_model, stroke_values)
 
     # Stroke Prediction
     strokePrediction = stroke_model.predict_proba(stroke_df)
@@ -157,7 +157,8 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         data.height,
         BMI,
         data.blood_glucose
-    ]])
+    ]
+    diabetes_df = build_model_input_df(diabetes_model, cardio_values)
 
     # diabetes prediction
     diabetesPrediction = diabetes_model.predict_proba(diabetes_df)
@@ -360,7 +361,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         smoker_map[data.smoker],
         data.alcohol
     ]
-    cardio_df = build_model_input_df(cardioModel, cardio_values)
+    cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
     cardioPrediction = cardio_model.predict_proba(cardio_df)
     cardioPrediction = round(float(cardioPrediction[0][1]) * 100, 2)
@@ -377,7 +378,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         BMI,
         smoker_map[data.smoker]
     ]
-    stroke_df = build_model_input_df(strokeModel, stroke_values)
+    stroke_df = build_model_input_df(stroke_model, stroke_values)
 
     # Stroke Prediction
     strokePrediction = stroke_model.predict_proba(stroke_df)
@@ -392,7 +393,8 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         data.height,
         BMI,
         data.blood_glucose
-    ]])
+    ]
+    diabetes_df = build_model_input_df(diabetes_model, diabetes_values)
 
     # diabetes prediction
     diabetesPrediction = diabetes_model.predict_proba(diabetes_df)

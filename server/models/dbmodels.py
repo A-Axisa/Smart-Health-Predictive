@@ -124,7 +124,7 @@ class Patient(Base):
     UserID = Column(Integer, ForeignKey(UserAccount.UserID))
 
     GivenNames = Column(String(255))
-    LastName = Column(String(255))
+    FamilyName = Column(String(255))
     Gender = Column(Integer)
     Weight = Column(Numeric(5, 2))
     Height = Column(Numeric(5, 2))
@@ -135,10 +135,10 @@ class Patient(Base):
     health_records = relationship("HealthData", back_populates="patient")
     user_access = relationship("UserPatientAccess", back_populates="patient")
 
-    def __init__(self, user_id, given_names, last_name, gender, weight, height, date_of_birth):
+    def __init__(self, user_id, given_names, family_name, gender, weight, height, date_of_birth):
         self.UserID = user_id
         self.GivenNames = given_names
-        self.LastName = last_name
+        self.FamilyName = family_name
         self.Gender = gender
         self.Weight = weight
         self.Height = height
@@ -146,7 +146,7 @@ class Patient(Base):
 
     def __repr__(self):
         return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
-        lastName={self.LastName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
+        familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
         dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
 
 

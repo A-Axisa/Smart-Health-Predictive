@@ -355,7 +355,7 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
             PatientID=row.PatientID).first()
 
         result.append({
-            "name": f'{patient.GivenNames} {patient.LastName}',
+            "name": f'{patient.GivenNames} {patient.FamilyName}',
             "healthDataID": row.HealthDataID,
             "date": row.CreatedAt
         })
@@ -390,7 +390,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         # Get the patient's name.
         if patient.PatientID not in existing_patient:
             result.append({
-                "name": f'{patient.GivenNames} {patient.LastName}',
+                "name": f'{patient.GivenNames} {patient.FamilyName}',
                 "patient_id": patient.PatientID
             })
             existing_patient.add(patient.PatientID)

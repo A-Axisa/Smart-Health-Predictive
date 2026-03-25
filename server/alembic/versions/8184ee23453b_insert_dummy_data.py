@@ -11,7 +11,7 @@ from models.dbmodels import *
 
 # revision identifiers, used by Alembic.
 revision: str = '8184ee23453b'
-down_revision: Union[str, Sequence[str], None] = '954c38c31b17'
+down_revision: Union[str, Sequence[str], None] = '6ddecd1fff22'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -176,7 +176,7 @@ def upgrade() -> None:
                 'PatientID': 1,
                 'UserID': 151742614,
                 'GivenNames': 'Audrey',
-                'LastName': 'Young',
+                'FamilyName': 'Young',
                 'Gender': 1,
                 'Weight': 65.0,
                 'Height': 170,
@@ -187,7 +187,7 @@ def upgrade() -> None:
                 'PatientID': 2,
                 'UserID': 68849883,
                 'GivenNames': 'Steven',
-                'LastName': 'Wallace',
+                'FamilyName': 'Wallace',
                 'Gender': 1,
                 'Weight': 48.5,
                 'Height': 150,
@@ -198,7 +198,7 @@ def upgrade() -> None:
                 'PatientID': 3,
                 'UserID': 1424460213,
                 'GivenNames': 'Adam',
-                'LastName': 'Peake',
+                'FamilyName': 'Peake',
                 'Gender': 1,
                 'Weight': 83.7,
                 'Height': 160,
@@ -209,7 +209,7 @@ def upgrade() -> None:
                 'PatientID': 4,
                 'UserID': 938812579,
                 'GivenNames': 'Keith',
-                'LastName': 'Hart',
+                'FamilyName': 'Hart',
                 'Gender': 1,
                 'Weight': 70.0,
                 'Height': 175,
