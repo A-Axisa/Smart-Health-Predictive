@@ -153,6 +153,7 @@ const UserManagementTable = () => {
     { field: 'email', headerName: 'Email', width: 250, sortable: true },
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
     { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
+    { field: 'validated', headerName: 'Validation Status', width: 150, sortable: true },
     {
       field: 'role',
       headerName: 'Role',
