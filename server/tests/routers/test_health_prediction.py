@@ -44,21 +44,21 @@ def setup_users_for_tests():
     credentials = [
         {
             'username': 'AReputableClinic',
-            'password': 'thisisavalidpassword',
+            'password': 'thisisavalidpasswordA1!',
             'email': 'myreputableclinic@example.com',
             'phone': '',
             'account_type': 'merchant'
         },
         {
             'username': 'User 1',
-            'password': 'thisisalongpassword',
+            'password': 'thisisalongpassword4$R',
             'email': 'user1@example.com',
             'phone': '',
             'account_type': 'user'
         },
         {
             'username': 'User 2',
-            'password': 'thisisareallylongpassword',
+            'password': 'thisisareallylongpassword%5V',
             'email': 'user2@example.com',
             'phone': '',
             'account_type': 'user'
@@ -70,7 +70,7 @@ def setup_users_for_tests():
 
     # Create login payload for the test merchant.
     merchant_credentials = {'email': 'myreputableclinic@example.com',
-                            'password': 'thisisavalidpassword'}
+                            'password': 'thisisavalidpasswordA1!'}
     
     client.post("/login/", json=merchant_credentials)
 
