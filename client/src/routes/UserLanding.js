@@ -37,7 +37,7 @@ const UserLanding = ({}) => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        bgcolor: "#f5f5f5",
+        bgcolor: "#fdf7ff",
       }}
     >
       <Paper
