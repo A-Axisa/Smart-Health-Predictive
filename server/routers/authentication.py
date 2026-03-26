@@ -225,7 +225,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     )
 
     # Ensure user inputs are valid.
-    if not is_password_valid(user_cred.password) or \
+    if len(user_cred.password) < 1 or \
             not is_email_valid(user_cred.email):
         raise credentials_exception
 
