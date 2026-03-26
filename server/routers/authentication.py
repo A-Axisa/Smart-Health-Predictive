@@ -35,7 +35,7 @@ ACCOUNT_TYPE = {
     'user': 331928555,
     'merchant': 62809281
 }
-VALID_PASSWORD_SYMBOLS = "~!@#$%^&*()_+[]\{\}|:;,.?/"
+VALID_PASSWORD_SYMBOLS = "~!@#$%^&*()_+[]{}|:;,.?/"
 
 class UserRegistrationDetails(BaseModel):
     username: str
