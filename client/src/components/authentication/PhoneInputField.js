@@ -55,12 +55,12 @@ const PhoneInputField = ({ onChange }) => {
         <Grid size={5}>
           <FormControl sx={{width:'100%'}} >
             <InputLabel id="demo-simple-select-label">
-              Country Code
+              Dialing Code
             </InputLabel>
             <Select 
-              labelId='country_select_label' 
-              id='country_select' 
-              label='Country Code'
+              labelId='dialing_select_label' 
+              id='dialing_select' 
+              label='Dialing Code'
               value={selectedDialingCode}
               onChange={updateSelection}>
               {getDialingCodeDropdownOptions()}
