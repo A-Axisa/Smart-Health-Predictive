@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { TextField , Select, MenuItem, FormControl, InputLabel, Grid, 
          Box} from '@mui/material';
-import { getCountries, parsePhoneNumberFromString} from 'libphonenumber-js';
+import { getCountries, parsePhoneNumberFromString, 
+         getCountryCallingCode } from 'libphonenumber-js';
 
 /**
  * An input field that provides basic validation for phone numbers and a
@@ -16,8 +17,9 @@ const PhoneInputField = ({ onChange }) => {
   const [isValid, setIsValid] = useState(true);
 
   function getCountryDropdownOptions() {
-    return getCountries().map((country) => (
-      <MenuItem key={country} value={country}>{country}</MenuItem>
+    const dial_code = new Set(getCountries().map((country) => (getCountryCallingCode(country))).sort())
+    return Array.from(dial_code).map((code) => (
+      <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
     ));
   }
 
@@ -28,7 +30,7 @@ const PhoneInputField = ({ onChange }) => {
   function validate_input(e) {
     if(e.target.value !== ''){
       const parsedNumber = parsePhoneNumberFromString(
-        e.target.value, selectedCountry);
+        e.target.value, { defaultCallingCode: selectedCountry });
       const isInputValid = parsedNumber!==undefined && 
         parsedNumber.isValid();
       const phoneNumber = isInputValid ? parsedNumber.number : null;
