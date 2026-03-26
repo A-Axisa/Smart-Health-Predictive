@@ -8,22 +8,19 @@ import {
   Box,
   Typography,
   TextField,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Button,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  FormControl,
+  ListItemText,
+  Select,
+  FormHelperText,
 } from "@mui/material";
 
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import ListItemText from "@mui/material/ListItemText";
-import Select from "@mui/material/Select";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import FormHelperText from "@mui/material/FormHelperText";
+
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -36,6 +33,7 @@ const GenerateReportForm = () => {
     "Heart Disease",
     "Diabetes",
     "High Cholesterol",
+    "Stroke",
   ];
   const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
 
@@ -74,7 +72,7 @@ const GenerateReportForm = () => {
   const [workingStatus, setWorkingStatus] = useState(null);
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
-  const [bloodGlucoseInput, setBloodGlucoseInput] = useState("")
+  const [bloodGlucoseInput, setBloodGlucoseInput] = useState("");
 
   function handleChangeCondition(e) {
     const {
@@ -149,7 +147,7 @@ const GenerateReportForm = () => {
       bloodGlucoseValue <= 20;
     setBloodGlucose({ isValid: isBloodGlucoseValid, value: bloodGlucoseValue });
     setAlertBloodGlucoseRequired(!isBloodGlucoseValid);
-    setBloodGlucoseInput(bloodGlucoseValue)
+    setBloodGlucoseInput(bloodGlucoseValue);
   }
 
   function updateApLow(e) {
@@ -209,23 +207,25 @@ const GenerateReportForm = () => {
     setAlertMaritalStatusRequired(maritalStatus === null);
     setAlertWorkingStatusRequired(workingStatus === null);
   }
-  
-  // Fills in fields with information found in the blood reports. 
+
+  // Fills in fields with information found in the blood reports.
   async function readBloodReport(e) {
-    if (e.aveBloodGlucose != NaN) {
+    if (e.aveBloodGlucose !== NaN) {
       // Value needs to be in a specific dictionary format to be validated and set.
-      updateBloodGlucose({target: {value: e.aveBloodGlucose.toString()}})
+      updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
     }
 
     // Create a new conditions array as state arrays cannot be modified.
-    let newConditions = condition.filter(e => !["Diabetes", "High Cholesterol"].includes(e))
-    if(e.isDiabetic) {
-      newConditions.push("Diabetes")
+    let newConditions = condition.filter(
+      (e) => !["Diabetes", "High Cholesterol"].includes(e),
+    );
+    if (e.isDiabetic) {
+      newConditions.push("Diabetes");
     }
-    if(e.hasHighCholesterol) {
-      newConditions.push("High Cholesterol")
+    if (e.hasHighCholesterol) {
+      newConditions.push("High Cholesterol");
     }
-    setCondition(newConditions)
+    setCondition(newConditions);
   }
 
   async function handleSubmit(e) {
@@ -239,6 +239,7 @@ const GenerateReportForm = () => {
     const heartDisease = condition.includes("Heart Disease") ? 1 : 0;
     const diabetes = condition.includes("Diabetes") ? 1 : 0;
     const highCholesterol = condition.includes("High Cholesterol") ? 1 : 0;
+    const stroke = condition.includes("Stroke") ? 1 : 0;
 
     // Get lifestyle values for fetch request
     const alcohol = lifeStyle.includes("Drink Alcohol") ? 1 : 0;
@@ -260,18 +261,18 @@ const GenerateReportForm = () => {
         weight: weight.value,
         height: height.value,
         gender: gender,
-        bloodGlucose: bloodGlucose.value,
+        blood_glucose: bloodGlucose.value,
         ap_hi: apHigh.value,
         ap_lo: apLow.value,
-        highCholesterol: highCholesterol,
-        hyperTension: hyperTension,
-        heartDisease: heartDisease,
+        high_cholesterol: highCholesterol,
+        hyper_tension: hyperTension,
+        heart_disease: heartDisease,
         diabetes: diabetes,
         alcohol: alcohol,
         smoker: smoker,
-        maritalStatus: maritalStatus,
-        workingStatus: workingStatus,
-        merchantID: null,
+        marital_status: maritalStatus,
+        working_status: workingStatus,
+        stroke: stroke,
       }),
     })
       .then((response) => {
@@ -303,8 +304,16 @@ const GenerateReportForm = () => {
         }}
       />
       <CardContent>
-        <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', mb: 5}}>
-          <BloodReportUpload onChange={readBloodReport}/>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 5,
+          }}
+        >
+          <BloodReportUpload onChange={readBloodReport} />
         </Box>
         <Box component="form" onSubmit={handleSubmit}>
           {/* Age & Physique Section */}
@@ -381,7 +390,7 @@ const GenerateReportForm = () => {
                 <MenuItem value={"Female"}>Female</MenuItem>
               </Select>
               {alertGenderRequired && (
-                <FormHelperText>*Please select your gender</FormHelperText>
+                <FormHelperText>*Required</FormHelperText>
               )}
             </FormControl>
           </Box>

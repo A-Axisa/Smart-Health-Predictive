@@ -13,8 +13,11 @@ from ..models.dbmodels import (
     Recommendation,
     AuditLog,
     LogEventType,
+    Patient,
+    Clinic,
+    UserPatientAccess
 )
-from ..routers.authentication import get_current_user
+from ..routers.authentication import get_current_user, get_patient_by_email
 
 router = APIRouter()
 
@@ -46,11 +49,28 @@ async def get_users(db_conn: Session = Depends(get_db)):
 
     result = []
     for user, role in users:
+        full_name = ""
+
+        # Retrieve the patients full name for a standard  user
+        if role.RoleName == "standard_user":
+            patient = (db_conn.query(Patient).filter(
+                user.UserID == Patient.UserID).first())
+
+            full_name = f'{patient.GivenNames} {patient.FamilyName}'
+
+        # Retrieve Clinic name for a merchant user
+        if role.RoleName == "merchant":
+            clinic = (db_conn.query(Clinic).filter(
+                Clinic.ClinicID == user.ClinicID).first())
+
+            full_name = clinic.ClinicName
+
         result.append({
-            "fullName": user.FullName,
+            "fullName": full_name,
             "email": user.Email,
             "phoneNumber": user.PhoneNumber,
             "createdAt": user.CreatedAt,
+            "validated": user.IsValidated,
             "role": {
                 "id": role.RoleID if role else None,
                 "name": role.RoleName if role else None
@@ -111,9 +131,20 @@ def _delete_user_data(user_email: str, db_conn: Session):
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
         # Collect all HealthDataIDs for this user
-        health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_to_delete.UserID).all()
-        ]
+        patient_record = get_patient_by_email(user_email, db_conn)
+
+        # Delete Merchant access to patient record
+        if patient_record:
+            db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
+                                                    patient_record.PatientID).delete(synchronize_session=False)
+        else:
+            db_conn.query(UserPatientAccess).filter(
+                UserPatientAccess.UserID == user_to_delete.UserID).delete(synchronize_session=False)
+
+        if patient_record:
+            health_ids: List[int] = [
+                hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()
+            ]
 
         if health_ids:
             # Delete tables that depend on HealthData first
@@ -127,7 +158,7 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
             # Then delete HealthData records
             health_data_deleted = db_conn.query(HealthData).filter(
-                HealthData.UserID == user_to_delete.UserID).delete(synchronize_session=False)
+                HealthData.PatientID == patient_record.PatientID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user
@@ -215,8 +246,12 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
     result = []
     for merchant in invalid_merchant_accounts:
+
+        full_name = (db_conn.query(Clinic).filter(
+            Clinic.ClinicID == merchant.ClinicID).first()).ClinicName
+
         result.append({
-            "fullName": merchant.FullName,
+            "fullName": full_name,
             "email": merchant.Email,
             "phoneNumber": merchant.PhoneNumber,
             "createdAt": merchant.CreatedAt,
@@ -259,7 +294,7 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
                     ipAddress=request.client.host,
                     description=f"Merchant account validated.")
 
-    return {"message": f"Merchant: {merchant.FullName} has been successfully validated."}
+    return {"message": f"Merchant has been successfully validated."}
 
 
 @router.get("/logs")
@@ -279,5 +314,5 @@ async def get_logs(db_conn: Session = Depends(get_db)):
             "description": log.Description,
             "createdAt": log.CreatedAt,
         })
-    
+
     return result

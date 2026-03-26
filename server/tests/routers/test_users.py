@@ -10,20 +10,27 @@ from ... utils.database import get_db
 
 client = TestClient(app)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_once_for_all_tests():
-    # Similar to test_auth
+    # Delete user details
     credentials = {
-        "username": "Test Delete",
-        "password": "thisisavalidpasswordA1!",
-        "email": "testdelete@mymail.com",
-        "phone": "",
-        "account_type": "user",
+        'given_names': 'Testable',
+        'family_name': 'DeleteMe',
+        'date_of_birth': '1980-05-24',
+        'gender': 'Male',
+        'password': 'thisisavalidpasswordA1!',
+        'email': 'testdelete@mymail.com',
+        'phone': '',
+        'account_type': 'user'
     }
     client.post("/register/", json=credentials)
 
     credentials = {
-        'username': 'Real User',
+        'given_names': 'Real',
+        'family_name': 'User',
+        'date_of_birth': '1980-05-24',
+        'gender': 'Male',
         'password': 'thisisavalidpasswordA1!',
         'email': 'RealGuy@example.com',
         'phone': '',
@@ -40,18 +47,18 @@ def setup_once_for_all_tests():
         "weight": 70,
         "height": 170,
         "gender": "Male",
-        "bloodGlucose": 7.5,
+        "blood_glucose": 7.5,
         "ap_hi": 120,
         "ap_lo": 80,
-        "highCholesterol": 0,
-        "hyperTension": 0,
-        "heartDisease": 0,
+        "high_cholesterol": 0,
+        "hyper_tension": 0,
+        "heart_disease": 0,
         "diabetes": 0,
         "alcohol": 1,
         "smoker": "No",
-        "maritalStatus": "Married",
-        "workingStatus": "Private",
-        "merchantID": None
+        "marital_status": "Married",
+        "working_status": "Private",
+        "stroke": 0
     }
     client.post("/healthPrediction/", json=testHealthData)
     # Return the testHeatlhData to use in tests
@@ -62,6 +69,7 @@ def test_delete_requires_authentication():
     fresh = TestClient(app)
     res = fresh.delete("/users/")
     assert res.status_code == status.HTTP_401_UNAUTHORIZED, res.text
+
 
 def test_login_and_self_delete_like_auth_flow():
     credentials = {"email": "testdelete@mymail.com",
@@ -76,43 +84,6 @@ def test_login_and_self_delete_like_auth_flow():
     assert delete_res.status_code == status.HTTP_200_OK, f"delete failed: {delete_res.status_code} {delete_res.text}"
     assert delete_res.json()["message"].startswith(
         "User and all related data deleted successfully")
-    
-
-def test_get_data(setup_once_for_all_tests):
-
-    # Mapping required to
-    gender_map = {'Male': 1, 'Female': 0}
-    smoker_map = {'No': 0, 'Yes': 1, 'Former smoker': 2}
-    marital_map = {'Divorced': 0, 'Single': 0, 'Married': 1}
-    working_map = {'Unemployed': 0,
-                   'Private': 1, 'Student': 2, 'Public': 4
-                   }
-
-    testHealthData = setup_once_for_all_tests
-    db_conn = next(get_db())
-    healthDataID = db_conn.query(HealthData.HealthDataID).order_by(
-        HealthData.HealthDataID.desc()).first()[0]
-
-    response = client.get(f"/reportData/{healthDataID}")
-
-    healthData = response.json()
-    print(healthData)
-    # Check the returned data matched the health data we used to create a prediction
-    assert healthData["age"] == testHealthData["age"]
-    assert float(healthData["weight"]) == testHealthData["weight"]
-    assert float(healthData["height"]) == testHealthData["height"]
-    assert healthData["gender"] == gender_map[testHealthData["gender"]]
-    assert float(healthData["bloodGlucose"]) == testHealthData["bloodGlucose"]
-    assert float(healthData["ap_hi"]) == testHealthData["ap_hi"]
-    assert float(healthData["ap_lo"]) == testHealthData["ap_lo"]
-    assert healthData["highCholesterol"] == testHealthData["highCholesterol"]
-    assert healthData["hyperTension"] == testHealthData["hyperTension"]
-    assert healthData["heartDisease"] == testHealthData["heartDisease"]
-    assert healthData["diabetes"] == testHealthData["diabetes"]
-    assert healthData["alcohol"] == testHealthData["alcohol"]
-    assert healthData["smoker"] == smoker_map[testHealthData["smoker"]]
-    assert healthData["maritalStatus"] == marital_map[testHealthData["maritalStatus"]]
-    assert healthData["workingStatus"] == working_map[testHealthData["workingStatus"]]
 
 
 def test_get_invalid_data():

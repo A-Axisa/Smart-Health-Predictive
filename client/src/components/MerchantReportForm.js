@@ -38,6 +38,7 @@ const GenerateReportForm = () => {
     "Heart Disease",
     "Diabetes",
     "High Cholesterol",
+    "Stroke",
   ];
   // List of lifestyle choices
   const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
@@ -244,6 +245,7 @@ const GenerateReportForm = () => {
     const heartDisease = condition.includes("Heart Disease") ? 1 : 0;
     const diabetes = condition.includes("Diabetes") ? 1 : 0;
     const highCholesterol = condition.includes("High Cholesterol") ? 1 : 0;
+    const stroke = condition.includes("Stroke") ? 1 : 0;
 
     // Get lifestyle values for fetch request
     const alcohol = lifeStyle.includes("Drink Alcohol") ? 1 : 0;
@@ -265,18 +267,19 @@ const GenerateReportForm = () => {
         weight: weight.value,
         height: height.value,
         gender: gender,
-        bloodGlucose: bloodGlucose.value,
+        blood_glucose: bloodGlucose.value,
         ap_hi: apHigh.value,
         ap_lo: apLow.value,
-        highCholesterol: highCholesterol,
-        hyperTension: hyperTension,
-        heartDisease: heartDisease,
+        high_cholesterol: highCholesterol,
+        hyper_tension: hyperTension,
+        heart_disease: heartDisease,
         diabetes: diabetes,
         alcohol: alcohol,
         smoker: smoker,
-        maritalStatus: maritalStatus,
-        workingStatus: workingStatus,
-        patientEmail: selectedPatient,
+        marital_status: maritalStatus,
+        working_status: workingStatus,
+        stroke: stroke,
+        patient_id: selectedPatient,
       }),
     })
       .then((response) => {
@@ -323,7 +326,7 @@ const GenerateReportForm = () => {
                 </MenuItem>
                 {/* List of available patients */}
                 {patientList.map((patient) => (
-                  <MenuItem key={patient.name} value={patient.email}>
+                  <MenuItem key={patient.name} value={patient.patient_id}>
                     {patient.name}
                   </MenuItem>
                 ))}

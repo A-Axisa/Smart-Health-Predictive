@@ -15,9 +15,12 @@ from ..models.dbmodels import (
     HealthData,
     Prediction,
     Recommendation,
-    LogEventType
+    LogEventType,
+    Patient,
+    UserPatientAccess,
+    Clinic
 )
-from ..routers.authentication import get_current_user, get_user
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email
 
 # Health Analysis
 
@@ -62,6 +65,11 @@ class HealthDataDates(BaseModel):
     date: datetime
 
 
+class ClinicDetails(BaseModel):
+    clinic_id: int
+    clinic_name: str
+
+
 def _to_float(val) -> float:
     if isinstance(val, Decimal):
         return float(val)
@@ -88,9 +96,20 @@ def _delete_user_data(user_id: int, db_conn: Session):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
+        # Get patient record if it exists
+        patient_record = get_patient_by_email(user_to_delete.Email, db_conn)
+
+        # Delete Merchant Patient access
+        if patient_record:
+            db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
+                                                    patient_record.PatientID).delete(synchronize_session=False)
+        else:
+            db_conn.query(UserPatientAccess).filter(
+                UserPatientAccess.UserID == user_to_delete.UserID).delete(synchronize_session=False)
+
         # Collect all HealthDataIDs for this user
         health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_id).all()
+            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()
         ]
 
         if health_ids:
@@ -105,7 +124,7 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
             # Then delete HealthData records
             health_data_deleted = db_conn.query(HealthData).filter(
-                HealthData.UserID == user_id).delete(synchronize_session=False)
+                HealthData.PatientID == patient_record.PatientID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user
@@ -172,10 +191,10 @@ async def get_health_analytics(
     using historical predictions stored in the database.
     """
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
-    if not user:
+    patient = get_patient_by_email(user_email["email"], db_conn)
+    if not patient:
         return []
-    user_id = user.UserID
+    patient_id = patient.PatientID
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
@@ -190,7 +209,7 @@ async def get_health_analytics(
             getattr(Prediction, 'HealthDataID') == getattr(
                 HealthData, 'HealthDataID'),
         )
-        .filter(getattr(HealthData, 'UserID') == user_id)
+        .filter(getattr(HealthData, 'PatientID') == patient_id)
         .order_by(getattr(Prediction, 'CreatedAt').asc())
         .all()
     )
@@ -322,19 +341,21 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
-    # Get health data associated with the merchant.
-    patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
-        .order_by(HealthData.CreatedAt.desc()).all()
-
+    # Get patients associated with the merchant.
+    patients = get_merchant_patients(merchant.UserID, db_conn)
+    patient_ids = [p.PatientID for p in patients]
+    # Get patient health data.
+    patient_health_data = (db_conn.query(HealthData).filter(HealthData.PatientID.in_(patient_ids))
+                           .order_by(HealthData.CreatedAt.desc()).all())
     result = []
     for row in patient_health_data:
 
         # Get the patient's name.
-        patient = db_conn.query(UserAccount).filter_by(
-            UserID=row.UserID).first()
+        patient = db_conn.query(Patient).filter_by(
+            PatientID=row.PatientID).first()
 
         result.append({
-            "name": patient.FullName,
+            "name": f'{patient.GivenNames} {patient.FamilyName}',
             "healthDataID": row.HealthDataID,
             "date": row.CreatedAt
         })
@@ -359,23 +380,20 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
-    # Get health data associated with the merchant.
-    patient_health_data = db_conn.query(HealthData).filter(HealthData.MerchantID == merchant.UserID) \
-        .order_by(HealthData.CreatedAt.desc()).all()
+    # Get patient data associated with the merchant.
+    patients = get_merchant_patients(merchant.UserID, db_conn)
 
     result = []
-    existing_email = set()
-    for row in patient_health_data:
+    existing_patient = set()
+    for patient in patients:
 
         # Get the patient's name.
-        patient = db_conn.query(UserAccount).filter_by(
-            UserID=row.UserID).first()
-        if patient.Email not in existing_email:
+        if patient.PatientID not in existing_patient:
             result.append({
-                "name": patient.FullName,
-                "email": patient.Email
+                "name": f'{patient.GivenNames} {patient.FamilyName}',
+                "patient_id": patient.PatientID
             })
-            existing_email.add(patient.Email)
+            existing_patient.add(patient.PatientID)
 
     return result
 
@@ -384,14 +402,42 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
 async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
-    user = get_user(user_email["email"], db_conn)
+    patient = get_patient_by_email(user_email["email"], db_conn)
 
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(
-        HealthData.UserID == user.UserID).order_by(HealthData.CreatedAt.desc()).all()
+        HealthData.PatientID == patient.PatientID).order_by(HealthData.CreatedAt.desc()).all()
 
     # Filter by ID and date create to return
     healthDataDates = [HealthDataDates(
         healthDataID=data.HealthDataID, date=data.CreatedAt) for data in healthData]
 
     return healthDataDates
+
+
+@router.get("/getClinicNames/")
+async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Retrieve the all clinics
+    clinics = (
+        db_conn.query(Clinic)
+        .order_by(Clinic.ClinicID.asc())
+        .all()
+    )
+    # Filter clinic by name and id
+    clinic_details = [
+        ClinicDetails(clinic_id=clinic.ClinicID, clinic_name=clinic.ClinicName)
+        for clinic in clinics
+    ]
+
+    return clinic_details
+
+
+def get_merchant_patients(merchantID: int, db_conn):
+    '''Get all patients that belong to the merchant user'''
+    return (db_conn.query(Patient)
+            .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+            .filter(UserPatientAccess.UserID == merchantID)
+            .order_by(Patient.CreatedAt.desc())
+            .all()
+            )
