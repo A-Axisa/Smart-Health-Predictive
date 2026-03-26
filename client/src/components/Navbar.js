@@ -25,6 +25,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const NavBar = ({ role }) => {
 
   const navigate = useNavigate();
+  const [selectedPage, setSelectedPage] = useState("Dashboard");
   
   // Page options for each user type
   const standardUserPages = [
@@ -65,6 +66,7 @@ const NavBar = ({ role }) => {
 
   // Handle navigation for each page option
   function handleNavigate(page) {
+    setSelectedPage(page);
     if (page === "Dashboard") {
       if (role === "standard_user") {
         navigate("/user-landing");
@@ -192,24 +194,34 @@ const NavBar = ({ role }) => {
           },
         }}
       >
-        <Toolbar />
         <Box
           sx={{
             overflow: "auto",
             height: "730px",
           }}
           >
-          <Typography color="#A9A9A9" sx={{ fontSize: 12, px: 2 }}>
+          <Typography color="#A9A9A9" sx={{ fontSize: 12, px: 2, mt: 5 }}>
             Overview
           </Typography>
           <List>
             {standardUserPages.map((page) => (
               <ListItemButton
                 key={page.title}
-                sx={{ color: "#383838" }}
-                onClick={() => handleNavigate(
-                  page.title
-                )}>
+                sx={{
+                  color: selectedPage === page.title ? "#fff" : "383838",
+                  backgroundColor: selectedPage === page.title ? "#712b89" : "transparent",
+                  borderRadius: "10px",
+                  ml: 2,
+                  mr: 2,
+                  mb: 1,
+                  px: 2,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                  }
+                }}
+                onClick={() => handleNavigate(page.title)}
+              >
                 {page.icon} <ListItemText primary={page.title} sx={{ ml: 3 }} />
               </ListItemButton>
             ))}
