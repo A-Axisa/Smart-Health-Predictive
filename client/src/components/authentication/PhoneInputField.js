@@ -17,7 +17,8 @@ const PhoneInputField = ({ onChange }) => {
   const [isValid, setIsValid] = useState(true);
 
   function getDialingCodeDropdownOptions() {
-    const dial_code = new Set(getCountries().map((country) => (getCountryCallingCode(country))).sort())
+    const dial_code = new Set(getCountries().map((country) => (
+      Number(getCountryCallingCode(country)))).sort((a, b) => a - b))
     return Array.from(dial_code).map((code) => (
       <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
     ));
