@@ -97,7 +97,7 @@ const AdministratorDashboard = () => {
 
   return (
     <Container>
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh", ml: "250px", mt: "66px", }}>
         <Box sx={{ borderRight: "1px solid #e0e0e0" }}>
           <List sx={{ padding: 0 }}>
             {["Users", "Requests", "Logs"].map((obj) => (

@@ -38,6 +38,8 @@ const UserLanding = ({}) => {
         justifyContent: "center",
         alignItems: "center",
         bgcolor: "#fdf7ff",
+        ml: "250px",
+        mt: "66px",
       }}
     >
       <Paper
