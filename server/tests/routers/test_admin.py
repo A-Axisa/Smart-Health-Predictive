@@ -11,7 +11,7 @@ def setup_once_for_all_tests():
     # Similar to test_auth
     credentials = {
         "username": "Test Delete",
-        "password": "thisisavalidpassword",
+        "password": "thisisavalidpasswordA1!",
         "email": "testdelete@mymail.com",
         "phone": "",
         "account_type": "user",
@@ -23,7 +23,7 @@ def test_admin_can_delete_user():
     user_to_delete_email = "user.to.be.deleted.by.admin@example.com"
     user_to_delete_credentials = {
         "username": "User ToBeDeleted",
-        "password": "password123456789",
+        "password": "password123456789A2$",
         "email": user_to_delete_email,
         "phone": "",
         "account_type": "user",
