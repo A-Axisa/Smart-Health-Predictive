@@ -28,7 +28,7 @@ const PhoneInputField = ({ onChange }) => {
    */
   function getUniqueDialingCodes() {
     return Array.from(new Set(getCountries().map((country) => (
-      Number(getCountryCallingCode(country)))).sort((a, b) => a - b)));
+      getCountryCallingCode(country))).sort((a, b) => a - b)));
   }
 
   function updateSelection(e) {
