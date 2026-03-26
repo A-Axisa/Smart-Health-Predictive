@@ -13,10 +13,10 @@ import { getCountries, parsePhoneNumberFromString,
  *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedDialingCode, setSelectedDialingCode] = useState('');
   const [isValid, setIsValid] = useState(true);
 
-  function getCountryDropdownOptions() {
+  function getDialingCodeDropdownOptions() {
     const dial_code = new Set(getCountries().map((country) => (getCountryCallingCode(country))).sort())
     return Array.from(dial_code).map((code) => (
       <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
@@ -24,13 +24,13 @@ const PhoneInputField = ({ onChange }) => {
   }
 
   function updateSelection(e) {
-    setSelectedCountry(e.target.value);
+    setSelectedDialingCode(e.target.value);
   }
 
   function validate_input(e) {
     if(e.target.value !== ''){
       const parsedNumber = parsePhoneNumberFromString(
-        e.target.value, { defaultCallingCode: selectedCountry });
+        e.target.value, { defaultCallingCode: selectedDialingCode });
       const isInputValid = parsedNumber!==undefined && 
         parsedNumber.isValid();
       const phoneNumber = isInputValid ? parsedNumber.number : null;
@@ -61,9 +61,9 @@ const PhoneInputField = ({ onChange }) => {
               labelId='country_select_label' 
               id='country_select' 
               label='Country Code'
-              value={selectedCountry}
+              value={selectedDialingCode}
               onChange={updateSelection}>
-              {getCountryDropdownOptions()}
+              {getDialingCodeDropdownOptions()}
             </Select>
           </FormControl> 
         </Grid>
