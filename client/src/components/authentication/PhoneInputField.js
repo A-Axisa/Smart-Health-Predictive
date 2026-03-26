@@ -6,7 +6,7 @@ import { getCountries, parsePhoneNumberFromString,
 
 /**
  * An input field that provides basic validation for phone numbers and a
- * selection for the country code.
+ * selection for a dialling code.
  * 
  * @param {Object} props
  * @param {function} [props.onChange] - Callback function called when input 
