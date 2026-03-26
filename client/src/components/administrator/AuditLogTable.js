@@ -73,47 +73,49 @@ const AuditLogTable = () => {
   }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType]);
 
   const columns = [
-    { field: "logID", headerName: "Log ID", width: 60 },
-    { field: "eventType", headerName: "Event Type", width: 180 },
+    { field: "logID", headerName: "Log ID", width: 70 },
+    { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140 },
     { field: "success", headerName: "Success", width: 80, type: "boolean" },
-    { field: "userEmail", headerName: "User Email", width: 220 },
-    { field: "ipAddress", headerName: "IP Address", width: 130 },
-    { field: "device", headerName: "Device", width: 160 },
-    { field: "createdAt", headerName: "Created At", width: 180 },
-    { field: "description", headerName: "Description", width: 250 },
+    { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180 },
+    { field: "ipAddress", headerName: "IP Address", flex: 0.8, minWidth: 100 },
+    { field: "device", headerName: "Device", flex: 1, minWidth: 120 },
+    { field: "createdAt", headerName: "Created At", flex: 1, minWidth: 160 },
+    { field: "description", headerName: "Description", flex: 2, minWidth: 200 },
   ];
 
   return (
-    <Paper sx={{ width: '100%', p: 2 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-        <TextField
-          label="Search by Email"
-          variant="outlined"
-          size="small"
-          value={emailInput}
-          onChange={(e) => setEmailInput(e.target.value)}
-          sx={{ width: 300 }}
-        />
-        <FormControl size="small" sx={{ width: 250 }}>
-          <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
-          <Select
-            labelId="event-type-label"
-            value={eventType}
-            label="Filter by Event Type"
-            onChange={(e) => {
-              setPaginationModel((prev) => ({ ...prev, page: 0 }));
-              setEventType(e.target.value);
-            }}
-          >
-            <MenuItem value=""><em>All</em></MenuItem>
-            {EVENT_TYPES.map((type) => (
-              <MenuItem key={type} value={type}>{type}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+    <Box sx={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <TextField
+            label="Search by Email"
+            variant="outlined"
+            size="small"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            sx={{ width: 300 }}
+          />
+          <FormControl size="small" sx={{ width: 250 }}>
+            <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
+            <Select
+              labelId="event-type-label"
+              value={eventType}
+              label="Filter by Event Type"
+              onChange={(e) => {
+                setPaginationModel((prev) => ({ ...prev, page: 0 }));
+                setEventType(e.target.value);
+              }}
+            >
+              <MenuItem value=""><em>All</em></MenuItem>
+              {EVENT_TYPES.map((type) => (
+                <MenuItem key={type} value={type}>{type}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
 
-      <div style={{ width: '100%' }}>
+      <Paper sx={{ width: '100%' }}>
         <DataGrid
           rows={logData}
           columns={columns}
@@ -148,8 +150,8 @@ const AuditLogTable = () => {
             },
           }}
         />
-      </div>
-    </Paper>
+      </Paper>
+    </Box>
   );
 }
 
