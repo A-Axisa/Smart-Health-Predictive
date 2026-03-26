@@ -6,6 +6,11 @@ const AdministratorLogs = () => {
   return (
     <Box
       sx={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        p: 10,
+        alignItems: "center",
         ml: "250px",
         mt: "66px",
       }}
