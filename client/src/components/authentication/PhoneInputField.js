@@ -17,11 +17,18 @@ const PhoneInputField = ({ onChange }) => {
   const [isValid, setIsValid] = useState(true);
 
   function getDialingCodeDropdownOptions() {
-    const dial_code = new Set(getCountries().map((country) => (
-      Number(getCountryCallingCode(country)))).sort((a, b) => a - b))
-    return Array.from(dial_code).map((code) => (
+    return getUniqueDialingCodes().map((code) => (
       <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
     ));
+  }
+
+  /**
+   * Creates an array containing all unique dialing codes.
+   * @returns Array of possible dialing codes.
+   */
+  function getUniqueDialingCodes() {
+    return Array.from(new Set(getCountries().map((country) => (
+      Number(getCountryCallingCode(country)))).sort((a, b) => a - b)));
   }
 
   function updateSelection(e) {
