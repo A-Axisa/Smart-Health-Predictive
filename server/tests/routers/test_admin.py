@@ -31,7 +31,7 @@ def test_admin_can_delete_user():
         "family_name": "",
         "date_of_birth": "1980-05-24",
         "gender": "Male",
-        "password": "password123456789A2",
+        "password": "password123456789A2@",
         "email": user_to_delete_email,
         "phone": "",
         "account_type": "user"
