@@ -1,5 +1,6 @@
 import random
 from csv import reader as csvReader
+from enum import Enum
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
@@ -13,6 +14,11 @@ WEIGHT_MIN_KG = 40.0
 WEIGHT_MAX_KG = 240.0
 POSSIBLE_NAMES = []
 field_taken_ids = {}
+
+class UserRoleID(Enum):
+    ADMIN = 1901881405
+    STANDARD = 331928555
+    MERCHANT = 62809281
 
 def load_names_csv(filename: str):
     '''Loads all the names in the CSV file to use in the dummy data'''
@@ -160,4 +166,15 @@ def generate_prediction(health_data_id: int):
         'cardio_chance': round(random.random(), 2),
         'diabetes_chance': round(random.random(), 2),
         'created_at':'',
+    }
+
+def generate_user_account_role(
+    user_id: int,
+    user_role_id: UserRoleID,
+):
+    '''Returns a user account role for the given user and role.'''
+    return {
+        'role_id': user_role_id,
+        'user_id': user_id,
+        'assigned_at': ''
     }
