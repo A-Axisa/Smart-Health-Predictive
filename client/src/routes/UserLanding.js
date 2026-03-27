@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const UserLanding = ({}) => {
+
   const navigate = useNavigate();
   const [name, setName] = useState(null);
 
@@ -42,75 +43,9 @@ const UserLanding = ({}) => {
         mt: "66px",
       }}
     >
-      <Paper
-        variant="outlined"
-        elevation={24}
-        sx={{
-          maxWidth: 1200,
-          margin: "2rem auto",
-          padding: 3,
-          minHeight: "70vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* Welcome Header */}
-        <Typography
-          variant="h3"
-          fontWeight={600}
-          color="primary"
-          align="center"
-          gutterBottom
-        >
-          Welcome{name ? ", " + name.split(" ")[0] : ""}
-        </Typography>
-
-        {/* Main Content */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6">
-            Welcome to Smart Health Predictive. Our AI Prediction Model has been
-            designed to provide a personal a personalised risk analysis
-            regarding three notable diseases: stroke, cardiovascular disease
-            (CVD), and diabetes, providing insight into your health.
-          </Typography>
-        </Box>
-
-        {/*Buttons */}
-        <Box sx={{ display: "flex", justifyContent: "end", mt: "auto" }}>
-          <Stack spacing={2} direction="column" alignItems="flex-end">
-            <Button
-              fullWidth
-              onClick={() => navigate("/generate-report")}
-              variant="contained"
-              size="large"
-            >
-              Generate Report
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => navigate("/ai-health-prediction")}
-              variant="contained"
-              size="large"
-            >
-              Health Prediction History
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => navigate("/health-analytics")}
-              variant="contained"
-            >
-              Health Analytics
-            </Button>
-            <Button
-              fullWidth
-              onClick={() => navigate("/user-settings")}
-              variant="contained"
-            >
-              User Settings
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
+      <Typography>
+        Health Overview
+      </Typography>
     </Box>
   );
 };
