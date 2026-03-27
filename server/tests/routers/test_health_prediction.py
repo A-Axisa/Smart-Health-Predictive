@@ -47,7 +47,7 @@ def setup_users_for_tests():
             "family_name": "",
             "date_of_birth": None,
             "gender": None,
-            "password": "thisisavalidpassword",
+            "password": "thisisavalidpasswordA1!",
             "email": "myreputableclinic@example.com",
             "phone": "",
             "account_type": "merchant",
@@ -58,7 +58,7 @@ def setup_users_for_tests():
             "family_name": "1",
             "date_of_birth": "2002-03-22",
             "gender": "Male",
-            "password": "thisisalongpassword",
+            "password": "thisisalongpassword4$R",
             "email": "user1@example.com",
             "phone": "",
             "account_type": "user",
@@ -69,7 +69,7 @@ def setup_users_for_tests():
             "family_name": "2",
             "date_of_birth": "2000-03-22",
             "gender": "Female",
-            "password": "thisisareallylongpassword",
+            "password": "thisisareallylongpassword%5V",
             "email": "user2@example.com",
             "phone": "",
             "account_type": "user",
@@ -105,7 +105,7 @@ def setup_users_for_tests():
     db_conn.commit()
     # Create login payload for the test merchant.
     merchant_credentials = {'email': 'myreputableclinic@example.com',
-                            'password': 'thisisavalidpassword'}
+                            'password': 'thisisavalidpasswordA1!'}
 
     client.post("/login/", json=merchant_credentials)
 

@@ -19,7 +19,7 @@ def setup_once_for_all_tests():
         'family_name': 'DeleteMe',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
-        'password': 'thisisavalidpassword',
+        'password': 'thisisavalidpasswordA1!',
         'email': 'testdelete@mymail.com',
         'phone': '',
         'account_type': 'user'
@@ -31,7 +31,7 @@ def setup_once_for_all_tests():
         'family_name': 'User',
         'date_of_birth': '1980-05-24',
         'gender': 'Male',
-        'password': 'thisisavalidpassword',
+        'password': 'thisisavalidpasswordA1!',
         'email': 'RealGuy@example.com',
         'phone': '',
         'account_type': 'user'
@@ -39,7 +39,7 @@ def setup_once_for_all_tests():
     client.post("/register/", json=credentials)
 
     login_credentials = {'email': 'RealGuy@example.com',
-                         'password': 'thisisavalidpassword'}
+                         'password': 'thisisavalidpasswordA1!'}
     client.post('/login/', json=login_credentials)
 
     testHealthData = {
@@ -73,7 +73,7 @@ def test_delete_requires_authentication():
 
 def test_login_and_self_delete_like_auth_flow():
     credentials = {"email": "testdelete@mymail.com",
-                   "password": "thisisavalidpassword"}
+                   "password": "thisisavalidpasswordA1!"}
     login_res = client.post("/login/", json=credentials)
     assert login_res.status_code == status.HTTP_200_OK, f"login failed: {login_res.status_code} {login_res.text}"
 

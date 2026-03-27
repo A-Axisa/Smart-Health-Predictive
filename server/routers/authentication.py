@@ -36,6 +36,7 @@ ACCOUNT_TYPE = {
     'user': 331928555,
     'merchant': 62809281
 }
+VALID_PASSWORD_SYMBOLS = "~!@#$%^&*()_+[]{}|:;,.?/"
 MIN_AGE = 18
 
 gender_map = {'Male': 1, 'Female': 0}
@@ -258,7 +259,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     )
 
     # Ensure user inputs are valid.
-    if not is_password_valid(user_cred.password) or \
+    if len(user_cred.password) < 1 or \
             not is_email_valid(user_cred.email):
         raise credentials_exception
 
@@ -439,9 +440,19 @@ def invalidate_access_token(email: str, db_conn: Session):
 
 def is_password_valid(password: str):
     '''Verifies the password follows policy rules.'''
-    password_length = len(password)
-    return password_length <= PASSWORD_MAX_LENGTH and \
-        password_length >= PASSWORD_MIN_LENGTH
+
+    contains_lower = any(c.islower() for c in password)
+    contains_upper = any(c.isupper() for c in password)
+    contains_number = any(c.isnumeric() for c in password)
+    contains_symbol = any(char in VALID_PASSWORD_SYMBOLS for char in password)
+    valid_length = len(password) <= PASSWORD_MAX_LENGTH and \
+        len(password) >= PASSWORD_MIN_LENGTH
+
+    return contains_lower \
+        and contains_upper \
+        and contains_number \
+        and contains_symbol \
+        and valid_length
 
 
 def is_email_valid(email: str):
