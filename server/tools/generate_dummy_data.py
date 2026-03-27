@@ -39,3 +39,15 @@ def get_random_unique_id(field_name: str = ''):
         new_id = random.randrange(UNIQUE_ID_RANGE)
     field_taken_ids[field_name][new_id] = new_id
     return new_id
+
+
+def generate_clinic():
+    '''Returns a clinic with a unique ID and random details.'''
+    names = get_random_names(2)
+    clinic_name =  names[0] + ' ' + names[1] + ' ' + 'Clinic'
+    return {
+        "clinic_id": get_random_unique_id('clinic'),
+        "clinic_name": clinic_name,
+        "created_at": "",
+    }
+
