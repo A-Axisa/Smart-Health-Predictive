@@ -7,6 +7,10 @@ PASSWORD_HASH = (
     '$argon2id$v=19$m=19456,t=2,p=1$MzTHleFMLuRjzV0EBw5SHw'
     '$PMjErE7kYpUJmIzsZrwUj5KNQUXy9XFn+kNYJE4PGms'
 )
+HEIGHT_MIN_M = 120.00
+HEIGHT_MAX_M = 200.00
+WEIGHT_MIN_KG = 40.0
+WEIGHT_MAX_KG = 240.0
 POSSIBLE_NAMES = []
 field_taken_ids = {}
 
@@ -78,4 +82,28 @@ def generate_account(
         'created_at': '',
         'is_validated': True,
         'token_version': random.randrange(TOKEN_VERSION_RANGE),
+    }
+
+
+def generate_patient(
+    given_name: str = None,
+    family_name: str = None,
+    user_id: str = None,
+):
+    '''Returns a patient with a unique ID and random details.'''
+    if given_name is None:
+        given_name = get_random_names()[0]
+    if family_name is None:
+        family_name = get_random_names()[0]
+
+    return {
+        'patient_id': get_random_unique_id('patient'),
+        'user_id': user_id,
+        'given_name': given_name,
+        'family_name': family_name,
+        'gender':random.randrange(2),
+        'weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
+        'height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
+        'dob':'',
+        'created_at':'',
     }
