@@ -148,3 +148,16 @@ def generate_recommendation(health_data_id: int):
         'diet_to_avoid_recommendation':'',
         'created_at':'',
     }
+
+
+def generate_prediction(health_data_id: int):
+    '''Returns a prediction with a unique ID and random information
+       for a health report.'''
+    return {
+        'prediction_id': get_random_unique_id('prediction'),
+        'health_data_id': health_data_id,
+        'stroke_chance': round(random.random(), 2),
+        'cardio_chance': round(random.random(), 2),
+        'diabetes_chance': round(random.random(), 2),
+        'created_at':'',
+    }
