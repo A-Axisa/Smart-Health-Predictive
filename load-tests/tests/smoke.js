@@ -1,15 +1,40 @@
-import user from '../scenarios/user';
-import merchant from '../scenarios/merchant';
-import admin from '../scenarios/admin';
+import user from '../scenarios/user.js';
+import merchant from '../scenarios/merchant.js';
+import admin from '../scenarios/admin.js';
 
 
 export const options = {
-  vus: 3,
-  duration: '30s',
+  scenarios: {
+    users: {
+      executor: 'constant-vus',
+      vus: 1,
+      duration: '30s',
+      exec: 'runUser'
+    },
+    merchants: {
+      executor: 'constant-vus',
+      vus: 1,
+      duration: '30s',
+      exec: 'runMerchant'
+    },
+    admins: {
+      executor: 'constant-vus',
+      vus: 1,
+      duration: '30s',
+      exec: 'runAdmin'
+    },
+  },
 };
 
-export default function () {
+
+export function runUser() {
   user();
+}
+
+export function runMerchant() {
   merchant();
+}
+
+export function runAdmin() {
   admin();
 }

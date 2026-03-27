@@ -1,6 +1,6 @@
-import user from '../scenarios/user';
-import merchant from '../scenarios/merchant';
-import admin from '../scenarios/admin';
+import user from '../scenarios/user.js';
+import merchant from '../scenarios/merchant.js';
+import admin from '../scenarios/admin.js';
 
 
 export const options = {
