@@ -1,3 +1,4 @@
+import random
 from csv import reader as csvReader
 
 POSSIBLE_NAMES = []
@@ -10,3 +11,15 @@ def load_names_csv(filename: str):
             for name in row:
                 POSSIBLE_NAMES.append(name)
 
+
+def get_random_names(amount: int = 1):
+    '''Randomly selects a list of names from all possible names.
+       Names are replaced with '---' if there are no possible names'''
+
+    if len(POSSIBLE_NAMES) <= 0:
+        return ['---'] * amount
+
+    names = []
+    for _ in range(amount):
+        names.append(random.choice(POSSIBLE_NAMES))
+    return names
