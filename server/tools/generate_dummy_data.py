@@ -134,3 +134,17 @@ def generate_health_data(patient: dict):
         'high_cholesterol': random.randrange(2),
         'stroke': random.randrange(2),
     }
+
+
+def generate_recommendation(health_data_id: int):
+    '''Returns a recommendation with a unique ID and random information
+       for a health report.'''
+    return {
+        'recommendation_id': get_random_unique_id('recommendation'),
+        'health_data_id': health_data_id,
+        'exercise_recommendation':'',
+        'diet_recommendation':'',
+        'lifestyle_recommendation':'',
+        'diet_to_avoid_recommendation':'',
+        'created_at':'',
+    }
