@@ -107,3 +107,30 @@ def generate_patient(
         'dob':'',
         'created_at':'',
     }
+
+
+def generate_health_data(patient: dict):
+    '''Returns health report with a unique ID, patient information, 
+       and random details.'''
+    blood_glucose = round(random.uniform(2.00, 10.00), 2)
+    return {
+        'health_data_id': get_random_unique_id('health_data'),
+        'patient_id': patient['patient_id'],
+        'gender': patient['gender'],
+        'age': 18,
+        'weight_kg': patient['weight'],
+        'height_cm': patient['height'],
+        'alcohol': random.randrange(2),
+        'smoking': random.randrange(2),
+        'marital': random.randrange(2),
+        'working': random.randrange(3),
+        'hypertension': random.randrange(2),
+        'heart_disease': random.randrange(2),
+        'diabetes': blood_glucose >= 7.6,
+        'blood_glucose': blood_glucose,
+        'created_at': '',
+        'ap_high': round(random.uniform(50.00, 100.00), 2),
+        'ap_low': round(random.uniform(50.00, 200.00), 2),
+        'high_cholesterol': random.randrange(2),
+        'stroke': random.randrange(2),
+    }
