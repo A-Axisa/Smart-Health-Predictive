@@ -1,34 +1,44 @@
 import { useState } from 'react';
 import { TextField , Select, MenuItem, FormControl, InputLabel, Grid, 
          Box} from '@mui/material';
-import { getCountries, parsePhoneNumberFromString} from 'libphonenumber-js';
+import { getCountries, parsePhoneNumberFromString, 
+         getCountryCallingCode } from 'libphonenumber-js';
 
 /**
  * An input field that provides basic validation for phone numbers and a
- * selection for the country code.
+ * selection for a dialling code.
  * 
  * @param {Object} props
  * @param {function} [props.onChange] - Callback function called when input 
  *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedDialingCode, setSelectedDialingCode] = useState('');
   const [isValid, setIsValid] = useState(true);
 
-  function getCountryDropdownOptions() {
-    return getCountries().map((country) => (
-      <MenuItem key={country} value={country}>{country}</MenuItem>
+  function getDialingCodeDropdownOptions() {
+    return getUniqueDialingCodes().map((code) => (
+      <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
     ));
   }
 
+  /**
+   * Creates an array containing all unique dialing codes.
+   * @returns Array of possible dialing codes.
+   */
+  function getUniqueDialingCodes() {
+    return Array.from(new Set(getCountries().map((country) => (
+      getCountryCallingCode(country))).sort((a, b) => a - b)));
+  }
+
   function updateSelection(e) {
-    setSelectedCountry(e.target.value);
+    setSelectedDialingCode(e.target.value);
   }
 
   function validate_input(e) {
     if(e.target.value !== ''){
       const parsedNumber = parsePhoneNumberFromString(
-        e.target.value, selectedCountry);
+        e.target.value, { defaultCallingCode: selectedDialingCode });
       const isInputValid = parsedNumber!==undefined && 
         parsedNumber.isValid();
       const phoneNumber = isInputValid ? parsedNumber.number : null;
@@ -53,15 +63,15 @@ const PhoneInputField = ({ onChange }) => {
         <Grid size={5}>
           <FormControl sx={{width:'100%'}} >
             <InputLabel id="demo-simple-select-label">
-              Country Code
+              Dialing Code
             </InputLabel>
             <Select 
-              labelId='country_select_label' 
-              id='country_select' 
-              label='Country Code'
-              value={selectedCountry}
+              labelId='dialing_select_label' 
+              id='dialing_select' 
+              label='Dialing Code'
+              value={selectedDialingCode}
               onChange={updateSelection}>
-              {getCountryDropdownOptions()}
+              {getDialingCodeDropdownOptions()}
             </Select>
           </FormControl> 
         </Grid>
