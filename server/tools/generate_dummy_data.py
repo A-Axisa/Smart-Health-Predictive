@@ -2,6 +2,11 @@ import random
 from csv import reader as csvReader
 
 UNIQUE_ID_RANGE = 2100000000
+TOKEN_VERSION_RANGE = 10000
+PASSWORD_HASH = (
+    '$argon2id$v=19$m=19456,t=2,p=1$MzTHleFMLuRjzV0EBw5SHw'
+    '$PMjErE7kYpUJmIzsZrwUj5KNQUXy9XFn+kNYJE4PGms'
+)
 POSSIBLE_NAMES = []
 field_taken_ids = {}
 
@@ -51,3 +56,26 @@ def generate_clinic():
         "created_at": "",
     }
 
+
+def generate_account(
+    given_name: str = None,
+    family_name: str = None,
+    clinic_id: int = None,
+):
+    '''Returns an account with a unique ID and random details.'''
+    if given_name is None:
+        given_name = get_random_names()[0]
+    if family_name is None:
+        family_name = get_random_names()[0]
+    email = given_name + '.' + family_name + '.' + '@example.com'
+
+    return {
+        'user_id': get_random_unique_id('account'),
+        'email': email,
+        'password_hash': PASSWORD_HASH,
+        'phone_number': '',
+        'clinic_id': clinic_id,
+        'created_at': '',
+        'is_validated': True,
+        'token_version': random.randrange(TOKEN_VERSION_RANGE),
+    }
