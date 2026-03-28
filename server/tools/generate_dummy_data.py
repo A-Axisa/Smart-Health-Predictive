@@ -3,7 +3,8 @@ from csv import reader as csvReader
 from datetime import datetime
 from enum import Enum
 from ..utils.database import get_db
-from ..models.dbmodels import UserAccount, UserAccountRole, Patient
+from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
+    HealthData, Recommendation, Prediction
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
@@ -224,15 +225,28 @@ def create_health_reports_for_user(patient: dict, amount:int):
         'predictions': predictions,
     }
 
+
 def generate_dummy_data_in_db():
     '''Generates and inserts dummy data into the database.'''
     load_names_csv(NAME_FILEPATH)
     conn = next(get_db())
 
-    standard_users = create_users(10, UserRoleID.STANDARD)
+    standard_users = create_users(30, UserRoleID.STANDARD)
+    health_data = []
+    recommendations = []
+    predictions = []
+    for patient in standard_users['patients']:
+        reports = create_health_reports_for_user(patient, random.randrange(0, 10))
+        health_data.extend(reports['health_data'])
+        recommendations.extend(reports['recommendations'])
+        predictions.extend(reports['predictions'])
     conn.bulk_insert_mappings(UserAccount, standard_users['accounts'])
     conn.bulk_insert_mappings(UserAccountRole, standard_users['roles'])
     conn.bulk_insert_mappings(Patient, standard_users['patients'])
+    conn.bulk_insert_mappings(HealthData, health_data)
+    conn.bulk_insert_mappings(Recommendation, recommendations)
+    conn.bulk_insert_mappings(Prediction, predictions)
+
 
     conn.commit()
 
