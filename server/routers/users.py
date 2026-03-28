@@ -70,6 +70,13 @@ class ClinicDetails(BaseModel):
     clinic_name: str
 
 
+class Dashboard(BaseModel):
+    days: int
+    risks: dict
+    diff: dict
+    recommendations: dict
+
+
 def _to_float(val) -> float:
     if isinstance(val, Decimal):
         return float(val)
@@ -441,3 +448,82 @@ def get_merchant_patients(merchantID: int, db_conn):
             .order_by(Patient.CreatedAt.desc())
             .all()
             )
+
+@router.get("/dashboard", response_model=Dashboard)
+async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+
+    user = get_current_user(request, db_conn)
+    patient = get_patient_by_email(user["email"], db_conn)
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    patient_id = patient.PatientID
+
+    # Fetch patient health data.
+    health_rows = (db_conn.query(HealthData).filter(HealthData.PatientID == patient_id)
+                .order_by(HealthData.CreatedAt.desc()).limit(5).all())
+    
+    if not health_rows:
+        return Dashboard(
+            days = 0,
+            risks = {},
+            diff = {},
+            recommendations = {},
+        )
+
+    # Calculate days since previous report submission.
+    days_since_prev = (datetime.now() - health_rows[0].CreatedAt).days
+
+    predictions = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
+                .filter(HealthData.PatientID == patient_id)
+                .order_by(Prediction.CreatedAt.desc()).limit(5).all())
+
+    # Latest disease prediction.
+    stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
+    diabetes_risk = float(predictions[0].DiabetesChance) if predictions else 0.0
+    cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
+
+    # Risk over time trends.
+    risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
+
+    latest_risk_info = {
+        "dates": risk_dates,
+        "stroke": [float(p.StrokeChance or 0) for p in predictions],
+        "diabetes": [float(p.DiabetesChance or 0) for p in predictions],
+        "cvd": [float(p.CVDChance or 0) for p in predictions],
+    }
+
+    # Calculate the difference in disease percentage.
+    disease_diff = {
+        "stroke": 0.0,
+        "cvd": 0.0,
+        "diabetes": 0.0,
+    }
+
+    if predictions and len(predictions) > 1:
+        current = predictions[0]
+        prev = predictions[1]
+
+        disease_diff["stroke"] = float(current.StrokeChance) - float(prev.StrokeChance)
+        disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
+        disease_diff["diabetes"] = float(current.DiabetesChance) - float(prev.DiabetesChance)
+
+    # Get the latest patient recommendations.
+    recommendation = (db_conn.query(Recommendation).join(HealthData, Recommendation.HealthDataID == HealthData.HealthDataID)
+                    .filter(HealthData.PatientID == patient_id).order_by(Recommendation.CreatedAt.desc())
+                    .first())
+    
+    latest_recommendations = {
+        "exercise": recommendation.ExerciseRecommendation if recommendation else "No latest recommendation",
+        "diet": recommendation.DietRecommendation if recommendation else "No latest recommendation",
+        "lifestyle": recommendation.LifestyleRecommendation if recommendation else "No latest recommendation",
+        "avoid": recommendation.DietToAvoidRecommendation if recommendation else "No latest recommendation",
+    }
+
+    return Dashboard(
+        days=days_since_prev,
+        risks=latest_risk_info,
+        diff=disease_diff,
+        recommendations=latest_recommendations,
+    )
