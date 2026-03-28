@@ -82,7 +82,9 @@ def generate_account(
         given_name = get_random_names()[0]
     if family_name is None:
         family_name = get_random_names()[0]
-    email = given_name + '.' + family_name + '.' + '@example.com'
+    email = given_name + '.' \
+        + family_name + '.' \
+        + str(random.randrange(0, 99999999)) +'@example.com'
 
     return {
         'UserID': get_random_unique_id('account'),
