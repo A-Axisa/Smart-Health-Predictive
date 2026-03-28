@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
-    HealthData, Recommendation, Prediction
+    HealthData, Recommendation, Prediction, Clinic
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
@@ -175,6 +175,7 @@ def generate_prediction(health_data_id: int):
         'CreatedAt': datetime.now(),
     }
 
+
 def generate_user_account_role(
     user_id: int,
     user_role_id: UserRoleID,
@@ -248,6 +249,11 @@ def generate_dummy_data_in_db():
     conn.bulk_insert_mappings(HealthData, health_data)
     conn.bulk_insert_mappings(Recommendation, recommendations)
     conn.bulk_insert_mappings(Prediction, predictions)
+
+    clinics = []
+    for _ in range(4):
+        clinics.append(generate_clinic())
+    conn.bulk_insert_mappings(Clinic, clinics)
 
 
     conn.commit()
