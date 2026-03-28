@@ -25,6 +25,7 @@ field_taken_ids = {}
 
 
 class UserRoleID(Enum):
+    'Possible roles a user can have.'
     ADMIN = 1901881405
     STANDARD = 331928555
     MERCHANT = 62809281
