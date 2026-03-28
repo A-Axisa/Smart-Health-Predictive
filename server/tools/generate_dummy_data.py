@@ -6,7 +6,10 @@ from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
     HealthData, Recommendation, Prediction, Clinic
 
-
+ADMIN_AMT = 2
+STANDARD_USER_AMT = 64
+MERCHANT_AMT = 8
+CLINIC_AMT = 4
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
@@ -240,7 +243,7 @@ def generate_dummy_data_in_db():
     load_names_csv(NAME_FILEPATH)
     conn = next(get_db())
 
-    standard_users = create_users(30, UserRoleID.STANDARD)
+    standard_users = create_users(STANDARD_USER_AMT, UserRoleID.STANDARD)
     health_data = []
     recommendations = []
     predictions = []
@@ -257,16 +260,16 @@ def generate_dummy_data_in_db():
     conn.bulk_insert_mappings(Prediction, predictions)
 
     clinics = []
-    for _ in range(4):
+    for _ in range(CLINIC_AMT):
         clinics.append(generate_clinic())
     conn.bulk_insert_mappings(Clinic, clinics)
 
-    merchant_users = create_users(5, UserRoleID.MERCHANT, random.choice(clinics)['ClinicID'])
+    merchant_users = create_users(MERCHANT_AMT, UserRoleID.MERCHANT, random.choice(clinics)['ClinicID'])
     conn.bulk_insert_mappings(UserAccount, merchant_users['accounts'])
     conn.bulk_insert_mappings(UserAccountRole, merchant_users['roles'])
     conn.bulk_insert_mappings(Patient, merchant_users['patients'])
 
-    admin_users = create_users(5, UserRoleID.ADMIN)
+    admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
     conn.bulk_insert_mappings(UserAccount, admin_users['accounts'])
     conn.bulk_insert_mappings(UserAccountRole, admin_users['roles'])
     conn.bulk_insert_mappings(Patient, admin_users['patients'])
