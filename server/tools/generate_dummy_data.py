@@ -1,9 +1,13 @@
 import random
 from csv import reader as csvReader
+from datetime import datetime
 from enum import Enum
+from ..utils.database import get_db
+from ..models.dbmodels import UserAccount, UserAccountRole, Patient
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
+NAME_FILEPATH = 'server/tools/names.csv'
 PASSWORD_HASH = (
     '$argon2id$v=19$m=19456,t=2,p=1$MzTHleFMLuRjzV0EBw5SHw'
     '$PMjErE7kYpUJmIzsZrwUj5KNQUXy9XFn+kNYJE4PGms'
@@ -219,3 +223,18 @@ def create_health_reports_for_user(patient: dict, amount:int):
         'recommendations': recommendations,
         'predictions': predictions,
     }
+
+def generate_dummy_data_in_db():
+    '''Generates and inserts dummy data into the database.'''
+    load_names_csv(NAME_FILEPATH)
+    conn = next(get_db())
+
+    standard_users = create_users(10, UserRoleID.STANDARD)
+    conn.bulk_insert_mappings(UserAccount, standard_users['accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, standard_users['roles'])
+    conn.bulk_insert_mappings(Patient, standard_users['patients'])
+
+    conn.commit()
+
+
+generate_dummy_data_in_db()
