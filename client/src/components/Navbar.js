@@ -216,7 +216,7 @@ const NavBar = ({ role }) => {
         anchor="left"
         sx={{
           width: 240,
-          borderRgiht: "2px solid #e9e9e9",
+          borderRight: "2px solid #e9e9e9",
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: 250,
@@ -227,7 +227,7 @@ const NavBar = ({ role }) => {
         <Box
           sx={{
             overflow: "auto",
-            height: "770px",
+            height: "780px",
           }}
           >
           <Typography color="#A9A9A9" sx={{ fontSize: 12, px: 3, py: 1, mt: 5 }}>
@@ -265,7 +265,7 @@ const NavBar = ({ role }) => {
           }}
         >
           <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-            © 2024 WellAI. All rights reserved.
+            © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer Policy
           </Typography>
         </Box>
       </Drawer>
