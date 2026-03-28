@@ -8,9 +8,10 @@ import csv
 import codecs
 
 from ..utils.database import get_db
-from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess, Patient
+from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess, Patient, LogEventType
 from ..services.health_recommendation_service import get_health_recommendations
 from .authentication import get_current_user, get_user, get_patient_by_email
+from ..utils.audit_log import write_audit_log
 
 # HealthData
 
@@ -292,6 +293,17 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
         processed_rows += 1
 
     uploaded_file.file.close()
+
+    if merchant:
+        write_audit_log(
+            db_conn=db_conn,
+            event_type=LogEventType.DATA_IMPORT,
+            success=True,
+            request=request,
+            user_id=merchant.UserID,
+            user_email=merchant.Email,
+            description=f"Successfully imported {processed_rows} records via CSV."
+        )
 
     return {
         "message": "Upload successful.",

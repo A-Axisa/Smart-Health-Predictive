@@ -298,8 +298,34 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
 
 @router.get("/logs")
-async def get_logs(db_conn: Session = Depends(get_db)):
-    logs = db_conn.query(AuditLog).order_by(AuditLog.CreatedAt.desc()).all()
+async def get_logs(request: Request, user_email: str = None, event_type: str = None, skip: int = 0, limit: int = 100, db_conn: Session = Depends(get_db)):
+    # Authenticate and authorize admin
+    current_user_data = get_current_user(request, db_conn)
+    requesting_user_email = current_user_data.get('email')
+
+    admin_user = db_conn.query(UserAccount).filter(
+        UserAccount.Email == requesting_user_email).first()
+    if not admin_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Could not identify the requesting user.")
+
+    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID ==
+                                                UserAccountRole.RoleID).filter(UserAccountRole.UserID == admin_user.UserID).first()
+
+    if not user_role or user_role.RoleName.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You do not have permission to view logs.")
+
+    # Build query
+    query = db_conn.query(AuditLog)
+
+    if user_email:
+        query = query.filter(AuditLog.UserEmail.ilike(f"%{user_email}%"))
+    if event_type:
+        query = query.filter(AuditLog.EventType == event_type)
+
+    total_count = query.count()
+    logs = query.order_by(AuditLog.CreatedAt.desc()).offset(skip).limit(limit).all()
 
     result = []
 
@@ -315,4 +341,7 @@ async def get_logs(db_conn: Session = Depends(get_db)):
             "createdAt": log.CreatedAt,
         })
 
-    return result
+    return {
+        "logs": result,
+        "total": total_count
+    }

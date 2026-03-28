@@ -267,7 +267,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     if not user:
         # Log failed login attempts.
         write_audit_log(db_conn,
-                        eventType=LogEventType.LOGIN,
+                        eventType=LogEventType.FAILED_LOGIN_ATTEMPT,
                         success=False,
                         userEmail=user_cred.email,
                         device=request.headers.get("user-agent"),
