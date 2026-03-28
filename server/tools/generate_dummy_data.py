@@ -255,6 +255,15 @@ def generate_dummy_data_in_db():
         clinics.append(generate_clinic())
     conn.bulk_insert_mappings(Clinic, clinics)
 
+    merchant_users = create_users(5, UserRoleID.MERCHANT, random.choice(clinics)['ClinicID'])
+    conn.bulk_insert_mappings(UserAccount, merchant_users['accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, merchant_users['roles'])
+    conn.bulk_insert_mappings(Patient, merchant_users['patients'])
+
+    admin_users = create_users(5, UserRoleID.ADMIN)
+    conn.bulk_insert_mappings(UserAccount, admin_users['accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, admin_users['roles'])
+    conn.bulk_insert_mappings(Patient, admin_users['patients'])
 
     conn.commit()
 
