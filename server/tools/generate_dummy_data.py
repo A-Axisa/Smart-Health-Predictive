@@ -63,7 +63,7 @@ def generate_clinic():
     return {
         "ClinicID": get_random_unique_id('clinic'),
         "ClinicName": clinic_name,
-        "CreatedAt": "",
+        "CreatedAt": datetime.now(),
     }
 
 
@@ -85,7 +85,7 @@ def generate_account(
         'PasswordHash': PASSWORD_HASH,
         'PhoneNumber': '',
         'ClinicID': clinic_id,
-        'CreatedAt': '',
+        'CreatedAt': datetime.now(),
         'IsValidated': True,
         'TokenVersion': random.randrange(TOKEN_VERSION_RANGE),
     }
@@ -110,8 +110,8 @@ def generate_patient(
         'Gender':random.randrange(2),
         'Weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
         'Height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
-        'DOB':'',
-        'CreatedAt':'',
+        'DOB': datetime.now(),
+        'CreatedAt': datetime.now(),
     }
 
 
@@ -134,7 +134,7 @@ def generate_health_data(patient: dict):
         'HeartDisease': random.randrange(2),
         'Diabetes': blood_glucose >= 7.6,
         'BloodGlucose': blood_glucose,
-        'CreatedAt': '',
+        'CreatedAt': datetime.now(),
         'APHigh': round(random.uniform(50.00, 100.00), 2),
         'APLow': round(random.uniform(50.00, 200.00), 2),
         'HighCholesterol': random.randrange(2),
@@ -152,7 +152,7 @@ def generate_recommendation(health_data_id: int):
         'DietRecommendation':'',
         'LifestyleRecommendation':'',
         'DietToAvoid_Recommendation':'',
-        'CreatedAt':'',
+        'CreatedAt': datetime.now(),
     }
 
 
@@ -165,7 +165,7 @@ def generate_prediction(health_data_id: int):
         'StrokeChance': round(random.random(), 2),
         'CardioChance': round(random.random(), 2),
         'DiabetesChance': round(random.random(), 2),
-        'CreatedAt':'',
+        'CreatedAt': datetime.now(),
     }
 
 def generate_user_account_role(
@@ -176,7 +176,7 @@ def generate_user_account_role(
     return {
         'RoleID': user_role_id.value,
         'UserID': user_id,
-        'AssignedAt': ''
+        'AssignedAt': datetime.now()
     }
 
 
