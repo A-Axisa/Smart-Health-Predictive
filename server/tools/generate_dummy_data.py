@@ -61,9 +61,9 @@ def generate_clinic():
     names = get_random_names(2)
     clinic_name =  names[0] + ' ' + names[1] + ' ' + 'Clinic'
     return {
-        "clinic_id": get_random_unique_id('clinic'),
-        "clinic_name": clinic_name,
-        "created_at": "",
+        "ClinicID": get_random_unique_id('clinic'),
+        "ClinicName": clinic_name,
+        "CreatedAt": "",
     }
 
 
@@ -80,14 +80,14 @@ def generate_account(
     email = given_name + '.' + family_name + '.' + '@example.com'
 
     return {
-        'user_id': get_random_unique_id('account'),
-        'email': email,
-        'password_hash': PASSWORD_HASH,
-        'phone_number': '',
-        'clinic_id': clinic_id,
-        'created_at': '',
-        'is_validated': True,
-        'token_version': random.randrange(TOKEN_VERSION_RANGE),
+        'UserID': get_random_unique_id('account'),
+        'Email': email,
+        'PasswordHash': PASSWORD_HASH,
+        'PhoneNumber': '',
+        'ClinicID': clinic_id,
+        'CreatedAt': '',
+        'IsValidated': True,
+        'TokenVersion': random.randrange(TOKEN_VERSION_RANGE),
     }
 
 
@@ -103,15 +103,15 @@ def generate_patient(
         family_name = get_random_names()[0]
 
     return {
-        'patient_id': get_random_unique_id('patient'),
-        'user_id': user_id,
-        'given_name': given_name,
-        'family_name': family_name,
-        'gender':random.randrange(2),
-        'weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
-        'height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
-        'dob':'',
-        'created_at':'',
+        'PatientID': get_random_unique_id('patient'),
+        'UserID': user_id,
+        'GivenNames': given_name,
+        'LastName': family_name,
+        'Gender':random.randrange(2),
+        'Weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
+        'Height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
+        'DOB':'',
+        'CreatedAt':'',
     }
 
 
@@ -120,25 +120,25 @@ def generate_health_data(patient: dict):
        and random details.'''
     blood_glucose = round(random.uniform(2.00, 10.00), 2)
     return {
-        'health_data_id': get_random_unique_id('health_data'),
-        'patient_id': patient['patient_id'],
-        'gender': patient['gender'],
-        'age': 18,
-        'weight_kg': patient['weight'],
-        'height_cm': patient['height'],
-        'alcohol': random.randrange(2),
-        'smoking': random.randrange(2),
-        'marital': random.randrange(2),
-        'working': random.randrange(3),
-        'hypertension': random.randrange(2),
-        'heart_disease': random.randrange(2),
-        'diabetes': blood_glucose >= 7.6,
-        'blood_glucose': blood_glucose,
-        'created_at': '',
-        'ap_high': round(random.uniform(50.00, 100.00), 2),
-        'ap_low': round(random.uniform(50.00, 200.00), 2),
-        'high_cholesterol': random.randrange(2),
-        'stroke': random.randrange(2),
+        'HealthDataID': get_random_unique_id('health_data'),
+        'PatientID': patient['PatientID'],
+        'Gender': patient['Gender'],
+        'Age': 18,
+        'WeightKilograms': patient['Weight'],
+        'HeightCentimeters': patient['Height'],
+        'Alcohol': random.randrange(2),
+        'SmokingStatus': random.randrange(2),
+        'MaritalStatus': random.randrange(2),
+        'WorkingStatus': random.randrange(3),
+        'Hypertension': random.randrange(2),
+        'HeartDisease': random.randrange(2),
+        'Diabetes': blood_glucose >= 7.6,
+        'BloodGlucose': blood_glucose,
+        'CreatedAt': '',
+        'APHigh': round(random.uniform(50.00, 100.00), 2),
+        'APLow': round(random.uniform(50.00, 200.00), 2),
+        'HighCholesterol': random.randrange(2),
+        'Stroke': random.randrange(2),
     }
 
 
@@ -146,13 +146,13 @@ def generate_recommendation(health_data_id: int):
     '''Returns a recommendation with a unique ID and random information
        for a health report.'''
     return {
-        'recommendation_id': get_random_unique_id('recommendation'),
-        'health_data_id': health_data_id,
-        'exercise_recommendation':'',
-        'diet_recommendation':'',
-        'lifestyle_recommendation':'',
-        'diet_to_avoid_recommendation':'',
-        'created_at':'',
+        'RecommendationID': get_random_unique_id('recommendation'),
+        'HealthDataID': health_data_id,
+        'ExerciseRecommendation':'',
+        'DietRecommendation':'',
+        'LifestyleRecommendation':'',
+        'DietToAvoid_Recommendation':'',
+        'CreatedAt':'',
     }
 
 
@@ -160,12 +160,12 @@ def generate_prediction(health_data_id: int):
     '''Returns a prediction with a unique ID and random information
        for a health report.'''
     return {
-        'prediction_id': get_random_unique_id('prediction'),
-        'health_data_id': health_data_id,
-        'stroke_chance': round(random.random(), 2),
-        'cardio_chance': round(random.random(), 2),
-        'diabetes_chance': round(random.random(), 2),
-        'created_at':'',
+        'PredictionID': get_random_unique_id('prediction'),
+        'HealthDataID': health_data_id,
+        'StrokeChance': round(random.random(), 2),
+        'CardioChance': round(random.random(), 2),
+        'DiabetesChance': round(random.random(), 2),
+        'CreatedAt':'',
     }
 
 def generate_user_account_role(
@@ -174,7 +174,7 @@ def generate_user_account_role(
 ):
     '''Returns a user account role for the given user and role.'''
     return {
-        'role_id': user_role_id,
-        'user_id': user_id,
-        'assigned_at': ''
+        'RoleID': user_role_id,
+        'UserID': user_id,
+        'AssignedAt': ''
     }
