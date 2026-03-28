@@ -198,3 +198,24 @@ def create_users(amount: int, user_role: UserRoleID, clinic_id: int = None):
         'patients': patients,
         'roles': roles,
     }
+
+
+def create_health_reports_for_user(patient: dict, amount:int):
+    '''Returns randomly generated the health data, recommendations, and 
+       predictions for a patient.'''
+    health_data = []
+    recommendations = []
+    predictions = []
+    for _ in range(amount):
+        new_health_data = generate_health_data(patient)
+        health_data.append(new_health_data)
+        recommendations.append(
+            generate_recommendation(new_health_data['HealthDataID']))
+        predictions.append(
+            generate_prediction(new_health_data['HealthDataID']))
+
+    return {
+        'health_data': health_data,
+        'recommendations': recommendations,
+        'predictions': predictions,
+    }
