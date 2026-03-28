@@ -17,7 +17,7 @@ HEIGHT_MIN_M = 120.00
 HEIGHT_MAX_M = 200.00
 WEIGHT_MIN_KG = 40.0
 WEIGHT_MAX_KG = 240.0
-POSSIBLE_NAMES = []
+possible_names = []
 field_taken_ids = {}
 
 class UserRoleID(Enum):
@@ -31,19 +31,19 @@ def load_names_csv(filename: str):
         csv_reader = csvReader(csv_file, delimiter=',')
         for row in csv_reader:
             for name in row:
-                POSSIBLE_NAMES.append(name)
+                possible_names.append(name)
 
 
 def get_random_names(amount: int = 1):
     '''Randomly selects a list of names from all possible names.
        Names are replaced with '---' if there are no possible names'''
 
-    if len(POSSIBLE_NAMES) <= 0:
+    if len(possible_names) <= 0:
         return ['---'] * amount
 
     names = []
     for _ in range(amount):
-        names.append(random.choice(POSSIBLE_NAMES))
+        names.append(random.choice(possible_names))
     return names
 
 
