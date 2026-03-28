@@ -6,6 +6,8 @@ from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
     HealthData, Recommendation, Prediction, Clinic
 
+
+
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
 NAME_FILEPATH = 'server/tools/names.csv'
@@ -17,13 +19,16 @@ HEIGHT_MIN_M = 120.00
 HEIGHT_MAX_M = 200.00
 WEIGHT_MIN_KG = 40.0
 WEIGHT_MAX_KG = 240.0
+
 possible_names = []
 field_taken_ids = {}
+
 
 class UserRoleID(Enum):
     ADMIN = 1901881405
     STANDARD = 331928555
     MERCHANT = 62809281
+
 
 def load_names_csv(filename: str):
     '''Loads all the names in the CSV file to use in the dummy data'''
