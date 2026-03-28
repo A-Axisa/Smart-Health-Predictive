@@ -174,7 +174,7 @@ def generate_user_account_role(
 ):
     '''Returns a user account role for the given user and role.'''
     return {
-        'RoleID': user_role_id,
+        'RoleID': user_role_id.value,
         'UserID': user_id,
         'AssignedAt': ''
     }
