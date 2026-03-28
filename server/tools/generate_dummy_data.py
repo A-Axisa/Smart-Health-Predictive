@@ -178,3 +178,23 @@ def generate_user_account_role(
         'UserID': user_id,
         'AssignedAt': ''
     }
+
+
+def create_users(amount: int, user_role: UserRoleID, clinic_id: int = None):
+    '''Returns randomly generated data representing a collection of users.'''
+    accounts = []
+    patients = []
+    roles = []
+    for _ in range(amount):
+        name = get_random_names(2)
+        new_account = generate_account(name[0], name[1], clinic_id)
+        new_patient = generate_patient(name[0], name[1], new_account['UserID'])
+        accounts.append(new_account)
+        patients.append(new_patient)
+        roles.append(generate_user_account_role(new_account['UserID'], user_role))
+
+    return {
+        'accounts': accounts,
+        'patients': patients,
+        'roles': roles,
+    }
