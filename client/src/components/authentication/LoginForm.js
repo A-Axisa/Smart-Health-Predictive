@@ -5,13 +5,14 @@ import { Box, Container, Stack, Button, Typography, Link,
 import PasswordInputField from '../authentication/PasswordInputField';
 import EmailInputField from '../authentication/EmailInputField';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 /**
  * Provides the user a form with the required fields and buttons to login to
  * the application.
  */
 const LoginForm = () => {
   const navigate = useNavigate();
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
   const [password, setPassword] = useState(null)
   const [isPasswordValid, setIsPasswordValid] = useState(false);
@@ -56,8 +57,8 @@ const LoginForm = () => {
 
     setIsLoading(true)
 
-    // Post the fetch request with the supplied credentials.
-    await fetch('http://localhost:8000/login', {
+  // Post the fetch request with the supplied credentials.
+  await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers:{
         'Content-Type': 'application/json'
@@ -88,7 +89,8 @@ const LoginForm = () => {
               <EmailInputField onChange={validateEmail} 
                 showRequired={alertEmailRequired} />
               <PasswordInputField onChange={validatePassword} truncate={true}
-                restrictLength={false} showRequired={alertPasswordRequired}/>
+                restrictLength={false} showRequired={alertPasswordRequired}
+                requireCharacters={false}/>
               <Button loading={isLoading} type='submit' variant="contained" sx={{ 
                 py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
                 Login

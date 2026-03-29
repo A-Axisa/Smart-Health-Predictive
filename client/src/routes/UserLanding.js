@@ -1,150 +1,181 @@
 import {
-	Card,
-	CardHeader,
-	CardContent,
-	Box,
-	Grid,
-	Typography,
-	Stack,
-	Button,
-	CardActions
+  Card,
+  CardHeader,
+  CardContent,
+  Box,
+  Grid,
+  Typography,
+  Stack,
+  Button,
+  CardActions,
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BarChart } from "@mui/x-charts/BarChart";
 
-const UserLanding = ({ }) => {
-	const navigate = useNavigate();
 
-	async function logout(e) {
-		e.preventDefault();
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-		await fetch('http://localhost:8000/logout', {
-			method: 'POST',
-			credentials: 'include'
-		}).then(response => {
-			if (!response.ok) {
-				throw new Error(response.status)
-			}
-			return response.json()
-		}).then(data => {
-			navigate('/login')
-		})
-	}
+const UserLanding = ({}) => {
 
-	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				display: "grid",
-				gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-				gap: 3,
-				justifyContent: "center",
-				alignItems: "start",
-				p: 3,
-				backgroundColor: "#127067"
-			}}>
+  const navigate = useNavigate();
+  const [name, setName] = useState(null);
+  const [data, setData] = useState({});
 
-			{/*Main information Section*/}
-			<Card variant="outlined" sx={{
-				minHeight: { xs: "auto", md: "90vh" },
-				boxShadow: 10,
-				borderRadius: 5,
-				marginLeft: "2rem",
-				padding: 2,
-				display: "flex",
-				flexDirection: "column"
-			}}>
-				<Typography variant="h3" fontWeight={600} color="primary" align="center">
-					Welcome, [First Name]
-				</Typography>
-				<CardContent>
-					<Typography variant="h6">
-						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-						facilisis arcu et ex tristique, ut hendrerit est posuere. Nunc
-						fringilla commodo neque vel scelerisque. Sed id dictum massa, eu
-						tristique enim. Vestibulum pellentesque quis nibh et egestas.
-						Nulla efficitur quam et venenatis rhoncus. Quisque nec odio a
-						ligula facilisis semper vel ut mi. Quisque ac nulla tortor.
-						Curabitur egestas dictum risus, ac efficitur diam vulputate sed.
-						Vivamus sed tortor nunc.
-					</Typography>
-				</CardContent>
-				<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-					<Stack spacing={2}>
-						<Button variant="outlined" onClick={logout}>Logout</Button>
-						<Button type='submit' href="generate-report" variant="contained" size="large">Generate Report </Button>
-						<Button type='submit' href="ai-health-prediction" variant="contained" size="large">Health Prediction History</Button>
-					</Stack>
-				</CardActions>
-			</Card>
+  useEffect(() => {
+    fetch(`${API_BASE}/user/me`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((user) => {
+        setName(user.name);
+      });
+  }, []);
 
-			<Box
-				sx={{
-					display: "grid",
-					gridTemplateRows: { xs: '1fr 1fr', md: '1fr 1fr' },
-					gap: 3,
+  useEffect(() => {
+    fetch(`${API_BASE}/dashboard`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+      });
+  }, []);
 
-				}}>
-				{/*Account Information Section*/}
-				<Card sx={{
-					minHeight: { xs: "auto", md: "40vh" },
-					boxShadow: 10,
-					borderRadius: 5,
-					marginLeft: "2rem",
-					padding: 2,
-					display: "flex",
-					flexDirection: "column"
-				}}>
-					<Typography variant="h3" fontWeight={600} color="primary" align="center">
-						Account Information
-					</Typography>
-					<CardContent>
-						<Typography variant="h6">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-							facilisis arcu et ex tristique, ut hendrerit est posuere. Nunc
-							fringilla commodo neque vel scelerisque. Sed id dictum massa, eu
-							tristique enim. Vestibulum pellentesque quis nibh et egestas.
-							Nulla efficitur quam et venenatis rhoncus. Quisque nec odio a
-							ligula facilisis semper vel ut mi. Quisque ac nulla tortor.
-							Curabitur egestas dictum risus, ac efficitur diam vulputate sed.
-							Vivamus sed tortor nunc.
-						</Typography>
-					</CardContent>
-					<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-						<Button variant="contained" href="user-settings">User Settings</Button>
-					</CardActions>
-				</Card>
+  const chartData = (data?.risks?.dates ?? [])
+    .map((date, i) => ({
+      date,
+      stroke: data?.risks?.stroke?.[i] ?? 0,
+      diabetes: data?.risks?.diabetes?.[i] ?? 0,
+      cvd: data?.risks?.cvd?.[i] ?? 0,
+    })).reverse();
 
-				{/*Analytics Section*/}
-				<Card sx={{
-					minHeight: { xs: "auto", md: "40vh" },
-					boxShadow: 10,
-					borderRadius: 5,
-					marginLeft: "2rem",
-					padding: 2,
-					display: "flex",
-					flexDirection: "column"
-				}}>
-					<Typography variant="h3" fontWeight={600} color="primary" align="center">
-						Analytics
-					</Typography>
-					<CardContent>
-						<Typography variant="h6">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-							facilisis arcu et ex tristique, ut hendrerit est posuere. Nunc
-							fringilla commodo neque vel scelerisque. Sed id dictum massa, eu
-							tristique enim. Vestibulum pellentesque quis nibh et egestas.
-							Nulla efficitur quam et venenatis rhoncus. Quisque nec odio a
-							ligula facilisis semper vel ut mi. Quisque ac nulla tortor.
-							Curabitur egestas dictum risus, ac efficitur diam vulputate sed.
-							Vivamus sed tortor nunc.
-						</Typography>
-					</CardContent>
-					<CardActions disableSpacing sx={{ mt: "auto", justifyContent: "end" }}>
-						<Button variant="contained" href="health-analytics">Health Analytics</Button>
-					</CardActions>
-				</Card>
-			</Box>
-		</Box>
-	);
-}
-export default UserLanding
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#fdf7ff",
+        ml: "250px",
+        mt: "66px",
+        pt: 1,
+        pl: 5,
+        pr: 5,
+      }}
+    >
+      <Box
+        sx={{
+          borderBottom: "1px solid #d6d6d6",
+          mb: 4,
+          py: 3,
+        }}
+      >
+        <Typography variant="h4">Health Overview</Typography>
+        <Typography variant="h6">Welcome back, {name}!</Typography>
+        <Typography variant="h6">
+          It has been{" "}
+          <Typography component="span" variant="h5" sx={{ color: "#712b89", fontWeight: "bold" }}>
+            {data.days ?? 0} days
+          </Typography>{" "}
+          since your last report
+        </Typography>
+      </Box>
+
+      <Box sx={{ display: "flex", gap: 3 }}>
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+
+          {/* Card Percentages */}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            {["stroke", "diabetes", "cvd"].map((key) => (
+              <Card key={key} sx={{ borderRadius: "10px", flex: 1 }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom sx={{ color: "#747474" }}>
+                    {key.toUpperCase()}
+                  </Typography>
+                  <Typography variant="h4">
+                    {data?.risks?.[key]?.slice(-1)[0] ?? 0}%
+                  </Typography>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "inline-block",
+                      px: 0.4,
+                      py: 0.1,
+                      mt: 2,
+                      borderRadius: "5px",
+                      backgroundColor:
+                        (data?.diff?.[key] ?? 0) >= 0 ? "rgb(255, 221, 221)" : "#c6ffca",
+                    }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontWeight: "bold",
+                        color: (data?.diff?.[key] ?? 0) >= 0 ? "#ff2424" : "#17c940",
+                      }}
+                    >
+                      {data?.diff?.[key] >= 0 ? "+ " : ""}
+                      {(data?.diff?.[key] ?? 0).toFixed(2)}%
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+
+          {/* Bar chart */}
+          <Card sx={{ p: 2 }}>
+            <BarChart
+              dataset={chartData}
+              xAxis={[{ dataKey: "date" }]}
+              series={[
+                { dataKey: "stroke", label: "Stroke (%)" },
+                { dataKey: "diabetes", label: "Diabetes (%)" },
+                { dataKey: "cvd", label: "CVD (%)" },
+              ]}
+              colors={["#712b89", "#e091ff", "#3a0050"]}
+              height={400}
+            />
+          </Card>
+        </Box>
+
+        {/* Recommendations */}
+        <Box sx={{ flex: 1 }}>
+          <Card sx={{
+            borderRadius: "10px",
+            p: 2,
+            height: "95%" }}
+          >
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              Latest Recommendations
+            </Typography>
+            <Box>
+              {data?.recommendations && Object.entries(data.recommendations).map(([key, value], index, arr) => (
+                <Box
+                  key={key}
+                  sx={{
+                    pb: 2,
+                    mb: 2,
+                    borderBottom: index !== arr.length - 1 ? "1px solid #e0e0e0" : "none",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    {key.toUpperCase()}
+                  </Typography>
+                  <Typography sx={{ whiteSpace: "pre-line" }}>
+                    {value}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Card>
+        </Box>
+
+      </Box>
+    </Box>
+  );
+};
+
+export default UserLanding;

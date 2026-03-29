@@ -1,3 +1,3 @@
-﻿FullName,Email,PhoneNumber,Age,WeightKilograms,HeightMeters,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,Exercise,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus
-Keith Hart,keith.hart@example.com,61463531525,31,50,1.7,1,4.5,135,120,1,0,1,0,1,0,1,0,1
-Adam Peake,adam.peake@example.com ,4.91519E+12,31,60,1.7,1,6,140,120,0,1,1,0,0,1,0,1,1
+﻿GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
+Keith ,Hart,keith.hart@example.com,61463531525,31,50,170,Male,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1
+Adam ,Peake,adam.peake@example.com ,4.92E+12,31,60,170,Male,6,140,120,0,1,0,0,1,No,Married,Private,0

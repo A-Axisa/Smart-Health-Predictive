@@ -11,6 +11,18 @@ import {
 
 
 const ReportTemplate = ({ report, date }) => {
+	const workingStatusMap = {
+    0: "Unemployed",
+    1: "Private",
+    2: "Student",
+    4: "Public"
+  };
+
+  const smokingStatusMap = {
+    0: "No",
+    1: "Yes",
+    2: "Former"
+  };
 
 	return (
 		<Box>
@@ -41,12 +53,12 @@ const ReportTemplate = ({ report, date }) => {
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Weight:</Typography>
-					<Typography>{report.weight} kg</Typography>
+					<Typography>{report.weight}kg</Typography>
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Height:</Typography>
-					<Typography>{report.height} m</Typography>
+					<Typography>{report.height}cm</Typography>
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
@@ -56,7 +68,15 @@ const ReportTemplate = ({ report, date }) => {
 
 				<Box sx={{ display: "flex", gap: 1 }}>
 					<Typography sx={{ fontWeight: 600 }}>Blood Glucose:</Typography>
-					<Typography>{report.bloodGlucose} mmol/L</Typography>
+					<Typography>{report.bloodGlucose}mmol/L</Typography>
+				</Box>
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Systolic Blood Pressure:</Typography>
+					<Typography>{report.ap_hi}mmHg</Typography>
+				</Box>
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Diastolic Blood Pressure:</Typography>
+					<Typography>{report.ap_lo}mmHg</Typography>
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
@@ -64,8 +84,47 @@ const ReportTemplate = ({ report, date }) => {
 					<Typography>{report.exercise === 1 ? "Yes" : "No"}</Typography>
 				</Box>
 
-				<Typography variant="h6" sx={{ mt: 2 }}>And more...</Typography>
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Hypertension:</Typography>
+					<Typography>{report.hyperTension === 1 ? "Yes" : "No"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Heart Disease:</Typography>
+					<Typography>{report.heartDisease === 1 ? "Yes" : "No"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Diabetes:</Typography>
+					<Typography>{report.diabetes === 1 ? "Yes" : "No"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>High Cholesterol:</Typography>
+					<Typography>{report.highCholesterol === 1 ? "Yes" : "No"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Alcohol:</Typography>
+					<Typography>{report.alcohol === 1 ? "Yes" : "No"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Smoker:</Typography>
+					<Typography>{smokingStatusMap[report.smoker]}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Marital Status:</Typography>
+					<Typography>{report.maritalStatus === 1 ? "Married" : "Single"}</Typography>
+				</Box>
+
+				<Box sx={{ display: "flex", gap: 1 }}>
+					<Typography sx={{ fontWeight: 600 }}>Working Status:</Typography>
+					<Typography>{workingStatusMap[report.workingStatus]}</Typography>
+				</Box>
 			</Box>
+
 
 			<Divider sx={{ borderColor: '#e0e0e0' }} />
 			{/* Health Predictions */}

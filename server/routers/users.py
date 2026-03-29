@@ -1,45 +1,93 @@
+from datetime import datetime
+from decimal import Decimal
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import List
 
 from ..utils.database import get_db
+from ..utils.audit_log import write_audit_log
 from ..models.dbmodels import (
     UserAccount,
     UserAccountRole,
-    AccountRole,
-    HealthData,
     UserAccountValidationToken,
+    HealthData,
     Prediction,
     Recommendation,
+    LogEventType,
+    Patient,
+    UserPatientAccess,
+    Clinic
 )
-from ..routers.authentication import get_current_user, get_user
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email
+
+# Health Analysis
+
+
+class HealthMetric(BaseModel):
+    # ISO datetime string of the prediction creation time
+    date: str
+    month: str
+    strokeProbability: float
+    cardioProbability: float
+    diabetesProbability: float
+
+
+class Report(BaseModel):
+    age: int
+    weight: float
+    height: float
+    gender: int
+    bloodGlucose: float
+    ap_hi: float
+    ap_lo: float
+    highCholesterol: int
+    hyperTension: int
+    heartDisease: int
+    diabetes: int
+    alcohol: int
+    smoker: int
+    maritalStatus: int
+    workingStatus: int
+    strokeChance: float
+    CVDChance: float
+    diabetesChance: float
+    # Optional recommendations
+    exerciseRecommendation: Optional[str] = None
+    dietRecommendation: Optional[str] = None
+    lifestyleRecommendation: Optional[str] = None
+    dietToAvoidRecommendation: Optional[str] = None
+
+
+class HealthDataDates(BaseModel):
+    healthDataID: int
+    date: datetime
+
+
+class ClinicDetails(BaseModel):
+    clinic_id: int
+    clinic_name: str
+
+
+class Dashboard(BaseModel):
+    days: int
+    risks: dict
+    diff: dict
+    recommendations: dict
+
+
+def _to_float(val) -> float:
+    if isinstance(val, Decimal):
+        return float(val)
+    try:
+        return float(val)
+    except Exception:
+        return 0.0
 
 
 router = APIRouter()
 
-@router.get("/users/")
-async def getUsers(db_conn: Session = Depends(get_db)):
-    users = db_conn.query(UserAccount, AccountRole). \
-        outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID). \
-        outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID). \
-        all()
-    
-    result = []
-
-    for user, role in users:
-        result.append({
-            "id": user.UserID,
-            "fullName": user.FullName,
-            "email": user.Email,
-            "phoneNumber": user.PhoneNumber,
-            "createdAt": user.CreatedAt,
-            "role": {
-                "id": role.RoleID if role else None,
-                "name": role.RoleName if role else None
-            }
-        })
-
-    return result
 
 def _delete_user_data(user_id: int, db_conn: Session):
     """
@@ -49,145 +97,433 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
     try:
         # Find the user to ensure they exist before proceeding
-        user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
+        user_to_delete = db_conn.query(UserAccount).filter(
+            UserAccount.UserID == user_id).first()
         if not user_to_delete:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+        # Get patient record if it exists
+        patient_record = get_patient_by_email(user_to_delete.Email, db_conn)
+
+        # Delete Merchant Patient access
+        if patient_record:
+            db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID ==
+                                                    patient_record.PatientID).delete(synchronize_session=False)
+        else:
+            db_conn.query(UserPatientAccess).filter(
+                UserPatientAccess.UserID == user_to_delete.UserID).delete(synchronize_session=False)
 
         # Collect all HealthDataIDs for this user
         health_ids: List[int] = [
-            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.UserID == user_id).all()
+            hid for (hid,) in db_conn.query(HealthData.HealthDataID).filter(HealthData.PatientID == patient_record.PatientID).all()
         ]
 
         if health_ids:
             # Delete tables that depend on HealthData first
-            recs_deleted = db_conn.query(Recommendation).filter(Recommendation.HealthDataID.in_(health_ids)).delete(synchronize_session=False)
+            recs_deleted = db_conn.query(Recommendation).filter(
+                Recommendation.HealthDataID.in_(health_ids)).delete(synchronize_session=False)
             deletion_report['recommendations_deleted'] = recs_deleted
 
-            preds_deleted = db_conn.query(Prediction).filter(Prediction.HealthDataID.in_(health_ids)).delete(synchronize_session=False)
+            preds_deleted = db_conn.query(Prediction).filter(
+                Prediction.HealthDataID.in_(health_ids)).delete(synchronize_session=False)
             deletion_report['predictions_deleted'] = preds_deleted
-            
+
             # Then delete HealthData records
-            health_data_deleted = db_conn.query(HealthData).filter(HealthData.UserID == user_id).delete(synchronize_session=False)
+            health_data_deleted = db_conn.query(HealthData).filter(
+                HealthData.PatientID == patient_record.PatientID).delete(synchronize_session=False)
             deletion_report['health_data_deleted'] = health_data_deleted
 
         # Delete tables directly associated with the user
-        tokens_deleted = db_conn.query(UserAccountValidationToken).filter(UserAccountValidationToken.UserID == user_id).delete(synchronize_session=False)
+        tokens_deleted = db_conn.query(UserAccountValidationToken).filter(
+            UserAccountValidationToken.UserID == user_id).delete(synchronize_session=False)
         deletion_report['validation_tokens_deleted'] = tokens_deleted
 
-        roles_deleted = db_conn.query(UserAccountRole).filter(UserAccountRole.UserID == user_id).delete(synchronize_session=False)
+        roles_deleted = db_conn.query(UserAccountRole).filter(
+            UserAccountRole.UserID == user_id).delete(synchronize_session=False)
         deletion_report['user_roles_deleted'] = roles_deleted
 
         # Delete the user record itself
         db_conn.delete(user_to_delete)
-        deletion_report['users_deleted'] = 1 # Since we are deleting one user
+        deletion_report['users_deleted'] = 1  # Since we are deleting one user
 
         db_conn.commit()
         return deletion_report
     except Exception as e:
         db_conn.rollback()
         # Log the exception e for debugging if needed
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete user data: {str(e)}")
-
-@router.delete("/users/{user_id}")
-async def delete_user_by_admin(user_id: int, request: Request, db_conn: Session = Depends(get_db)):
-    # Get the current user making the request
-    current_user_data = get_current_user(request, db_conn)
-    requesting_user_email = current_user_data.get('email')
-    
-    # Verify the requesting user is an administrator
-    admin_user = db_conn.query(UserAccount).filter(UserAccount.Email == requesting_user_email).first()
-    if not admin_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
-
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID).filter(UserAccountRole.UserID == admin_user.UserID).first()
-
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
-
-    # Prevent admin from deleting themselves
-    if admin_user.UserID == user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Administrators cannot delete their own accounts.")
-
-    # Find the user to delete to get their details before deletion
-    user_to_delete = db_conn.query(UserAccount).filter(UserAccount.UserID == user_id).first()
-    if not user_to_delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User to delete not found.")
-    
-    # Perform the deletion and get the report
-    deletion_report = _delete_user_data(user_id, db_conn)
-
-    return {
-        "message": f"User with ID {user_id} and all related data deleted successfully",
-        "deletion_report": deletion_report
-    }
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Failed to delete user data: {str(e)}")
 
 
 @router.delete("/users/")
 async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
     # Current request user
     current = get_current_user(request, db_conn)
-    request_user_email = current.get('email') if isinstance(current, dict) else None
+    request_user_email = current.get(
+        'email') if isinstance(current, dict) else None
     if not isinstance(request_user_email, str) or request_user_email.strip() == "":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     user_to_delete = get_user(request_user_email, db_conn)
     if user_to_delete is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     user_id = user_to_delete.UserID
 
     # Perform the deletion
     _delete_user_data(user_id, db_conn)
+    write_audit_log(db_conn,
+                    eventType=LogEventType.ACCOUNT_DELETED,
+                    success=True,
+                    userEmail=user_to_delete.Email,
+                    device=request.headers.get("user-agent"),
+                    ipAddress=request.client.host,
+                    description=f"Account deleted from database.")
 
     return {"message": "User and all related data deleted successfully"}
 
+# Health analytics
 
-@router.get("/users/merchants/")
-async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
-    invalid_merchant_accounts = db_conn.query(UserAccount) \
-                            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
-                            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
-                            .filter(AccountRole.RoleName == "merchant") \
-                            .filter(UserAccount.IsValidated == 0) \
-                            .all()
-    
-    data = []
 
-    for merchant in invalid_merchant_accounts:
-        data.append({
-            "fullName": merchant.FullName,
-            "email": merchant.Email,
-            "phoneNumber": merchant.PhoneNumber,
-            "createdAt": merchant.CreatedAt,
-        })
+@router.get("/api/health-analytics", response_model=List[HealthMetric])
+async def get_health_analytics(
+    request: Request,
+    db_conn: Session = Depends(get_db),
+):
+    """
+    Returns time-series health risk probabilities for the current user
+    using historical predictions stored in the database.
+    """
+    user_email = get_current_user(request, db_conn)
+    patient = get_patient_by_email(user_email["email"], db_conn)
+    if not patient:
+        return []
+    patient_id = patient.PatientID
+
+    # Join predictions with health data to scope by user, order by prediction time
+    rows = (
+        db_conn.query(
+            getattr(Prediction, 'CreatedAt'),
+            getattr(Prediction, 'StrokeChance'),
+            getattr(Prediction, 'CVDChance'),
+            getattr(Prediction, 'DiabetesChance'),
+        )
+        .join(
+            HealthData,
+            getattr(Prediction, 'HealthDataID') == getattr(
+                HealthData, 'HealthDataID'),
+        )
+        .filter(getattr(HealthData, 'PatientID') == patient_id)
+        .order_by(getattr(Prediction, 'CreatedAt').asc())
+        .all()
+    )
+
+    def month_label(dt: datetime) -> str:
+        # e.g., 'Jan 2025' to help distinguish years if data spans multiple years
+        try:
+            return dt.strftime("%b %Y")
+        except Exception:
+            return str(dt)
+
+    data: List[HealthMetric] = []
+    for created_at, stroke, cvd, diab in rows:
+        data.append(
+            HealthMetric(
+                date=(created_at.isoformat() if isinstance(
+                    created_at, datetime) else str(created_at)),
+                month=month_label(created_at),
+                strokeProbability=_to_float(stroke),
+                cardioProbability=_to_float(cvd),
+                diabetesProbability=_to_float(diab),
+            )
+        )
 
     return data
 
+# Report Data
 
-@router.post("/users/merchants/{merchant_email}")
-async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    # Validate the requesting user
-    admin_email = get_current_user(request, db_conn)
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == admin_email.get("email")).first()
 
-    # Verify the requesting user is an administrator
-    if not admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not identify the requesting user.")
+@router.get("/reportData/{healthDataId}")
+async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
 
-    user_role = db_conn.query(AccountRole).join(UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID) \
-        .filter(UserAccountRole.UserID == admin.UserID).first()
+    validID = db_conn.query(HealthData).filter_by(
+        HealthDataID=healthDataId).first()
+    if not validID:
+        raise HTTPException(status_code=404, detail="Report data not found")
 
-    if not user_role or user_role.RoleName.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete users.")
-    
-    # Begin merchant Validation
-    merchant = db_conn.query(UserAccount).filter(UserAccount.Email == merchant_email).first()
+    # Retrieve user health data
+    healthData = db_conn.query(HealthData).filter(
+        getattr(HealthData, 'HealthDataID') == healthDataId).first()
+    predictionData = db_conn.query(Prediction).filter(
+        getattr(Prediction, 'HealthDataID') == healthDataId).first()
+    recommendationData = db_conn.query(Recommendation).filter(getattr(
+        Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
 
-    # Ensure that user is a merchant
+    # Create health report data to return
+    reportData = Report(
+        age=int(getattr(healthData, 'Age', 0) or 0),
+        weight=float(getattr(healthData, 'WeightKilograms', 0) or 0),
+        height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
+        gender=int(
+            1 if bool(getattr(healthData, 'Gender', False) or False) else 0),
+        bloodGlucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
+        ap_hi=float(getattr(healthData, 'APHigh', 0) or 0),
+        ap_lo=float(getattr(healthData, 'APLow', 0) or 0),
+        highCholesterol=int(
+            1 if bool(getattr(healthData, 'HighCholesterol', False) or False) else 0),
+        hyperTension=int(
+            1 if bool(getattr(healthData, 'HyperTension', False) or False) else 0),
+        heartDisease=int(
+            1 if bool(getattr(healthData, 'HeartDisease', False) or False) else 0),
+        diabetes=int(
+            1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
+        alcohol=int(
+            1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
+        smoker=int(getattr(healthData, 'SmokingStatus', 0) or 0),
+        maritalStatus=int(getattr(healthData, 'MaritalStatus', 0) or 0),
+        workingStatus=int(getattr(healthData, 'WorkingStatus', 0) or 0),
+        strokeChance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
+        CVDChance=float(getattr(predictionData, 'CVDChance', 0) or 0),
+        diabetesChance=float(
+            getattr(predictionData, 'DiabetesChance', 0) or 0),
+        exerciseRecommendation=getattr(
+            recommendationData, 'ExerciseRecommendation', None) if recommendationData else None,
+        dietRecommendation=getattr(
+            recommendationData, 'DietRecommendation', None) if recommendationData else None,
+        lifestyleRecommendation=getattr(
+            recommendationData, 'LifestyleRecommendation', None) if recommendationData else None,
+        dietToAvoidRecommendation=getattr(
+            recommendationData, 'DietToAvoidRecommendation', None) if recommendationData else None,
+    )
+
+    # Return reportData object
+    return reportData
+
+
+@router.delete("/reportData/{healthDataId}")
+async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
+
+   # Raise exception if health data is not in the DB
+    health_data = db_conn.query(HealthData).filter_by(
+        HealthDataID=healthDataId).first()
+    if not health_data:
+        raise HTTPException(status_code=404, detail="Health report not found")
+
+    try:
+        # Delete recommendation and prediction data first to avoid a foreign key error
+        db_conn.query(Recommendation).filter(getattr(
+            Recommendation, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        db_conn.query(Prediction).filter(getattr(
+            Prediction, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+        # Delete health data
+        db_conn.query(HealthData).filter(getattr(
+            HealthData, 'HealthDataID') == healthDataId).delete(synchronize_session=False)
+
+        db_conn.commit()
+    except Exception:
+        db_conn.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Failed to delete health data.")
+
+    return {"message": "Health report data successfully deleted"}
+
+
+@router.get("/merchants/reports")
+async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(
+        Email=current_user_email).first()
     if not merchant:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Merchant user not found.")
-    
-    merchant.IsValidated = 1
-    db_conn.commit()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
-    return {"message" : f"Merchant: {merchant.FullName} has been successfully validated."}
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Get patients associated with the merchant.
+    patients = get_merchant_patients(merchant.UserID, db_conn)
+    patient_ids = [p.PatientID for p in patients]
+    # Get patient health data.
+    patient_health_data = (db_conn.query(HealthData).filter(HealthData.PatientID.in_(patient_ids))
+                           .order_by(HealthData.CreatedAt.desc()).all())
+    result = []
+    for row in patient_health_data:
+
+        # Get the patient's name.
+        patient = db_conn.query(Patient).filter_by(
+            PatientID=row.PatientID).first()
+
+        result.append({
+            "name": f'{patient.GivenNames} {patient.FamilyName}',
+            "healthDataID": row.HealthDataID,
+            "date": row.CreatedAt
+        })
+
+    return result
+
+
+@router.get("/merchants/patient_names")
+async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(
+        Email=current_user_email).first()
+    if not merchant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Get patient data associated with the merchant.
+    patients = get_merchant_patients(merchant.UserID, db_conn)
+
+    result = []
+    existing_patient = set()
+    for patient in patients:
+
+        # Get the patient's name.
+        if patient.PatientID not in existing_patient:
+            result.append({
+                "name": f'{patient.GivenNames} {patient.FamilyName}',
+                "patient_id": patient.PatientID
+            })
+            existing_patient.add(patient.PatientID)
+
+    return result
+
+
+@router.get("/getHealthDataDates/")
+async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
+    # Retrieve user current user information
+    user_email = get_current_user(request, db_conn)
+    patient = get_patient_by_email(user_email["email"], db_conn)
+
+    # Retrieve user health data
+    healthData = db_conn.query(HealthData).filter(
+        HealthData.PatientID == patient.PatientID).order_by(HealthData.CreatedAt.desc()).all()
+
+    # Filter by ID and date create to return
+    healthDataDates = [HealthDataDates(
+        healthDataID=data.HealthDataID, date=data.CreatedAt) for data in healthData]
+
+    return healthDataDates
+
+
+@router.get("/getClinicNames/")
+async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Retrieve the all clinics
+    clinics = (
+        db_conn.query(Clinic)
+        .order_by(Clinic.ClinicID.asc())
+        .all()
+    )
+    # Filter clinic by name and id
+    clinic_details = [
+        ClinicDetails(clinic_id=clinic.ClinicID, clinic_name=clinic.ClinicName)
+        for clinic in clinics
+    ]
+
+    return clinic_details
+
+
+def get_merchant_patients(merchantID: int, db_conn):
+    '''Get all patients that belong to the merchant user'''
+    return (db_conn.query(Patient)
+            .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+            .filter(UserPatientAccess.UserID == merchantID)
+            .order_by(Patient.CreatedAt.desc())
+            .all()
+            )
+
+@router.get("/dashboard", response_model=Dashboard)
+async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+
+    user = get_current_user(request, db_conn)
+    patient = get_patient_by_email(user["email"], db_conn)
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    patient_id = patient.PatientID
+
+    # Fetch patient health data.
+    health_rows = (db_conn.query(HealthData).filter(HealthData.PatientID == patient_id)
+                .order_by(HealthData.CreatedAt.desc()).limit(5).all())
+    
+    if not health_rows:
+        return Dashboard(
+            days = 0,
+            risks = {},
+            diff = {},
+            recommendations = {},
+        )
+
+    # Calculate days since previous report submission.
+    days_since_prev = (datetime.now() - health_rows[0].CreatedAt).days
+
+    predictions = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
+                .filter(HealthData.PatientID == patient_id)
+                .order_by(Prediction.CreatedAt.desc()).limit(5).all())
+
+    # Latest disease prediction.
+    stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
+    diabetes_risk = float(predictions[0].DiabetesChance) if predictions else 0.0
+    cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
+
+    # Risk over time trends.
+    risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
+
+    latest_risk_info = {
+        "dates": risk_dates,
+        "stroke": [float(p.StrokeChance or 0) for p in predictions],
+        "diabetes": [float(p.DiabetesChance or 0) for p in predictions],
+        "cvd": [float(p.CVDChance or 0) for p in predictions],
+    }
+
+    # Calculate the difference in disease percentage.
+    disease_diff = {
+        "stroke": 0.0,
+        "cvd": 0.0,
+        "diabetes": 0.0,
+    }
+
+    if predictions and len(predictions) > 1:
+        current = predictions[0]
+        prev = predictions[1]
+
+        disease_diff["stroke"] = float(current.StrokeChance) - float(prev.StrokeChance)
+        disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
+        disease_diff["diabetes"] = float(current.DiabetesChance) - float(prev.DiabetesChance)
+
+    # Get the latest patient recommendations.
+    recommendation = (db_conn.query(Recommendation).join(HealthData, Recommendation.HealthDataID == HealthData.HealthDataID)
+                    .filter(HealthData.PatientID == patient_id).order_by(Recommendation.CreatedAt.desc())
+                    .first())
+    
+    latest_recommendations = {
+        "exercise": recommendation.ExerciseRecommendation if recommendation else "No latest recommendation",
+        "diet": recommendation.DietRecommendation if recommendation else "No latest recommendation",
+        "lifestyle": recommendation.LifestyleRecommendation if recommendation else "No latest recommendation",
+        "avoid": recommendation.DietToAvoidRecommendation if recommendation else "No latest recommendation",
+    }
+
+    return Dashboard(
+        days=days_since_prev,
+        risks=latest_risk_info,
+        diff=disease_diff,
+        recommendations=latest_recommendations,
+    )

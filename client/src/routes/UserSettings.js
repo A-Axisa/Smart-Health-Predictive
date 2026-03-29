@@ -373,7 +373,7 @@ const UserSettings = () => {
             type="password"
             value={passwordData.newPassword}
             onChange={(e) => updatePwd('newPassword', e.target.value)}
-            helperText="Password must be at least 8 characters"
+            helperText="Password must be at least 15 characters"
             fullWidth
           />
           <TextField
@@ -386,7 +386,7 @@ const UserSettings = () => {
             fullWidth
           />
           <Typography variant="body2" color="text.secondary">
-            Use at least 8 characters including upper/lowercase, numbers and
+            Use at least 15 characters including upper/lowercase, numbers and
             symbols.
           </Typography>
           {passwordChanged && (<Typography variant="body2" color="success">
@@ -530,7 +530,7 @@ const UserSettings = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', bgcolor: '#f5f5f5', ml: "250px", mt: "66px",}}>
       {isMobile ? (
         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#ffffff', boxShadow: 1 }}>
           <Tabs

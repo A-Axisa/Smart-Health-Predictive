@@ -1,13 +1,15 @@
 import { Outlet, Navigate } from "react-router-dom"
 import React, { useEffect, useState } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 
 const LandingRoute = () => {
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    fetch(`http://localhost:8000/user/me`, {
+    fetch(`${API_BASE}/user/me`, {
       method: "GET",
       credentials: "include"
     })

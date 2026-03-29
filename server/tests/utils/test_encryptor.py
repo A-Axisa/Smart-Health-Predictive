@@ -1,5 +1,5 @@
 import os
-from encryptor import encrypt, decrypt
+from ...utils.encryptor import encrypt, decrypt
 
 
 def setup_key():
@@ -15,8 +15,6 @@ def test_round_trip():
     assert blob.startswith("v1:gcm:")
     recovered = decrypt(blob)
     assert recovered == plaintext
-
-
 
 
 if __name__ == "__main__":

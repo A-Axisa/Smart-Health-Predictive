@@ -4,6 +4,8 @@ import { styled } from '@mui/material/styles';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 // Styles for upload button
 const HiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -19,7 +21,7 @@ const HiddenInput = styled('input')({
 
 const ReportUpload = ({}) => {
 
-  const [data, setData] = useState([]); // Stores the uploaded health data
+  const [isLoading, setIsLoading] = useState(false); // Stores loading state
   
   const navigate = useNavigate();
 
@@ -29,10 +31,12 @@ const ReportUpload = ({}) => {
 
     // Add file to FormData object for request
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("uploaded_file", file);
+
+    setIsLoading(true);
 
     // Sends the file to the upload endpoint for parsing
-    await fetch(`http://localhost:8000/upload`, {
+  await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       body: formData,
       credentials: 'include',
@@ -46,12 +50,13 @@ const ReportUpload = ({}) => {
         console.log(error);
       })
       navigate('/merchant-reports');
+      setIsLoading(false);
   }
 
   return (
     <Box sx={{display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center'}}>
       <Typography sx={{color: 'grey', mb: 4}}>Only PDF (.pdf) or CSV (.csv) files are accepted.</Typography>
-      <Button component='label' role='undefined' variant='contained' tabIndex={-1} color='info' size='large' startIcon={<FileUploadIcon/>}>
+      <Button component='label' role='undefined' variant='contained' tabIndex={-1} color='info' size='large' startIcon={<FileUploadIcon/>} loading={isLoading}>
         Upload File
         <HiddenInput
           type='file'

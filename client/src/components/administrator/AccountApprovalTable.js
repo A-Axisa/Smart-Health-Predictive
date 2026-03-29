@@ -3,6 +3,8 @@ import { Paper, Button } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import ConfirmationDialog from '../confirmationDialog'
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 
 const AccountApprovalTable = ({}) => {
   const [userData, setUserData] = useState([]); // Stores user data
@@ -10,7 +12,7 @@ const AccountApprovalTable = ({}) => {
   const [dialogOpen, setDialogOpen] = useState(false); // Stores dialog state
   
   const fetchMerchants = () => {
-    fetch(`http://localhost:8000/users/merchants/`)
+    fetch(`${API_BASE}/users/merchants/`)
     .then((response) => {
       if (!response.ok) {
           throw new Error(response.status);
@@ -24,8 +26,8 @@ const AccountApprovalTable = ({}) => {
   };
 
   const handleConfirmation = () => {
-    fetch(`http://localhost:8000/users/merchants/${selectedUser}`, {
-      method: 'POST',
+    fetch(`${API_BASE}/users/merchants/${selectedUser}`, {
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
@@ -77,7 +79,7 @@ const AccountApprovalTable = ({}) => {
 
   return (
     <>
-    <Paper sx={{ width: '850px'}}>
+    <Paper sx={{ width: '100%'}}>
       <DataGrid
         rows={userData}
         columns={columns}
@@ -86,7 +88,20 @@ const AccountApprovalTable = ({}) => {
         initialState={{ pagination: { pageSize: 50 } }}
         disableColumnResize
         disableRowSelectionOnClick
-        sx={{ border: 0, p: 1 }}
+        sx={{ 
+          border: 0, 
+          p: 1,
+          // Removes cell outline.
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
+            backgroundColor: '#f1f1f1f1',
+          },
+        }}
       />
     </Paper>
     <ConfirmationDialog

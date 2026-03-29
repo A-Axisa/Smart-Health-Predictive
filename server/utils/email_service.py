@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 # Load environment variables.
 load_dotenv()
 
+
 def send_email(recipient: str, subject: str, content: str, content_type: str = "plainText"):
     """
     Sends an email using Azure Communication Service.
@@ -16,7 +17,7 @@ def send_email(recipient: str, subject: str, content: str, content_type: str = "
     """
     try:
         # It's recommended to use environment variables for connection strings.
-        connection_string = os.environ.get("AZURE_EMAIL_CONNECTION_STRING","")
+        connection_string = os.environ.get("AZURE_EMAIL_CONNECTION_STRING", "")
         sender_address = os.environ.get("AZURE_EMAIL_SENDER_ADDRESS")
         client = EmailClient.from_connection_string(connection_string)
 
@@ -45,6 +46,7 @@ def send_email(recipient: str, subject: str, content: str, content_type: str = "
         print(f"An error occurred while sending email: {ex}")
         return None
 
+
 if __name__ == '__main__':
     # Example of sending a plain text email
     send_email(
@@ -68,4 +70,3 @@ if __name__ == '__main__':
         content=html_content,
         content_type="html"
     )
-
