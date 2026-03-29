@@ -303,3 +303,7 @@ def test_phone_contains_symbols():
 
 def test_phone_starting_with_plus():
     assert not is_formatted_phone_valid("+5555550199")
+
+
+def test_format_phone_number():
+    assert format_phone_number("+(555) 555-0199") == ("5555550199")
