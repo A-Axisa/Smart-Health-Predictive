@@ -530,7 +530,7 @@ const UserSettings = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', bgcolor: '#f5f5f5', ml: "250px", mt: "66px",}}>
       {isMobile ? (
         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#ffffff', boxShadow: 1 }}>
           <Tabs

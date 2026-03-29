@@ -416,7 +416,7 @@ const GenerateReportForm = () => {
           >
             <TextField
               name="bloodGlucose"
-              label="Blood Glucose"
+              label="Blood Glucose (mmol/L)"
               type="text"
               inputProps={{ step: "0.01", min: 0, max: 20, maxLength: 4 }}
               fullWidth
@@ -431,7 +431,7 @@ const GenerateReportForm = () => {
             />
             <TextField
               name="apHigh"
-              label="Systolic Blood Pressure"
+              label="Systolic Blood Pressure (mmHg)"
               type="text"
               inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
               fullWidth
@@ -445,7 +445,7 @@ const GenerateReportForm = () => {
             />
             <TextField
               name="apLow"
-              label="Diastolic Blood Pressure"
+              label="Diastolic Blood Pressure (mmHg)"
               type="text"
               inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
               fullWidth

@@ -238,7 +238,7 @@ const HealthAnalytics = () => {
   }, [xAxisData, isMobile]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: isMobile ? 3 : 4, px: isMobile ? 2 : 3 }}>
+    <Container maxWidth="lg" sx={{ py: isMobile ? 3 : 4, px: isMobile ? 2 : 3, ml: "250px", mt: "66px" }}>
       <Typography variant={isMobile ? "h5" : "h4"} component="h1" gutterBottom color="primary" sx={{ fontWeight: 600, mb: 3 }}>
         Health Analytics
       </Typography>

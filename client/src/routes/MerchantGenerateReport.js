@@ -10,7 +10,7 @@ const MerchantGenerateReport = ({}) => {
 
   return (
     <Container>
-      <Box center sx={{display: 'flex', justifyContent: 'center', p:5}}>
+      <Box center sx={{display: 'flex', justifyContent: 'center', p:5, ml: "250px", mt: "66px" }}>
         <ButtonGroup disableElevation aria-label="disable button group">
           <Button
           variant={page === 'manual' ? 'contained' : 'outlined'}

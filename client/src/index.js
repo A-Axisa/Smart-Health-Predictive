@@ -13,6 +13,9 @@ import UserLanding from './routes/UserLanding';
 import UserSettings from './routes/UserSettings';
 import MerchantGenerateReport from './routes/MerchantGenerateReport';
 import AdministratorDashboard from './routes/AdministratorDashboard';
+import AdministratorApproval from './routes/AdministratorApproval';
+import AdministratorLogs from './routes/AdministratorLogs';
+import AdministratorUsers from './routes/AdministratorUsers';
 import MerchantLanding from './routes/MerchantLanding'
 import MerchantReports from './routes/MerchantReports'
 import AppThemeProvider from './components/AppThemeProvider';
@@ -61,6 +64,9 @@ root.render(
             {/*Admin routes*/}
             <Route element={<ProtectedRoutes role='admin' />}>
               <Route path="/admin-dashboard" element={<AdministratorDashboard />} />
+              <Route path="/admin-audit-logs" element={<AdministratorLogs />} />
+              <Route path="/admin-account-approval" element={<AdministratorApproval />} />
+              <Route path="/admin-users" element={<AdministratorUsers />} />
             </Route>
 
             <Route path="" element={<ErrorPage />} />

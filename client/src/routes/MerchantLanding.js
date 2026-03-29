@@ -15,6 +15,8 @@ const MerchantLanding = ({}) => {
         alignItems: "center",
         flexDirection: "column",
         position: "relative",
+        ml: "250px",
+        mt: "66px",
       }}
     >
       <Box sx={{ mb: 6 }}>
