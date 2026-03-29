@@ -297,11 +297,10 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
     if merchant:
         write_audit_log(
             db_conn=db_conn,
-            event_type=LogEventType.DATA_IMPORT,
+            eventType=LogEventType.DATA_IMPORT,
             success=True,
-            request=request,
-            user_id=merchant.UserID,
-            user_email=merchant.Email,
+            userID=merchant.UserID,
+            userEmail=merchant.Email,
             description=f"Successfully imported {processed_rows} records via CSV."
         )
 
