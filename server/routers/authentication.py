@@ -481,7 +481,7 @@ def is_formatted_phone_valid(phone: str):
         return True
 
     # Only allow for numbers after the plus sign.
-    if not phone.isalpha:
+    if not phone.isdigit():
         return False
     try:
         phonenumbers.parse('+' + phone)
