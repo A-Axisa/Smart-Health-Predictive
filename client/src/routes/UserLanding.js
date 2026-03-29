@@ -30,9 +30,7 @@ const UserLanding = ({}) => {
     })
       .then((response) => response.json())
       .then((user) => {
-        const email = user.email;
-        const givenName = email.split("@")[0].split(".")[0];
-        setName(givenName);
+        setName(user.name);
       });
   }, []);
 

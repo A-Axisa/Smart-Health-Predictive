@@ -384,9 +384,12 @@ def get_current_user(request: Request, db_conn: Session):
     if user_role is None:
         raise credentials_exception
 
+    patient_details = get_patient_by_email(user.Email, db_conn)
+
     return {
         'email': user.Email,
-        'role': user_role
+        'role': user_role,
+        'name': patient_details.GivenNames,
     }
 
 
