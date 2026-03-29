@@ -472,7 +472,7 @@ def is_email_valid(email: str):
 def format_phone_number(phone: str):
     '''Removes spaces, hyphens, and brackets from a phone number string'''
     return phone.replace('-', '').replace(' ', ''). \
-        replace('(', '').replace(')', '')
+        replace('(', '').replace(')', '').replace('+', '')
 
 
 def is_formatted_phone_valid(phone: str):
@@ -481,10 +481,10 @@ def is_formatted_phone_valid(phone: str):
         return True
 
     # Only allow for numbers after the plus sign.
-    if not phone[1:].isalpha:
+    if not phone.isalpha:
         return False
     try:
-        phonenumbers.parse(phone)
+        phonenumbers.parse('+' + phone)
     except phonenumbers.NumberParseException:
         return False
     return True
