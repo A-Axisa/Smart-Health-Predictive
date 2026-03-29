@@ -390,7 +390,7 @@ def get_current_user(request: Request, db_conn: Session):
     return {
         'email': user.Email,
         'role': user_role,
-        'name': patient_details.GivenNames,
+        'name': patient_details.GivenNames if patient_details else user.Email.split('@')[0],
     }
 
 
