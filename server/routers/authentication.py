@@ -476,7 +476,8 @@ def format_phone_number(phone: str):
 
 
 def is_formatted_phone_valid(phone: str):
-    '''Verifies a phone number is empty or a valid number.'''
+    '''Verifies a phone number only containing digits a valid number
+       or is empty.'''
     if phone == '':
         return True
 
