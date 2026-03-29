@@ -291,3 +291,15 @@ def test_change_password_not_matching():
                        'confirm_new_password': '321'}
     response = client.post('/changePassword/', json=change_password)
     assert response.json() == {'detail': 'Invalid password'}
+
+
+def test_phone_is_valid():
+    assert is_formatted_phone_valid("5555550199")
+
+
+def test_phone_contains_symbols():
+    assert not is_formatted_phone_valid("(555) 555-0199")
+
+
+def test_phone_starting_with_plus():
+    assert not is_formatted_phone_valid("+5555550199")
