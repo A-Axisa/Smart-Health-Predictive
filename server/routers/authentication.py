@@ -470,9 +470,8 @@ def is_email_valid(email: str):
 
 
 def format_phone_number(phone: str):
-    '''Removes spaces, hyphens, and brackets from a phone number string'''
-    return phone.replace('-', '').replace(' ', ''). \
-        replace('(', '').replace(')', '').replace('+', '')
+    '''Removes everything but digits from a given phone number.'''
+    return ''.join(c for c in phone if c.isdigit())
 
 
 def is_formatted_phone_valid(phone: str):
