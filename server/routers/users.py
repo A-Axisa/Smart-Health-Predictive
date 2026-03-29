@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from typing import List, Optional
 
@@ -22,7 +22,9 @@ from ..models.dbmodels import (
 )
 from ..routers.authentication import get_current_user, get_user, get_patient_by_email
 
-# Health Analysis
+NAME_MAX_LENGTH = 255
+MIN_AGE = 18
+gender_map = {'Male': 1, 'Female': 0}
 
 
 class HealthMetric(BaseModel):
@@ -75,6 +77,15 @@ class Dashboard(BaseModel):
     risks: dict
     diff: dict
     recommendations: dict
+
+
+class PatientCreationDetails(BaseModel):
+    given_names: str
+    family_name: str
+    date_of_birth: date
+    gender: str
+    weight: float
+    height: float
 
 
 def _to_float(val) -> float:
@@ -374,18 +385,7 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
 async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if the requesting user is a merchant.
-    current_user = get_current_user(request, db_conn)
-    current_user_email = current_user.get('email')
-    merchant = db_conn.query(UserAccount).filter_by(
-        Email=current_user_email).first()
-    if not merchant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-
-    current_user_role = current_user.get('role')
-    if not current_user_role or current_user_role.lower() != 'merchant':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+    merchant = get_current_merchant(request, db_conn)
 
     # Get patient data associated with the merchant.
     patients = get_merchant_patients(merchant.UserID, db_conn)
@@ -440,6 +440,64 @@ async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
     return clinic_details
 
 
+@router.post("/create_patient/")
+async def create_patient(patient: PatientCreationDetails, request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if the requesting user is a merchant.
+    merchant = get_current_merchant(request, db_conn)
+
+    # Validate all user input
+    if (not is_name_valid(patient.given_names) or
+        not is_name_valid(patient.family_name) or
+        not is_gender_valid(patient.gender) or
+        not is_age_valid(patient.date_of_birth) or
+        not is_weight_valid(patient.weight) or
+            not is_height_valid(patient.height)):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    # Create new patient
+    new_patient = Patient(user_id=None,
+                          given_names=patient.given_names,
+                          family_name=patient.family_name, gender=gender_map[patient.gender],
+                          date_of_birth=patient.date_of_birth,
+                          weight=patient.weight,
+                          height=patient.height)
+    db_conn.add(new_patient)
+    db_conn.commit()
+
+    db_conn.refresh(new_patient)
+    # Provide merchant access to view patient information
+    patient_id = new_patient.PatientID
+    merchant_id = merchant.UserID
+
+    merchant_access = UserPatientAccess(
+        user_id=merchant_id, patient_id=patient_id)
+    db_conn.add(merchant_access)
+    db_conn.commit()
+
+    return {'message': 'Patient successfully created.'}
+
+
+def get_current_merchant(request: Request, db_conn):
+    '''Check if the current user is a merchant'''
+
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(
+        Email=current_user_email).first()
+    if not merchant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+    return merchant
+
+
 def get_merchant_patients(merchantID: int, db_conn):
     '''Get all patients that belong to the merchant user'''
     return (db_conn.query(Patient)
@@ -448,6 +506,7 @@ def get_merchant_patients(merchantID: int, db_conn):
             .order_by(Patient.CreatedAt.desc())
             .all()
             )
+
 
 @router.get("/dashboard", response_model=Dashboard)
 async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
@@ -462,26 +521,27 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
 
     # Fetch patient health data.
     health_rows = (db_conn.query(HealthData).filter(HealthData.PatientID == patient_id)
-                .order_by(HealthData.CreatedAt.desc()).limit(5).all())
-    
+                   .order_by(HealthData.CreatedAt.desc()).limit(5).all())
+
     if not health_rows:
         return Dashboard(
-            days = 0,
-            risks = {},
-            diff = {},
-            recommendations = {},
+            days=0,
+            risks={},
+            diff={},
+            recommendations={},
         )
 
     # Calculate days since previous report submission.
     days_since_prev = (datetime.now() - health_rows[0].CreatedAt).days
 
     predictions = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
-                .filter(HealthData.PatientID == patient_id)
-                .order_by(Prediction.CreatedAt.desc()).limit(5).all())
+                   .filter(HealthData.PatientID == patient_id)
+                   .order_by(Prediction.CreatedAt.desc()).limit(5).all())
 
     # Latest disease prediction.
     stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
-    diabetes_risk = float(predictions[0].DiabetesChance) if predictions else 0.0
+    diabetes_risk = float(
+        predictions[0].DiabetesChance) if predictions else 0.0
     cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
 
     # Risk over time trends.
@@ -505,15 +565,17 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         current = predictions[0]
         prev = predictions[1]
 
-        disease_diff["stroke"] = float(current.StrokeChance) - float(prev.StrokeChance)
+        disease_diff["stroke"] = float(
+            current.StrokeChance) - float(prev.StrokeChance)
         disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
-        disease_diff["diabetes"] = float(current.DiabetesChance) - float(prev.DiabetesChance)
+        disease_diff["diabetes"] = float(
+            current.DiabetesChance) - float(prev.DiabetesChance)
 
     # Get the latest patient recommendations.
     recommendation = (db_conn.query(Recommendation).join(HealthData, Recommendation.HealthDataID == HealthData.HealthDataID)
-                    .filter(HealthData.PatientID == patient_id).order_by(Recommendation.CreatedAt.desc())
-                    .first())
-    
+                      .filter(HealthData.PatientID == patient_id).order_by(Recommendation.CreatedAt.desc())
+                      .first())
+
     latest_recommendations = {
         "exercise": recommendation.ExerciseRecommendation if recommendation else "No latest recommendation",
         "diet": recommendation.DietRecommendation if recommendation else "No latest recommendation",
@@ -527,3 +589,36 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         diff=disease_diff,
         recommendations=latest_recommendations,
     )
+
+
+def is_name_valid(name: str):
+    '''Verifies a name is valid.'''
+    return name is not None or len(name) <= NAME_MAX_LENGTH
+
+
+def is_age_valid(date_of_birth: date):
+    '''Verifies age is valid and the user is at least 18'''
+    today = date.today()
+    year_diff = today.year - date_of_birth.year
+
+    # checks if the persons birthday has happened this year
+    birthday_not_passed = ((today.month, today.day) < (
+        date_of_birth.month, date_of_birth.day))
+
+    age = year_diff - birthday_not_passed
+    return age >= MIN_AGE
+
+
+def is_gender_valid(gender: str):
+    '''Verifies gender is valid'''
+    return gender in gender_map
+
+
+def is_weight_valid(weight: float):
+    '''Verifies weight is valid'''
+    return 0.0 <= weight <= 200.0
+
+
+def is_height_valid(height: float):
+    '''Verifies height is valid'''
+    return 0.0 <= height <= 300.0
