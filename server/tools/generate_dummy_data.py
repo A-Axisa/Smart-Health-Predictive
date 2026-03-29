@@ -122,7 +122,7 @@ def generate_patient(
         'PatientID': get_random_unique_id('patient'),
         'UserID': user_id,
         'GivenNames': given_name,
-        'LastName': family_name,
+        'FamilyName': family_name,
         'Gender':random.randrange(2),
         'Weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
         'Height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
