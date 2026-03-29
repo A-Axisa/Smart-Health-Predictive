@@ -94,7 +94,7 @@ async def register(user_reg: UserRegistrationDetails,
             not is_password_valid(user_reg.password) or
             not is_name_valid(user_reg.given_names) or
             not is_name_valid(user_reg.family_name) or
-            not is_formatted_phone_valid(user_reg.phone) or
+            not is_formatted_phone_valid(formatted_phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
