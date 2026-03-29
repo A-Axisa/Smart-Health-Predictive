@@ -115,10 +115,10 @@ const UserLanding = ({}) => {
                       component="span"
                       sx={{
                         fontWeight: "bold",
-                        color: (data?.diff?.[key] ?? 0) >= 0 ? "#ff2424" : "#30ff61",
+                        color: (data?.diff?.[key] ?? 0) >= 0 ? "#ff2424" : "#17c940",
                       }}
                     >
-                      {data?.diff?.[key] >= 0 ? "+ " : "- "}
+                      {data?.diff?.[key] >= 0 ? "+ " : ""}
                       {(data?.diff?.[key] ?? 0).toFixed(2)}%
                     </Typography>
                   </Box>
