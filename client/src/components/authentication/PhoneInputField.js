@@ -13,8 +13,9 @@ import { getCountries, parsePhoneNumberFromString,
  *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
-  const [selectedDialingCode, setSelectedDialingCode] = useState('');
+  const [selectedDialingCode, setSelectedDialingCode] = useState(null);
   const [isValid, setIsValid] = useState(true);
+  const [isValidDialingCode, setIsValidDialingCode] = useState(true)
 
   function getDialingCodeDropdownOptions() {
     return getUniqueDialingCodes().map((code) => ({label: "+" + code, code: code}));
@@ -40,9 +41,18 @@ const PhoneInputField = ({ onChange }) => {
     if(e.target.value !== ''){
       const parsedNumber = parsePhoneNumberFromString(
         e.target.value, { defaultCallingCode: selectedDialingCode });
-      const isInputValid = parsedNumber!==undefined && 
-        parsedNumber.isValid();
+      const isInputValid = 
+        parsedNumber!==undefined && 
+        parsedNumber.isValid() &&
+        selectedDialingCode !== null
       const phoneNumber = isInputValid ? parsedNumber.number : null;
+
+      if(selectedDialingCode !== null){
+        setIsValidDialingCode(true)
+      } else {
+        setIsValidDialingCode(false)
+      }
+
       setIsValid(isInputValid);
       onChange?.({
         'phone':phoneNumber,
@@ -51,6 +61,7 @@ const PhoneInputField = ({ onChange }) => {
 
     } else {
       setIsValid(true); // Empty phone numbers are valid.
+      setIsValidDialingCode(true)
       onChange?.({
         'phone':'',
         'isValid':true,
@@ -66,7 +77,7 @@ const PhoneInputField = ({ onChange }) => {
             <Autocomplete
               options={getDialingCodeDropdownOptions()}
               getOptionLabel={(option) => option.label}
-              renderInput={(params) => <TextField {...params} label="Dialing Code" />}
+              renderInput={(params) => <TextField {...params} label="Dialing Code" error={!isValidDialingCode} />}
               onChange={updateSelection} 
             />
           </FormControl> 
