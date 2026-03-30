@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { TextField , Select, MenuItem, FormControl, InputLabel, Grid, 
-         Box} from '@mui/material';
+import { TextField, FormControl, Grid, 
+         Box, Autocomplete} from '@mui/material';
 import { getCountries, parsePhoneNumberFromString, 
          getCountryCallingCode } from 'libphonenumber-js';
 
@@ -17,9 +17,7 @@ const PhoneInputField = ({ onChange }) => {
   const [isValid, setIsValid] = useState(true);
 
   function getDialingCodeDropdownOptions() {
-    return getUniqueDialingCodes().map((code) => (
-      <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
-    ));
+    return getUniqueDialingCodes().map((code) => ({label: "+" + code, code: code}));
   }
 
   /**
@@ -31,8 +29,11 @@ const PhoneInputField = ({ onChange }) => {
       getCountryCallingCode(country))).sort((a, b) => a - b)));
   }
 
-  function updateSelection(e) {
-    setSelectedDialingCode(e.target.value);
+  function updateSelection(_, value) {
+    if(value !== null) {
+      value = value.code
+    }
+    setSelectedDialingCode(value)
   }
 
   function validate_input(e) {
@@ -62,17 +63,12 @@ const PhoneInputField = ({ onChange }) => {
       <Grid container spacing={2}>
         <Grid size={5}>
           <FormControl sx={{width:'100%'}} >
-            <InputLabel id="demo-simple-select-label">
-              Dialing Code
-            </InputLabel>
-            <Select 
-              labelId='dialing_select_label' 
-              id='dialing_select' 
-              label='Dialing Code'
-              value={selectedDialingCode}
-              onChange={updateSelection}>
-              {getDialingCodeDropdownOptions()}
-            </Select>
+            <Autocomplete
+              options={getDialingCodeDropdownOptions()}
+              getOptionLabel={(option) => option.label}
+              renderInput={(params) => <TextField {...params} label="Dialing Code" />}
+              onChange={updateSelection} 
+            />
           </FormControl> 
         </Grid>
         <Grid size={7}>
