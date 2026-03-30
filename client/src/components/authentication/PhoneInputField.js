@@ -13,7 +13,8 @@ import { getCountries, parsePhoneNumberFromString,
  *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
-  const [selectedDialingCode, setSelectedDialingCode] = useState(null);
+  const [rawPhoneNumber, setRawPhoneNumber] = useState("")
+  const [selectedDialingCode, setSelectedDialingCode] = useState("");
   const [isValid, setIsValid] = useState(true);
   const [isValidDialingCode, setIsValidDialingCode] = useState(true)
 
@@ -30,43 +31,53 @@ const PhoneInputField = ({ onChange }) => {
       getCountryCallingCode(country))).sort((a, b) => a - b)));
   }
 
-  function updateSelection(_, value) {
+  function updateDialingCode(_, value) {
     if(value !== null) {
       value = value.code
     }
     setSelectedDialingCode(value)
+    outputPhoneNumber(rawPhoneNumber, value)
   }
 
-  function validate_input(e) {
-    if(e.target.value !== ''){
+  function updatePhoneNumber(e) {
+    const phoneNumber = e.target.value
+    setRawPhoneNumber(phoneNumber)
+    outputPhoneNumber(phoneNumber, selectedDialingCode)
+  }
+
+  function outputPhoneNumber(phoneNumber, dialingCode) {
+    if(isPhoneValid(phoneNumber, dialingCode)) {
       const parsedNumber = parsePhoneNumberFromString(
-        e.target.value, { defaultCallingCode: selectedDialingCode });
-      const isInputValid = 
-        parsedNumber!==undefined && 
-        parsedNumber.isValid() &&
-        selectedDialingCode !== null
-      const phoneNumber = isInputValid ? parsedNumber.number : null;
-
-      if(selectedDialingCode !== null){
-        setIsValidDialingCode(true)
-      } else {
-        setIsValidDialingCode(false)
-      }
-
-      setIsValid(isInputValid);
+        phoneNumber, 
+        { defaultCallingCode: dialingCode }
+      );
+      const outputPhoneNumber = phoneNumber !== "" ? parsedNumber.number : ""
+      setIsValid(true);
+      setIsValidDialingCode(true)
       onChange?.({
-        'phone':phoneNumber,
-        'isValid':isInputValid,
+        "phone": outputPhoneNumber,
+        "isValid": true,
       });
 
     } else {
-      setIsValid(true); // Empty phone numbers are valid.
-      setIsValidDialingCode(true)
+      setIsValid(false);
+      setIsValidDialingCode(!!dialingCode)
       onChange?.({
-        'phone':'',
-        'isValid':true,
+        "phone": null,
+        "isValid": false,
       });
     }
+  }
+
+  function isPhoneValid(phoneNumber, dialingCode) {
+    const parsedNumber = parsePhoneNumberFromString(
+      phoneNumber, 
+      { defaultCallingCode: dialingCode }
+    )
+    return phoneNumber === "" ||
+      parsedNumber !== undefined && 
+      parsedNumber.isValid() &&
+      !!dialingCode
   }
 
   return (
@@ -78,13 +89,13 @@ const PhoneInputField = ({ onChange }) => {
               options={getDialingCodeDropdownOptions()}
               getOptionLabel={(option) => option.label}
               renderInput={(params) => <TextField {...params} label="Dialing Code" error={!isValidDialingCode} />}
-              onChange={updateSelection} 
+              onChange={updateDialingCode} 
             />
           </FormControl> 
         </Grid>
         <Grid size={7}>
           <TextField error={!isValid} id='outlined-input' name='phone' 
-            label='Phone' onChange={validate_input} 
+            label='Phone' onChange={updatePhoneNumber} 
             sx={{width:'100%'}}>
           </TextField>
         </Grid>
