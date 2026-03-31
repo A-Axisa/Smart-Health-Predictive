@@ -136,7 +136,7 @@ def generate_health_data(patient: dict):
        and random details.'''
     blood_glucose = round(random.uniform(2.00, 10.00), 2)
     return {
-        'HealthDataID': get_random_unique_id('health_data'),
+        'HealthDataID': get_random_unique_id('HealthData'),
         'PatientID': patient['PatientID'],
         'Gender': patient['Gender'],
         'Age': 18,
@@ -222,9 +222,9 @@ def create_users(amount: int, user_role: UserRoleID, clinic_id: int = None):
         roles.append(generate_user_account_role(new_account['UserID'], user_role))
 
     return {
-        'accounts': accounts,
-        'patients': patients,
-        'roles': roles,
+        'Accounts': accounts,
+        'Patients': patients,
+        'Roles': roles,
     }
 
 
@@ -243,9 +243,9 @@ def create_health_reports_for_user(patient: dict, amount:int):
             generate_prediction(new_health_data['HealthDataID']))
 
     return {
-        'health_data': health_data,
-        'recommendations': recommendations,
-        'predictions': predictions,
+        'HealthData': health_data,
+        'Recommendations': recommendations,
+        'Predictions': predictions,
     }
 
 def create_health_reports_for_multiple_users(
@@ -258,14 +258,14 @@ def create_health_reports_for_multiple_users(
     predictions = []
     for patient in patients:
         reports = create_health_reports_for_user(patient, reports_per_user)
-        health_data.extend(reports['health_data'])
-        recommendations.extend(reports['recommendations'])
-        predictions.extend(reports['predictions'])
+        health_data.extend(reports['HealthData'])
+        recommendations.extend(reports['Recommendations'])
+        predictions.extend(reports['Predictions'])
 
     return {
-        'health_data': health_data,
-        'recommendations': recommendations,
-        'predictions': predictions,
+        'HealthData': health_data,
+        'Recommendations': recommendations,
+        'Predictions': predictions,
     }
 
 def create_patients_for_merchant(merchant: dict,
@@ -285,9 +285,9 @@ def create_patients_for_merchant(merchant: dict,
     return {
        'Patients': patients,
        'Access': merchant_access,
-       'HealthData': health_reports['health_data'],
-       'Recommendations': health_reports['recommendations'],
-       'Predictions': health_reports['predictions'],
+       'HealthData': health_reports['HealthData'],
+       'Recommendations': health_reports['Recommendations'],
+       'Predictions': health_reports['Predictions'],
     }
 
 def generate_dummy_data_in_db():
@@ -297,16 +297,17 @@ def generate_dummy_data_in_db():
 
     standard_users = create_users(STANDARD_USER_AMT, UserRoleID.STANDARD)
     health_reports = create_health_reports_for_multiple_users(
-        standard_users['patients'],
+        standard_users['Patients'],
         10
     )
-    conn.bulk_insert_mappings(UserAccount, standard_users['accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, standard_users['roles'])
-    conn.bulk_insert_mappings(Patient, standard_users['patients'])
-    conn.bulk_insert_mappings(HealthData, health_reports['health_data'])
-    conn.bulk_insert_mappings(Recommendation, health_reports['recommendations'])
-    conn.bulk_insert_mappings(Prediction, health_reports['predictions'])
+    conn.bulk_insert_mappings(UserAccount, standard_users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, standard_users['Roles'])
+    conn.bulk_insert_mappings(Patient, standard_users['Patients'])
+    conn.bulk_insert_mappings(HealthData, health_reports['HealthData'])
+    conn.bulk_insert_mappings(Recommendation, health_reports['Recommendations'])
+    conn.bulk_insert_mappings(Prediction, health_reports['Predictions'])
 
+    # Clinics
     clinics = []
     for _ in range(CLINIC_AMT):
         clinics.append(generate_clinic())
@@ -316,11 +317,11 @@ def generate_dummy_data_in_db():
         MERCHANT_AMT,
         UserRoleID.MERCHANT,
         random.choice(clinics)['ClinicID'])
-    conn.bulk_insert_mappings(UserAccount, merchant_users['accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, merchant_users['roles'])
-    conn.bulk_insert_mappings(Patient, merchant_users['patients'])
+    conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
+    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
 
-    for merchant in merchant_users['accounts']:
+    for merchant in merchant_users['Accounts']:
         merchant_patients = create_patients_for_merchant(merchant, 10, 10)
         conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
         conn.bulk_insert_mappings(UserPatientAccess, merchant_patients['Access'])
@@ -329,9 +330,9 @@ def generate_dummy_data_in_db():
         conn.bulk_insert_mappings(Prediction, merchant_patients['Predictions'])
 
     admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
-    conn.bulk_insert_mappings(UserAccount, admin_users['accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, admin_users['roles'])
-    conn.bulk_insert_mappings(Patient, admin_users['patients'])
+    conn.bulk_insert_mappings(UserAccount, admin_users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, admin_users['Roles'])
+    conn.bulk_insert_mappings(Patient, admin_users['Patients'])
 
     conn.commit()
 
