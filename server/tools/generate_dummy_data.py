@@ -256,6 +256,28 @@ def generate_user_patient_access(
     }
 
 
+def generate_audit_log(
+    created_at: datetime,
+    event_type: str,
+    success: bool,
+    email: str,
+    ip: str = None,
+    device: str = None,
+    description: str = None
+):
+    return {
+        'LogID': get_random_unique_id('Log'),
+        'EventType': event_type,
+        'Success': success,
+        'UserID': None,
+        'UserEmail': email,
+        'IPAdress': ip,
+        'Device': device,
+        'Description': description,
+        "CreatedAt": created_at,
+    }
+
+
 def create_users(
     amount: int,
     user_role: UserRoleID,
