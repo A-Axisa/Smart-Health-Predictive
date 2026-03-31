@@ -268,6 +268,28 @@ def create_health_reports_for_multiple_users(
         'predictions': predictions,
     }
 
+def create_patients_for_merchant(merchant: dict,
+    num_of_patients: int,
+    num_of_reports: int
+):
+    '''Returns a patients and their related health data for a merchant'''
+    patients = [generate_patient() for _ in range(num_of_patients)]
+    merchant_access = [generate_user_patient_access(
+        merchant['UserID'],
+        x['PatientID']
+    ) for x in patients]
+    health_reports = create_health_reports_for_multiple_users(
+        patients,
+        num_of_reports
+    )
+    return {
+       'Patients': patients,
+       'Access': merchant_access,
+       'HealthData': health_reports['health_data'],
+       'Recommendations': health_reports['recommendations'],
+       'Predictions': health_reports['predictions'],
+    }
+
 def generate_dummy_data_in_db():
     '''Generates and inserts dummy data into the database.'''
     load_names_csv(NAME_FILEPATH)
