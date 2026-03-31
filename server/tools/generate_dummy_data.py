@@ -1,6 +1,6 @@
 import random
 from csv import reader as csvReader
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
@@ -68,6 +68,13 @@ def get_random_unique_id(field_name: str = ''):
         new_id = random.randrange(UNIQUE_ID_RANGE)
     field_taken_ids[field_name][new_id] = new_id
     return new_id
+
+
+def get_random_datetime(start_time: datetime, end_time: datetime):
+    '''Get a random datetime between two dates'''
+    delta_in_seconds = (end_time - start_time).total_seconds()
+    random_interval = random.uniform(0, delta_in_seconds)
+    return start_time + timedelta(seconds=random_interval)
 
 
 def generate_clinic():
@@ -336,4 +343,3 @@ def generate_dummy_data_in_db():
     conn.commit()
 
 
-generate_dummy_data_in_db()
