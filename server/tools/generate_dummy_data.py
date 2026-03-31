@@ -317,10 +317,6 @@ def generate_dummy_data_in_db():
         MERCHANT_AMT,
         UserRoleID.MERCHANT,
         random.choice(clinics)['ClinicID'])
-    conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
-    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
-
     for merchant in merchant_users['Accounts']:
         merchant_patients = create_patients_for_merchant(merchant, 10, 10)
         conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
@@ -328,6 +324,9 @@ def generate_dummy_data_in_db():
         conn.bulk_insert_mappings(HealthData, merchant_patients['HealthData'])
         conn.bulk_insert_mappings(Recommendation, merchant_patients['Recommendations'])
         conn.bulk_insert_mappings(Prediction, merchant_patients['Predictions'])
+    conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
+    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
 
     admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
     conn.bulk_insert_mappings(UserAccount, admin_users['Accounts'])
