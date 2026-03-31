@@ -24,6 +24,39 @@ WEIGHT_MIN_KG = 40.0
 WEIGHT_MAX_KG = 240.0
 START_DATETIME = datetime(year=2020, month=1, day=1)
 END_DATETIME = datetime.now()
+EXERCISE_REC = [
+    'Aim for 150 minutes/week of moderate-intensity activity '
+    '(e.g., brisk walking) split across 3–5 days.',
+    'Aim for 150 minutes/week of moderate-intensity activity '
+    '(e.g., brisk walking) split across 3–5 days. Avoid '
+    'high-intensity bouts initially; focus on consistency while pursuing '
+    'smoking cessation.',
+]
+DIET_REC = [
+    'Adopt a balanced plate: 1/2 non-starchy vegetables, 1/4 lean protein'
+    ', 1/4 whole grains. Limit processed foods and sugary drinks.',
+    'Adopt a balanced plate: 1/2 non-starchy vegetables, 1/4 lean protein,'
+    ' 1/4 whole grains. Limit processed foods and sugary drinks. Increase '
+    'soluble fiber (oats, legumes) and healthy fats (olive oil, nuts); '
+    'reduce saturated fats.',
+]
+LIFESTYLE_REC = [
+    'Sleep 7–9 hours nightly, manage stress with short daily breathing or '
+    'mindfulness. Hydrate adequately.',
+    'Sleep 7–9 hours nightly, manage stress with short daily breathing or '
+    'mindfulness. Hydrate adequately. Begin a smoking cessation plan '
+    '(nicotine replacement or counseling). Limit alcohol (≤2 standard '
+    'drinks/day for men, ≤1 for women; aim for several alcohol-free '
+    'days/week).'
+]
+AVOID_REC = [
+    'Limit ultra-processed foods, high-sugar desserts, and trans-fat '
+    'containing snacks. Minimize high-sodium processed meats.',
+    'Limit ultra-processed foods, high-sugar desserts, and '
+    'trans-fat containing snacks. Minimize high-sodium processed meats.',
+]
+
+
 
 possible_names = []
 field_taken_ids = {}
@@ -177,10 +210,10 @@ def generate_recommendation(created_at: datetime, health_data_id: int):
     return {
         'RecommendationID': get_random_unique_id('recommendation'),
         'HealthDataID': health_data_id,
-        'ExerciseRecommendation':'',
-        'DietRecommendation':'',
-        'LifestyleRecommendation':'',
-        'DietToAvoid_Recommendation':'',
+        'ExerciseRecommendation':random.choice(EXERCISE_REC),
+        'DietRecommendation':random.choice(DIET_REC),
+        'LifestyleRecommendation':random.choice(LIFESTYLE_REC),
+        'DietToAvoid_Recommendation':random.choice(AVOID_REC),
         'CreatedAt': created_at,
     }
 
