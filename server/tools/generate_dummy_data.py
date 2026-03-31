@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
-    HealthData, Recommendation, Prediction, Clinic
+    HealthData, Recommendation, Prediction, Clinic, UserPatientAccess
 
 ADMIN_AMT = 2
 STANDARD_USER_AMT = 64
@@ -323,6 +323,14 @@ def generate_dummy_data_in_db():
     conn.bulk_insert_mappings(UserAccount, merchant_users['accounts'])
     conn.bulk_insert_mappings(UserAccountRole, merchant_users['roles'])
     conn.bulk_insert_mappings(Patient, merchant_users['patients'])
+
+    for merchant in merchant_users['accounts']:
+        merchant_patients = create_patients_for_merchant(merchant, 10, 10)
+        conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
+        conn.bulk_insert_mappings(UserPatientAccess, merchant_patients['Access'])
+        conn.bulk_insert_mappings(HealthData, merchant_patients['HealthData'])
+        conn.bulk_insert_mappings(Recommendation, merchant_patients['Recommendations'])
+        conn.bulk_insert_mappings(Prediction, merchant_patients['Predictions'])
 
     admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
     conn.bulk_insert_mappings(UserAccount, admin_users['accounts'])
