@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { TextField , Select, MenuItem, FormControl, InputLabel, Grid, 
-         Box} from '@mui/material';
+import { TextField, FormControl, Grid, 
+         Box, Autocomplete} from '@mui/material';
 import { getCountries, parsePhoneNumberFromString, 
          getCountryCallingCode } from 'libphonenumber-js';
 
@@ -13,13 +13,13 @@ import { getCountries, parsePhoneNumberFromString,
  *   is changed.
  */
 const PhoneInputField = ({ onChange }) => {
-  const [selectedDialingCode, setSelectedDialingCode] = useState('');
+  const [rawPhoneNumber, setRawPhoneNumber] = useState("")
+  const [selectedDialingCode, setSelectedDialingCode] = useState("");
   const [isValid, setIsValid] = useState(true);
+  const [isValidDialingCode, setIsValidDialingCode] = useState(true)
 
   function getDialingCodeDropdownOptions() {
-    return getUniqueDialingCodes().map((code) => (
-      <MenuItem key={code} value={code}>{'+' + code}</MenuItem>
-    ));
+    return getUniqueDialingCodes().map((code) => ({label: "+" + code, code: code}));
   }
 
   /**
@@ -31,30 +31,53 @@ const PhoneInputField = ({ onChange }) => {
       getCountryCallingCode(country))).sort((a, b) => a - b)));
   }
 
-  function updateSelection(e) {
-    setSelectedDialingCode(e.target.value);
+  function updateDialingCode(_, value) {
+    if(value !== null) {
+      value = value.code
+    }
+    setSelectedDialingCode(value)
+    outputPhoneNumber(rawPhoneNumber, value)
   }
 
-  function validate_input(e) {
-    if(e.target.value !== ''){
+  function updatePhoneNumber(e) {
+    const phoneNumber = e.target.value
+    setRawPhoneNumber(phoneNumber)
+    outputPhoneNumber(phoneNumber, selectedDialingCode)
+  }
+
+  function outputPhoneNumber(phoneNumber, dialingCode) {
+    if(isPhoneValid(phoneNumber, dialingCode)) {
       const parsedNumber = parsePhoneNumberFromString(
-        e.target.value, { defaultCallingCode: selectedDialingCode });
-      const isInputValid = parsedNumber!==undefined && 
-        parsedNumber.isValid();
-      const phoneNumber = isInputValid ? parsedNumber.number : null;
-      setIsValid(isInputValid);
+        phoneNumber, 
+        { defaultCallingCode: dialingCode }
+      );
+      const outputPhoneNumber = phoneNumber !== "" ? parsedNumber.number : ""
+      setIsValid(true);
+      setIsValidDialingCode(true)
       onChange?.({
-        'phone':phoneNumber,
-        'isValid':isInputValid,
+        "phone": outputPhoneNumber,
+        "isValid": true,
       });
 
     } else {
-      setIsValid(true); // Empty phone numbers are valid.
+      setIsValid(false);
+      setIsValidDialingCode(!!dialingCode)
       onChange?.({
-        'phone':'',
-        'isValid':true,
+        "phone": null,
+        "isValid": false,
       });
     }
+  }
+
+  function isPhoneValid(phoneNumber, dialingCode) {
+    const parsedNumber = parsePhoneNumberFromString(
+      phoneNumber, 
+      { defaultCallingCode: dialingCode }
+    )
+    return phoneNumber === "" ||
+      parsedNumber !== undefined && 
+      parsedNumber.isValid() &&
+      !!dialingCode
   }
 
   return (
@@ -62,22 +85,17 @@ const PhoneInputField = ({ onChange }) => {
       <Grid container spacing={2}>
         <Grid size={5}>
           <FormControl sx={{width:'100%'}} >
-            <InputLabel id="demo-simple-select-label">
-              Dialing Code
-            </InputLabel>
-            <Select 
-              labelId='dialing_select_label' 
-              id='dialing_select' 
-              label='Dialing Code'
-              value={selectedDialingCode}
-              onChange={updateSelection}>
-              {getDialingCodeDropdownOptions()}
-            </Select>
+            <Autocomplete
+              options={getDialingCodeDropdownOptions()}
+              getOptionLabel={(option) => option.label}
+              renderInput={(params) => <TextField {...params} label="Dialing Code" error={!isValidDialingCode} />}
+              onChange={updateDialingCode} 
+            />
           </FormControl> 
         </Grid>
         <Grid size={7}>
           <TextField error={!isValid} id='outlined-input' name='phone' 
-            label='Phone' onChange={validate_input} 
+            label='Phone' onChange={updatePhoneNumber} 
             sx={{width:'100%'}}>
           </TextField>
         </Grid>
