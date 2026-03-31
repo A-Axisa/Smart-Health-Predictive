@@ -248,6 +248,25 @@ def create_health_reports_for_user(patient: dict, amount:int):
         'predictions': predictions,
     }
 
+def create_health_reports_for_multiple_users(
+    patients: list,
+    reports_per_user: int
+):
+    '''Generates all the health reports for patients in a list'''
+    health_data = []
+    recommendations = []
+    predictions = []
+    for patient in patients:
+        reports = create_health_reports_for_user(patient, reports_per_user)
+        health_data.extend(reports['health_data'])
+        recommendations.extend(reports['recommendations'])
+        predictions.extend(reports['predictions'])
+
+    return {
+        'health_data': health_data,
+        'recommendations': recommendations,
+        'predictions': predictions,
+    }
 
 def generate_dummy_data_in_db():
     '''Generates and inserts dummy data into the database.'''
