@@ -380,4 +380,4 @@ def generate_dummy_data_in_db():
 
     conn.commit()
 
-
+generate_dummy_data_in_db()
