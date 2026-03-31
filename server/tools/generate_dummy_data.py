@@ -22,6 +22,8 @@ HEIGHT_MIN_M = 120.00
 HEIGHT_MAX_M = 200.00
 WEIGHT_MIN_KG = 40.0
 WEIGHT_MAX_KG = 240.0
+START_DATETIME = datetime(year=2020, month=1, day=1)
+END_DATETIME = datetime.now()
 
 possible_names = []
 field_taken_ids = {}
@@ -77,18 +79,21 @@ def get_random_datetime(start_time: datetime, end_time: datetime):
     return start_time + timedelta(seconds=random_interval)
 
 
-def generate_clinic():
+def generate_clinic(created_at: datetime = None):
     '''Returns a clinic with a unique ID and random details.'''
+    if created_at is None:
+        created_at = get_random_datetime(START_DATETIME, END_DATETIME)
     names = get_random_names(2)
     clinic_name =  names[0] + ' ' + names[1] + ' ' + 'Clinic'
     return {
         "ClinicID": get_random_unique_id('clinic'),
         "ClinicName": clinic_name,
-        "CreatedAt": datetime.now(),
+        "CreatedAt": created_at,
     }
 
 
 def generate_account(
+    created_at: datetime,
     given_name: str = None,
     family_name: str = None,
     clinic_id: int = None,
@@ -108,16 +113,17 @@ def generate_account(
         'PasswordHash': PASSWORD_HASH,
         'PhoneNumber': '',
         'ClinicID': clinic_id,
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
         'IsValidated': True,
         'TokenVersion': random.randrange(TOKEN_VERSION_RANGE),
     }
 
 
 def generate_patient(
+    created_at: datetime,
     given_name: str = None,
     family_name: str = None,
-    user_id: str = None,
+    user_id: str = None
 ):
     '''Returns a patient with a unique ID and random details.'''
     if given_name is None:
@@ -134,11 +140,11 @@ def generate_patient(
         'Weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
         'Height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
         'DOB': datetime.now(),
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
     }
 
 
-def generate_health_data(patient: dict):
+def generate_health_data(created_at: datetime, patient: dict):
     '''Returns health report with a unique ID, patient information, 
        and random details.'''
     blood_glucose = round(random.uniform(2.00, 10.00), 2)
@@ -157,7 +163,7 @@ def generate_health_data(patient: dict):
         'HeartDisease': random.randrange(2),
         'Diabetes': blood_glucose >= 7.6,
         'BloodGlucose': blood_glucose,
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
         'APHigh': round(random.uniform(50.00, 100.00), 2),
         'APLow': round(random.uniform(50.00, 200.00), 2),
         'HighCholesterol': random.randrange(2),
@@ -165,7 +171,7 @@ def generate_health_data(patient: dict):
     }
 
 
-def generate_recommendation(health_data_id: int):
+def generate_recommendation(created_at: datetime, health_data_id: int):
     '''Returns a recommendation with a unique ID and random information
        for a health report.'''
     return {
@@ -175,11 +181,11 @@ def generate_recommendation(health_data_id: int):
         'DietRecommendation':'',
         'LifestyleRecommendation':'',
         'DietToAvoid_Recommendation':'',
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
     }
 
 
-def generate_prediction(health_data_id: int):
+def generate_prediction(created_at: datetime, health_data_id: int,):
     '''Returns a prediction with a unique ID and random information
        for a health report.'''
     return {
@@ -188,45 +194,69 @@ def generate_prediction(health_data_id: int):
         'StrokeChance': round(random.random(), 2),
         'CardioChance': round(random.random(), 2),
         'DiabetesChance': round(random.random(), 2),
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
     }
 
 
 def generate_user_account_role(
+    created_at: datetime, 
     user_id: int,
-    user_role_id: UserRoleID,
+    user_role_id: UserRoleID
 ):
     '''Returns a user account role for the given user and role.'''
     return {
         'RoleID': user_role_id.value,
         'UserID': user_id,
-        'AssignedAt': datetime.now()
+        'AssignedAt': created_at,
     }
 
 def generate_user_patient_access(
+    created_at: datetime, 
     user_id: int,
-    patient_id: int,
+    patient_id: int
 ):
     '''Returns data that links a patient to a merchant.'''
     return {
         'UserID': user_id,
         'PatientID': patient_id,
-        'CreatedAt': datetime.now(),
+        'CreatedAt': created_at,
     }
 
 
-def create_users(amount: int, user_role: UserRoleID, clinic_id: int = None):
+def create_users(
+    amount: int,
+    user_role: UserRoleID,
+    clinic_id: int = None,
+    start_date: datetime = None,
+    end_date: datetime = None
+):
     '''Returns randomly generated data representing a collection of users.'''
+    if start_date is None:
+        start_date = START_DATETIME
+    if end_date is None:
+        end_date = END_DATETIME
+
+
     accounts = []
     patients = []
     roles = []
     for _ in range(amount):
         name = get_random_names(2)
-        new_account = generate_account(name[0], name[1], clinic_id)
-        new_patient = generate_patient(name[0], name[1], new_account['UserID'])
+        created_at = get_random_datetime(start_date, end_date)
+        new_account = generate_account(created_at, name[0], name[1], clinic_id)
+        new_patient = generate_patient(
+            created_at,
+            name[0],
+            name[1],
+            new_account['UserID']
+        )
         accounts.append(new_account)
         patients.append(new_patient)
-        roles.append(generate_user_account_role(new_account['UserID'], user_role))
+        roles.append(generate_user_account_role(
+            created_at,
+            new_account['UserID'],
+            user_role)
+        )
 
     return {
         'Accounts': accounts,
@@ -242,12 +272,13 @@ def create_health_reports_for_user(patient: dict, amount:int):
     recommendations = []
     predictions = []
     for _ in range(amount):
-        new_health_data = generate_health_data(patient)
+        created_at = get_random_datetime(patient['CreatedAt'], END_DATETIME)
+        new_health_data = generate_health_data(created_at, patient)
         health_data.append(new_health_data)
         recommendations.append(
-            generate_recommendation(new_health_data['HealthDataID']))
+            generate_recommendation(created_at, new_health_data['HealthDataID']))
         predictions.append(
-            generate_prediction(new_health_data['HealthDataID']))
+            generate_prediction(created_at, new_health_data['HealthDataID']))
 
     return {
         'HealthData': health_data,
@@ -280,11 +311,16 @@ def create_patients_for_merchant(merchant: dict,
     num_of_reports: int
 ):
     '''Returns a patients and their related health data for a merchant'''
-    patients = [generate_patient() for _ in range(num_of_patients)]
+    created_at_dates = [get_random_datetime(
+        merchant['CreatedAt'],
+        END_DATETIME
+    ) for _ in range(num_of_patients)]
+    patients = [generate_patient(date) for date in created_at_dates]
     merchant_access = [generate_user_patient_access(
+        patient['CreatedAt'],
         merchant['UserID'],
-        x['PatientID']
-    ) for x in patients]
+        patient['PatientID']
+    ) for patient in patients]
     health_reports = create_health_reports_for_multiple_users(
         patients,
         num_of_reports
@@ -323,7 +359,11 @@ def generate_dummy_data_in_db():
     merchant_users = create_users(
         MERCHANT_AMT,
         UserRoleID.MERCHANT,
-        random.choice(clinics)['ClinicID'])
+        random.choice(clinics)['ClinicID']
+    )
+    conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
+    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])    
     for merchant in merchant_users['Accounts']:
         merchant_patients = create_patients_for_merchant(merchant, 10, 10)
         conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
@@ -331,9 +371,7 @@ def generate_dummy_data_in_db():
         conn.bulk_insert_mappings(HealthData, merchant_patients['HealthData'])
         conn.bulk_insert_mappings(Recommendation, merchant_patients['Recommendations'])
         conn.bulk_insert_mappings(Prediction, merchant_patients['Predictions'])
-    conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
-    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
+
 
     admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
     conn.bulk_insert_mappings(UserAccount, admin_users['Accounts'])
