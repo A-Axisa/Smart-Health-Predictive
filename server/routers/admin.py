@@ -110,7 +110,7 @@ async def update_user_role(user_email: str, role_id: int, request: Request,
     db_conn.commit()
 
     actor_email = None
-    try:
+    try: # After resolving the authentication issue for this endpoint, this exception handling should be removed
         actor_email = get_current_user(request, db_conn).get('email')
     except Exception:
         pass
