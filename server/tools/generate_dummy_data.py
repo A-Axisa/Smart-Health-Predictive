@@ -196,6 +196,17 @@ def generate_user_account_role(
         'AssignedAt': datetime.now()
     }
 
+def generate_user_patient_access(
+    user_id: int,
+    patient_id: int,
+):
+    '''Returns data that links a patient to a merchant.'''
+    return {
+        'UserID': user_id,
+        'PatientID': patient_id,
+        'CreatedAt': datetime.now(),
+    }
+
 
 def create_users(amount: int, user_role: UserRoleID, clinic_id: int = None):
     '''Returns randomly generated data representing a collection of users.'''
