@@ -192,7 +192,7 @@ def generate_prediction(created_at: datetime, health_data_id: int,):
         'PredictionID': get_random_unique_id('prediction'),
         'HealthDataID': health_data_id,
         'StrokeChance': round(random.random(), 2),
-        'CardioChance': round(random.random(), 2),
+        'CVDChance': round(random.random(), 2),
         'DiabetesChance': round(random.random(), 2),
         'CreatedAt': created_at,
     }
