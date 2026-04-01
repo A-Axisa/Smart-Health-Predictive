@@ -225,9 +225,9 @@ def generate_prediction(created_at: datetime, health_data_id: int,):
     return {
         'PredictionID': get_random_unique_id('prediction'),
         'HealthDataID': health_data_id,
-        'StrokeChance': round(random.random()*100, 2),
-        'CVDChance': round(random.random()*100, 2),
-        'DiabetesChance': round(random.random()*100, 2),
+        'StrokeChance': round(random.random()*99, 2),
+        'CVDChance': round(random.random()*99, 2),
+        'DiabetesChance': round(random.random()*99, 2),
         'CreatedAt': created_at,
     }
 
