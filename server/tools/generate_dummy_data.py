@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
-    HealthData, Recommendation, Prediction, Clinic, UserPatientAccess
+    HealthData, Recommendation, Prediction, Clinic, UserPatientAccess, \
+    AuditLog, LogEventType
 
 ADMIN_AMT = 2
 STANDARD_USER_AMT = 64
@@ -370,7 +371,9 @@ def create_health_reports_for_user(patient: dict, amount:int, email=None):
         'AuditLogs': logs,
     }
 
-def create_health_reports_for_multiple_users(
+
+def create_health_reports_for_merchant(
+    merchant: dict,
     patients: list,
     reports_per_user: int
 ):
@@ -378,16 +381,18 @@ def create_health_reports_for_multiple_users(
     health_data = []
     recommendations = []
     predictions = []
+    logs = []
     for patient in patients:
-        reports = create_health_reports_for_user(patient, reports_per_user)
+        reports = create_health_reports_for_user(patient, reports_per_user, merchant['Email'])
         health_data.extend(reports['HealthData'])
         recommendations.extend(reports['Recommendations'])
         predictions.extend(reports['Predictions'])
-
+        logs.extend(reports['AuditLogs'])
     return {
         'HealthData': health_data,
         'Recommendations': recommendations,
         'Predictions': predictions,
+        'AuditLogs': logs,
     }
 
 def create_patients_for_merchant(merchant: dict,
@@ -405,7 +410,8 @@ def create_patients_for_merchant(merchant: dict,
         merchant['UserID'],
         patient['PatientID']
     ) for patient in patients]
-    health_reports = create_health_reports_for_multiple_users(
+    health_reports = create_health_reports_for_merchant(
+        merchant,
         patients,
         num_of_reports
     )
@@ -415,30 +421,45 @@ def create_patients_for_merchant(merchant: dict,
        'HealthData': health_reports['HealthData'],
        'Recommendations': health_reports['Recommendations'],
        'Predictions': health_reports['Predictions'],
+       'AuditLogs': health_reports['AuditLogs']
     }
+
 
 def generate_dummy_data_in_db():
     '''Generates and inserts dummy data into the database.'''
     load_names_csv(NAME_FILEPATH)
     conn = next(get_db())
 
-    standard_users = create_users(STANDARD_USER_AMT, UserRoleID.STANDARD)
-    health_reports = create_health_reports_for_multiple_users(
-        standard_users['Patients'],
-        10
-    )
-    conn.bulk_insert_mappings(UserAccount, standard_users['Accounts'])
-    conn.bulk_insert_mappings(UserAccountRole, standard_users['Roles'])
-    conn.bulk_insert_mappings(Patient, standard_users['Patients'])
-    conn.bulk_insert_mappings(HealthData, health_reports['HealthData'])
-    conn.bulk_insert_mappings(Recommendation, health_reports['Recommendations'])
-    conn.bulk_insert_mappings(Prediction, health_reports['Predictions'])
+    users = create_users(STANDARD_USER_AMT, UserRoleID.STANDARD)
+    health_data = []
+    recommendations = []
+    predictions = []
+    logs = users['AuditLogs']
+    for i in range(STANDARD_USER_AMT):
+        reports = create_health_reports_for_user(
+            users['Patients'][i],
+            10,
+            users['Accounts'][i]['Email']
+        )
+        health_data.extend(reports['HealthData'])
+        recommendations.extend(reports['Recommendations'])
+        predictions.extend(reports['Predictions'])
+        logs.extend(reports['AuditLogs'])
+    conn.bulk_insert_mappings(UserAccount, users['Accounts'])
+    conn.bulk_insert_mappings(UserAccountRole, users['Roles'])
+    conn.bulk_insert_mappings(Patient, users['Patients'])
+    conn.bulk_insert_mappings(HealthData, health_data)
+    conn.bulk_insert_mappings(Recommendation, recommendations)
+    conn.bulk_insert_mappings(Prediction, predictions)
+    conn.bulk_insert_mappings(AuditLog, logs)
+
 
     # Clinics
     clinics = []
     for _ in range(CLINIC_AMT):
         clinics.append(generate_clinic())
     conn.bulk_insert_mappings(Clinic, clinics)
+
 
     merchant_users = create_users(
         MERCHANT_AMT,
@@ -447,7 +468,8 @@ def generate_dummy_data_in_db():
     )
     conn.bulk_insert_mappings(UserAccount, merchant_users['Accounts'])
     conn.bulk_insert_mappings(UserAccountRole, merchant_users['Roles'])
-    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])    
+    conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
+    conn.bulk_insert_mappings(AuditLog, merchant_users['AuditLogs'])
     for merchant in merchant_users['Accounts']:
         merchant_patients = create_patients_for_merchant(merchant, 10, 10)
         conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
@@ -455,12 +477,14 @@ def generate_dummy_data_in_db():
         conn.bulk_insert_mappings(HealthData, merchant_patients['HealthData'])
         conn.bulk_insert_mappings(Recommendation, merchant_patients['Recommendations'])
         conn.bulk_insert_mappings(Prediction, merchant_patients['Predictions'])
+        conn.bulk_insert_mappings(AuditLog, merchant_patients['AuditLogs'])
 
 
     admin_users = create_users(ADMIN_AMT, UserRoleID.ADMIN)
     conn.bulk_insert_mappings(UserAccount, admin_users['Accounts'])
     conn.bulk_insert_mappings(UserAccountRole, admin_users['Roles'])
     conn.bulk_insert_mappings(Patient, admin_users['Patients'])
+    conn.bulk_insert_mappings(AuditLog, admin_users['AuditLogs'])
 
     conn.commit()
 
