@@ -280,7 +280,7 @@ def generate_audit_log(
         'Success': success,
         'UserID': None,
         'UserEmail': email,
-        'IPAdress': ip,
+        'IPAddress': ip,
         'Device': device,
         'Description': description,
         "CreatedAt": created_at,
