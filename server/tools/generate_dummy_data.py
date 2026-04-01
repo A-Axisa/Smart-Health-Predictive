@@ -327,12 +327,13 @@ def create_users(
     }
 
 
-def create_health_reports_for_user(patient: dict, amount:int):
+def create_health_reports_for_user(patient: dict, amount:int, email=None):
     '''Returns randomly generated the health data, recommendations, and 
        predictions for a patient.'''
     health_data = []
     recommendations = []
     predictions = []
+    logs = []
     for _ in range(amount):
         created_at = get_random_datetime(patient['CreatedAt'], END_DATETIME)
         new_health_data = generate_health_data(created_at, patient)
@@ -341,11 +342,32 @@ def create_health_reports_for_user(patient: dict, amount:int):
             generate_recommendation(created_at, new_health_data['HealthDataID']))
         predictions.append(
             generate_prediction(created_at, new_health_data['HealthDataID']))
-
+        logs.append(generate_audit_log(
+            created_at - timedelta(minutes=random.randrange(1, 15)),
+            LogEventType.LOGIN,
+            True,
+            email,
+            description='Successful login attempt.'
+        ))
+        logs.append(generate_audit_log(
+            created_at,
+            LogEventType.PREDICTION_REQUEST,
+            True,
+            email,
+            description='Successful prediction request.'
+        ))
+        logs.append(generate_audit_log(
+            created_at + timedelta(minutes=random.randrange(5, 29)),
+            LogEventType.LOGOUT,
+            True,
+            email,
+            description='Successfully logged out.'
+        ))
     return {
         'HealthData': health_data,
         'Recommendations': recommendations,
         'Predictions': predictions,
+        'AuditLogs': logs,
     }
 
 def create_health_reports_for_multiple_users(
