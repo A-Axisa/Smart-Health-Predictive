@@ -1,6 +1,7 @@
 import random
 from csv import reader as csvReader
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from enum import Enum
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
@@ -176,7 +177,10 @@ def generate_patient(
         'Gender':random.randrange(2),
         'Weight': round(random.uniform(WEIGHT_MIN_KG, WEIGHT_MAX_KG), 2),
         'Height': round(random.uniform(HEIGHT_MIN_M, HEIGHT_MAX_M), 2),
-        'DOB': datetime.now(),
+        'DateOfBirth': get_random_datetime(
+            datetime.now() - relativedelta(years=100),
+            START_DATETIME - relativedelta(years=18)
+        ),
         'CreatedAt': created_at,
     }
 
