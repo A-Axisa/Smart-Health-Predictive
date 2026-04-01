@@ -440,8 +440,8 @@ async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
     return clinic_details
 
 
-@router.post("/create_patient/")
-async def create_patient(patient: PatientCreationDetails, request: Request, db_conn: Session = Depends(get_db)):
+@router.post("/create-patient/")
+async def create_patient(patient: PatientCreationDetails, request: Request, db_conn: Session = Depends(get_db),):
 
     # Check if the requesting user is a merchant.
     merchant = get_current_merchant(request, db_conn)
@@ -477,6 +477,33 @@ async def create_patient(patient: PatientCreationDetails, request: Request, db_c
     db_conn.commit()
 
     return {'message': 'Patient successfully created.'}
+
+
+@router.get("/merchant/associated-patients")
+async def associated_patients(request: Request, skip: int = 0, limit: int = 25, db_conn: Session = Depends(get_db)):
+
+    # Check if the requesting user is a merchant.
+    current_merchant = get_current_merchant(request, db_conn)
+    merchant_id = current_merchant.UserID
+
+    # Retrieve patient information
+    patient_info = (db_conn.query(Patient.PatientID, Patient.GivenNames, Patient.FamilyName, Patient.Gender, Patient.DateOfBirth)
+                    .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+                    .filter(UserPatientAccess.UserID == merchant_id)
+                    .order_by(Patient.CreatedAt.desc())
+                    .offset(skip).limit(limit).all()
+                    )
+    # Return the list of patient's associated with the merchant
+    return [
+        {
+            "patient_id": patient.PatientID,
+            "given_names": patient.GivenNames,
+            "family_name": patient.FamilyName,
+            "gender": patient.Gender,
+            "date_of_birth": patient.DateOfBirth,
+        }
+        for patient in patient_info
+    ]
 
 
 def get_current_merchant(request: Request, db_conn):
