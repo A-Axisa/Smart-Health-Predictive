@@ -291,10 +291,10 @@ def create_users(
     if end_date is None:
         end_date = END_DATETIME
 
-
     accounts = []
     patients = []
     roles = []
+    logs = []
     for _ in range(amount):
         name = get_random_names(2)
         created_at = get_random_datetime(start_date, end_date)
@@ -312,11 +312,18 @@ def create_users(
             new_account['UserID'],
             user_role)
         )
-
+        logs.append(generate_audit_log(
+            created_at,
+            LogEventType.REGISTRATION,
+            True,
+            new_account['Email'],
+            description='Successfully registered an account.'
+        ))
     return {
         'Accounts': accounts,
         'Patients': patients,
         'Roles': roles,
+        'AuditLogs': logs
     }
 
 
