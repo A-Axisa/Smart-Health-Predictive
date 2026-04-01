@@ -7,10 +7,15 @@ from ..models.dbmodels import UserAccount, UserAccountRole, Patient, \
     HealthData, Recommendation, Prediction, Clinic, UserPatientAccess, \
     AuditLog, LogEventType
 
+# These values can be changed to adjust the amount of data generated.
 ADMIN_AMT = 2
 STANDARD_USER_AMT = 64
-MERCHANT_AMT = 8
-CLINIC_AMT = 4
+REPORTS_PER_STANDARD_USER = 8
+MERCHANT_AMT = 10
+PATIENTS_PER_MERCHANT = 5
+REPORTS_PER_MERCHANT_PATIENT = 3
+CLINIC_AMT = 6
+
 
 UNIQUE_ID_RANGE = 2100000000
 TOKEN_VERSION_RANGE = 10000
@@ -439,7 +444,7 @@ def generate_dummy_data_in_db():
     for i in range(STANDARD_USER_AMT):
         reports = create_health_reports_for_user(
             users['Patients'][i],
-            10,
+            REPORTS_PER_STANDARD_USER,
             users['Accounts'][i]['Email']
         )
         health_data.extend(reports['HealthData'])
@@ -472,7 +477,11 @@ def generate_dummy_data_in_db():
     conn.bulk_insert_mappings(Patient, merchant_users['Patients'])
     conn.bulk_insert_mappings(AuditLog, merchant_users['AuditLogs'])
     for merchant in merchant_users['Accounts']:
-        merchant_patients = create_patients_for_merchant(merchant, 10, 10)
+        merchant_patients = create_patients_for_merchant(
+            merchant,
+            PATIENTS_PER_MERCHANT,
+            REPORTS_PER_MERCHANT_PATIENT
+        )
         conn.bulk_insert_mappings(Patient, merchant_patients['Patients'])
         conn.bulk_insert_mappings(UserPatientAccess, merchant_patients['Access'])
         conn.bulk_insert_mappings(HealthData, merchant_patients['HealthData'])
