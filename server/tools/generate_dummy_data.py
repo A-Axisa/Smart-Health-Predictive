@@ -403,6 +403,7 @@ def create_health_reports_for_merchant(
         'AuditLogs': logs,
     }
 
+
 def create_patients_for_merchant(merchant: dict,
     num_of_patients: int,
     num_of_reports: int
@@ -499,4 +500,6 @@ def generate_dummy_data_in_db():
 
     conn.commit()
 
-generate_dummy_data_in_db()
+
+if __name__ == "__main__":
+    generate_dummy_data_in_db()
