@@ -62,8 +62,6 @@ AVOID_REC = [
     'trans-fat containing snacks. Minimize high-sodium processed meats.',
 ]
 
-
-
 possible_names = []
 field_taken_ids = {}
 
@@ -460,7 +458,6 @@ def generate_dummy_data_in_db():
     conn.bulk_insert_mappings(AuditLog, logs)
 
 
-    # Clinics
     clinics = []
     for _ in range(CLINIC_AMT):
         clinics.append(generate_clinic())
