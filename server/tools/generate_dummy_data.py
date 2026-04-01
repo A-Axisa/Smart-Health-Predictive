@@ -266,6 +266,7 @@ def generate_audit_log(
     device: str = None,
     description: str = None
 ):
+    '''Generate date for an AuditLog with a unique ID'''
     return {
         'LogID': get_random_unique_id('Log'),
         'EventType': event_type,
