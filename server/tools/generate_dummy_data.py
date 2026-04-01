@@ -214,7 +214,7 @@ def generate_recommendation(created_at: datetime, health_data_id: int):
         'ExerciseRecommendation':random.choice(EXERCISE_REC),
         'DietRecommendation':random.choice(DIET_REC),
         'LifestyleRecommendation':random.choice(LIFESTYLE_REC),
-        'DietToAvoid_Recommendation':random.choice(AVOID_REC),
+        'DietToAvoidRecommendation':random.choice(AVOID_REC),
         'CreatedAt': created_at,
     }
 
