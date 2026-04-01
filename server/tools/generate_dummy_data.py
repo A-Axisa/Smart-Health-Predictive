@@ -233,7 +233,7 @@ def generate_prediction(created_at: datetime, health_data_id: int,):
 
 
 def generate_user_account_role(
-    created_at: datetime, 
+    created_at: datetime,
     user_id: int,
     user_role_id: UserRoleID
 ):
@@ -245,7 +245,7 @@ def generate_user_account_role(
     }
 
 def generate_user_patient_access(
-    created_at: datetime, 
+    created_at: datetime,
     user_id: int,
     patient_id: int
 ):
