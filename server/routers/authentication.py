@@ -94,7 +94,7 @@ async def register(user_reg: UserRegistrationDetails,
             not is_password_valid(user_reg.password) or
             not is_name_valid(user_reg.given_names) or
             not is_name_valid(user_reg.family_name) or
-            not is_formatted_phone_valid(user_reg.phone) or
+            not is_formatted_phone_valid(formatted_phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -470,21 +470,21 @@ def is_email_valid(email: str):
 
 
 def format_phone_number(phone: str):
-    '''Removes spaces, hyphens, and brackets from a phone number string'''
-    return phone.replace('-', '').replace(' ', ''). \
-        replace('(', '').replace(')', '')
+    '''Removes everything but digits from a given phone number.'''
+    return ''.join(c for c in phone if c.isdigit())
 
 
 def is_formatted_phone_valid(phone: str):
-    '''Verifies a phone number is empty or a valid number.'''
+    '''Verifies a phone number only containing digits a valid number
+       or is empty.'''
     if phone == '':
         return True
 
     # Only allow for numbers after the plus sign.
-    if not phone[1:].isalpha:
+    if not phone.isdigit():
         return False
     try:
-        phonenumbers.parse(phone)
+        phonenumbers.parse('+' + phone)
     except phonenumbers.NumberParseException:
         return False
     return True
