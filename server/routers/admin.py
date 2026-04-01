@@ -81,7 +81,7 @@ async def get_users(db_conn: Session = Depends(get_db)):
 
 
 @router.patch("/users/{user_email}/roles/{role_id}")
-async def update_user_role(user_email: str, role_id: int,
+async def update_user_role(user_email: str, role_id: int, request: Request,
                            db_conn: Session = Depends(get_db)):
 
     # Check if both the user and role exist.
@@ -108,6 +108,20 @@ async def update_user_role(user_email: str, role_id: int,
         db_conn.add(UserAccountRole(UserID=user.UserID, RoleID=role_id))
 
     db_conn.commit()
+
+    actor_email = None
+    try: # After resolving the authentication issue for this endpoint, this exception handling should be removed
+        actor_email = get_current_user(request, db_conn).get('email')
+    except Exception:
+        pass
+
+    write_audit_log(db_conn,
+                    eventType=LogEventType.ROLE_CHANGED,
+                    success=True,
+                    userEmail=actor_email,
+                    device=request.headers.get("user-agent"),
+                    ipAddress=request.client.host,
+                    description=f"Role changed for {user_email} to {role.RoleName}.")
 
     return {"message": f"Update successful.",
             "role": {
@@ -201,6 +215,13 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
                                                 UserAccountRole.RoleID).filter(UserAccountRole.UserID == admin_user.UserID).first()
 
     if not user_role or user_role.RoleName.lower() != 'admin':
+        write_audit_log(db_conn,
+                        eventType=LogEventType.ACCOUNT_DELETED,
+                        success=False,
+                        userEmail=requesting_user_email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description=f"Unauthorized delete attempt for account: {user_email}.")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You do not have permission to delete users.")
 
@@ -274,6 +295,13 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
     current_user_role = current_user.get('role')
     if not current_user_role or current_user_role.lower() != 'admin':
+        write_audit_log(db_conn,
+                        eventType=LogEventType.MERCHANT_VALIDATED,
+                        success=False,
+                        userEmail=current_user_email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description=f"Unauthorized merchant validation attempt for {merchant_email}.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 

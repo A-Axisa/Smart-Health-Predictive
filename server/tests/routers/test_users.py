@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from server.main import app
 
-from ... models.dbmodels import HealthData
+from ... models.dbmodels import HealthData, AuditLog, LogEventType
 from ... main import app
 from ... utils.database import get_db
 
@@ -84,6 +84,17 @@ def test_login_and_self_delete_like_auth_flow():
     assert delete_res.status_code == status.HTTP_200_OK, f"delete failed: {delete_res.status_code} {delete_res.text}"
     assert delete_res.json()["message"].startswith(
         "User and all related data deleted successfully")
+
+    db_conn = next(get_db())
+    log = (
+        db_conn.query(AuditLog)
+        .filter(AuditLog.EventType == LogEventType.ACCOUNT_DELETED.value)
+        .filter(AuditLog.UserEmail == "testdelete@mymail.com")
+        .order_by(AuditLog.LogID.desc())
+        .first()
+    )
+    assert log is not None
+    assert log.Success is True
 
 
 def test_get_invalid_data():
