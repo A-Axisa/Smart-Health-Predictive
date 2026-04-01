@@ -5,6 +5,7 @@ from secrets import token_urlsafe
 
 import jwt
 import phonenumbers
+import re
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, \
     Response
@@ -18,7 +19,8 @@ from sqlalchemy.orm import Session
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole, LogEventType, Patient
+    UserAccountValidationToken, AccountRole, LogEventType, Patient, \
+    PasswordResetToken
 from ..utils.email_service import send_email
 from ..utils.audit_log import write_audit_log
 
@@ -549,3 +551,23 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
                     description=f"Password successfully changed.")
 
     return {'message': 'User successfully changed password.'}
+
+
+@router.post('/forgotPassword')
+def forgot_password(input_email: str, db_conn: Session = Depends(get_db)):
+    '''Generates a reset password token for a given email.'''
+    sanitised_email = re.sub(r'[()<>[\]:,;@\\]', '', input_email)
+    if is_email_valid(sanitised_email):
+        user = db_conn.query(UserAccount).filter_by(Email=sanitised_email).first()
+        if user:
+
+            token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+            expires_at = datetime.now(UTC) + timedelta(minutes=30)
+            pass_reset_token = PasswordResetToken(
+                user.UserID,
+                token,
+                expires_at
+            )
+
+            db_conn.add(pass_reset_token)
+            db_conn.commit()
