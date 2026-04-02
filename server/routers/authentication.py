@@ -73,6 +73,9 @@ class ChangePasswordDetails(BaseModel):
     confirm_new_password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
 load_dotenv()
 
 router = APIRouter()
@@ -554,11 +557,11 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
 
 
 @router.post('/forgotPassword')
-def forgot_password(input_email: str, request: Request, db_conn: Session = Depends(get_db)):
+def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
     '''Generates a reset password token for a given email.'''
     is_success = False
 
-    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '', input_email)
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '', forgot_password_request.email)
     if is_email_valid(sanitised_email):
         user = db_conn.query(UserAccount).filter_by(Email=sanitised_email).first()
         if user:
