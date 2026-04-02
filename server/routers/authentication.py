@@ -573,6 +573,12 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
         if user:
 
             patient = db_conn.query(Patient).filter_by(UserID=user.UserID).first()
+
+            # Only allow one token to exist per user.
+            existing_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+            if existing_token:
+                db_conn.delete(existing_token)
+
             token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
             expires_at = datetime.now(UTC) + timedelta(minutes=30)
             pass_reset_token = PasswordResetToken(
