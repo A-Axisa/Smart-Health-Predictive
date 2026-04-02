@@ -12,7 +12,7 @@ const ForgotPasswordForm = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [alertEmailRequired, setAlertEmailRequired] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isFormSubmitted, setIsFormSubmitted] = useState(true)
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false)
 
   function validateEmail(e) {
     setAlertEmailRequired(false);
@@ -41,7 +41,7 @@ const ForgotPasswordForm = () => {
       })
     }).then(response => {
       if (!response.ok) { throw new Error(response.status) }
-      setIsFormSubmitted(false)
+      setIsFormSubmitted(true)
       return response.json()
     }).catch( _error => {})
     setIsLoading(false)
@@ -61,7 +61,7 @@ const ForgotPasswordForm = () => {
         >
           
           {/* Input form */}
-          {isFormSubmitted && 
+          {!isFormSubmitted && 
             <Stack direction='column' spacing={{xs:5}} pl={3} pr={3}
               style={{ justifyContent:"center"}}>
             <Stack direction='column' spacing={{xs:2}}>
@@ -84,7 +84,7 @@ const ForgotPasswordForm = () => {
           </Stack>}
 
           {/* Success response */}
-          {!isFormSubmitted && 
+          {isFormSubmitted && 
           <Stack direction='column' spacing={{ xs:5 }} pl={3} pr={3}>
             <Stack direction='column' spacing={{xs:2, position:"relative"}}>
               <h1>Request Successful</h1>
