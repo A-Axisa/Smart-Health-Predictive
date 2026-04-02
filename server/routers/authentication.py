@@ -596,10 +596,9 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
         db_conn,
         eventType = LogEventType.RESET_PASSWORD_REQUEST,
         success = is_success,
-        userEmail = sanitised_email,
         device = request.headers.get("user-agent"),
         ipAddress = request.client.host,
-        description = "Password reset requested due to forgotten password"
+        description = "Password reset requested for {}".format(sanitised_email)
     )
 
 
