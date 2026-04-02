@@ -571,3 +571,28 @@ def forgot_password(input_email: str, db_conn: Session = Depends(get_db)):
 
             db_conn.add(pass_reset_token)
             db_conn.commit()
+
+
+@router.get("/passwordReset")
+async def password_reset(token: str, password: str, db_conn: Session = Depends(get_db)):
+    '''Updates a user's password if the token is valid and password are valid.'''
+    missing_token_exception = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired token."
+    )
+
+    token_entry = db_conn.query(
+        PasswordResetToken).filter_by(Token=token).first()
+    if not token_entry \
+        or token_entry.ExpiresAt < datetime.utcnow():
+        raise missing_token_exception
+
+    user = db_conn.query(UserAccount) \
+        .filter_by(UserID=token_entry.UserID) \
+        .first()
+    if is_password_valid(password) and user:
+        new_password_hash = password_hasher.hash(password)
+        user.PasswordHash = new_password_hash
+
+    db_conn.delete(token_entry)
+    db_conn.commit()
