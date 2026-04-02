@@ -51,7 +51,8 @@ def test_admin_can_delete_user():
     # 3. Get the user ID of the new user
     users_res = admin_client.get("/users")
     assert users_res.status_code == status.HTTP_200_OK
-    users = users_res.json()
+    users_payload = users_res.json()
+    users = users_payload["users"]
     user_found = any(user['email'] == user_to_delete_email for user in users)
     assert user_found, f"Could not find user {user_to_delete_email} to delete."
 
@@ -70,7 +71,8 @@ def test_admin_can_delete_user():
     # 6. Verify the user is actually deleted
     users_res_after_delete = admin_client.get("/users")
     assert users_res_after_delete.status_code == status.HTTP_200_OK
-    users_after_delete = users_res_after_delete.json()
+    users_after_delete_payload = users_res_after_delete.json()
+    users_after_delete = users_after_delete_payload["users"]
     user_found = any(
         user['email'] == user_to_delete_email for user in users_after_delete)
     assert not user_found, f"User with email {user_to_delete_email} was found in the user list after deletion."
@@ -115,6 +117,36 @@ def test_role_change_writes_audit_log():
     assert log is not None
     assert log.Success is True
     assert log.UserEmail == "SHP_Admin@example.com"
+
+    cleanup_res = admin_client.delete(f"/users/{user_email}")
+    assert cleanup_res.status_code == status.HTTP_200_OK
+
+
+def test_admin_users_supports_search_query():
+    user_email = "search.query.target@example.com"
+    credentials = {
+        "given_names": "Searchable",
+        "family_name": "Target",
+        "date_of_birth": "1980-05-24",
+        "gender": "Male",
+        "password": "password123456789A2@",
+        "email": user_email,
+        "phone": "",
+        "account_type": "user"
+    }
+    register_res = client.post("/register/", json=credentials)
+    assert register_res.status_code == status.HTTP_200_OK
+
+    admin_client = TestClient(app)
+    login_res = admin_client.post("/login/", json={"email": "SHP_Admin@example.com", "password": "password12345678"})
+    assert login_res.status_code == status.HTTP_200_OK
+
+    users_res = admin_client.get("/users", params={"search": "search.query.target", "skip": 0, "limit": 50})
+    assert users_res.status_code == status.HTTP_200_OK
+    payload = users_res.json()
+    assert "users" in payload
+    assert "total" in payload
+    assert any(user["email"] == user_email for user in payload["users"])
 
     cleanup_res = admin_client.delete(f"/users/{user_email}")
     assert cleanup_res.status_code == status.HTTP_200_OK
