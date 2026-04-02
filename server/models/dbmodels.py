@@ -359,4 +359,4 @@ class PasswordResetToken(Base):
 
     def __repr__(self):
         return f'PasswordResetToken(UserID={self.UserID}, \
-            Token={self.ValidationToken}, ExpiresAt={self.ExpiresAt})'
+            Token={self.Token}, ExpiresAt={self.ExpiresAt})'
