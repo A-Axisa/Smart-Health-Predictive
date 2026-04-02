@@ -554,9 +554,11 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
 
 
 @router.post('/forgotPassword')
-def forgot_password(input_email: str, db_conn: Session = Depends(get_db)):
+def forgot_password(input_email: str, request: Request, db_conn: Session = Depends(get_db)):
     '''Generates a reset password token for a given email.'''
-    sanitised_email = re.sub(r'[()<>[\]:,;@\\]', '', input_email)
+    is_success = False
+
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '', input_email)
     if is_email_valid(sanitised_email):
         user = db_conn.query(UserAccount).filter_by(Email=sanitised_email).first()
         if user:
@@ -571,6 +573,18 @@ def forgot_password(input_email: str, db_conn: Session = Depends(get_db)):
 
             db_conn.add(pass_reset_token)
             db_conn.commit()
+            is_success = True
+
+    write_audit_log(
+        db_conn,
+        eventType = LogEventType.RESET_PASSWORD_REQUEST,
+        success = is_success,
+        userEmail = sanitised_email,
+        device = request.headers.get("user-agent"),
+        ipAddress = request.client.host,
+        description = "Password reset requested due to forgotten password"
+    )
+
 
 
 @router.get("/passwordReset")
