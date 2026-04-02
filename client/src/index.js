@@ -23,6 +23,7 @@ import ProtectedRoutes from './utils/ProtectedRoutes'
 import LandingRoute from './utils/LandingRoute'
 import { UserProvider } from './utils/UserContext';
 import ErrorPage from './routes/ErrorPage';
+import ForgotPassword from './routes/ForgotPassword';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -39,6 +40,7 @@ root.render(
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 
 
