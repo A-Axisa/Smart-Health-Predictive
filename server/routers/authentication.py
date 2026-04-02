@@ -596,7 +596,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
 
 
 
-@router.get("/passwordReset")
+@router.post("/passwordReset")
 async def password_reset(reset_request: PasswordResetRequest, db_conn: Session = Depends(get_db)):
     '''Updates a user's password if the token is valid and password are valid.'''
     missing_token_exception = HTTPException(

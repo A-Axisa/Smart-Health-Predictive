@@ -9,17 +9,21 @@ import {
   TextField,
 } from "@mui/material";
 import PasswordInputField from "../authentication/PasswordInputField";
+import { useParams } from "react-router-dom";
+
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
  * Provides a form to reset their password one time with a reset token.
  */
 const ResetPasswordForm = () => {
+  const { token } = useParams();
   const [alertPasswordRequired, setAlertPasswordRequired] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState(null);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [alertPasswordsDontMatch, setAlertPasswordsDontMatch] = useState(false);
+  const [isPasswordsMatching, setIsPasswordsMatching] = useState(null);
 
   function validatePassword(e) {
     setAlertPasswordRequired(false);
@@ -30,12 +34,43 @@ const ResetPasswordForm = () => {
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
-    setAlertPasswordsDontMatch(
-      confirmPasswordInput !== password || confirmPasswordInput === "",
+    setIsPasswordsMatching(
+      password && confirmPasswordInput && confirmPasswordInput === password,
     );
   }
 
-  async function handleSubmit(e) {}
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!isPasswordValid || !isPasswordsMatching) {
+      setAlertPasswordRequired(password === null);
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Post the fetch request with the supplied credentials.
+    await fetch(`${API_BASE}/passwordReset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: token,
+        password: password,
+      }),
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .catch((_error) => {});
+
+    setIsLoading(false);
+  }
 
   return (
     <Container
@@ -75,9 +110,11 @@ const ResetPasswordForm = () => {
               label="Confirm Password"
               onChange={updateConfirmPassword}
               type="password"
-              error={alertPasswordsDontMatch}
+              error={!isPasswordsMatching && password !== null}
               helperText={
-                alertPasswordsDontMatch ? "*Passwords do not match" : null
+                !isPasswordsMatching && password !== null
+                  ? "*Passwords do not match"
+                  : null
               }
             ></TextField>
             <Button
