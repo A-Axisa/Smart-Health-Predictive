@@ -636,11 +636,18 @@ def _send_reset_password_email(user: UserAccount, patient: Patient, request: Req
 
 
 @router.post("/passwordReset")
-async def password_reset(reset_request: PasswordResetRequest, db_conn: Session = Depends(get_db)):
+async def password_reset(
+    reset_request: PasswordResetRequest,
+    request: Request, 
+    db_conn: Session = Depends(get_db)
+):
     '''Updates a user's password if the token is valid and password are valid.'''
+    is_successful = False
+
     token_entry = db_conn.query(
         PasswordResetToken).filter_by(Token=reset_request.token).first()
 
+    user = None
     if not token_entry \
         or token_entry.ExpiresAt < datetime.utcnow():
 
@@ -650,6 +657,18 @@ async def password_reset(reset_request: PasswordResetRequest, db_conn: Session =
         if is_password_valid(reset_request.password) and user:
             new_password_hash = password_hasher.hash(reset_request.password)
             user.PasswordHash = new_password_hash
+            is_successful = True
 
     db_conn.delete(token_entry)
     db_conn.commit()
+
+    write_audit_log(
+        db_conn,
+        eventType = LogEventType.PASSWORD_RESET,
+        success = is_successful,
+        userID = None if user is None else user.UserID,
+        userEmail = None if user is None else user.Email,
+        device = request.headers.get("user-agent"),
+        ipAddress = request.client.host,
+        description = "Attempt to reset password for account.",
+    )
