@@ -647,8 +647,8 @@ async def password_reset(
         PasswordResetToken).filter_by(Token=reset_request.token).first()
 
     user = None
-    if not token_entry \
-        or token_entry.ExpiresAt < datetime.utcnow():
+    if token_entry \
+        and datetime.utcnow() < token_entry.ExpiresAt:
 
         user = db_conn.query(UserAccount) \
             .filter_by(UserID=token_entry.UserID) \
