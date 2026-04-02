@@ -7,7 +7,7 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 /**
  * Provides the user a form to request a password reset using their email.
  */
-const LoginForm = () => {
+const ForgotPasswordForm = () => {
   const [email, setEmail] = useState(null)
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [alertEmailRequired, setAlertEmailRequired] = useState(false)
@@ -105,4 +105,4 @@ const LoginForm = () => {
   )
 }
 
-export default LoginForm
+export default ForgotPasswordForm
