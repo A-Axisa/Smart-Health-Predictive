@@ -1,6 +1,5 @@
-
 import { useState } from 'react'
-import { Box, Container, Stack, Button, Link, Divider } from '@mui/material'
+import { Box, Container, Stack, Button, Typography, Link } from '@mui/material'
 import EmailInputField from './EmailInputField';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -13,6 +12,7 @@ const LoginForm = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [alertEmailRequired, setAlertEmailRequired] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isFormSubmitted, setIsFormSubmitted] = useState(true)
 
   function validateEmail(e) {
     setAlertEmailRequired(false);
@@ -41,6 +41,7 @@ const LoginForm = () => {
       })
     }).then(response => {
       if (!response.ok) { throw new Error(response.status) }
+      setIsFormSubmitted(false)
       return response.json()
     }).catch( _error => {})
     setIsLoading(false)
@@ -50,7 +51,7 @@ const LoginForm = () => {
         <Container 
           sx={{
             borderRadius:{xs:0, sm:2},
-            padding:'25px',
+            padding:'40px',
             alignItems:'center',
             boxShadow:24,
             backgroundColor:'#ffffff',
@@ -58,21 +59,29 @@ const LoginForm = () => {
             flexGrow: { xs: 1, sm: 0 },
           }}
         >
-          <Box component='form' onSubmit={handleSubmit}>
-            <Stack spacing={{xs:2}}>
-              <EmailInputField onChange={validateEmail} 
-                showRequired={alertEmailRequired} />
-              <Button loading={isLoading} type='submit' variant="contained" sx={{ 
-                py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
-                Reset Password
-              </Button>
-              <Divider variant="middle" aria-hidden="true" sx={{py:'5px'}}/>
-              <Stack direction='row' spacing={{xs:1}} 
-                  style={{ justifyContent:"center"}}> 
-                <Link href="/login" align='center' fontWeight='bold' >Return to login</Link>
-              </Stack>
+          
+          {/* Input form */}
+          {isFormSubmitted && 
+            <Stack direction='column' spacing={{xs:5}} pl={3} pr={3}
+              style={{ justifyContent:"center"}}>
+            <Stack direction='column' spacing={{xs:2}}>
+              <h1>Forgot Password?</h1>
+              <Typography align='start' style={{ color:'#777777' }}>
+                Enter the email associated with your WellAI account and we'll send you an email that will allow you to reset your password
+              </Typography>
             </Stack>
-          </Box>
+            <Box component='form' onSubmit={handleSubmit}>
+              <Stack spacing={{xs:2}}>
+                <EmailInputField onChange={validateEmail} 
+                  showRequired={alertEmailRequired} />
+                <Button loading={isLoading} type='submit' variant="contained" sx={{ 
+                  py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
+                  Reset Password
+                </Button>
+              </Stack>
+            </Box>
+            <Link href="/login" align='end' fontWeight='bold' >Return to Login</Link>
+          </Stack>}
         </Container>
   )
 }
