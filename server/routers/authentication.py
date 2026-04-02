@@ -572,6 +572,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
         user = db_conn.query(UserAccount).filter_by(Email=sanitised_email).first()
         if user:
 
+            patient = db_conn.query(Patient).filter_by(UserID=user.UserID).first()
             token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
             expires_at = datetime.now(UTC) + timedelta(minutes=30)
             pass_reset_token = PasswordResetToken(
@@ -583,6 +584,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
             db_conn.add(pass_reset_token)
             db_conn.commit()
             is_success = True
+            _send_reset_password_email(user.Email, patient, request, token)
 
     write_audit_log(
         db_conn,
@@ -594,6 +596,37 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
         description = "Password reset requested due to forgotten password"
     )
 
+
+def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request,token: str):
+    """Helper function to send a validation email."""
+    url = f"http://localhost:8000/reset_password/token={token}"
+    subject = "Password reset request for WellAI Smart Health Predictive"
+    content = f"""
+    <html>
+        <body>
+            <p>Greetings {patient.GivenNames} {patient.FamilyName},</p>
+            <p>We have received a request to reset the password for your account with WellAI Smart Health Predictive.</p>
+            <p>Click the following link to proceed this process and update your password. For security, this link will expire in 30 minutes:
+              <a href={url}>Reset Password</a>
+            </p>
+            <p>Request Details:
+            <ul>
+              <li>IP Address: {request.client.host} </li>
+              <li>Device: {request.headers.get("user-agent")} </li>
+            </ul>
+            <p>If you did not request a password reset, your account may be at risk, but you can safely ignore this email and your password will not be altered.</p>
+            <br />
+            <p>Best regards,</p>
+            <p>The WellAI Team</p>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=user.Email,
+        subject=subject,
+        content=content,
+        content_type="html"
+    )
 
 
 @router.post("/passwordReset")
