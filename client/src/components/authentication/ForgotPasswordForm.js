@@ -82,6 +82,25 @@ const LoginForm = () => {
             </Box>
             <Link href="/login" align='end' fontWeight='bold' >Return to Login</Link>
           </Stack>}
+
+          {/* Success response */}
+          {!isFormSubmitted && 
+          <Stack direction='column' spacing={{ xs:5 }} pl={3} pr={3}>
+            <Stack direction='column' spacing={{xs:2, position:"relative"}}>
+              <h1>Request Successful</h1>
+              <Typography align='start' style={{ color:'#777777' }}>
+                We have sent an email to your email address with instruction to reset your 
+                password and should appear shortly.
+              </Typography>
+              <Typography align='start' style={{ color:'#777777' }}>
+                If you do not see the it, check your spam folder.
+              </Typography>
+              </Stack>
+            <Button href='/login' variant="outlined" sx={{ 
+              py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem' } }}>
+              Return to login
+            </Button>
+          </Stack>}
         </Container>
   )
 }
