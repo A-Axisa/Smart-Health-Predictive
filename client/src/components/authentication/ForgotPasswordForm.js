@@ -21,7 +21,29 @@ const LoginForm = () => {
   }
 
   async function handleSubmit(e) {
+    e.preventDefault();
 
+    // Only accept emails structured correctly.
+    if(!isEmailValid) {
+      setAlertEmailRequired(email === null);
+      return;
+    }
+
+    setIsLoading(true)
+    await fetch(`${API_BASE}/forgotPassword`, {
+      method: 'POST',
+      credentials: 'include',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+      })
+    }).then(response => {
+      if (!response.ok) { throw new Error(response.status) }
+      return response.json()
+    }).catch( _error => {})
+    setIsLoading(false)
   }
 
   return (
