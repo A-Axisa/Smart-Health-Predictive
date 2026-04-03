@@ -570,23 +570,26 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
     sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
                              forgot_password_request.email)
     if is_email_valid(sanitised_email):
-        user = db_conn.query(UserAccount).filter_by(
-            Email=sanitised_email).first()
-        if user:
+        user = db_conn.query(UserAccount, AccountRole) \
+            .filter(UserAccount.Email == sanitised_email) \
+            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+            .first()
 
+        if user and user.AccountRole.RoleName != 'admin':
             patient = db_conn.query(Patient).filter_by(
-                UserID=user.UserID).first()
+                UserID=user.UserAccount.UserID).first()
 
             # Only allow one token to exist per user.
             existing_token = db_conn.query(
-                PasswordResetToken).filter_by(UserID=user.UserID).first()
+                PasswordResetToken).filter_by(UserID=user.UserAccount.UserID).first()
             if existing_token:
                 db_conn.delete(existing_token)
 
             token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
             expires_at = datetime.now() + timedelta(minutes=30)
             pass_reset_token = PasswordResetToken(
-                user.UserID,
+                user.UserAccount.UserID,
                 token,
                 expires_at
             )
@@ -594,7 +597,6 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
             db_conn.add(pass_reset_token)
             db_conn.commit()
             is_success = True
-            _send_reset_password_email(user, patient, request, token)
 
     write_audit_log(
         db_conn,
