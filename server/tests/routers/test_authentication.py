@@ -307,3 +307,18 @@ def test_successful_reset_password_flow():
     assert response.status_code == status.HTTP_200_OK, "Failed to log in"
 
     client.post('/logout/')
+
+
+def test_request_pass_reset_for_missing_account():
+    """Ensure no password reset tokens are generated for non-existent users in the system"""
+    db_conn = next(get_db())
+    init_token_amount = len(db_conn.query(PasswordResetToken).all())
+    db_conn.close()
+
+    response = client.post('/forgotPassword', json={'email': 'fake@example.com'})
+    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
+
+    db_conn = next(get_db())
+    end_token_amount = len(db_conn.query(PasswordResetToken).all())
+    db_conn.close()
+    assert init_token_amount == end_token_amount, "Amount of tokens has changed."
