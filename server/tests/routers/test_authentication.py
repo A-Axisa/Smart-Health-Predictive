@@ -344,3 +344,18 @@ def test_invalid_password_on_reset():
         'password': 'password',
     })
     assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+
+
+def test_invalid_reset_token_():
+    """Ensure that an account's password is not changed if the token is missing."""
+    response = client.post("/passwordReset", json={
+        'token': 'invalid_token_string',
+        'password': 'Qa3zxW!45SdcE#ED1c',
+    })
+    assert response.status_code == status.HTTP_200_OK, "Could not process request"
+
+    response = client.post("/login/", json={
+        'email': 'test@example.com',
+        'password': 'Qa3zxW!45SdcE#ED1c',
+    })
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
