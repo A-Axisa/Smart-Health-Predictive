@@ -347,8 +347,9 @@ class AuditLog(Base):
 
 class PasswordResetToken(Base):
     __tablename__ = 'PasswordResetToken'
+    TokenID = Column(Integer, primary_key=True)
     UserID = Column(Integer, ForeignKey('UserAccount.UserID'),
-                    primary_key=True, nullable=False)
+                    nullable=False)
     Token = Column(String(999), nullable=False)
     ExpiresAt = Column(DateTime, nullable=False)
 
