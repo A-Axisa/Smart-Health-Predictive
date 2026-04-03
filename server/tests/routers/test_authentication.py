@@ -275,110 +275,110 @@ def test_phone_starting_with_plus():
 def test_format_phone_number():
     assert format_phone_number("+(555) 555-0199") == ("5555550199")
 
+class TestPasswordResetFlow():
+    def test_successful_reset_password_flow(self):
+        """Test the reset password flow from start to finish."""
+        test_email = 'test@example.com'
+        response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+        assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
 
-def test_successful_reset_password_flow():
-    """Test the reset password flow from start to finish."""
-    test_email = 'test@example.com'
-    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
-    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
+        db_conn = next(get_db())
+        user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
+        reset_pass_request = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+        login_cred = {
+            'email': test_email,
+            'password': 'thisIsSafer2#',
+        }
+        response = client.post("/login/", json=login_cred)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in"
 
-    db_conn = next(get_db())
-    user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
-    reset_pass_request = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
-    login_cred = {
-        'email': test_email,
-        'password': 'thisIsSafer2#',
-    }
-    response = client.post("/login/", json=login_cred)
-    assert response.status_code == status.HTTP_200_OK, "Failed to log in"
+        client.post('/logout/')
+        response = client.post("/passwordReset", json={
+            'token': reset_pass_request.Token,
+            'password': VALID_PASSWORD,
+        })
+        assert response.status_code == status.HTTP_200_OK, "Failed to reset password"
 
-    client.post('/logout/')
-    response = client.post("/passwordReset", json={
-        'token': reset_pass_request.Token,
-        'password': VALID_PASSWORD,
-    })
-    assert response.status_code == status.HTTP_200_OK, "Failed to reset password"
+        response = client.post("/login/", json=login_cred)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
 
-    response = client.post("/login/", json=login_cred)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+        login_cred['password'] = VALID_PASSWORD
+        response = client.post("/login/", json=login_cred)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in"
 
-    login_cred['password'] = VALID_PASSWORD
-    response = client.post("/login/", json=login_cred)
-    assert response.status_code == status.HTTP_200_OK, "Failed to log in"
-
-    client.post('/logout/')
-
-
-def test_request_pass_reset_for_missing_account():
-    """Ensure no password reset tokens are generated for non-existent users in the system"""
-    db_conn = next(get_db())
-    init_token_amount = len(db_conn.query(PasswordResetToken).all())
-    db_conn.close()
-
-    response = client.post('/forgotPassword', json={'email': 'fake@example.com'})
-    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
-
-    db_conn = next(get_db())
-    end_token_amount = len(db_conn.query(PasswordResetToken).all())
-    db_conn.close()
-    assert init_token_amount == end_token_amount, "Amount of tokens has changed."
+        client.post('/logout/')
 
 
-def test_invalid_password_on_reset():
-    """Ensure the password used on reset is valid."""
-    test_email = 'test@example.com'
-    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
-    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
+    def test_request_pass_reset_for_missing_account(self):
+        """Ensure no password reset tokens are generated for non-existent users in the system"""
+        db_conn = next(get_db())
+        init_token_amount = len(db_conn.query(PasswordResetToken).all())
+        db_conn.close()
 
-    db_conn = next(get_db())
-    user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
-    passwordResetToken = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
-    response = client.post("/passwordReset", json={
-        'token': passwordResetToken.Token,
-        'password': "password",
-    })
-    assert response.status_code == status.HTTP_200_OK, "Critical error"
+        response = client.post('/forgotPassword', json={'email': 'fake@example.com'})
+        assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
 
-    response = client.post("/login/", json={
-        'email': 'test@example.com',
-        'password': 'password',
-    })
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+        db_conn = next(get_db())
+        end_token_amount = len(db_conn.query(PasswordResetToken).all())
+        db_conn.close()
+        assert init_token_amount == end_token_amount, "Amount of tokens has changed."
 
 
-def test_invalid_reset_token_():
-    """Ensure that an account's password is not changed if the token is missing."""
-    response = client.post("/passwordReset", json={
-        'token': 'invalid_token_string',
-        'password': 'Qa3zxW!45SdcE#ED1c',
-    })
-    assert response.status_code == status.HTTP_200_OK, "Could not process request"
+    def test_invalid_password_on_reset(self):
+        """Ensure the password used on reset is valid."""
+        test_email = 'test@example.com'
+        response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+        assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
 
-    response = client.post("/login/", json={
-        'email': 'test@example.com',
-        'password': 'Qa3zxW!45SdcE#ED1c',
-    })
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+        db_conn = next(get_db())
+        user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
+        passwordResetToken = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+        response = client.post("/passwordReset", json={
+            'token': passwordResetToken.Token,
+            'password': "password",
+        })
+        assert response.status_code == status.HTTP_200_OK, "Critical error"
+
+        response = client.post("/login/", json={
+            'email': 'test@example.com',
+            'password': 'password',
+        })
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
 
 
-def test_multiple_reset_request_tokens():
-    """Ensure that only one password reset token can exist for a user."""
-    db_conn = next(get_db())
-    user = db_conn.query(UserAccount).filter_by(Email='test@example.com').first()
-    tokens = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
-    assert len(tokens) == 0, "No token should currently exist for user"
-    db_conn.close()
+    def test_invalid_reset_token_(self):
+        """Ensure that an account's password is not changed if the token is missing."""
+        response = client.post("/passwordReset", json={
+            'token': 'invalid_token_string',
+            'password': 'Qa3zxW!45SdcE#ED1c',
+        })
+        assert response.status_code == status.HTTP_200_OK, "Could not process request"
 
-    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
-    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
-    db_conn = next(get_db())
-    first_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
-    assert len(first_token) == 1, "One token should exist for the user"
-    db_conn.close()
+        response = client.post("/login/", json={
+            'email': 'test@example.com',
+            'password': 'Qa3zxW!45SdcE#ED1c',
+        })
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
 
-    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
-    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
-    db_conn = next(get_db())
-    second_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
-    assert len(second_token) == 1, "Only one token should exist for the user"
-    db_conn.close()
+
+    def test_multiple_reset_request_tokens(self):
+        """Ensure that only one password reset token can exist for a user."""
+        db_conn = next(get_db())
+        user = db_conn.query(UserAccount).filter_by(Email='test@example.com').first()
+        tokens = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+        assert len(tokens) == 0, "No token should currently exist for user"
+        db_conn.close()
+
+        response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+        assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
+        db_conn = next(get_db())
+        first_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+        assert len(first_token) == 1, "One token should exist for the user"
+        db_conn.close()
+
+        response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+        assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
+        db_conn = next(get_db())
+        second_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+        assert len(second_token) == 1, "Only one token should exist for the user"
+        db_conn.close()
