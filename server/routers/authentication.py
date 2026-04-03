@@ -567,15 +567,19 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
     '''Generates a reset password token for a given email.'''
     is_success = False
 
-    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '', forgot_password_request.email)
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
+                             forgot_password_request.email)
     if is_email_valid(sanitised_email):
-        user = db_conn.query(UserAccount).filter_by(Email=sanitised_email).first()
+        user = db_conn.query(UserAccount).filter_by(
+            Email=sanitised_email).first()
         if user:
 
-            patient = db_conn.query(Patient).filter_by(UserID=user.UserID).first()
+            patient = db_conn.query(Patient).filter_by(
+                UserID=user.UserID).first()
 
             # Only allow one token to exist per user.
-            existing_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+            existing_token = db_conn.query(
+                PasswordResetToken).filter_by(UserID=user.UserID).first()
             if existing_token:
                 db_conn.delete(existing_token)
 
@@ -594,15 +598,52 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
 
     write_audit_log(
         db_conn,
-        eventType = LogEventType.RESET_PASSWORD_REQUEST,
-        success = is_success,
-        device = request.headers.get("user-agent"),
-        ipAddress = request.client.host,
-        description = "Password reset requested for {}".format(sanitised_email)
+        eventType=LogEventType.RESET_PASSWORD_REQUEST,
+        success=is_success,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Password reset requested for {}".format(sanitised_email)
     )
 
 
-def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request,token: str):
+@router.post("/passwordReset")
+async def password_reset(
+    reset_request: PasswordResetRequest,
+    request: Request,
+    db_conn: Session = Depends(get_db)
+):
+    '''Updates a user's password if the token is valid and password are valid.'''
+    is_successful = False
+    user = None
+
+    token_entry = db_conn.query(
+        PasswordResetToken).filter_by(Token=reset_request.token).first()
+    if token_entry \
+            and datetime.now(UTC) < token_entry.ExpiresAt.astimezone(timezone.utc):
+        db_conn.delete(token_entry)
+        db_conn.commit()
+
+        user = db_conn.query(UserAccount) \
+            .filter_by(UserID=token_entry.UserID) \
+            .first()
+        if is_password_valid(reset_request.password) and user:
+            new_password_hash = password_hasher.hash(reset_request.password)
+            user.PasswordHash = new_password_hash
+            is_successful = True
+
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.PASSWORD_RESET,
+        success=is_successful,
+        userID=None if user is None else user.UserID,
+        userEmail=None if user is None else user.Email,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Attempt to reset password for account.",
+    )
+
+
+def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
     """Helper function to send a validation email."""
     url = f"http://localhost:8000/reset_password/token={token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
@@ -631,41 +672,4 @@ def _send_reset_password_email(user: UserAccount, patient: Patient, request: Req
         subject=subject,
         content=content,
         content_type="html"
-    )
-
-
-@router.post("/passwordReset")
-async def password_reset(
-    reset_request: PasswordResetRequest,
-    request: Request,
-    db_conn: Session = Depends(get_db)
-):
-    '''Updates a user's password if the token is valid and password are valid.'''
-    is_successful = False
-    user = None
-
-    token_entry = db_conn.query(
-        PasswordResetToken).filter_by(Token=reset_request.token).first()
-    if token_entry \
-        and datetime.now(UTC) < token_entry.ExpiresAt.astimezone(timezone.utc):
-        db_conn.delete(token_entry)
-        db_conn.commit()
-
-        user = db_conn.query(UserAccount) \
-            .filter_by(UserID=token_entry.UserID) \
-            .first()
-        if is_password_valid(reset_request.password) and user:
-            new_password_hash = password_hasher.hash(reset_request.password)
-            user.PasswordHash = new_password_hash
-            is_successful = True
-
-    write_audit_log(
-        db_conn,
-        eventType = LogEventType.PASSWORD_RESET,
-        success = is_successful,
-        userID = None if user is None else user.UserID,
-        userEmail = None if user is None else user.Email,
-        device = request.headers.get("user-agent"),
-        ipAddress = request.client.host,
-        description = "Attempt to reset password for account.",
     )
