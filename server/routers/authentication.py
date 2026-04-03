@@ -637,16 +637,15 @@ def _send_reset_password_email(user: UserAccount, patient: Patient, request: Req
 @router.post("/passwordReset")
 async def password_reset(
     reset_request: PasswordResetRequest,
-    request: Request, 
+    request: Request,
     db_conn: Session = Depends(get_db)
 ):
     '''Updates a user's password if the token is valid and password are valid.'''
     is_successful = False
+    user = None
 
     token_entry = db_conn.query(
         PasswordResetToken).filter_by(Token=reset_request.token).first()
-
-    user = None
     if token_entry \
         and datetime.utcnow() < token_entry.ExpiresAt:
         db_conn.delete(token_entry)
