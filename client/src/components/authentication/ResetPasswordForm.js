@@ -24,17 +24,24 @@ const ResetPasswordForm = () => {
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [isPasswordsMatching, setIsPasswordsMatching] = useState(null);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   function validatePassword(e) {
     setAlertPasswordRequired(false);
     setIsPasswordValid(e.isValid);
     setPassword(e.password);
+    setIsPasswordsMatching(
+      (e.password && confirmPassword && confirmPassword === e.password) ||
+        (e.password === "" && confirmPassword === ""),
+    );
   }
 
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
+    setConfirmPassword(confirmPasswordInput);
     setIsPasswordsMatching(
-      password && confirmPasswordInput && confirmPasswordInput === password,
+      (password && confirmPasswordInput && confirmPasswordInput === password) ||
+        (password === "" && confirmPasswordInput === ""),
     );
   }
 
