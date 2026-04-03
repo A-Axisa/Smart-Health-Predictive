@@ -580,7 +580,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
                 db_conn.delete(existing_token)
 
             token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
-            expires_at = datetime.now(UTC) + timedelta(minutes=30)
+            expires_at = datetime.now() + timedelta(minutes=30)
             pass_reset_token = PasswordResetToken(
                 user.UserID,
                 token,
@@ -647,7 +647,7 @@ async def password_reset(
     token_entry = db_conn.query(
         PasswordResetToken).filter_by(Token=reset_request.token).first()
     if token_entry \
-        and datetime.utcnow() < token_entry.ExpiresAt:
+        and datetime.now(UTC) < token_entry.ExpiresAt.astimezone(timezone.utc):
         db_conn.delete(token_entry)
         db_conn.commit()
 
