@@ -322,3 +322,25 @@ def test_request_pass_reset_for_missing_account():
     end_token_amount = len(db_conn.query(PasswordResetToken).all())
     db_conn.close()
     assert init_token_amount == end_token_amount, "Amount of tokens has changed."
+
+
+def test_invalid_password_on_reset():
+    """Ensure the password used on reset is valid."""
+    test_email = 'test@example.com'
+    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
+
+    db_conn = next(get_db())
+    user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
+    passwordResetToken = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+    response = client.post("/passwordReset", json={
+        'token': passwordResetToken.Token,
+        'password': "password",
+    })
+    assert response.status_code == status.HTTP_200_OK, "Critical error"
+
+    response = client.post("/login/", json={
+        'email': 'test@example.com',
+        'password': 'password',
+    })
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
