@@ -649,6 +649,8 @@ async def password_reset(
     user = None
     if token_entry \
         and datetime.utcnow() < token_entry.ExpiresAt:
+        db_conn.delete(token_entry)
+        db_conn.commit()
 
         user = db_conn.query(UserAccount) \
             .filter_by(UserID=token_entry.UserID) \
@@ -657,9 +659,6 @@ async def password_reset(
             new_password_hash = password_hasher.hash(reset_request.password)
             user.PasswordHash = new_password_hash
             is_successful = True
-
-    db_conn.delete(token_entry)
-    db_conn.commit()
 
     write_audit_log(
         db_conn,
