@@ -15,25 +15,6 @@ client = TestClient(app)
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_once_for_all_tests():
-    db_conn = next(get_db())
-
-    # Delete the test account if it exists to prepare for test
-    prev_account = db_conn.query(UserAccount).filter_by(
-        Email="test@example.com").first()
-    if prev_account:
-        user_id = prev_account.UserID
-
-        # Delete user data from tables using user ID as a FK
-        db_conn.query(UserAccountValidationToken) \
-            .filter(UserAccountValidationToken.UserID == user_id) \
-            .delete(synchronize_session=False)
-        db_conn.query(UserAccountRole) \
-            .filter(UserAccountRole.UserID == user_id) \
-            .delete(synchronize_session=False)
-
-        # Delete user account
-        db_conn.delete(prev_account)
-        db_conn.commit()
 
     credentials = {
         'given_names': 'Testable',
@@ -49,20 +30,6 @@ def setup_once_for_all_tests():
     response = client.post('/register/', json=credentials)
 
     yield  # Wait until all tests have finished.
-
-    # Perform clean-up after all tests.
-    # Remove the test user.
-    user = db_conn.query(UserAccount).filter_by(
-        Email="test@example.com").first()
-    if user:
-        db_conn.query(UserAccountValidationToken) \
-            .filter(UserAccountValidationToken.UserID == user.UserID) \
-            .delete(synchronize_session=False)
-        db_conn.query(UserAccountRole). \
-            filter(UserAccountRole.UserID == user.UserID). \
-            delete(synchronize_session=False)
-        db_conn.delete(user)
-        db_conn.commit()
 
 
 def test_login_with_valid_credentials():
