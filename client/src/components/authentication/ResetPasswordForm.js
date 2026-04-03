@@ -30,18 +30,22 @@ const ResetPasswordForm = () => {
     setAlertPasswordRequired(false);
     setIsPasswordValid(e.isValid);
     setPassword(e.password);
-    setIsPasswordsMatching(
-      (e.password && confirmPassword && confirmPassword === e.password) ||
-        (e.password === "" && confirmPassword === ""),
-    );
+    setIsPasswordsMatching(doPasswordsMatch(e.password, confirmPassword));
   }
 
   function updateConfirmPassword(e) {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
-    setIsPasswordsMatching(
-      (password && confirmPasswordInput && confirmPasswordInput === password) ||
-        (password === "" && confirmPasswordInput === ""),
+    setIsPasswordsMatching(doPasswordsMatch(password, e.target.value));
+  }
+
+  function doPasswordsMatch(primary_password, secondary_password) {
+    return (
+      (primary_password &&
+        secondary_password &&
+        primary_password === secondary_password) ||
+      (!primary_password &&
+        !secondary_password)
     );
   }
 
