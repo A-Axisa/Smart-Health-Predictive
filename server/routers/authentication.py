@@ -16,6 +16,7 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
@@ -648,20 +649,27 @@ async def password_reset(
 
 def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
     """Helper function to send a validation email."""
-    url = f"http://localhost:8000/reset_password/token={token}"
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    ip_address = sanitizer.sanitize(request.client.host)
+    device = sanitizer.sanitize(request.headers.get("user-agent"))
+
+    url = f"http://localhost:8000/reset_password/token={sanitized_token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
     content = f"""
     <html>
         <body>
-            <p>Greetings {patient.GivenNames} {patient.FamilyName},</p>
+            <p>Greetings {given_names} {family_name},</p>
             <p>We have received a request to reset the password for your account with WellAI Smart Health Predictive.</p>
             <p>Click the following link to proceed this process and update your password. For security, this link will expire in 30 minutes:
               <a href={url}>Reset Password</a>
             </p>
             <p>Request Details:
             <ul>
-              <li>IP Address: {request.client.host} </li>
-              <li>Device: {request.headers.get("user-agent")} </li>
+              <li>IP Address: {ip_address} </li>
+              <li>Device: {device} </li>
             </ul>
             <p>If you did not request a password reset, your account may be at risk, but you can safely ignore this email and your password will not be altered.</p>
             <br />
