@@ -359,3 +359,26 @@ def test_invalid_reset_token_():
         'password': 'Qa3zxW!45SdcE#ED1c',
     })
     assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+
+
+def test_multiple_reset_request_tokens():
+    """Ensure that only one password reset token can exist for a user."""
+    db_conn = next(get_db())
+    user = db_conn.query(UserAccount).filter_by(Email='test@example.com').first()
+    tokens = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+    assert len(tokens) == 0, "No token should currently exist for user"
+    db_conn.close()
+
+    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
+    db_conn = next(get_db())
+    first_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+    assert len(first_token) == 1, "One token should exist for the user"
+    db_conn.close()
+
+    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset"
+    db_conn = next(get_db())
+    second_token = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).all()
+    assert len(second_token) == 1, "Only one token should exist for the user"
+    db_conn.close()
