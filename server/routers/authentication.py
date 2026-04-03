@@ -594,7 +594,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
             db_conn.add(pass_reset_token)
             db_conn.commit()
             is_success = True
-            # _send_reset_password_email(user, patient, request, token)
+            _send_reset_password_email(user, patient, request, token)
 
     write_audit_log(
         db_conn,
