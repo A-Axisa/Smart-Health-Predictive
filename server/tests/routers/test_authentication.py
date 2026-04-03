@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from ...main import app
 from ...models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken
+    UserAccountValidationToken, PasswordResetToken
 from ...routers.authentication import *
 from ...utils.database import get_db
 
@@ -274,3 +274,36 @@ def test_phone_starting_with_plus():
 
 def test_format_phone_number():
     assert format_phone_number("+(555) 555-0199") == ("5555550199")
+
+
+def test_successful_reset_password_flow():
+    """Test the reset password flow from start to finish."""
+    test_email = 'test@example.com'
+    response = client.post('/forgotPassword', json={'email': 'test@example.com'})
+    assert response.status_code == status.HTTP_200_OK, "Failed to request password reset."
+
+    db_conn = next(get_db())
+    user = db_conn.query(UserAccount).filter_by(Email=test_email).first()
+    reset_pass_request = db_conn.query(PasswordResetToken).filter_by(UserID=user.UserID).first()
+    login_cred = {
+        'email': test_email,
+        'password': 'thisIsSafer2#',
+    }
+    response = client.post("/login/", json=login_cred)
+    assert response.status_code == status.HTTP_200_OK, "Failed to log in"
+
+    client.post('/logout/')
+    response = client.post("/passwordReset", json={
+        'token': reset_pass_request.Token,
+        'password': VALID_PASSWORD,
+    })
+    assert response.status_code == status.HTTP_200_OK, "Failed to reset password"
+
+    response = client.post("/login/", json=login_cred)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED, "Succeeded to log in"
+
+    login_cred['password'] = VALID_PASSWORD
+    response = client.post("/login/", json=login_cred)
+    assert response.status_code == status.HTTP_200_OK, "Failed to log in"
+
+    client.post('/logout/')
