@@ -105,3 +105,117 @@ def test_delete_non_existing_data():
     response = client.delete(f"/reportData/{-1}")
     assert response.status_code == 404
     assert response.json() == {"detail": "Health report not found"}
+
+
+def test_create_patient():
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 200
+    }
+    # Create Patient Record
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'message': f'Patient successfully created.'}
+
+
+def test_create_patient_non_merchant():
+    # Login as a standard user
+    credentials = {"email": "RealGuy@example.com",
+                   "password": "thisisavalidpasswordA1!"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 200
+    }
+    # Try to Create Patient Record
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_create_patient_invalid_age():
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details where the patient is too young
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "2015-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 200
+    }
+    # Try to Create Patient Record
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_create_patient_invalid_weight():
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details where weight is outside of range (0-200 kg)
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 210,
+        "height": 200
+    }
+    # Try to Create Patient Record
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    patient["weight"] = -10
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_create_patient_invalid_height():
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details where height is outside of range (0-300 CM)
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 302
+    }
+    # Try to Create Patient Record
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    patient["height"] = -10
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
