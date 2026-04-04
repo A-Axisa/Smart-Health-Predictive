@@ -476,7 +476,34 @@ async def create_patient(patient: PatientCreationDetails, request: Request, db_c
     db_conn.add(merchant_access)
     db_conn.commit()
 
-    return {'message': 'Patient successfully created.'}
+    return {
+        "message": "Patient successfully created.",
+        "patient_id": patient_id
+    }
+
+
+@router.delete("/remove-patient/{patient_id}")
+async def remove_patient(patient_id: str, request: Request, db_conn: Session = Depends(get_db),):
+    '''Deletes relationship between patient and merchant'''
+    # Check if the requesting user is a merchant.
+    merchant = get_current_merchant(request, db_conn)
+    merchant_id = merchant.UserID
+
+    # Check if the merchant has access to the patients record
+    merchant_access = db_conn.query(UserPatientAccess).filter(
+        UserPatientAccess.UserID == merchant_id,
+        UserPatientAccess.PatientID == patient_id
+    ).first()
+
+    if not merchant_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Remove relationship between the merchant and patient
+    db_conn.delete(merchant_access)
+    db_conn.commit()
+
+    return {'message': 'Patient successfully removed.'}
 
 
 @router.get("/merchant/associated-patients")

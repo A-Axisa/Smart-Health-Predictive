@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from server.main import app
 
-from ... models.dbmodels import HealthData
+from ... models.dbmodels import HealthData, Patient
 from ... main import app
 from ... utils.database import get_db
 
@@ -126,7 +126,8 @@ def test_create_patient():
     # Create Patient Record
     response = client.post("/create-patient", json=patient)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'message': f'Patient successfully created.'}
+    assert response.json()["message"] == 'Patient successfully created.'
+    assert isinstance(response.json()["patient_id"], int)
 
 
 def test_create_patient_non_merchant():
@@ -219,3 +220,31 @@ def test_create_patient_invalid_height():
     patient["height"] = -10
     response = client.post("/create-patient", json=patient)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_remove_patient():
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details
+    patient = {
+        "given_names": "Timmy",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 180
+    }
+    # Create Patient
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["message"] == "Patient successfully created."
+    assert isinstance(response.json()["patient_id"], int)
+
+    response = client.delete(
+        f"/remove-patient/{response.json()["patient_id"]}")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'message': f'Patient successfully removed.'}
