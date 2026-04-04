@@ -24,6 +24,7 @@ import LandingRoute from "./utils/LandingRoute";
 import { UserProvider } from "./utils/UserContext";
 import ErrorPage from "./routes/ErrorPage";
 import PatientManagement from "./routes/PatientManagement";
+import PatientDetails from "./routes/PatientDetails";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -65,6 +66,10 @@ root.render(
               <Route
                 path="/patient-management"
                 element={<PatientManagement />}
+              />
+              <Route
+                path="/patient-details/:patientID"
+                element={<PatientDetails />}
               />
             </Route>
 

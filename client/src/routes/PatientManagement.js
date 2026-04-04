@@ -69,7 +69,7 @@ const PatientManagement = () => {
         <DataGrid
           rows={patientData}
           columns={columns}
-          onRowClick={(params) => navigate(`/merchant-reports`)}
+          onRowClick={(params) => navigate(`/patient-details/${params.id}`)}
           initialState={{
             pagination: {
               paginationModel: {
