@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -65,6 +65,13 @@ const PatientManagement = () => {
         mt: "66px",
       }}
     >
+      <Button
+        variant="contained"
+        sx={{ mb: 2, mx: 2 }}
+        onClick={() => navigate("/create-patient")}
+      >
+        Create New Patient
+      </Button>
       <Box sx={{ height: 400, mx: 2 }}>
         <DataGrid
           rows={patientData}

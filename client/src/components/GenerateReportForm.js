@@ -340,7 +340,6 @@ const GenerateReportForm = () => {
               name="weight"
               label="Weight (Kg)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }}
               onChange={updateWeight}
               error={alertWeightRequired}
               helperText={
@@ -367,7 +366,6 @@ const GenerateReportForm = () => {
               name="height"
               label="Height (cm)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }}
               fullWidth
               onChange={updateHeight}
               error={alertHeightRequired}

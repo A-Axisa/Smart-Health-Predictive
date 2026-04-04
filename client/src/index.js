@@ -25,6 +25,7 @@ import { UserProvider } from "./utils/UserContext";
 import ErrorPage from "./routes/ErrorPage";
 import PatientManagement from "./routes/PatientManagement";
 import PatientDetails from "./routes/PatientDetails";
+import CreatePatient from "./routes/CreatePatient";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -71,6 +72,7 @@ root.render(
                 path="/patient-details/:patientID"
                 element={<PatientDetails />}
               />
+              <Route path="/create-patient" element={<CreatePatient />} />
             </Route>
 
             {/*Admin routes*/}
