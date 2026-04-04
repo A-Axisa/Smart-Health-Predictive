@@ -2,6 +2,7 @@ import { Box, Typography, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ConfirmationDialog from "../components/confirmationDialog";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -13,6 +14,8 @@ const PatientManagement = () => {
   const navigate = useNavigate();
 
   const [patientData, setPatientData] = useState([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPatientID, setSelectedPatientID] = useState(null);
 
   const columns = [
     {
@@ -46,7 +49,8 @@ const PatientManagement = () => {
           color="error"
           onClick={(e) => {
             e.stopPropagation();
-            handleDelete(params.id);
+            setSelectedPatientID(params.id);
+            setDeleteDialogOpen(true);
           }}
         >
           <DeleteIcon />
@@ -90,6 +94,7 @@ const PatientManagement = () => {
         console.log(err);
       });
     fetchPatients();
+    setDeleteDialogOpen(false);
   }
 
   return (
@@ -122,6 +127,17 @@ const PatientManagement = () => {
           disableRowSelectionOnClick
         />
       </Box>
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Confirm Patient Access Removal"
+        message={`Are you sure you want to remove your access to this patient's record? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={() => handleDelete(selectedPatientID)}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
     </Box>
   );
 };
