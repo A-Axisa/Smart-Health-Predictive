@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -38,32 +39,51 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
 
 @router.get("/users")
-async def get_users(db_conn: Session = Depends(get_db)):
+async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn: Session = Depends(get_db)):
 
-    # Query all users and their associated role.
-    users = db_conn.query(UserAccount, AccountRole) \
+    if skip < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="skip must be greater than or equal to 0")
+    if limit <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="limit must be greater than 0")
+
+    # Query users and roles, then apply pagination.
+    query = db_conn.query(UserAccount, AccountRole, Patient, Clinic) \
         .filter(UserAccount.IsValidated == 1) \
         .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
         .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
-        .all()
+        .outerjoin(Patient, Patient.UserID == UserAccount.UserID) \
+        .outerjoin(Clinic, Clinic.ClinicID == UserAccount.ClinicID)
+
+    if search:
+        keyword = f"%{search.strip()}%"
+        if keyword != "%%":
+            query = query.filter(
+                or_(
+                    UserAccount.Email.ilike(keyword),
+                    Patient.GivenNames.ilike(keyword),
+                    Patient.FamilyName.ilike(keyword),
+                    Clinic.ClinicName.ilike(keyword),
+                )
+            )
+
+    total_count = query.count()
+    users = query.order_by(UserAccount.CreatedAt.desc()).offset(skip).limit(limit).all()
 
     result = []
-    for user, role in users:
+    for user, role, patient, clinic in users:
         full_name = ""
 
         # Retrieve the patients full name for a standard  user
-        if role.RoleName == "standard_user":
-            patient = (db_conn.query(Patient).filter(
-                user.UserID == Patient.UserID).first())
-
-            full_name = f'{patient.GivenNames} {patient.FamilyName}'
+        if role and role.RoleName == "standard_user":
+            if patient:
+                full_name = f'{patient.GivenNames} {patient.FamilyName}'
 
         # Retrieve Clinic name for a merchant user
-        if role.RoleName == "merchant":
-            clinic = (db_conn.query(Clinic).filter(
-                Clinic.ClinicID == user.ClinicID).first())
-
-            full_name = clinic.ClinicName
+        if role and role.RoleName == "merchant":
+            if clinic:
+                full_name = clinic.ClinicName
 
         result.append({
             "fullName": full_name,
@@ -77,7 +97,10 @@ async def get_users(db_conn: Session = Depends(get_db)):
             }
         })
 
-    return result
+    return {
+        "users": result,
+        "total": total_count
+    }
 
 
 @router.patch("/users/{user_email}/roles/{role_id}")
