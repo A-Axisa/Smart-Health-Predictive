@@ -159,7 +159,7 @@ const UserManagementTable = () => {
       headerName: 'Role',
       width: 220,
       sortable: true,
-      renderCell: (params) => params.row.role.name,
+      valueGetter: (params) => params?.name,
     },
   ];
 
