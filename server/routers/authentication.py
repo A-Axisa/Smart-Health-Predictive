@@ -668,7 +668,7 @@ def _send_reset_password_email(user: UserAccount, patient: Patient, request: Req
             </p>
             <p>Request Details:
             <ul>
-              <li>IP Address: {ip_address} </li>
+              <li>IP Address: _{ip_address} </li>
               <li>Device: {device} </li>
             </ul>
             <p>If you did not request a password reset, your account may be at risk, but you can safely ignore this email and your password will not be altered.</p>
