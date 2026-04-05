@@ -656,7 +656,7 @@ def _send_reset_password_email(user: UserAccount, patient: Patient, request: Req
     ip_address = sanitizer.sanitize(request.client.host)
     device = sanitizer.sanitize(request.headers.get("user-agent"))
 
-    url = f"http://localhost:8000/reset_password/token={sanitized_token}"
+    url = f"http://localhost:3000/reset-password/{sanitized_token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
     content = f"""
     <html>
