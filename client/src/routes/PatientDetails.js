@@ -114,6 +114,24 @@ const PatientDetails = () => {
               </Box>{" "}
               {patientData?.patient_info?.gender == 1 ? "Male" : "Female"}
             </Typography>
+            <Typography sx={{ mb: 1 }}>
+              <Box
+                component="span"
+                sx={{ color: "primary.main", fontWeight: 600 }}
+              >
+                Weight:
+              </Box>
+              {" " + patientData?.patient_info?.weight} kg
+            </Typography>
+            <Typography sx={{ mb: 1 }}>
+              <Box
+                component="span"
+                sx={{ color: "primary.main", fontWeight: 600 }}
+              >
+                Height:
+              </Box>
+              {" " + patientData?.patient_info?.height} cm
+            </Typography>
           </Box>
           <hr />
           <Typography variant="h5" sx={{ mb: 1 }}>
