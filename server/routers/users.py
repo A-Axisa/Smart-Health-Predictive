@@ -88,6 +88,13 @@ class PatientCreationDetails(BaseModel):
     height: float
 
 
+class PatientDetails(BaseModel):
+    patient_info: dict
+    risks: dict
+    diff: dict
+    recommendations: dict
+
+
 def _to_float(val) -> float:
     if isinstance(val, Decimal):
         return float(val)
@@ -603,12 +610,6 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
                    .filter(HealthData.PatientID == patient_id)
                    .order_by(Prediction.CreatedAt.desc()).limit(5).all())
 
-    # Latest disease prediction.
-    stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
-    diabetes_risk = float(
-        predictions[0].DiabetesChance) if predictions else 0.0
-    cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
-
     # Risk over time trends.
     risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
 
@@ -656,6 +657,105 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
     )
 
 
+@router.get("/patient-details/{patient_id}", response_model=PatientDetails)
+async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
+    # Check if current user is a merchant
+    merchant = get_current_merchant(request, db_conn)
+
+    # Check if the merchant has access to the patients record
+    merchant_id = merchant.UserID
+    merchant_access = db_conn.query(UserPatientAccess).filter(
+        UserPatientAccess.UserID == merchant_id,
+        UserPatientAccess.PatientID == patient_id
+    ).first()
+
+    if not merchant_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    query = (db_conn.query(Patient.GivenNames, Patient.FamilyName,
+                           Patient.Gender, Patient.DateOfBirth, Patient.Height, Patient.Weight)
+             .filter(Patient.PatientID == patient_id)
+             .first())
+
+    patient_info = {
+        "givenNames": query.GivenNames,
+        "familyName": query.FamilyName,
+        "gender": query.Gender,
+        "dateOfBirth": query.DateOfBirth,
+        "height": query.Height,
+        "weight": query.Weight,
+        "age": calculateAge(query.DateOfBirth)
+    }
+
+    # Fetch patient health data.
+    health_rows = (db_conn.query(HealthData).filter(HealthData.PatientID == patient_id)
+                   .order_by(HealthData.CreatedAt.desc()).limit(5).all())
+
+    if not health_rows:
+        return PatientDetails(
+            patient_info=patient_info,
+            days=0,
+            risks={},
+            diff={},
+            recommendations={},
+        )
+
+    # Calculate days since previous report submission.
+    days_since_prev = (datetime.now() - health_rows[0].CreatedAt).days
+
+    predictions = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
+                   .filter(HealthData.PatientID == patient_id)
+                   .order_by(Prediction.CreatedAt.desc()).limit(5).all())
+
+    # Risk over time trends.
+    risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
+
+    latest_risk_info = {
+        "dates": risk_dates,
+        "stroke": [float(p.StrokeChance or 0) for p in predictions],
+        "diabetes": [float(p.DiabetesChance or 0) for p in predictions],
+        "cvd": [float(p.CVDChance or 0) for p in predictions],
+    }
+
+    # Calculate the difference in disease percentage.
+    disease_diff = {
+        "stroke": 0.0,
+        "cvd": 0.0,
+        "diabetes": 0.0,
+    }
+
+    if predictions and len(predictions) > 1:
+        current = predictions[0]
+        prev = predictions[1]
+
+        disease_diff["stroke"] = float(
+            current.StrokeChance) - float(prev.StrokeChance)
+        disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
+        disease_diff["diabetes"] = float(
+            current.DiabetesChance) - float(prev.DiabetesChance)
+
+    # Get the latest patient recommendations.
+    recommendation = (db_conn.query(Recommendation).join(HealthData, Recommendation.HealthDataID == HealthData.HealthDataID)
+                      .filter(HealthData.PatientID == patient_id).order_by(Recommendation.CreatedAt.desc())
+                      .first())
+
+    latest_recommendations = {
+        "exercise": recommendation.ExerciseRecommendation if recommendation else "No latest recommendation",
+        "diet": recommendation.DietRecommendation if recommendation else "No latest recommendation",
+        "lifestyle": recommendation.LifestyleRecommendation if recommendation else "No latest recommendation",
+        "avoid": recommendation.DietToAvoidRecommendation if recommendation else "No latest recommendation",
+    }
+
+    return PatientDetails(
+        patient_info=patient_info,
+        days=days_since_prev,
+        risks=latest_risk_info,
+        diff=disease_diff,
+        recommendations=latest_recommendations
+    )
+
+
 def is_name_valid(name: str):
     '''Verifies a name is valid.'''
     return name is not None or len(name) <= NAME_MAX_LENGTH
@@ -663,6 +763,13 @@ def is_name_valid(name: str):
 
 def is_age_valid(date_of_birth: date):
     '''Verifies age is valid and the user is at least 18'''
+
+    return calculateAge(date) >= MIN_AGE
+
+
+def calculateAge(date_of_birth: date):
+    '''Calculate age based on a date'''
+    # Check current date
     today = date.today()
     year_diff = today.year - date_of_birth.year
 
@@ -671,7 +778,7 @@ def is_age_valid(date_of_birth: date):
         date_of_birth.month, date_of_birth.day))
 
     age = year_diff - birthday_not_passed
-    return age >= MIN_AGE
+    return age
 
 
 def is_gender_valid(gender: str):

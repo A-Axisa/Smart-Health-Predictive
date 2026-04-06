@@ -15,6 +15,11 @@ const PatientDetails = () => {
   return (
     <Box
       sx={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        p: 5,
+        alignItems: "center",
         ml: "250px",
         mt: "66px",
       }}
