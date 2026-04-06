@@ -90,7 +90,7 @@ const GenerateReportForm = () => {
         setAge({ isValid: true, value: data.age });
       }
       catch(err) {
-        console.log(err)
+        console.log("Failed to fetch patient data.");
       }
     }
     fetchPatientData();
