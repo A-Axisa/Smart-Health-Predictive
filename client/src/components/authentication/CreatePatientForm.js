@@ -29,10 +29,10 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const CreatePatientForm = () => {
   const navigate = useNavigate();
-  const [givenNameState, setGivenNameState] = useState(null);
-  const [familyNameState, setFamilyNameState] = useState(null);
-  const [DoBState, setDoBState] = useState(null);
-  const [genderState, setGenderState] = useState("");
+  const [givenNames, setGivenNames] = useState(null);
+  const [familyName, setFamilyName] = useState(null);
+  const [DoB, setDoB] = useState(null);
+  const [gender, setGender] = useState("");
   const [alertGivenNameRequired, setAlertGivenNameRequired] = useState(false);
   const [alertFamilyNameRequired, setAlertFamilyNameRequired] = useState(false);
   const [alertDoBRequired, setAlertDoBRequired] = useState(false);
@@ -48,22 +48,22 @@ const CreatePatientForm = () => {
 
   function updateGivenName(e) {
     const isNameValid = e.target.value !== "";
-    setGivenNameState({ isValid: isNameValid, name: e.target.value });
+    setGivenNames({ isValid: isNameValid, name: e.target.value });
     setAlertGivenNameRequired(!isNameValid);
   }
   function updateFamilyName(e) {
     const isNameValid = e.target.value !== "";
-    setFamilyNameState({ isValid: isNameValid, name: e.target.value });
+    setFamilyName({ isValid: isNameValid, name: e.target.value });
     setAlertFamilyNameRequired(!isNameValid);
   }
   function updateDoB(e) {
     setAlertDoBRequired(false);
-    setDoBState(e.target.value);
+    setDoB(e.target.value);
   }
 
   function updateGender(e) {
     setAlertGenderRequired(false);
-    setGenderState(e.target.value);
+    setGender(e.target.value);
   }
   function updateWeight(e) {
     const weightValue = e.target.value;
@@ -82,26 +82,22 @@ const CreatePatientForm = () => {
   }
 
   function updateAllInputFieldAlerts() {
-    setAlertGivenNameRequired(
-      givenNameState === null || !givenNameState.isValid,
-    );
-    setAlertFamilyNameRequired(
-      familyNameState === null || !familyNameState.isValid,
-    );
-    setAlertGenderRequired(genderState === "");
-    setAlertDoBRequired(DoBState === null);
+    setAlertGivenNameRequired(givenNames === null || !givenNames.isValid);
+    setAlertFamilyNameRequired(familyName === null || !familyName.isValid);
+    setAlertGenderRequired(gender === "");
+    setAlertDoBRequired(DoB === null);
     setAlertWeightRequired(weight === null || !weight.isValid);
     setAlertHeightRequired(height === null || !height.isValid);
   }
 
   function isAllInputsValid() {
     return (
-      givenNameState !== null &&
-      givenNameState.isValid &&
-      familyNameState !== null &&
-      familyNameState.isValid &&
-      DoBState !== null &&
-      genderState !== "" &&
+      givenNames !== null &&
+      givenNames.isValid &&
+      familyName !== null &&
+      familyName.isValid &&
+      DoB !== null &&
+      gender !== "" &&
       weight !== "" &&
       weight.isValid &&
       height !== "" &&
@@ -133,17 +129,6 @@ const CreatePatientForm = () => {
       return;
     }
     setIsLoading(true);
-    const payload = {
-      given_names: givenNameState,
-      family_name: familyNameState,
-      date_of_birth: DoBState,
-      gender: genderState,
-      weight: weight.value,
-      height: height.value,
-    };
-
-    console.log("Create Patient Payload:", payload);
-
     // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/create-patient`, {
       method: "POST",
@@ -152,10 +137,10 @@ const CreatePatientForm = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        given_names: givenNameState.name,
-        family_name: familyNameState.name,
-        date_of_birth: DoBState,
-        gender: genderState,
+        given_names: givenNames.name,
+        family_name: familyName.name,
+        date_of_birth: DoB,
+        gender: gender,
         weight: weight.value,
         height: height.value,
       }),
@@ -246,7 +231,7 @@ const CreatePatientForm = () => {
             <Select
               labelId="gender-label"
               id="gender-required"
-              value={genderState}
+              value={gender}
               onChange={updateGender}
               label="Gender"
             >
