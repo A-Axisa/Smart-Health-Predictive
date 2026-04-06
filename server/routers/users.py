@@ -90,6 +90,7 @@ class PatientCreationDetails(BaseModel):
 
 class PatientDetails(BaseModel):
     patient_info: dict
+    days: int
     risks: dict
     diff: dict
     recommendations: dict
@@ -698,7 +699,7 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
             days=0,
             risks={},
             diff={},
-            recommendations={},
+            recommendations={}
         )
 
     # Calculate days since previous report submission.
