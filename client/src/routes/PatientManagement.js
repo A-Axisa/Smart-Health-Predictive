@@ -1,10 +1,12 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Paper, TextField } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmationDialog from "../components/confirmationDialog";
 
+// Icons
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 /**
  * A page used to display a list of all patients for a merchant user.
@@ -16,15 +18,17 @@ const PatientManagement = () => {
   const [patientData, setPatientData] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPatientID, setSelectedPatientID] = useState(null);
+  const [givenNameInput, setGivenNameInput] = useState("");
+  const [lastNameInput, setLastNameInput] = useState("");
 
   const columns = [
     {
       field: "givenNames",
       headerName: "Given Names",
-      flex: 1,
+      flex: 0.5,
       sortable: true,
     },
-    { field: "lastName", headerName: "Last Name", flex: 1, sortable: true },
+    { field: "lastName", headerName: "Last Name", flex: 0.5, sortable: true },
     {
       field: "dateOfBirth",
       headerName: "Date of Birth",
@@ -38,9 +42,22 @@ const PatientManagement = () => {
       sortable: true,
     },
     {
+      field: "details",
+      headerName: "View Details",
+      width: 150,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Button onClick={(e) => navigate(`/patient-details/${params.id}`)}>
+          <VisibilityIcon />
+        </Button>
+      ),
+    },
+    {
       field: "remove",
-      headerName: "",
-      width: 100,
+      headerName: "Remove Patient",
+      width: 150,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -100,44 +117,90 @@ const PatientManagement = () => {
   return (
     <Box
       sx={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        p: 5,
+        alignItems: "center",
         ml: "250px",
         mt: "66px",
       }}
     >
-      <Button
-        variant="contained"
-        sx={{ mb: 2, mx: 2 }}
-        onClick={() => navigate("/create-patient")}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
-        Create New Patient
-      </Button>
-      <Box sx={{ height: 400, mx: 2 }}>
-        <DataGrid
-          rows={patientData}
-          columns={columns}
-          onRowClick={(params) => navigate(`/patient-details/${params.id}`)}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 25,
-              },
-            },
+        <Typography
+          variant="h4"
+          sx={{
+            color: "primary.main",
+            fontWeight: 600,
+            textAlign: "center",
+            mb: 2,
           }}
-          pageSizeOptions={[25]}
-          disableRowSelectionOnClick
+        >
+          Patient Management
+        </Typography>
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <TextField
+              label="Search by Given Names"
+              variant="outlined"
+              size="small"
+              value={givenNameInput}
+              onChange={(e) => setGivenNameInput(e.target.value)}
+              sx={{ width: 300 }}
+            />
+            <TextField
+              label="Search by Last Name"
+              variant="outlined"
+              size="small"
+              value={lastNameInput}
+              onChange={(e) => setLastNameInput(e.target.value)}
+              sx={{ width: 300 }}
+            />
+            <Button
+              variant="contained"
+              sx={{ ml: "auto" }}
+              onClick={() => navigate("/create-patient")}
+            >
+              Create New Patient
+            </Button>
+          </Box>
+        </Paper>
+
+        <Paper sx={{ width: "100%" }}>
+          <DataGrid
+            rows={patientData}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 25,
+                },
+              },
+            }}
+            pageSizeOptions={[25]}
+            disableRowSelectionOnClick
+            disableColumnResize
+          />
+        </Paper>
+        <ConfirmationDialog
+          open={deleteDialogOpen}
+          title="Confirm Patient Access Removal"
+          message={`Are you sure you want to remove your access to this patient's record? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          confirmColor="error"
+          cancelColor="primary"
+          confirm={() => handleDelete(selectedPatientID)}
+          cancel={() => setDeleteDialogOpen(false)}
         />
       </Box>
-      <ConfirmationDialog
-        open={deleteDialogOpen}
-        title="Confirm Patient Access Removal"
-        message={`Are you sure you want to remove your access to this patient's record? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        confirmColor="error"
-        cancelColor="primary"
-        confirm={() => handleDelete(selectedPatientID)}
-        cancel={() => setDeleteDialogOpen(false)}
-      />
     </Box>
   );
 };
