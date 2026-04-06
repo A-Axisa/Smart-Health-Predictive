@@ -155,8 +155,8 @@ const CreatePatientForm = () => {
         setShowSuccessMessage(true);
         setShowFailMessage(false);
       })
-      .catch((error) => {
-        console.log(error);
+      .catch((err) => {
+        console.log("An error has occurred");
       });
     setIsLoading(false);
   }

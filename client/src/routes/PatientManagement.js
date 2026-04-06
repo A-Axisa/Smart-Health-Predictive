@@ -133,7 +133,7 @@ const PatientManagement = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.log("An error has occurred");
         setLoading(false);
       });
   };
@@ -145,7 +145,7 @@ const PatientManagement = () => {
     })
       .then((response) => response.json())
       .catch((err) => {
-        console.log(err);
+        console.log("An error has occurred");
       });
     fetchPatients();
     setDeleteDialogOpen(false);
