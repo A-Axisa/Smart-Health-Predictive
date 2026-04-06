@@ -60,7 +60,7 @@ const ResetPasswordForm = () => {
     setIsLoading(true);
 
     // Post the fetch request with the supplied credentials.
-    await fetch(`${API_BASE}/passwordReset`, {
+    await fetch(`${API_BASE}/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

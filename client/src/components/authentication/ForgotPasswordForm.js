@@ -30,7 +30,7 @@ const ForgotPasswordForm = () => {
     }
 
     setIsLoading(true);
-    await fetch(`${API_BASE}/forgotPassword`, {
+    await fetch(`${API_BASE}/forgot-password`, {
       method: "POST",
       credentials: "include",
       headers: {

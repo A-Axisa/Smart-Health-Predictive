@@ -563,7 +563,7 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
     return {'message': 'User successfully changed password.'}
 
 
-@router.post('/forgotPassword')
+@router.post('/forgot-password')
 def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
     '''Generates a reset password token for a given email.'''
     is_success = False
@@ -610,7 +610,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
     )
 
 
-@router.post("/passwordReset")
+@router.post("/password-reset")
 async def password_reset(
     reset_request: PasswordResetRequest,
     request: Request,
