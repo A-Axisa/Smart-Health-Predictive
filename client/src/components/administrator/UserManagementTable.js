@@ -1,6 +1,6 @@
 import { Paper, Box, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import ConfirmationDialog from '../confirmationDialog'
 import UserSearchBar from './UserSearchBar';
 import ToolBar from './ToolBar';
@@ -10,55 +10,30 @@ import * as React from 'react';
 const UserManagementTable = () => {
 
   const [userData, setUserData] = useState([]); // Stores user data
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 });
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [rowSelectionModel, setRowSelectionModel] = React.useState({ type: 'include', ids: new Set() });
 
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-  const fetchUsers = () => {
-    setLoading(true);
-    const params = new URLSearchParams({
-      skip: paginationModel.page * paginationModel.pageSize,
-      limit: paginationModel.pageSize,
-    });
-    if (debouncedSearchQuery) {
-      params.append('search', debouncedSearchQuery);
-    }
-
-    fetch(`${API_BASE}/users?${params.toString()}`)
+  useEffect(() => {
+    fetch(`${API_BASE}/users`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
         }
         return response.json();
       })
-      .then((data) => {
-        setUserData(data.users || data || []);
-        setTotalUsers(data.total || 0);
-        setLoading(false);
-      })
+      .then(data => setUserData(data))
       .catch((err) => {
         console.log(err);
-        setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, [API_BASE, paginationModel.page, paginationModel.pageSize, debouncedSearchQuery]);
-
-  useEffect(() => {
-    setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, [API_BASE]);
 
   useEffect(() => {
@@ -149,6 +124,14 @@ const UserManagementTable = () => {
     }
   };
 
+  const filteredUsers = userData.filter((user) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      user.fullName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  });
+
   // Returns array of emails from the selection model.
   const getSelectedEmails = (model = rowSelectionModel) => {
     if (model?.ids instanceof Set) return [...model.ids];
@@ -166,11 +149,6 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   };
 
-  const handleSearchChange = useCallback((value) => {
-    setPaginationModel((prev) => ({ ...prev, page: 0 }));
-    setDebouncedSearchQuery(value);
-  }, []);
-
   const columns = [
     { field: 'email', headerName: 'Email', width: 250, sortable: true },
     { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
@@ -181,7 +159,7 @@ const UserManagementTable = () => {
       headerName: 'Role',
       width: 220,
       sortable: true,
-      valueGetter: (params) => params?.name,
+      renderCell: (params) => params.row.role.name,
     },
   ];
 
@@ -191,13 +169,11 @@ const UserManagementTable = () => {
       <Paper sx={{ mb: '12px' }}>
         <UserSearchBar
           placeholder="Search by name or email"
-          onSearchChange={handleSearchChange}
-          delay={400}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </Paper>
       <Paper sx={{ width: '100%'}}>
         <DataGrid
-          loading={loading}
           onRowSelectionModelChange={(newSelection) => setRowSelectionModel(newSelection)}
           rowSelectionModel={rowSelectionModel}
           showToolbar
@@ -205,20 +181,17 @@ const UserManagementTable = () => {
           slotProps={{
             toolbar: {
               rowSelectionModel,
-              totalRowCount: totalUsers,
+              totalRowCount: filteredUsers.length,
               onUsersDelete: handleUsersDelete,
               onUsersRoleChange: handleUsersRoleChange,
               roleData,
             },
           }}
-          rows={userData}
-          rowCount={totalUsers}
+          rows={filteredUsers}
           columns={columns}
           getRowId={(row) => row.email}
           pageSizeOptions={[50, 100, 1000]}
-          paginationModel={paginationModel}
-          paginationMode="server"
-          onPaginationModelChange={setPaginationModel}
+          initialState={{ pagination: { pageSize: 50 } }}
           disableColumnResize
           disableRowSelectionOnClick
           checkboxSelection

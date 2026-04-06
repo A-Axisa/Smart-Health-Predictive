@@ -104,7 +104,7 @@ const LoginForm = () => {
                   style={{ justifyContent:"center"}}> 
                 <Typography align='center' style={{ color:'#888888' }}>Forgot 
                     your password?</Typography>
-                <Link href="/forgot-password" align='center' fontWeight='bold' >Click Here</Link>
+                <Link href="" align='center' fontWeight='bold' >Click Here</Link>
               </Stack>
             </Stack>
           </Box>

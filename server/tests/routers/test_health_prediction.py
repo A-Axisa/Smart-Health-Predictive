@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from ...main import app
 from ...utils.database import get_db
 from ...models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, HealthData, Recommendation, Prediction, Patient, UserPatientAccess, AuditLog, LogEventType
+    UserAccountValidationToken, HealthData, Recommendation, Prediction, Patient, UserPatientAccess
 import io
 
 
@@ -224,22 +224,3 @@ def test_missing_email_upload():
     assert body["processed"] == 1
     assert body["skipped"] == 1
     assert post_count == pre_count + 1
-
-
-def test_csv_upload_writes_data_import_audit_log():
-    response = upload_csv(one_populated_row)
-    assert response.status_code == status.HTTP_200_OK
-
-    db_conn = next(get_db())
-    log = (
-        db_conn.query(AuditLog)
-        .filter(AuditLog.EventType == LogEventType.DATA_IMPORT.value)
-        .filter(AuditLog.UserEmail == "myreputableclinic@example.com")
-        .order_by(AuditLog.LogID.desc())
-        .first()
-    )
-
-    assert log is not None
-    assert log.Success is True
-    assert "CSV upload processed" in (log.Description or "")
-    assert "test.csv" in (log.Description or "")

@@ -63,11 +63,3 @@
 ```alembic revision -m "Description of migration"```
 3. Navigate to ```/server/alembic/versions/nameOfNewVersion.py``` and locate the created version file.
 4. Refer to *https://alembic.sqlalchemy.org/en/latest/ops.html* for detail on creating/dropping tables.
-
-
-## Generating Dummy Data ##
-The script will generate random data directly into the database.  
-The amount of data generated can be modified at the head of the script.
-1. Open a terminal and navigate to the root directory of the project.
-2. Run the following command to generate data:  
-```python -m server.tools.generate_dummy_data```

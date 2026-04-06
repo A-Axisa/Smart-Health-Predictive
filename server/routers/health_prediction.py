@@ -205,14 +205,6 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         db_conn.add(rec_row)
         db_conn.commit()
 
-    write_audit_log(db_conn,
-                    eventType=LogEventType.PREDICTION_REQUEST,
-                    success=True,
-                    userEmail=user_email["email"],
-                    device=request.headers.get("user-agent"),
-                    ipAddress=request.client.host,
-                    description=f"Generated health prediction for {user_email['email']}.")
-
     return {
         "cardioProbability": cardioPrediction,
         "strokeProbability": strokePrediction,
@@ -309,9 +301,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
             success=True,
             userID=merchant.UserID,
             userEmail=merchant.Email,
-            ipAddress=request.client.host,
-            device=request.headers.get("user-agent"),
-            description=f"CSV upload processed for {uploaded_file.filename}: processed={processed_rows}, skipped={skipped_rows}."
+            description=f"Successfully imported {processed_rows} records via CSV."
         )
 
     return {
@@ -335,13 +325,6 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
     current_user_role = current_user.get('role')
     if not current_user_role or current_user_role.lower() != 'merchant':
-        write_audit_log(db_conn,
-                        eventType=LogEventType.PREDICTION_REQUEST,
-                        success=False,
-                        userEmail=current_user_email,
-                        device=request.headers.get("user-agent"),
-                        ipAddress=request.client.host,
-                        description=f"Unauthorized merchant prediction attempt for patient_id={data.patient_id}.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
@@ -355,14 +338,6 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
     # Check if the merchant has permission to view the patients record
     if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
-        write_audit_log(db_conn,
-                        eventType=LogEventType.PREDICTION_REQUEST,
-                        success=False,
-                        userID=merchant.UserID,
-                        userEmail=merchant.Email,
-                        device=request.headers.get("user-agent"),
-                        ipAddress=request.client.host,
-                        description=f"Merchant attempted prediction for inaccessible patient_id={patient.PatientID}.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
@@ -475,14 +450,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         )
         db_conn.add(rec_row)
         db_conn.commit()
-    write_audit_log(db_conn,
-                    eventType=LogEventType.PREDICTION_REQUEST,
-                    success=True,
-                    userID=merchant.UserID,
-                    userEmail=merchant.Email,
-                    device=request.headers.get("user-agent"),
-                    ipAddress=request.client.host,
-                    description=f"Merchant generated health prediction for patient ID {patient.PatientID}.")
+
     return {
         "cardioProbability": cardioPrediction,
         "strokeProbability": strokePrediction,

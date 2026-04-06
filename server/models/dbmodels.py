@@ -313,8 +313,6 @@ class LogEventType(str, enum.Enum):
     PREDICTION_REQUEST = "PREDICTION_REQUEST"
     DATA_IMPORT = "DATA_IMPORT"
     FAILED_LOGIN_ATTEMPT = "FAILED_LOGIN_ATTEMPT"
-    RESET_PASSWORD_REQUEST = "RESET_PASSWORD_REQUEST"
-    PASSWORD_RESET = "PASSWORD_RESET"
 
 
 class AuditLog(Base):
@@ -343,21 +341,3 @@ class AuditLog(Base):
         return f'AuditLog(LogID={self.LogID}, EventType={self.EventType}, \
                 Success={self.Success}, UserID={self.UserID}, \
                 CreatedAt={self.CreatedAt})'
-
-
-class PasswordResetToken(Base):
-    __tablename__ = 'PasswordResetToken'
-    TokenID = Column(Integer, primary_key=True)
-    UserID = Column(Integer, ForeignKey('UserAccount.UserID'),
-                    nullable=False)
-    Token = Column(String(999), nullable=False)
-    ExpiresAt = Column(DateTime, nullable=False)
-
-    def __init__(self, user_id, token, expires_at):
-        self.UserID = user_id
-        self.Token = token
-        self.ExpiresAt = expires_at
-
-    def __repr__(self):
-        return f'PasswordResetToken(UserID={self.UserID}, \
-            Token={self.Token}, ExpiresAt={self.ExpiresAt})'

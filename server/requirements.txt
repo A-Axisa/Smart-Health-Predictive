@@ -21,4 +21,3 @@ azure-communication-email==1.0.0
 argon2-cffi==23.1.0
 argon2-cffi-bindings==25.1.0
 pwdlib==0.2.1
-html-sanitizer==2.6.0
