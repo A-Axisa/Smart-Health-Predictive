@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 import {
@@ -73,6 +73,28 @@ const GenerateReportForm = () => {
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
   const [bloodGlucoseInput, setBloodGlucoseInput] = useState("");
+
+  useEffect(() => {
+    async function fetchPatientData() {
+      try {
+        const response = await fetch(`${API_BASE}/patient-data`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        if (!response.ok) {throw new Error(response.status);}
+        const data = await response.json();
+
+        setWeight({ isValid: true, value: data.weight });
+        setHeight({ isValid: true, value: data.height });
+        setGender(data.gender);
+        setAge({ isValid: true, value: data.age });
+      }
+      catch(err) {
+        console.log(err)
+      }
+    }
+    fetchPatientData();
+  }, []);
 
   function handleChangeCondition(e) {
     const {
