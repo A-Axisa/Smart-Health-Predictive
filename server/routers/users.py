@@ -543,7 +543,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
                "givenNames": patient.GivenNames,
                "familyName": patient.FamilyName,
                "gender": "Male" if patient.Gender == 1 else "Female" if patient.Gender == 0 else "",
-               "dateOfBirth": patient.DateOfBirth,
+               "dateOfBirth": patient.DateOfBirth.strftime("%d/%m/%Y"),
            }
             for patient in patient_info
         ],
@@ -683,7 +683,7 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
         "givenNames": query.GivenNames,
         "familyName": query.FamilyName,
         "gender": query.Gender,
-        "dateOfBirth": query.DateOfBirth,
+        "dateOfBirth": query.DateOfBirth.strftime("%d/%m/%Y"),
         "height": query.Height,
         "weight": query.Weight,
         "age": calculateAge(query.DateOfBirth)
