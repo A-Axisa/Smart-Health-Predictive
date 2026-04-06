@@ -516,7 +516,7 @@ async def remove_patient(patient_id: str, request: Request, db_conn: Session = D
 
 @router.get("/merchant/associated-patients")
 async def associated_patients(request: Request, given_names: str = None, family_name: str = None, skip: int = 0, limit: int = 25, db_conn: Session = Depends(get_db)):
-
+    '''Deletes relationship between patient and merchant'''
     # Check if the requesting user is a merchant.
     current_merchant = get_current_merchant(request, db_conn)
     merchant_id = current_merchant.UserID
@@ -531,7 +531,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
         query = query.filter(Patient.GivenNames.ilike(f"%{given_names}%"))
     if (family_name):
         query = query.filter(Patient.FamilyName.ilike(f"%{family_name}%"))
-
+    # Paginate query
     totalPatients = query.count()
     patient_info = query.order_by(
         Patient.CreatedAt.desc()).offset(skip).limit(limit).all()
@@ -542,7 +542,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
                "patientId": patient.PatientID,
                "givenNames": patient.GivenNames,
                "familyName": patient.FamilyName,
-               "gender": patient.Gender,
+               "gender": "Male" if patient.Gender == 1 else "Female" if patient.Gender == 0 else "",
                "dateOfBirth": patient.DateOfBirth,
            }
             for patient in patient_info
@@ -765,7 +765,7 @@ def is_name_valid(name: str):
 def is_age_valid(date_of_birth: date):
     '''Verifies age is valid and the user is at least 18'''
 
-    return calculateAge(date) >= MIN_AGE
+    return calculateAge(date_of_birth) >= MIN_AGE
 
 
 def calculateAge(date_of_birth: date):
