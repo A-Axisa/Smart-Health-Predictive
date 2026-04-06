@@ -16,10 +16,17 @@ const PatientManagement = () => {
   const navigate = useNavigate();
 
   const [patientData, setPatientData] = useState([]);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 25,
+  });
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPatientID, setSelectedPatientID] = useState(null);
   const [givenNameInput, setGivenNameInput] = useState("");
-  const [lastNameInput, setLastNameInput] = useState("");
+  const [familyNameInput, setFamilyNameInput] = useState("");
 
   const columns = [
     {
@@ -28,7 +35,7 @@ const PatientManagement = () => {
       flex: 0.5,
       sortable: true,
     },
-    { field: "lastName", headerName: "Last Name", flex: 0.5, sortable: true },
+    { field: "familyName", headerName: "Last Name", flex: 0.5, sortable: true },
     {
       field: "dateOfBirth",
       headerName: "Date of Birth",
@@ -78,27 +85,57 @@ const PatientManagement = () => {
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [
+    paginationModel.page,
+    paginationModel.pageSize,
+    givenNameInput,
+    familyNameInput,
+  ]);
+
+  // Debounce given name input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // resetting page to 0 when filter changes
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      setGivenNameInput(givenNameInput);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [givenNameInput]);
+
+  // Debounce last name input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // resetting page to 0 when filter changes
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      setFamilyNameInput(familyNameInput);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [familyNameInput]);
 
   const fetchPatients = () => {
-    fetch(`${API_BASE}/merchant/associated-patients`, {
+    setLoading(true);
+    const params = new URLSearchParams({
+      skip: paginationModel.page * paginationModel.pageSize,
+      limit: paginationModel.pageSize,
+    });
+
+    if (givenNameInput) params.append("given_names", givenNameInput);
+    if (familyNameInput) params.append("family_name", familyNameInput);
+
+    fetch(`${API_BASE}/merchant/associated-patients?${params.toString()}`, {
       method: "GET",
       credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
-        const patients = data.map((patient) => ({
-          id: patient.patient_id,
-          givenNames: patient.given_names,
-          lastName: patient.family_name,
-          gender: patient.gender === 0 ? "Female" : "Male",
-          dateOfBirth: new Date(patient.date_of_birth).toLocaleDateString(
-            "en-AU",
-          ),
-        }));
-        setPatientData(patients);
+        setPatientData(data.patients || []);
+        setTotalPatients(data.totalPatients || 0);
+        setLoading(false);
       })
-      .catch(console.log);
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   async function handleDelete(patientID) {
@@ -159,8 +196,8 @@ const PatientManagement = () => {
               label="Search by Last Name"
               variant="outlined"
               size="small"
-              value={lastNameInput}
-              onChange={(e) => setLastNameInput(e.target.value)}
+              value={familyNameInput}
+              onChange={(e) => setFamilyNameInput(e.target.value)}
               sx={{ width: 300 }}
             />
             <Button
@@ -177,16 +214,14 @@ const PatientManagement = () => {
           <DataGrid
             rows={patientData}
             columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 25,
-                },
-              },
-            }}
-            pageSizeOptions={[25]}
-            disableRowSelectionOnClick
+            rowCount={totalPatients}
+            getRowId={(row) => row.patientId}
+            paginationModel={paginationModel}
+            pageSizeOptions={[25, 50]}
+            paginationMode="server"
+            onPaginationModelChange={setPaginationModel}
             disableColumnResize
+            disableRowSelectionOnClick
           />
         </Paper>
         <ConfirmationDialog
