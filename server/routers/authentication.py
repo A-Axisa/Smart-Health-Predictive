@@ -5,6 +5,7 @@ from secrets import token_urlsafe
 
 import jwt
 import phonenumbers
+import re
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, \
     Response
@@ -15,10 +16,12 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole, LogEventType, Patient
+    UserAccountValidationToken, AccountRole, LogEventType, Patient, \
+    PasswordResetToken
 from ..utils.email_service import send_email
 from ..utils.audit_log import write_audit_log
 
@@ -69,6 +72,15 @@ class ChangePasswordDetails(BaseModel):
     current_password: str
     new_password: str
     confirm_new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class PasswordResetRequest(BaseModel):
+    token: str
+    password: str
 
 
 load_dotenv()
@@ -549,3 +561,126 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
                     description=f"Password successfully changed.")
 
     return {'message': 'User successfully changed password.'}
+
+
+@router.post('/forgot-password')
+def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
+    '''Generates a reset password token for a given email.'''
+    is_success = False
+
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
+                             forgot_password_request.email)
+    if is_email_valid(sanitised_email):
+        user = db_conn.query(UserAccount, AccountRole) \
+            .filter(UserAccount.Email == sanitised_email) \
+            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+            .first()
+
+        if user and user.AccountRole.RoleName != 'admin':
+            patient = db_conn.query(Patient).filter_by(
+                UserID=user.UserAccount.UserID).first()
+
+            # Only allow one token to exist per user.
+            existing_token = db_conn.query(
+                PasswordResetToken).filter_by(UserID=user.UserAccount.UserID).first()
+            if existing_token:
+                db_conn.delete(existing_token)
+
+            token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+            expires_at = datetime.now() + timedelta(minutes=30)
+            pass_reset_token = PasswordResetToken(
+                user.UserAccount.UserID,
+                token,
+                expires_at
+            )
+
+            db_conn.add(pass_reset_token)
+            db_conn.commit()
+            is_success = True
+            _send_reset_password_email(user.UserAccount, patient, request, token)
+
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.RESET_PASSWORD_REQUEST,
+        success=is_success,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Password reset requested for {}".format(sanitised_email)
+    )
+
+
+@router.post("/password-reset")
+async def password_reset(
+    reset_request: PasswordResetRequest,
+    request: Request,
+    db_conn: Session = Depends(get_db)
+):
+    '''Updates a user's password if the token is valid and password are valid.'''
+    is_successful = False
+    user = None
+
+    token_entry = db_conn.query(
+        PasswordResetToken).filter_by(Token=reset_request.token).first()
+    if token_entry \
+            and datetime.now(UTC) < token_entry.ExpiresAt.astimezone(timezone.utc):
+        db_conn.delete(token_entry)
+        db_conn.commit()
+
+        user = db_conn.query(UserAccount) \
+            .filter_by(UserID=token_entry.UserID) \
+            .first()
+        if is_password_valid(reset_request.password) and user:
+            new_password_hash = password_hasher.hash(reset_request.password)
+            user.PasswordHash = new_password_hash
+            is_successful = True
+
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.PASSWORD_RESET,
+        success=is_successful,
+        userID=None if user is None else user.UserID,
+        userEmail=None if user is None else user.Email,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Attempt to reset password for account.",
+    )
+
+
+def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
+    """Helper function to send a validation email."""
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    ip_address = sanitizer.sanitize(request.client.host)
+    device = sanitizer.sanitize(request.headers.get("user-agent"))
+
+    url = f"http://localhost:3000/reset-password/{sanitized_token}"
+    subject = "Password reset request for WellAI Smart Health Predictive"
+    content = f"""
+    <html>
+        <body>
+            <p>Greetings {given_names} {family_name},</p>
+            <p>We have received a request to reset the password for your account with WellAI Smart Health Predictive.</p>
+            <p>Click the following link to proceed this process and update your password. For security, this link will expire in 30 minutes:
+              <a href={url}>Reset Password</a>
+            </p>
+            <p>Request Details:
+            <ul>
+              <li>IP Address: _{ip_address} </li>
+              <li>Device: {device} </li>
+            </ul>
+            <p>If you did not request a password reset, your account may be at risk, but you can safely ignore this email and your password will not be altered.</p>
+            <br />
+            <p>Best regards,</p>
+            <p>The WellAI Team</p>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=user.Email,
+        subject=subject,
+        content=content,
+        content_type="html"
+    )
