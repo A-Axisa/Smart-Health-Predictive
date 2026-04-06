@@ -363,6 +363,7 @@ const GenerateReportForm = () => {
               label="Weight (Kg)"
               type="text"
               inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }}
+              value={weight?.value || ""}
               onChange={updateWeight}
               error={alertWeightRequired}
               helperText={
@@ -378,6 +379,7 @@ const GenerateReportForm = () => {
               type="text"
               inputProps={{ min: 0, max: 100, maxLength: 3 }}
               fullWidth
+              value={age?.value || ""}
               onChange={updateAge}
               error={alertAgeRequired}
               helperText={
@@ -391,6 +393,7 @@ const GenerateReportForm = () => {
               type="text"
               inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }}
               fullWidth
+              value={height?.value || ""}
               onChange={updateHeight}
               error={alertHeightRequired}
               helperText={
@@ -404,7 +407,7 @@ const GenerateReportForm = () => {
               <Select
                 labelId="gender-label"
                 id="gender-required"
-                value={gender}
+                value={gender || ""}
                 onChange={updateGender}
                 label="Gender"
               >
