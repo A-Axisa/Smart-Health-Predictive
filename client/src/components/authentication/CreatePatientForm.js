@@ -5,17 +5,11 @@ import {
   Stack,
   TextField,
   Button,
-  Typography,
-  Link,
-  FormControlLabel,
   Alert,
   Dialog,
-  DialogContent,
   DialogTitle,
   DialogActions,
   Divider,
-  Radio,
-  RadioGroup,
   InputLabel,
   MenuItem,
   FormControl,
@@ -57,8 +51,26 @@ const CreatePatientForm = () => {
     setAlertFamilyNameRequired(!isNameValid);
   }
   function updateDoB(e) {
-    setAlertDoBRequired(false);
+    if (calculateAge(e.target.value) < 18) {
+      setAlertDoBRequired(true);
+    } else {
+      setAlertDoBRequired(false);
+    }
     setDoB(e.target.value);
+  }
+
+  function calculateAge(DoB) {
+    const today = new Date();
+    const dob = new Date(DoB);
+
+    const yearDiff = today.getFullYear() - dob.getFullYear();
+
+    const birthdayNotPassed =
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+
+    const age = yearDiff - birthdayNotPassed;
+    return age;
   }
 
   function updateGender(e) {
@@ -85,7 +97,7 @@ const CreatePatientForm = () => {
     setAlertGivenNameRequired(givenNames === null || !givenNames.isValid);
     setAlertFamilyNameRequired(familyName === null || !familyName.isValid);
     setAlertGenderRequired(gender === "");
-    setAlertDoBRequired(DoB === null);
+    setAlertDoBRequired(DoB === null || calculateAge(DoB) < 18);
     setAlertWeightRequired(weight === null || !weight.isValid);
     setAlertHeightRequired(height === null || !height.isValid);
   }
@@ -97,6 +109,7 @@ const CreatePatientForm = () => {
       familyName !== null &&
       familyName.isValid &&
       DoB !== null &&
+      calculateAge(DoB) >= 18 &&
       gender !== "" &&
       weight !== "" &&
       weight.isValid &&
@@ -219,7 +232,9 @@ const CreatePatientForm = () => {
             type="date"
             onChange={updateDoB}
             error={alertDoBRequired}
-            helperText={alertDoBRequired ? "*Required" : null}
+            helperText={
+              alertDoBRequired ? "Patient must be 18 years or older" : null
+            }
             slotProps={{
               inputLabel: {
                 shrink: true,
