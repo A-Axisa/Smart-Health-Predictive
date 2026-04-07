@@ -26,9 +26,8 @@ import ErrorPage from "./routes/ErrorPage";
 import PatientManagement from "./routes/PatientManagement";
 import PatientDetails from "./routes/PatientDetails";
 import CreatePatient from "./routes/CreatePatient";
-import ForgotPassword from './routes/ForgotPassword';
-import PasswordReset from './routes/ResetPassword';
-import ResetPassword from './routes/ResetPassword';
+import ForgotPassword from "./routes/ForgotPassword";
+import ResetPassword from "./routes/ResetPassword";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -43,7 +42,10 @@ root.render(
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route
+                path="/reset-password/:token"
+                element={<ResetPassword />}
+              />
             </Route>
 
             {/*Route to a different landing paged based on the users role*/}

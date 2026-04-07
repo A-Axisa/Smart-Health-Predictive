@@ -60,11 +60,13 @@ const CreatePatientForm = () => {
   }
 
   function calculateAge(DoB) {
+    // Format dates
     const today = new Date();
     const dob = new Date(DoB);
-
+    // calculate the year different between today and the dob
     const yearDiff = today.getFullYear() - dob.getFullYear();
 
+    // Check if the users birthday has past
     const birthdayNotPassed =
       today.getMonth() < dob.getMonth() ||
       (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());

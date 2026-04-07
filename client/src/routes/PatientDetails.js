@@ -18,7 +18,12 @@ const PatientDetails = () => {
       method: "GET",
       credentials: "include",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          navigate("/*");
+        }
+        return response.json();
+      })
       .then((data) => {
         setPatientData(data);
       });
