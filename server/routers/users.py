@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -105,7 +106,8 @@ router = APIRouter()
 def _validated_name(value: Optional[str], field_name: str) -> Optional[str]:
     if value is None:
         return None
-    cleaned = value.strip()
+    sanitizer = Sanitizer()
+    cleaned = sanitizer.sanitize(value).strip()
     if len(cleaned) > 255:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

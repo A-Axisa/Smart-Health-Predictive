@@ -17,6 +17,7 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
@@ -656,11 +657,12 @@ async def password_reset(
 
 def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
     """Helper function to send a validation email."""
-    sanitized_token = html.escape(str(token or ""), quote=True)
-    given_names = html.escape(str(patient.GivenNames or ""), quote=True)
-    family_name = html.escape(str(patient.FamilyName or ""), quote=True)
-    ip_address = html.escape(str(request.client.host if request.client else ""), quote=True)
-    device = html.escape(str(request.headers.get("user-agent") or ""), quote=True)
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    ip_address = sanitizer.sanitize(request.client.host)
+    device = sanitizer.sanitize(request.headers.get("user-agent"))
 
     url = f"http://localhost:3000/reset-password/{sanitized_token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
