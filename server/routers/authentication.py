@@ -1,4 +1,5 @@
 import os
+import html
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone, UTC, date
 from secrets import token_urlsafe
@@ -16,7 +17,6 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
-from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
@@ -403,6 +403,13 @@ def get_current_user(request: Request, db_conn: Session):
         'email': user.Email,
         'role': user_role,
         'name': patient_details.GivenNames if patient_details else user.Email.split('@')[0],
+        'phone_number': user.PhoneNumber,
+        'given_names': patient_details.GivenNames if patient_details else None,
+        'family_name': patient_details.FamilyName if patient_details else None,
+        'gender': patient_details.Gender if patient_details else None,
+        'weight': float(patient_details.Weight) if patient_details and patient_details.Weight is not None else None,
+        'height': float(patient_details.Height) if patient_details and patient_details.Height is not None else None,
+        'date_of_birth': patient_details.DateOfBirth.isoformat() if patient_details and patient_details.DateOfBirth else None,
     }
 
 
@@ -649,12 +656,11 @@ async def password_reset(
 
 def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
     """Helper function to send a validation email."""
-    sanitizer = Sanitizer()
-    sanitized_token = sanitizer.sanitize(token)
-    given_names = sanitizer.sanitize(patient.GivenNames)
-    family_name = sanitizer.sanitize(patient.FamilyName)
-    ip_address = sanitizer.sanitize(request.client.host)
-    device = sanitizer.sanitize(request.headers.get("user-agent"))
+    sanitized_token = html.escape(str(token or ""), quote=True)
+    given_names = html.escape(str(patient.GivenNames or ""), quote=True)
+    family_name = html.escape(str(patient.FamilyName or ""), quote=True)
+    ip_address = html.escape(str(request.client.host if request.client else ""), quote=True)
+    device = html.escape(str(request.headers.get("user-agent") or ""), quote=True)
 
     url = f"http://localhost:3000/reset-password/{sanitized_token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
