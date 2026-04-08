@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Box, Container, Stack, Button, Typography, Link, 
          Alert, Divider } from '@mui/material'
 import PasswordInputField from '../authentication/PasswordInputField';
 import EmailInputField from '../authentication/EmailInputField';
+import { UserContext } from '../../utils/UserContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -13,6 +14,7 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
  */
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { refreshUser } = useContext(UserContext);
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
   const [password, setPassword] = useState(null)
   const [isPasswordValid, setIsPasswordValid] = useState(false);
@@ -71,7 +73,8 @@ const LoginForm = () => {
     }).then(response => {
       if (!response.ok) { throw new Error(response.status) }
       return response.json()
-    }).then(data => {
+    }).then(async (data) => {
+      await refreshUser();
       navigate('/landing')
     }).catch(error => {
       setIsLoginUnsuccessful(true)

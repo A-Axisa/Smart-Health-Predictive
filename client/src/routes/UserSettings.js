@@ -8,7 +8,6 @@ import {
   TextField,
   Divider,
   Button,
-  Avatar,
   Switch,
   FormControlLabel,
   FormControl,
@@ -326,7 +325,7 @@ const UserSettings = () => {
           <Button
             variant="contained"
             onClick={handleAccountSave}
-            disabled={accountSaving || !isUserLoggedIn}
+            disabled={accountSaving || userLoading}
             sx={{ 
               px: 4, 
               py: { xs: '0.8rem', sm: '0.6rem' },
@@ -357,23 +356,14 @@ const UserSettings = () => {
         </Alert>
       )}
 
-      <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
-        <Avatar sx={{ width: 96, height: 96, bgcolor: 'primary.main', fontSize: 32 }}>
-          {formData.firstName?.[0]}
-          {formData.lastName?.[0]}
-        </Avatar>
-        <Box>
-          <Typography variant="h6">
-            {formData.firstName} {formData.lastName}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {formData.email}
-          </Typography>
-          <Button variant="outlined" sx={{ mt: 1 }}>
-            Change Photo
-          </Button>
-        </Box>
-      </Stack>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6">
+          {user?.given_names || ''} {user?.family_name || ''}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {user?.email || ''}
+        </Typography>
+      </Box>
 
       <Box
         sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
@@ -442,7 +432,7 @@ const UserSettings = () => {
         <Button
           variant="contained"
           onClick={handleProfileSave}
-          disabled={profileSaving || !isUserLoggedIn}
+          disabled={profileSaving || userLoading}
           sx={{ 
             px: 4, 
             py: { xs: '0.8rem', sm: '0.6rem' },

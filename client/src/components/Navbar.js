@@ -6,9 +6,10 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
 import { Drawer, List, ListItemButton, ListItemText } from "@mui/material";
+import { UserContext } from "../utils/UserContext";
 
 // Icons
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -28,6 +29,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const NavBar = ({ role }) => {
 
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
   const [selectedPage, setSelectedPage] = useState("Dashboard");
   
   // Page options for each user type
@@ -72,6 +74,7 @@ const NavBar = ({ role }) => {
         return response.json();
       })
       .then((data) => {
+        setUser(null);
         navigate("/login");
       });
   }
