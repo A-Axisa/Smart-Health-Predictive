@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 import {
@@ -73,6 +73,28 @@ const GenerateReportForm = () => {
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
   const [bloodGlucoseInput, setBloodGlucoseInput] = useState("");
+
+  useEffect(() => {
+    async function fetchPatientData() {
+      try {
+        const response = await fetch(`${API_BASE}/patient-data`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        if (!response.ok) {throw new Error(response.status);}
+        const data = await response.json();
+
+        setWeight({ isValid: true, value: data.weight });
+        setHeight({ isValid: true, value: data.height });
+        setGender(data.gender);
+        setAge({ isValid: true, value: data.age });
+      }
+      catch(err) {
+        console.log("Failed to fetch patient data.");
+      }
+    }
+    fetchPatientData();
+  }, []);
 
   function handleChangeCondition(e) {
     const {
@@ -340,7 +362,7 @@ const GenerateReportForm = () => {
               name="weight"
               label="Weight (Kg)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }}
+              value={weight?.value || ""}
               onChange={updateWeight}
               error={alertWeightRequired}
               helperText={
@@ -356,6 +378,7 @@ const GenerateReportForm = () => {
               type="text"
               inputProps={{ min: 0, max: 100, maxLength: 3 }}
               fullWidth
+              value={age?.value || ""}
               onChange={updateAge}
               error={alertAgeRequired}
               helperText={
@@ -367,8 +390,8 @@ const GenerateReportForm = () => {
               name="height"
               label="Height (cm)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }}
               fullWidth
+              value={height?.value || ""}
               onChange={updateHeight}
               error={alertHeightRequired}
               helperText={
@@ -382,7 +405,7 @@ const GenerateReportForm = () => {
               <Select
                 labelId="gender-label"
                 id="gender-required"
-                value={gender}
+                value={gender || ""}
                 onChange={updateGender}
                 label="Gender"
               >
