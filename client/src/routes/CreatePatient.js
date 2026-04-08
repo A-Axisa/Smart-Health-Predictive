@@ -1,16 +1,14 @@
 import { Container } from "@mui/material";
-import RegistrationForm from "../components/authentication/RegistrationForm";
+import CreatePatientForm from "../components/authentication/CreatePatientForm";
 
 /**
- * A page used to display registration information and provide a form to allow
- * users to register.
+ * A page used to create a new patient record.
  */
-const Register = () => {
+const CreatePatient = () => {
   return (
     <Container
       maxWidth={false}
       sx={{
-        backgroundColor: "#127067",
         width: "100vw",
         height: "100dvh",
         padding: "0",
@@ -20,9 +18,9 @@ const Register = () => {
         justifyContent: "center",
       }}
     >
-      <RegistrationForm />
+      <CreatePatientForm />
     </Container>
   );
 };
 
-export default Register;
+export default CreatePatient;

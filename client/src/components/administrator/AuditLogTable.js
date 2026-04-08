@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Paper, Box, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Paper, Box, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import AuditLogSearchBar from './AuditLogSearchBar';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -26,19 +27,8 @@ const AuditLogTable = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 });
 
   // Filter states
-  const [emailInput, setEmailInput] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [eventType, setEventType] = useState('');
-
-  // Debounce email input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // resetting page to 0 when filter changes
-      setPaginationModel((prev) => ({ ...prev, page: 0 }));
-      setUserEmail(emailInput);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [emailInput]);
 
   const fetchLogs = () => {
     setLoading(true);
@@ -72,6 +62,11 @@ const AuditLogTable = () => {
     fetchLogs();
   }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType]);
 
+  const handleEmailSearchChange = useCallback((value) => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    setUserEmail(value);
+  }, []);
+
   const columns = [
     { field: "logID", headerName: "Log ID", width: 70 },
     { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140 },
@@ -87,14 +82,7 @@ const AuditLogTable = () => {
     <Box sx={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <TextField
-            label="Search by Email"
-            variant="outlined"
-            size="small"
-            value={emailInput}
-            onChange={(e) => setEmailInput(e.target.value)}
-            sx={{ width: 300 }}
-          />
+          <AuditLogSearchBar onSearchChange={handleEmailSearchChange} delay={500} />
           <FormControl size="small" sx={{ width: 250 }}>
             <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
             <Select
