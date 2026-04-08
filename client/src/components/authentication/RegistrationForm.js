@@ -83,8 +83,28 @@ const RegistrationForm = () => {
     setAlertFamilyNameRequired(!isNameValid);
   }
   function updateDoB(e) {
-    setAlertDoBRequired(false);
+    if (calculateAge(e.target.value) < 18) {
+      setAlertDoBRequired(true);
+    } else {
+      setAlertDoBRequired(false);
+    }
     setDoBState(e.target.value);
+  }
+
+  function calculateAge(DoB) {
+    // Format dates
+    const today = new Date();
+    const dob = new Date(DoB);
+    // calculate the year different between today and the dob
+    const yearDiff = today.getFullYear() - dob.getFullYear();
+
+    // Check if the users birthday has past
+    const birthdayNotPassed =
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+
+    const age = yearDiff - birthdayNotPassed;
+    return age;
   }
 
   function updateEmail(e) {
@@ -135,7 +155,7 @@ const RegistrationForm = () => {
         confirmPassword === "",
     );
     setAlertGenderRequired(genderState === "");
-    setAlertDoBRequired(DoBState === null);
+    setAlertDoBRequired(DoBState === null || calculateAge(DoBState) < 18);
   }
 
   function updateAllMerchantInputFieldAlerts() {
@@ -156,6 +176,7 @@ const RegistrationForm = () => {
       familyNameState !== null &&
       familyNameState.isValid &&
       DoBState !== null &&
+      calculateAge(DoBState) >= 18 &&
       genderState !== "" &&
       emailState !== null &&
       emailState.isValid &&
@@ -337,7 +358,9 @@ const RegistrationForm = () => {
                 type="date"
                 onChange={updateDoB}
                 error={alertDoBRequired}
-                helperText={alertDoBRequired ? "*Required" : null}
+                helperText={
+                  alertDoBRequired ? "*You must be at least 18 years old" : null
+                }
                 slotProps={{
                   inputLabel: {
                     shrink: true,
