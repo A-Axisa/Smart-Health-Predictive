@@ -1,6 +1,7 @@
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from datetime import datetime
 
 from server.main import app
 
@@ -21,6 +22,19 @@ def setup_once_for_all_tests():
         'gender': 'Male',
         'password': 'thisisavalidpasswordA1!',
         'email': 'testdelete@mymail.com',
+        'phone': '',
+        'account_type': 'user'
+    }
+    client.post("/register/", json=credentials)
+
+    # User for /patient-data
+    credentials = {
+        'given_names': 'non',
+        'family_name': 'existent',
+        'date_of_birth': '1980-05-24',
+        'gender': 'Female',
+        'password': 'thisisavalidpasswordA1!',
+        'email': 'nopatientdata@example.com',
         'phone': '',
         'account_type': 'user'
     }
@@ -118,6 +132,36 @@ def test_delete_non_existing_data():
     assert response.json() == {"detail": "Health report not found"}
 
 
+def test_get_patient_data_returns_correct_fields():
+    credentials = {
+        "email": "RealGuy@example.com",
+        "password": "thisisavalidpasswordA1!"
+    }
+    client.post('/login/', json=credentials)
+    response = client.get("/patient-data")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data.keys() == {"weight", "height", "gender", "age"}
+    assert data["gender"] == "Male"
+    assert data["age"] == datetime.today().year - 1980 - ((datetime.today().month, datetime.today().day) < (5, 24))
+
+
+def test_get_patient_data_has_empty_fields():
+    credentials = {
+        "email": "nopatientdata@example.com",
+        "password": "thisisavalidpasswordA1!"
+    }
+    client.post('/login/', json=credentials)
+    response = client.get("/patient-data")
+    data = response.json()
+    
+    # Gender and age are required for registration, therefore omitted.
+    assert response.status_code == status.HTTP_200_OK
+    assert data["weight"] is None
+    assert data["height"] is None
+    
+    
 def test_create_patient():
     # Login as Merchant
     credentials = {"email": "service@example.com",

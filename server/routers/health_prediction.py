@@ -100,6 +100,10 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
 
+    # Update Weight & Height based on user input.
+    patient.Weight = data.weight
+    patient.Height = data.height
+
     # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
     patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
     healthData = HealthData(patient_id, data.age, data.weight, data.height, gender_map[data.gender],

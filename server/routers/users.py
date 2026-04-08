@@ -657,6 +657,28 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         recommendations=latest_recommendations,
     )
 
+@router.get("/patient-data")
+async def get_patient_data(request: Request, db_conn: Session = Depends(get_db)):
+    """
+    Retrieves a user's patient data required for report form inputs.
+    """
+
+    # Get current user details.
+    user = get_current_user(request, db_conn)
+    patient = get_patient_by_email(user["email"], db_conn)
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    result = {
+        "weight": float(patient.Weight) if patient.Weight else None,
+        "height": float(patient.Height) if patient.Height else None,
+        "gender": get_gender(patient.Gender),
+        "age": get_age(patient.DateOfBirth)
+    }
+
+    return result
+
 
 @router.get("/patient-details/{patient_id}", response_model=PatientDetails)
 async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
@@ -795,3 +817,17 @@ def is_weight_valid(weight: float):
 def is_height_valid(height: float):
     '''Verifies height is valid'''
     return 0.0 <= height <= 300.0
+  
+
+def get_age(dob):
+  """Calculates an age given a date of birth."""
+  if not dob:
+      return None
+
+  today = datetime.today()
+  return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+
+def get_gender(gender):
+    """Returns a string representation of a users gender."""
+    return "Male" if gender == 1 else "Female"
