@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -20,7 +21,7 @@ from ..models.dbmodels import (
     UserPatientAccess,
     Clinic
 )
-from ..routers.authentication import get_current_user, get_user, get_patient_by_email
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid
 
 NAME_MAX_LENGTH = 255
 MIN_AGE = 18
@@ -79,6 +80,17 @@ class Dashboard(BaseModel):
     recommendations: dict
 
 
+class UserProfileUpdate(BaseModel):
+    phone_number: Optional[str] = None
+
+
+class PatientProfileUpdate(BaseModel):
+    given_names: Optional[str] = None
+    family_name: Optional[str] = None
+    gender: Optional[int] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    date_of_birth: Optional[date] = None
 class PatientCreationDetails(BaseModel):
     given_names: str
     family_name: str
@@ -106,6 +118,145 @@ def _to_float(val) -> float:
 
 
 router = APIRouter()
+
+
+def _validated_name(value: Optional[str], field_name: str) -> Optional[str]:
+    if value is None:
+        return None
+    sanitizer = Sanitizer()
+    cleaned = sanitizer.sanitize(value).strip()
+    if len(cleaned) > 255:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{field_name} is too long.",
+        )
+    return cleaned
+
+
+def _to_nullable_float(value: Optional[float], field_name: str, min_v: float, max_v: float) -> Optional[float]:
+    if value is None:
+        return None
+    if value < min_v or value > max_v:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{field_name} must be between {min_v} and {max_v}.",
+        )
+    return float(value)
+
+
+@router.patch("/users/me")
+async def update_current_user_profile(
+    payload: UserProfileUpdate,
+    request: Request,
+    db_conn: Session = Depends(get_db),
+):
+    current_user = get_current_user(request, db_conn)
+    user = get_user(current_user["email"], db_conn)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    updates = payload.dict(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+
+    updated_fields = {}
+    if "phone_number" in updates:
+        formatted_phone = format_phone_number(updates.get("phone_number") or "")
+        if not is_formatted_phone_valid(formatted_phone):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid phone number",
+            )
+        user.PhoneNumber = formatted_phone
+        updated_fields["phone_number"] = formatted_phone
+
+    db_conn.commit()
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.USER_PROFILE_UPDATED,
+        success=True,
+        userEmail=user.Email,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host if request.client else None,
+        description="User updated account profile fields.",
+    )
+
+    return {"message": "Account details updated successfully", "updated": updated_fields}
+
+
+@router.patch("/patients/me")
+async def update_current_patient_profile(
+    payload: PatientProfileUpdate,
+    request: Request,
+    db_conn: Session = Depends(get_db),
+):
+    current_user = get_current_user(request, db_conn)
+    user = get_user(current_user["email"], db_conn)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    updates = payload.dict(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+
+    patient = get_patient_by_email(user.Email, db_conn)
+    if patient is None:
+        patient = Patient(
+            user_id=user.UserID,
+            given_names=user.Email.split("@")[0],
+            family_name="",
+            gender=None,
+            weight=0,
+            height=0,
+            date_of_birth=None,
+        )
+        db_conn.add(patient)
+        db_conn.flush()
+
+    updated_fields = {}
+    if "given_names" in updates:
+        patient.GivenNames = _validated_name(updates.get("given_names"), "given_names")
+        updated_fields["given_names"] = patient.GivenNames
+    if "family_name" in updates:
+        patient.FamilyName = _validated_name(updates.get("family_name"), "family_name")
+        updated_fields["family_name"] = patient.FamilyName
+    if "gender" in updates:
+        gender = updates.get("gender")
+        if gender is not None and gender not in (0, 1):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="gender must be 0 (Female) or 1 (Male)",
+            )
+        patient.Gender = gender
+        updated_fields["gender"] = patient.Gender
+    if "weight" in updates:
+        patient.Weight = _to_nullable_float(updates.get("weight"), "weight", 20.0, 300.0)
+        updated_fields["weight"] = float(patient.Weight) if patient.Weight is not None else None
+    if "height" in updates:
+        patient.Height = _to_nullable_float(updates.get("height"), "height", 90.0, 250.0)
+        updated_fields["height"] = float(patient.Height) if patient.Height is not None else None
+    if "date_of_birth" in updates:
+        date_of_birth = updates.get("date_of_birth")
+        if date_of_birth and date_of_birth > date.today():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="date_of_birth cannot be in the future",
+            )
+        patient.DateOfBirth = date_of_birth
+        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat() if patient.DateOfBirth else None
+
+    db_conn.commit()
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.PATIENT_PROFILE_UPDATED,
+        success=True,
+        userEmail=user.Email,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host if request.client else None,
+        description="User updated patient profile fields.",
+    )
+
+    return {"message": "Profile updated successfully", "updated": updated_fields}
 
 
 def _delete_user_data(user_id: int, db_conn: Session):

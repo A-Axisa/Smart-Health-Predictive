@@ -1,4 +1,5 @@
 import os
+import html
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone, UTC, date
 from secrets import token_urlsafe
@@ -403,6 +404,13 @@ def get_current_user(request: Request, db_conn: Session):
         'email': user.Email,
         'role': user_role,
         'name': patient_details.GivenNames if patient_details else user.Email.split('@')[0],
+        'phone_number': user.PhoneNumber,
+        'given_names': patient_details.GivenNames if patient_details else None,
+        'family_name': patient_details.FamilyName if patient_details else None,
+        'gender': patient_details.Gender if patient_details else None,
+        'weight': float(patient_details.Weight) if patient_details and patient_details.Weight is not None else None,
+        'height': float(patient_details.Height) if patient_details and patient_details.Height is not None else None,
+        'date_of_birth': patient_details.DateOfBirth.isoformat() if patient_details and patient_details.DateOfBirth else None,
     }
 
 

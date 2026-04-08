@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,7 +8,6 @@ import {
   TextField,
   Divider,
   Button,
-  Avatar,
   Switch,
   FormControlLabel,
   FormControl,
@@ -24,9 +23,11 @@ import {
 } from '@mui/material';
 import ConfirmationDialog from '../components/confirmationDialog';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../utils/UserContext';
 
 const UserSettings = () => {
   const navigate = useNavigate();
+  const { user, loading: userLoading, updateUserFields, refreshUser } = useContext(UserContext);
   const [selectedSection, setSelectedSection] = useState('Account Details');
   
   const theme = useTheme();
@@ -34,15 +35,12 @@ const UserSettings = () => {
 
   // Account/Profile state
   const [formData, setFormData] = useState({
-    username: 'user1',
-    email: 'user@gmail.com',
-    phone: '0412 345 678',
-    address: 'Mawson Lakes, 5095 SA',
-    country: 'AU',
-    language: 'English',
-    firstName: 'John',
-    lastName: 'Doe',
-    dateOfBirth: '1990-01-01',
+    email: '',
+    phone: '',
+    firstName: '',
+    lastName: '',
+    gender: '',
+    dateOfBirth: '',
     height: '', // cm
     weight: '', // kg
   });
@@ -67,32 +65,63 @@ const UserSettings = () => {
   });
 
   const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [profileErrors, setProfileErrors] = useState({});
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   // Resolve API base from environment variable
   const API_BASE = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:8000', []);
 
-  // Check if the user is logged in by calling the /user/me endpoint
+  const isUserLoggedIn = Boolean(user) && !userLoading;
+
+  // Initialize form from UserContext
   useEffect(() => {
-    let mounted = true;
-    async function checkLoginStatus() {
+    if (!user) return;
+    setFormData((prev) => ({
+      ...prev,
+      email: user.email || '',
+      phone: user.phone_number || '',
+      firstName: user.given_names || '',
+      lastName: user.family_name || '',
+      gender: user.gender === null || user.gender === undefined ? '' : String(user.gender),
+      dateOfBirth: user.date_of_birth || '',
+      height: user.height ?? '',
+      weight: user.weight ?? '',
+    }));
+  }, [user]);
+
+  const clearMessages = () => {
+    setSaveMessage('');
+    setSaveError('');
+  };
+
+  const patchSettings = async (endpoint, payload) => {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      let message = `HTTP ${response.status}`;
       try {
-        // Fetch current user info from cookie-auth protected endpoint
-        const meRes = await fetch(`${API_BASE}/user/me`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (mounted) setIsUserLoggedIn(meRes.ok);
-      } catch (e) {
-        if (mounted) setIsUserLoggedIn(false);
+        const body = await response.json();
+        message = body?.detail || body?.message || message;
+      } catch (_) {
+        const text = await response.text();
+        if (text) message = text;
       }
+      throw new Error(message);
     }
-    checkLoginStatus();
-    return () => { mounted = false; };
-  }, [API_BASE]);
+    return response.json();
+  };
+
   function handleChangePassword() {
     setPasswordChanged(false)
     fetch(`${API_BASE}/changePassword`,
@@ -123,9 +152,92 @@ const UserSettings = () => {
   const updateNotify = (k, v) => setNotifications((p) => ({ ...p, [k]: v }));
 
   const handleSave = (section) => {
-    console.log('Save', section, { formData, passwordData, notifications });
     setSaveMessage(`${section} saved successfully!`);
     setTimeout(() => setSaveMessage(''), 2500);
+  };
+
+  const validateProfile = () => {
+    const errors = {};
+    const height = formData.height === '' ? null : Number(formData.height);
+    const weight = formData.weight === '' ? null : Number(formData.weight);
+    if (height !== null && (Number.isNaN(height) || height < 90 || height > 250)) {
+      errors.height = 'Height must be between 90 and 250 cm';
+    }
+    if (weight !== null && (Number.isNaN(weight) || weight < 20 || weight > 300)) {
+      errors.weight = 'Weight must be between 20 and 300 kg';
+    }
+    if (formData.dateOfBirth) {
+      const dob = new Date(formData.dateOfBirth);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (Number.isNaN(dob.getTime()) || dob > today) {
+        errors.dateOfBirth = 'Date of birth cannot be in the future';
+      }
+    }
+    if (formData.gender !== '' && !['0', '1'].includes(String(formData.gender))) {
+      errors.gender = 'Gender must be Female or Male';
+    }
+    if (formData.firstName && formData.firstName.length > 255) {
+      errors.firstName = 'First name is too long';
+    }
+    if (formData.lastName && formData.lastName.length > 255) {
+      errors.lastName = 'Last name is too long';
+    }
+    return errors;
+  };
+
+  const handleAccountSave = async () => {
+    clearMessages();
+    setAccountSaving(true);
+    try {
+      const phone = formData.phone ?? '';
+      await patchSettings('/users/me', { phone_number: phone });
+      updateUserFields({ phone_number: phone });
+      setSaveMessage('Account details saved successfully!');
+      setTimeout(() => setSaveMessage(''), 2500);
+    } catch (error) {
+      setSaveError(error?.message || 'Failed to save account details');
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  const handleProfileSave = async () => {
+    clearMessages();
+    const errors = validateProfile();
+    setProfileErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setSaveError('Please fix profile validation errors before saving.');
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const payload = {
+        given_names: formData.firstName || null,
+        family_name: formData.lastName || null,
+        gender: formData.gender === '' ? null : Number(formData.gender),
+        height: formData.height === '' ? null : Number(formData.height),
+        weight: formData.weight === '' ? null : Number(formData.weight),
+        date_of_birth: formData.dateOfBirth || null,
+      };
+      await patchSettings('/patients/me', payload);
+      updateUserFields({
+        given_names: formData.firstName || '',
+        family_name: formData.lastName || '',
+        gender: formData.gender === '' ? null : Number(formData.gender),
+        height: formData.height === '' ? '' : Number(formData.height),
+        weight: formData.weight === '' ? '' : Number(formData.weight),
+        date_of_birth: formData.dateOfBirth || '',
+      });
+      setSaveMessage('Profile saved successfully!');
+      setTimeout(() => setSaveMessage(''), 2500);
+      refreshUser();
+    } catch (error) {
+      setSaveError(error?.message || 'Failed to save profile');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const AccountDetails = () => (
@@ -138,6 +250,11 @@ const UserSettings = () => {
           {saveMessage}
         </Alert>
       )}
+      {saveError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {saveError}
+        </Alert>
+      )}
 
       <Box
         sx={{
@@ -147,63 +264,20 @@ const UserSettings = () => {
         }}
       >
         <TextField
-          label="Username"
-          value={formData.username}
-          onChange={(e) => updateForm('username', e.target.value)}
-          fullWidth
-        />
-        <TextField
           label="Email"
           type="email"
           value={formData.email}
-          onChange={(e) => updateForm('email', e.target.value)}
+          disabled
+          helperText="Email update is currently not supported"
           fullWidth
         />
         <TextField
           label="Phone Number"
           value={formData.phone}
           onChange={(e) => updateForm('phone', e.target.value)}
+          helperText="Only digits will be stored"
           fullWidth
         />
-        <FormControl fullWidth>
-          <InputLabel>Language</InputLabel>
-          <Select
-            variant="outlined"
-            label="Language"
-            value={formData.language}
-            onChange={(e) => updateForm('language', e.target.value)}
-          >
-            <MenuItem value="English">English</MenuItem>
-            <MenuItem value="Chinese">中文</MenuItem>
-            <MenuItem value="Spanish">Español</MenuItem>
-            <MenuItem value="French">Français</MenuItem>
-          </Select>
-        </FormControl>
-        <Box sx={{ gridColumn: '1 / -1' }}>
-          <TextField
-            label="Address"
-            value={formData.address}
-            onChange={(e) => updateForm('address', e.target.value)}
-            fullWidth
-            multiline
-            rows={2}
-          />
-        </Box>
-        <FormControl fullWidth>
-          <InputLabel>Country</InputLabel>
-          <Select
-            variant="outlined"
-            label="Country"
-            value={formData.country}
-            onChange={(e) => updateForm('country', e.target.value)}
-          >
-            <MenuItem value="AU">Australia</MenuItem>
-            <MenuItem value="USA">United States</MenuItem>
-            <MenuItem value="MY">Malaysia</MenuItem>
-            <MenuItem value="China">China</MenuItem>
-            <MenuItem value="Other">Other</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, flexWrap: 'wrap', gap: 2 }}>
@@ -230,18 +304,28 @@ const UserSettings = () => {
         <Box sx={{ ml: 'auto' }}>
           <Button 
             variant="outlined" 
+            disabled={accountSaving}
             sx={{ 
               mr: 2,
               py: { xs: '0.8rem', sm: '0.6rem' },
               fontSize: { xs: '1rem', sm: '0.875rem' },
               fontWeight: 500,
             }}
+            onClick={() => {
+              if (!user) return;
+              setFormData((prev) => ({
+                ...prev,
+                phone: user.phone_number || '',
+              }));
+              clearMessages();
+            }}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={() => handleSave('Account Details')}
+            onClick={handleAccountSave}
+            disabled={accountSaving || userLoading}
             sx={{ 
               px: 4, 
               py: { xs: '0.8rem', sm: '0.6rem' },
@@ -249,7 +333,7 @@ const UserSettings = () => {
               fontWeight: 500,
             }}
           >
-            Save Changes
+            {accountSaving ? 'Saving…' : 'Save Changes'}
           </Button>
         </Box>
       </Box>
@@ -266,24 +350,20 @@ const UserSettings = () => {
           {saveMessage}
         </Alert>
       )}
+      {saveError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {saveError}
+        </Alert>
+      )}
 
-      <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
-        <Avatar sx={{ width: 96, height: 96, bgcolor: 'primary.main', fontSize: 32 }}>
-          {formData.firstName?.[0]}
-          {formData.lastName?.[0]}
-        </Avatar>
-        <Box>
-          <Typography variant="h6">
-            {formData.firstName} {formData.lastName}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {formData.email}
-          </Typography>
-          <Button variant="outlined" sx={{ mt: 1 }}>
-            Change Photo
-          </Button>
-        </Box>
-      </Stack>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6">
+          {user?.given_names || ''} {user?.family_name || ''}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {user?.email || ''}
+        </Typography>
+      </Box>
 
       <Box
         sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
@@ -292,20 +372,38 @@ const UserSettings = () => {
           label="First Name"
           value={formData.firstName}
           onChange={(e) => updateForm('firstName', e.target.value)}
+          error={Boolean(profileErrors.firstName)}
+          helperText={profileErrors.firstName || ''}
           fullWidth
         />
         <TextField
           label="Last Name"
           value={formData.lastName}
           onChange={(e) => updateForm('lastName', e.target.value)}
+          error={Boolean(profileErrors.lastName)}
+          helperText={profileErrors.lastName || ''}
           fullWidth
         />
+        <FormControl fullWidth error={Boolean(profileErrors.gender)}>
+          <InputLabel>Gender</InputLabel>
+          <Select
+            variant="outlined"
+            label="Gender"
+            value={formData.gender}
+            onChange={(e) => updateForm('gender', e.target.value)}
+          >
+            <MenuItem value="0">Female</MenuItem>
+            <MenuItem value="1">Male</MenuItem>
+          </Select>
+        </FormControl>
         <TextField
           label="Date of Birth"
           type="date"
           value={formData.dateOfBirth}
           onChange={(e) => updateForm('dateOfBirth', e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
+          error={Boolean(profileErrors.dateOfBirth)}
+          helperText={profileErrors.dateOfBirth || ''}
           fullWidth
         />
         <TextField
@@ -313,6 +411,8 @@ const UserSettings = () => {
           type="number"
           value={formData.height}
           onChange={(e) => updateForm('height', e.target.value)}
+          error={Boolean(profileErrors.height)}
+          helperText={profileErrors.height || ''}
           fullWidth
           inputProps={{ min: 0 }}
         />
@@ -321,6 +421,8 @@ const UserSettings = () => {
           type="number"
           value={formData.weight}
           onChange={(e) => updateForm('weight', e.target.value)}
+          error={Boolean(profileErrors.weight)}
+          helperText={profileErrors.weight || ''}
           fullWidth
           inputProps={{ min: 0 }}
         />
@@ -329,7 +431,8 @@ const UserSettings = () => {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
         <Button
           variant="contained"
-          onClick={() => handleSave('Profile')}
+          onClick={handleProfileSave}
+          disabled={profileSaving || userLoading}
           sx={{ 
             px: 4, 
             py: { xs: '0.8rem', sm: '0.6rem' },
@@ -337,7 +440,7 @@ const UserSettings = () => {
             fontWeight: 500,
           }}
         >
-          Save Profile
+          {profileSaving ? 'Saving…' : 'Save Profile'}
         </Button>
       </Box>
     </Box>
