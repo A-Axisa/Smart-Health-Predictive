@@ -5,7 +5,7 @@ from datetime import datetime
 
 from server.main import app
 
-from ... models.dbmodels import HealthData, AuditLog, LogEventType, Patient
+from ... models.dbmodels import HealthData, AuditLog, LogEventType, Patient, UserPatientAccess, UserAccount
 from ... main import app
 from ... utils.database import get_db
 
@@ -14,6 +14,43 @@ client = TestClient(app)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_once_for_all_tests():
+    db_conn = next(get_db())
+
+    # Create test merchant.
+    credentials = {
+        'given_names': 'Merchant',
+        'family_name': 'Account',
+        'date_of_birth': '1980-05-24',
+        'gender': 'Male',
+        'password': 'thisisavalidpasswordA1!',
+        'email': 'merchant@example.com',
+        'phone': '',
+        'account_type': 'merchant'
+    }
+    client.post("/register/", json=credentials)
+    merchant = db_conn.query(UserAccount).filter_by(Email="merchant@example.com").first()
+
+    # Create patient for merchant tests.
+    patient = Patient(
+        user_id = None,
+        given_names = "Merchant",
+        family_name = "Patient",
+        gender = 1,
+        date_of_birth = datetime(1980, 5, 24),
+        weight = 80,
+        height = 180
+    )
+    db_conn.add(patient)
+    db_conn.commit()
+
+    # Link merchant to patient
+    access = UserPatientAccess(
+        user_id = merchant.UserID,
+        patient_id = patient.PatientID
+    )
+    db_conn.add(access)
+    db_conn.commit()
+
     # Delete user details
     credentials = {
         'given_names': 'Testable',
@@ -75,8 +112,15 @@ def setup_once_for_all_tests():
         "stroke": 0
     }
     client.post("/healthPrediction/", json=testHealthData)
+
     # Return the testHeatlhData to use in tests
     yield testHealthData
+
+    # Remove patient after test.
+    db_conn.query(UserPatientAccess).filter(UserPatientAccess.PatientID == patient.PatientID).delete()
+    db_conn.query(Patient).filter(Patient.PatientID == patient.PatientID).delete()
+
+    db_conn.commit()
 
 
 def test_delete_requires_authentication():
@@ -160,6 +204,39 @@ def test_get_patient_data_has_empty_fields():
     assert response.status_code == status.HTTP_200_OK
     assert data["weight"] is None
     assert data["height"] is None
+
+
+def test_merchant_get_patient_data_returns_correct_fields():
+    db_conn = next(get_db())
+
+    patient = db_conn.query(Patient).filter(
+        Patient.GivenNames == "Merchant",
+        Patient.FamilyName == "Patient"
+    ).first()
+
+    credentials = {
+        "email": "merchant@example.com",
+        "password": "thisisavalidpasswordA1!"
+    }
+    client.post('/login/', json=credentials)
+    response = client.get(f"/merchant/patient-data/{patient.PatientID}")
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert data.keys() == {"weight", "height", "gender", "age"}
+    assert data["gender"] == "Male"
+    assert data["age"] == datetime.today().year - 1980 - ((datetime.today().month, datetime.today().day) < (5, 24))
+
+
+def test_merchant_cannot_access_other_patients():
+    credentials = {
+        "email": "merchant@example.com",
+        "password": "thisisavalidpasswordA1!"
+    }
+    client.post('/login/', json=credentials)
+    response = client.get(f"/merchant/patient-data/999")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     
     
 def test_create_patient():

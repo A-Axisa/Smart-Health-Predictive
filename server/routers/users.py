@@ -831,6 +831,42 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
     return result
 
 
+@router.get("/merchant/patient-data/{patient_id}")
+async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: Session = Depends(get_db)):
+    """
+    Allows merchant to retrieve a user's patient data required for report form inputs.
+    """
+
+    # Check if the requesting user is a merchant.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    merchant = db_conn.query(UserAccount).filter_by(
+        Email=current_user_email).first()
+    if not merchant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'merchant':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    # Get the patient by ID.
+    patient = (db_conn.query(Patient).filter(Patient.PatientID == patient_id).first())
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    result = {
+        "weight": float(patient.Weight) if patient.Weight else None,
+        "height": float(patient.Height) if patient.Height else None,
+        "gender": get_gender(patient.Gender),
+        "age": get_age(patient.DateOfBirth)
+    }
+
+    return result
+
+  
 @router.get("/patient-details/{patient_id}", response_model=PatientDetails)
 async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
     # Check if current user is a merchant
