@@ -357,6 +357,10 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
     patient = db_conn.query(Patient).filter(
         data.patient_id == Patient.PatientID).first()
 
+    # Update Weight & Height based on user input.
+    patient.Weight = data.weight
+    patient.Height = data.height
+
     # Check if the merchant has permission to view the patients record
     if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
         write_audit_log(db_conn,
