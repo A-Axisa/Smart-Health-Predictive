@@ -305,7 +305,7 @@ const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
             <View style={styles.footerLine} />
             <View style={styles.footerLineRightDrop} />
             <View style={styles.footerContent}>
-               <Text style={styles.footerText}>All Copyright Reserved © 2026</Text>
+               <Text style={styles.footerText}>All Copyright Reserved © {dateObj.getFullYear()}</Text>
                <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
             </View>
         </View>
