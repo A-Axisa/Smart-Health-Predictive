@@ -3,15 +3,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('user flow', () => {
 
-    // Credentials for user.
-    let email;
-    const given_names = "Test";
-    const family_name = "User";
-    const date_of_birth = "1980-05-24";
-    const gender = "Male";
-    const password = "thisisavalidpasswordA1!";
-    const account_type = "user";
-
+  // Credentials for user.
+  let email;
+  const given_names = "Test";
+  const family_name = "User";
+  const date_of_birth = "1980-05-24";
+  const gender = "Male";
+  const password = "thisisavalidpasswordA1!";
+  const account_type = "user";
 
   test.beforeEach(async ({ page }) => {
 
