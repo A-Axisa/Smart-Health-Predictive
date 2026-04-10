@@ -11,7 +11,7 @@ test.describe('merchant flow', () => {
 
   test.beforeEach(async ({ page }) => {
 
-    email = `testmerchant_${Date.now()}@mymail.com`;
+    email = `testmerchant_${Date.now()}@example.com`;
 
     // Register
     await page.goto('/register');

@@ -14,7 +14,7 @@ test.describe('user flow', () => {
 
   test.beforeEach(async ({ page }) => {
 
-    email = `testuser_${Date.now()}@mymail.com`;
+    email = `testuser_${Date.now()}@example.com`;
 
     // Register
     await page.goto('/register');
