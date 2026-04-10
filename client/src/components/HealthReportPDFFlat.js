@@ -62,22 +62,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#888888'
   },
-  headerLineLeftDrop: {
-    position: 'absolute',
-    top: 4,
-    left: 0,
-    width: 1,
-    height: 4,
-    backgroundColor: '#888888'
-  },
-  headerLineRightDrop: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 1,
-    height: 4,
-    backgroundColor: '#888888'
-  },
   headerBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -188,22 +172,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#888888',
     marginBottom: 5,
   },
-  footerLineLeftDrop: {
-    position: 'absolute',
-    bottom: 6,
-    left: 0,
-    width: 1,
-    height: 5,
-    backgroundColor: '#888888'
-  },
-  footerLineRightDrop: {
-    position: 'absolute',
-    bottom: 6,
-    right: 0,
-    width: 1,
-    height: 5,
-    backgroundColor: '#888888'
-  },
   footerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -289,9 +257,7 @@ const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
               <Image src={WellAiLogo} style={styles.logo} />
             </View>
             <View style={styles.headerLineContainer}>
-              <View style={styles.headerLineLeftDrop} />
               <View style={styles.headerLine} />
-              <View style={styles.headerLineRightDrop} />
             </View>
             <View style={styles.headerBottom}>
               <Text style={styles.metaText}>Name: {patientName}</Text>
@@ -301,12 +267,10 @@ const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
 
         {/* Fixed Footer */}
         <View fixed style={styles.footerContainer}>
-            <View style={styles.footerLineLeftDrop} />
             <View style={styles.footerLine} />
-            <View style={styles.footerLineRightDrop} />
             <View style={styles.footerContent}>
-               <Text style={styles.footerText}>All Copyright Reserved © {dateObj.getFullYear()}</Text>
-               <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+              <Text style={styles.footerText}>All Copyright Reserved © {dateObj.getFullYear()}</Text>
+              <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
             </View>
         </View>
 
