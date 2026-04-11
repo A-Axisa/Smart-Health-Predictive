@@ -72,7 +72,7 @@ export default function () {
   }
 
   // Test health analytics retrieval.
-  let getAnalyticsResult = http.get(`${BASE_URL}//health-analytics`);
+  let getAnalyticsResult = http.get(`${BASE_URL}/health-analytics`);
   check(getAnalyticsResult, {
     "analytics status 200": (r) => r.status === 200,
   });

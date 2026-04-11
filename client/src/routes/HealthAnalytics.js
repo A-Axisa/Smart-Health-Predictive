@@ -65,7 +65,7 @@ const HealthAnalytics = () => {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}//health-analytics`,
+        `${process.env.REACT_APP_API_URL}/health-analytics`,
         {
           // Include credentials to send cookies if any for authentication
           credentials: "include",

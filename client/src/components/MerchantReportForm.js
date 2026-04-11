@@ -83,7 +83,7 @@ const GenerateReportForm = () => {
 
   // Retrieve Patient names
   useEffect(() => {
-    fetch(`${API_BASE}/merchants/patient_names`, {
+    fetch(`${API_BASE}/merchants/patient-names`, {
       credentials: "include",
       method: "GET",
       headers: {

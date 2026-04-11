@@ -61,7 +61,7 @@ const RegistrationForm = () => {
 
   // Retrieve Clinic Names
   useEffect(() => {
-    fetch(`${API_BASE}/getClinicNames/`, {
+    fetch(`${API_BASE}/get-clinic-names/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

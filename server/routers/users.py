@@ -372,7 +372,7 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
 # Health analytics
 
 
-@router.get("//health-analytics", response_model=List[HealthMetric])
+@router.get("/health-analytics", response_model=List[HealthMetric])
 async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),
@@ -554,7 +554,7 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
     return result
 
 
-@router.get("/merchants/patient_names")
+@router.get("/merchants/patient-names")
 async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if the requesting user is a merchant.
@@ -579,7 +579,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
 
 
 @router.get("/get-health-data-dates/")
-async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
+async def get_health_data(request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
@@ -595,8 +595,8 @@ async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     return healthDataDates
 
 
-@router.get("/getClinicNames/")
-async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
+@router.get("/get-clinic-names/")
+async def get_clinic_names(request: Request, db_conn: Session = Depends(get_db)):
 
     # Retrieve the all clinics
     clinics = (
