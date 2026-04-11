@@ -69,7 +69,7 @@ const RegistrationForm = () => {
     })
       .then((res) => res.json())
       .then((data) => setClinicList(data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("An error has occurred"));
   }, []);
 
   function updateGivenName(e) {
@@ -238,15 +238,15 @@ const RegistrationForm = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        given_names: givenNameState ? givenNameState.name : "",
-        family_name: familyNameState ? familyNameState.name : "",
-        date_of_birth: DoBState,
+        givenNames: givenNameState ? givenNameState.name : "",
+        familyName: familyNameState ? familyNameState.name : "",
+        dateOfBirth: DoBState,
         gender: genderState,
         password: passwordState.password,
         email: emailState.email,
         phone: phoneState !== null ? phoneState.phone : "",
-        account_type: e.target.account_type.value,
-        clinic_id: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
+        accountType: e.target.account_type.value,
+        clinicId: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
       }),
     })
       .then((response) => {

@@ -75,7 +75,7 @@ class ClinicDetails(CamelModel):
     clinic_name: str
 
 
-class Dashboard(CamelModel):
+class Dashboard(BaseModel):
     days: int
     risks: dict
     diff: dict
