@@ -77,7 +77,7 @@ const PatientDetails = () => {
               >
                 Given Name:
               </Box>
-              {" " + patientData?.patient_info?.givenNames}
+              {" " + patientData?.patientInfo?.givenNames}
             </Typography>
 
             <Typography sx={{ mb: 1 }}>
@@ -87,7 +87,7 @@ const PatientDetails = () => {
               >
                 Last Name:
               </Box>
-              {" " + patientData?.patient_info?.familyName}
+              {" " + patientData?.patientInfo?.familyName}
             </Typography>
 
             <Typography sx={{ mb: 1 }}>
@@ -97,7 +97,7 @@ const PatientDetails = () => {
               >
                 Date Of Birth:
               </Box>
-              {" " + patientData?.patient_info?.dateOfBirth}
+              {" " + patientData?.patientInfo?.dateOfBirth}
             </Typography>
 
             <Typography sx={{ mb: 1 }}>
@@ -107,7 +107,7 @@ const PatientDetails = () => {
               >
                 Age:
               </Box>
-              {" " + patientData?.patient_info?.age}
+              {" " + patientData?.patientInfo?.age}
             </Typography>
 
             <Typography sx={{ mb: 1 }}>
@@ -117,7 +117,7 @@ const PatientDetails = () => {
               >
                 Gender:
               </Box>{" "}
-              {patientData?.patient_info?.gender == 1 ? "Male" : "Female"}
+              {patientData?.patientInfo?.gender == 1 ? "Male" : "Female"}
             </Typography>
             <Typography sx={{ mb: 1 }}>
               <Box
@@ -126,7 +126,7 @@ const PatientDetails = () => {
               >
                 Weight:
               </Box>
-              {" " + patientData?.patient_info?.weight} kg
+              {" " + patientData?.patientInfo?.weight} kg
             </Typography>
             <Typography sx={{ mb: 1 }}>
               <Box
@@ -135,13 +135,13 @@ const PatientDetails = () => {
               >
                 Height:
               </Box>
-              {" " + patientData?.patient_info?.height} cm
+              {" " + patientData?.patientInfo?.height} cm
             </Typography>
           </Box>
           <hr />
           <Typography variant="h5" sx={{ mb: 1 }}>
             It has been {patientData?.days} days since{" "}
-            {patientData?.patient_info?.givenNames}'s last health report
+            {patientData?.patientInfo?.givenNames}'s last health report
           </Typography>
 
           <Button

@@ -107,19 +107,23 @@ const GenerateReportForm = () => {
       if (!selectedPatient) return;
 
       try {
-        const response = await fetch(`${API_BASE}/merchant/patient-data/${selectedPatient}`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-        if (!response.ok) {throw new Error(response.status);}
+        const response = await fetch(
+          `${API_BASE}/merchant/patient-data/${selectedPatient}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
         const data = await response.json();
 
         setWeight({ isValid: true, value: data.weight });
         setHeight({ isValid: true, value: data.height });
         setGender(data.gender);
         setAge({ isValid: true, value: data.age });
-      }
-      catch(err) {
+      } catch (err) {
         console.log("Failed to fetch patient data.");
       }
     }
@@ -350,7 +354,7 @@ const GenerateReportForm = () => {
                 </MenuItem>
                 {/* List of available patients */}
                 {patientList.map((patient) => (
-                  <MenuItem key={patient.name} value={patient.patient_id}>
+                  <MenuItem key={patient.name} value={patient.patientId}>
                     {patient.name}
                   </MenuItem>
                 ))}

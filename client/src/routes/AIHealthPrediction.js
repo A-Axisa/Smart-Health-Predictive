@@ -52,7 +52,7 @@ const AIHealthPrediction = ({}) => {
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
-    fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
+    fetch(`${API_BASE}/reportData/${selectedDate.healthDataId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -67,7 +67,7 @@ const AIHealthPrediction = ({}) => {
   async function deleteReport() {
     if (!selectedDate) return;
     try {
-      fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
+      fetch(`${API_BASE}/reportData/${selectedDate.healthDataId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -126,19 +126,19 @@ const AIHealthPrediction = ({}) => {
               {reportDates.map((item) => (
                 <ListItem
                   key={item.id}
-                  selected={selectedDate.healthDataID === item.healthDataID}
+                  selected={selectedDate.healthDataId === item.healthDataId}
                   onClick={(e) => setSelectedDate(item)}
                   button
                   sx={{
                     py: 2,
                     px: 3,
                     borderLeft:
-                      selectedDate.healthDataID === item.healthDataID
+                      selectedDate.healthDataId === item.healthDataId
                         ? "4px solid"
                         : "4px solid transparent",
                     borderLeftColor: "primary.main",
                     bgcolor:
-                      selectedDate.healthDataID === item.healthDataID
+                      selectedDate.healthDataId === item.healthDataId
                         ? "action.selected"
                         : "transparent",
                   }}
@@ -149,7 +149,7 @@ const AIHealthPrediction = ({}) => {
                       primary: {
                         style: {
                           fontWeight:
-                            selectedDate.healthDataID === item.healthDataID
+                            selectedDate.healthDataId === item.healthDataId
                               ? 600
                               : 400,
                         },
@@ -157,7 +157,7 @@ const AIHealthPrediction = ({}) => {
                     }}
                   />
                   {/* Delete Report Button */}
-                  {selectedDate.healthDataID === item.healthDataID && (
+                  {selectedDate.healthDataId === item.healthDataId && (
                     <IconButton
                       aria-label="delete"
                       color="error"
@@ -181,11 +181,11 @@ const AIHealthPrediction = ({}) => {
             )}
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
-              healthDataId={selectedDate?.healthDataID}
+              healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
               meta={{
                 date: selectedDate?.date,
-                healthDataID: selectedDate?.healthDataID,
+                healthDataId: selectedDate?.healthDataId,
               }}
             />
           </Box>

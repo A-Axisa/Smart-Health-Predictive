@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
 
@@ -28,71 +29,73 @@ MIN_AGE = 18
 gender_map = {'Male': 1, 'Female': 0}
 
 
-class HealthMetric(BaseModel):
+class HealthMetric(CamelModel):
     # ISO datetime string of the prediction creation time
     date: str
     month: str
-    strokeProbability: float
-    cardioProbability: float
-    diabetesProbability: float
+    stroke_probability: float
+    cardio_probability: float
+    diabetes_probability: float
 
 
-class Report(BaseModel):
-    patientName: Optional[str] = None
+class Report(CamelModel):
+    patient_name: Optional[str] = None
     age: int
     weight: float
     height: float
     gender: int
-    bloodGlucose: float
+    blood_glucose: float
     ap_hi: float
     ap_lo: float
-    highCholesterol: int
-    hyperTension: int
-    heartDisease: int
+    high_cholesterol: int
+    hypertension: int
+    heart_disease: int
     diabetes: int
     alcohol: int
     smoker: int
-    maritalStatus: int
-    workingStatus: int
-    strokeChance: float
-    CVDChance: float
-    diabetesChance: float
+    marital_status: int
+    working_status: int
+    stroke_chance: float
+    CVD_chance: float
+    diabetes_chance: float
     # Optional recommendations
-    exerciseRecommendation: Optional[str] = None
-    dietRecommendation: Optional[str] = None
-    lifestyleRecommendation: Optional[str] = None
-    dietToAvoidRecommendation: Optional[str] = None
+    exercise_recommendation: Optional[str] = None
+    diet_recommendation: Optional[str] = None
+    lifestyle_recommendation: Optional[str] = None
+    diet_to_avoid_recommendation: Optional[str] = None
 
 
-class HealthDataDates(BaseModel):
-    healthDataID: int
+class HealthDataDates(CamelModel):
+    health_data_id: int
     date: datetime
 
 
-class ClinicDetails(BaseModel):
+class ClinicDetails(CamelModel):
     clinic_id: int
     clinic_name: str
 
 
-class Dashboard(BaseModel):
+class Dashboard(CamelModel):
     days: int
     risks: dict
     diff: dict
     recommendations: dict
 
 
-class UserProfileUpdate(BaseModel):
+class UserProfileUpdate(CamelModel):
     phone_number: Optional[str] = None
 
 
-class PatientProfileUpdate(BaseModel):
+class PatientProfileUpdate(CamelModel):
     given_names: Optional[str] = None
     family_name: Optional[str] = None
     gender: Optional[int] = None
     weight: Optional[float] = None
     height: Optional[float] = None
     date_of_birth: Optional[date] = None
-class PatientCreationDetails(BaseModel):
+
+
+class PatientCreationDetails(CamelModel):
     given_names: str
     family_name: str
     date_of_birth: date
@@ -101,7 +104,7 @@ class PatientCreationDetails(BaseModel):
     height: float
 
 
-class PatientDetails(BaseModel):
+class PatientDetails(CamelModel):
     patient_info: dict
     days: int
     risks: dict
@@ -154,15 +157,18 @@ async def update_current_user_profile(
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     updated_fields = {}
     if "phone_number" in updates:
-        formatted_phone = format_phone_number(updates.get("phone_number") or "")
+        formatted_phone = format_phone_number(
+            updates.get("phone_number") or "")
         if not is_formatted_phone_valid(formatted_phone):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -194,11 +200,13 @@ async def update_current_patient_profile(
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     patient = get_patient_by_email(user.Email, db_conn)
     if patient is None:
@@ -216,10 +224,12 @@ async def update_current_patient_profile(
 
     updated_fields = {}
     if "given_names" in updates:
-        patient.GivenNames = _validated_name(updates.get("given_names"), "given_names")
+        patient.GivenNames = _validated_name(
+            updates.get("given_names"), "given_names")
         updated_fields["given_names"] = patient.GivenNames
     if "family_name" in updates:
-        patient.FamilyName = _validated_name(updates.get("family_name"), "family_name")
+        patient.FamilyName = _validated_name(
+            updates.get("family_name"), "family_name")
         updated_fields["family_name"] = patient.FamilyName
     if "gender" in updates:
         gender = updates.get("gender")
@@ -231,11 +241,15 @@ async def update_current_patient_profile(
         patient.Gender = gender
         updated_fields["gender"] = patient.Gender
     if "weight" in updates:
-        patient.Weight = _to_nullable_float(updates.get("weight"), "weight", 20.0, 300.0)
-        updated_fields["weight"] = float(patient.Weight) if patient.Weight is not None else None
+        patient.Weight = _to_nullable_float(
+            updates.get("weight"), "weight", 20.0, 300.0)
+        updated_fields["weight"] = float(
+            patient.Weight) if patient.Weight is not None else None
     if "height" in updates:
-        patient.Height = _to_nullable_float(updates.get("height"), "height", 90.0, 250.0)
-        updated_fields["height"] = float(patient.Height) if patient.Height is not None else None
+        patient.Height = _to_nullable_float(
+            updates.get("height"), "height", 90.0, 250.0)
+        updated_fields["height"] = float(
+            patient.Height) if patient.Height is not None else None
     if "date_of_birth" in updates:
         date_of_birth = updates.get("date_of_birth")
         if date_of_birth and date_of_birth > date.today():
@@ -244,7 +258,8 @@ async def update_current_patient_profile(
                 detail="date_of_birth cannot be in the future",
             )
         patient.DateOfBirth = date_of_birth
-        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat() if patient.DateOfBirth else None
+        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat(
+        ) if patient.DateOfBirth else None
 
     db_conn.commit()
     write_audit_log(
@@ -406,9 +421,9 @@ async def get_health_analytics(
                 date=(created_at.isoformat() if isinstance(
                     created_at, datetime) else str(created_at)),
                 month=month_label(created_at),
-                strokeProbability=_to_float(stroke),
-                cardioProbability=_to_float(cvd),
-                diabetesProbability=_to_float(diab),
+                stroke_probability=_to_float(stroke),
+                cardio_probability=_to_float(cvd),
+                diabetes_probability=_to_float(diab),
             )
         )
 
@@ -433,9 +448,11 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     recommendationData = db_conn.query(Recommendation).filter(getattr(
         Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
 
-    patientData = db_conn.query(Patient).filter(Patient.PatientID == healthData.PatientID).first()
+    patientData = db_conn.query(Patient).filter(
+        Patient.PatientID == healthData.PatientID).first()
     if patientData:
-        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip() or None
+        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip(
+        ) or None
     else:
         patient_name = None
 
@@ -447,33 +464,33 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
         height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
         gender=int(
             1 if bool(getattr(healthData, 'Gender', False) or False) else 0),
-        bloodGlucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
+        blood_glucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
         ap_hi=float(getattr(healthData, 'APHigh', 0) or 0),
         ap_lo=float(getattr(healthData, 'APLow', 0) or 0),
-        highCholesterol=int(
+        high_cholesterol=int(
             1 if bool(getattr(healthData, 'HighCholesterol', False) or False) else 0),
-        hyperTension=int(
+        hypertension=int(
             1 if bool(getattr(healthData, 'HyperTension', False) or False) else 0),
-        heartDisease=int(
+        heart_disease=int(
             1 if bool(getattr(healthData, 'HeartDisease', False) or False) else 0),
         diabetes=int(
             1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
         alcohol=int(
             1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
         smoker=int(getattr(healthData, 'SmokingStatus', 0) or 0),
-        maritalStatus=int(getattr(healthData, 'MaritalStatus', 0) or 0),
-        workingStatus=int(getattr(healthData, 'WorkingStatus', 0) or 0),
-        strokeChance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
-        CVDChance=float(getattr(predictionData, 'CVDChance', 0) or 0),
-        diabetesChance=float(
+        marital_status=int(getattr(healthData, 'MaritalStatus', 0) or 0),
+        working_status=int(getattr(healthData, 'WorkingStatus', 0) or 0),
+        stroke_chance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
+        CVD_chance=float(getattr(predictionData, 'CVD_chance', 0) or 0),
+        diabetes_chance=float(
             getattr(predictionData, 'DiabetesChance', 0) or 0),
-        exerciseRecommendation=getattr(
+        exercise_recommendation=getattr(
             recommendationData, 'ExerciseRecommendation', None) if recommendationData else None,
-        dietRecommendation=getattr(
+        diet_recommendation=getattr(
             recommendationData, 'DietRecommendation', None) if recommendationData else None,
-        lifestyleRecommendation=getattr(
+        lifestyle_recommendation=getattr(
             recommendationData, 'LifestyleRecommendation', None) if recommendationData else None,
-        dietToAvoidRecommendation=getattr(
+        diet_to_avoid_recommendation=getattr(
             recommendationData, 'DietToAvoidRecommendation', None) if recommendationData else None,
     )
 
@@ -541,7 +558,7 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
 
         result.append({
             "name": f'{patient.GivenNames} {patient.FamilyName}',
-            "healthDataID": row.HealthDataID,
+            "healthDataId": row.HealthDataID,
             "date": row.CreatedAt
         })
 
@@ -565,7 +582,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         if patient.PatientID not in existing_patient:
             result.append({
                 "name": f'{patient.GivenNames} {patient.FamilyName}',
-                "patient_id": patient.PatientID
+                "patientId": patient.PatientID
             })
             existing_patient.add(patient.PatientID)
 
@@ -584,7 +601,7 @@ async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
 
     # Filter by ID and date create to return
     healthDataDates = [HealthDataDates(
-        healthDataID=data.HealthDataID, date=data.CreatedAt) for data in healthData]
+        health_data_id=data.HealthDataID, date=data.CreatedAt) for data in healthData]
 
     return healthDataDates
 
@@ -770,6 +787,12 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
                    .filter(HealthData.PatientID == patient_id)
                    .order_by(Prediction.CreatedAt.desc()).limit(5).all())
 
+    # Latest disease prediction.
+    stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
+    diabetes_risk = float(
+        predictions[0].DiabetesChance) if predictions else 0.0
+    cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
+
     # Risk over time trends.
     risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
 
@@ -793,7 +816,8 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
 
         disease_diff["stroke"] = float(
             current.StrokeChance) - float(prev.StrokeChance)
-        disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
+        disease_diff["cvd"] = float(
+            current.CVDChance) - float(prev.CVDChance)
         disease_diff["diabetes"] = float(
             current.DiabetesChance) - float(prev.DiabetesChance)
 
@@ -815,6 +839,7 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         diff=disease_diff,
         recommendations=latest_recommendations,
     )
+
 
 @router.get("/patient-data")
 async def get_patient_data(request: Request, db_conn: Session = Depends(get_db)):
@@ -860,7 +885,8 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
     # Get the patient by ID.
-    patient = (db_conn.query(Patient).filter(Patient.PatientID == patient_id).first())
+    patient = (db_conn.query(Patient).filter(
+        Patient.PatientID == patient_id).first())
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
@@ -874,7 +900,7 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
 
     return result
 
-  
+
 @router.get("/patient-details/{patient_id}", response_model=PatientDetails)
 async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
     # Check if current user is a merchant
@@ -1012,15 +1038,15 @@ def is_weight_valid(weight: float):
 def is_height_valid(height: float):
     '''Verifies height is valid'''
     return 0.0 <= height <= 300.0
-  
+
 
 def get_age(dob):
-  """Calculates an age given a date of birth."""
-  if not dob:
-      return None
+    """Calculates an age given a date of birth."""
+    if not dob:
+        return None
 
-  today = datetime.today()
-  return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    today = datetime.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 
 def get_gender(gender):
