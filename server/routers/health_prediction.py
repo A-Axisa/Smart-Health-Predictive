@@ -325,7 +325,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
     }
 
 
-@router.post("/merchantHealthPrediction/")
+@router.post("/merchant-health-prediction/")
 async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
 
     # Check if the requesting user is a merchant.
