@@ -159,7 +159,7 @@ def test_login_and_self_delete_like_auth_flow():
 
 
 def test_get_invalid_data():
-    response = client.get(f"/reportData/{-1}")
+    response = client.get(f"/report-data/{-1}")
     assert response.json() == {"detail": "Report data not found"}
 
 
@@ -167,14 +167,14 @@ def test_delete_data():
     db_conn = next(get_db())
     healthData = db_conn.query(HealthData).order_by(
         HealthData.HealthDataID.desc()).first()
-    response = client.delete(f"/reportData/{healthData.HealthDataID}")
+    response = client.delete(f"/report-data/{healthData.HealthDataID}")
     assert response.status_code == 200
     assert response.json() == {
         "message": "Health report data successfully deleted"}
 
 
 def test_delete_non_existing_data():
-    response = client.delete(f"/reportData/{-1}")
+    response = client.delete(f"/report-data/{-1}")
     assert response.status_code == 404
     assert response.json() == {"detail": "Health report not found"}
 

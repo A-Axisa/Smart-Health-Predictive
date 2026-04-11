@@ -91,6 +91,8 @@ class PatientProfileUpdate(BaseModel):
     weight: Optional[float] = None
     height: Optional[float] = None
     date_of_birth: Optional[date] = None
+
+
 class PatientCreationDetails(BaseModel):
     given_names: str
     family_name: str
@@ -153,15 +155,18 @@ async def update_current_user_profile(
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     updated_fields = {}
     if "phone_number" in updates:
-        formatted_phone = format_phone_number(updates.get("phone_number") or "")
+        formatted_phone = format_phone_number(
+            updates.get("phone_number") or "")
         if not is_formatted_phone_valid(formatted_phone):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -193,11 +198,13 @@ async def update_current_patient_profile(
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     patient = get_patient_by_email(user.Email, db_conn)
     if patient is None:
@@ -215,10 +222,12 @@ async def update_current_patient_profile(
 
     updated_fields = {}
     if "given_names" in updates:
-        patient.GivenNames = _validated_name(updates.get("given_names"), "given_names")
+        patient.GivenNames = _validated_name(
+            updates.get("given_names"), "given_names")
         updated_fields["given_names"] = patient.GivenNames
     if "family_name" in updates:
-        patient.FamilyName = _validated_name(updates.get("family_name"), "family_name")
+        patient.FamilyName = _validated_name(
+            updates.get("family_name"), "family_name")
         updated_fields["family_name"] = patient.FamilyName
     if "gender" in updates:
         gender = updates.get("gender")
@@ -230,11 +239,15 @@ async def update_current_patient_profile(
         patient.Gender = gender
         updated_fields["gender"] = patient.Gender
     if "weight" in updates:
-        patient.Weight = _to_nullable_float(updates.get("weight"), "weight", 20.0, 300.0)
-        updated_fields["weight"] = float(patient.Weight) if patient.Weight is not None else None
+        patient.Weight = _to_nullable_float(
+            updates.get("weight"), "weight", 20.0, 300.0)
+        updated_fields["weight"] = float(
+            patient.Weight) if patient.Weight is not None else None
     if "height" in updates:
-        patient.Height = _to_nullable_float(updates.get("height"), "height", 90.0, 250.0)
-        updated_fields["height"] = float(patient.Height) if patient.Height is not None else None
+        patient.Height = _to_nullable_float(
+            updates.get("height"), "height", 90.0, 250.0)
+        updated_fields["height"] = float(
+            patient.Height) if patient.Height is not None else None
     if "date_of_birth" in updates:
         date_of_birth = updates.get("date_of_birth")
         if date_of_birth and date_of_birth > date.today():
@@ -243,7 +256,8 @@ async def update_current_patient_profile(
                 detail="date_of_birth cannot be in the future",
             )
         patient.DateOfBirth = date_of_birth
-        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat() if patient.DateOfBirth else None
+        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat(
+        ) if patient.DateOfBirth else None
 
     db_conn.commit()
     write_audit_log(
@@ -416,7 +430,7 @@ async def get_health_analytics(
 # Report Data
 
 
-@router.get("/reportData/{healthDataId}")
+@router.get("/report-data/{healthDataId}")
 async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
 
     validID = db_conn.query(HealthData).filter_by(
@@ -473,7 +487,7 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     return reportData
 
 
-@router.delete("/reportData/{healthDataId}")
+@router.delete("/report-data/{healthDataId}")
 async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
 
    # Raise exception if health data is not in the DB
@@ -808,6 +822,7 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         recommendations=latest_recommendations,
     )
 
+
 @router.get("/patient-data")
 async def get_patient_data(request: Request, db_conn: Session = Depends(get_db)):
     """
@@ -852,7 +867,8 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
     # Get the patient by ID.
-    patient = (db_conn.query(Patient).filter(Patient.PatientID == patient_id).first())
+    patient = (db_conn.query(Patient).filter(
+        Patient.PatientID == patient_id).first())
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
@@ -866,7 +882,7 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
 
     return result
 
-  
+
 @router.get("/patient-details/{patient_id}", response_model=PatientDetails)
 async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
     # Check if current user is a merchant
@@ -1004,15 +1020,15 @@ def is_weight_valid(weight: float):
 def is_height_valid(height: float):
     '''Verifies height is valid'''
     return 0.0 <= height <= 300.0
-  
+
 
 def get_age(dob):
-  """Calculates an age given a date of birth."""
-  if not dob:
-      return None
+    """Calculates an age given a date of birth."""
+    if not dob:
+        return None
 
-  today = datetime.today()
-  return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    today = datetime.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 
 def get_gender(gender):

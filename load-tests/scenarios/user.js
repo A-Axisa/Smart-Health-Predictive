@@ -64,7 +64,7 @@ export default function () {
   let id = dates.length > 0 ? dates[0].healthDataID : null;
 
   if (id) {
-    let getReportResult = http.get(`${BASE_URL}/reportData/${id}`);
+    let getReportResult = http.get(`${BASE_URL}/report-data/${id}`);
     check(getReportResult, {
       "report status 200": (r) => r.status === 200,
     });
