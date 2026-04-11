@@ -71,3 +71,14 @@ The amount of data generated can be modified at the head of the script.
 1. Open a terminal and navigate to the root directory of the project.
 2. Run the following command to generate data:  
 ```python -m server.tools.generate_dummy_data```
+
+## Running Playwright
+1. If not already installed, run the command:  
+```npx playwright install```
+2. Open a terminal and navigate to the Client directory.
+3. run the command:  
+```npx playwright test```  
+4. Tests will now begin running and the terminal will log the status of completed tests.
+Proceeding this it will open a window in your browser with a more detailed overview. This can also
+be accessed directly on http://localhost:9323/.
+
