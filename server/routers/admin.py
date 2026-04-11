@@ -1,7 +1,11 @@
+from datetime import datetime, date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List
+from pydantic import BaseModel
+
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
 from ..models.dbmodels import (
@@ -21,6 +25,32 @@ from ..models.dbmodels import (
 from ..routers.authentication import get_current_user, get_patient_by_email
 
 router = APIRouter()
+
+
+class AdminDashboard(BaseModel):
+    # User data
+    totalUsers: int
+    totalPatients: int
+    totalMerchants: int
+    newUsersLast30days: int
+    validatedUsers: int
+    invalidatedUsers: int
+    activePatients: int
+    inactivePatients: int
+
+    # Prediction data
+    totalReports: int
+    reportsLastDay: int
+    reportsLast7Days: int
+    reportsLast30Days: int
+    reportActivity: List[dict]
+    averageRiskCVD: int
+    averageRiskDiabetes: int
+    averageRiskStroke: int
+
+    # Log data
+    failedLoginAttemptsLastDay: int
+    loginActivity: List[dict]
 
 
 @router.get("/roles")
@@ -396,3 +426,7 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         "logs": result,
         "total": total_count
     }
+
+@router.get("/admin-dashboard")
+async def get_admin_dashboard(db_conn: Session = Depends(get_db), request: Request):
+    pass
