@@ -513,6 +513,15 @@ class TestHealthPredictionEndpointSanitization:
 
 class TestCSVUploadSanitization:
     """Integration tests for /upload endpoint with sanitization."""
+
+    @pytest.fixture(autouse=True)
+    def ensure_merchant_login(self):
+        """Ensure CSV upload tests always run with merchant auth context."""
+        merchant_credentials = {
+            'email': 'myreputableclinic@example.com',
+            'password': 'thisisavalidpasswordA1!'
+        }
+        client.post("/login/", json=merchant_credentials)
     
     def test_csv_upload_with_case_variations(self):
         """CSV upload handles case variations in categorical fields."""
