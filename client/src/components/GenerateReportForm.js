@@ -273,7 +273,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/healthPrediction`, {
+    await fetch(`${API_BASE}/health-prediction`, {
       method: "POST",
       credentials: "include",
       headers: {

@@ -83,7 +83,7 @@ const GenerateReportForm = () => {
 
   // Retrieve Patient names
   useEffect(() => {
-    fetch(`${API_BASE}/merchants/patient_names`, {
+    fetch(`${API_BASE}/merchants/patient-names`, {
       credentials: "include",
       method: "GET",
       headers: {
@@ -284,7 +284,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/merchantHealthPrediction`, {
+    await fetch(`${API_BASE}/merchant-health-prediction`, {
       method: "POST",
       credentials: "include",
       headers: {

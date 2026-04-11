@@ -135,7 +135,7 @@ const UserSettings = () => {
 
   function handleChangePassword() {
     setPasswordChanged(false);
-    fetch(`${API_BASE}/changePassword`, {
+    fetch(`${API_BASE}/change-password`, {
       method: "POST",
       credentials: "include",
       headers: {
