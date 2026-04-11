@@ -399,8 +399,8 @@ const RegistrationForm = () => {
                 </MenuItem>
                 {/* List of available clinics */}
                 {clinicList.map((clinic) => (
-                  <MenuItem key={clinic.clinic_name} value={clinic.clinic_id}>
-                    {clinic.clinic_name}
+                  <MenuItem key={clinic.clinicName} value={clinic.clinicId}>
+                    {clinic.clinicName}
                   </MenuItem>
                 ))}
               </Select>
