@@ -372,7 +372,7 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
 # Health analytics
 
 
-@router.get("/api/health-analytics", response_model=List[HealthMetric])
+@router.get("//health-analytics", response_model=List[HealthMetric])
 async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Container,
@@ -14,10 +14,10 @@ import {
   useMediaQuery,
   IconButton,
   Collapse,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { LineChart } from '@mui/x-charts/LineChart';
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { LineChart } from "@mui/x-charts/LineChart";
 
 const formatXAxisLabel = (label, index, total, isMobile) => {
   if (!label) {
@@ -31,16 +31,16 @@ const formatXAxisLabel = (label, index, total, isMobile) => {
   // Thin out middle ticks for crowded datasets on smaller screens
   if (total > 4 && index > 0 && index < total - 1) {
     if (total > 6 && index % 2 === 1) {
-      return '';
+      return "";
     }
   }
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
-    const [, month, day] = label.split('-');
+    const [, month, day] = label.split("-");
     return `${month}/${day}`;
   }
 
-  const parts = label.split(' ');
+  const parts = label.split(" ");
   if (parts.length === 2 && parts[1].length === 4) {
     return parts[0];
   }
@@ -50,26 +50,29 @@ const formatXAxisLabel = (label, index, total, isMobile) => {
 
 const HealthAnalytics = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   // data state
   const [healthData, setHealthData] = useState([]);
   const [selectedMetrics, setSelectedMetrics] = useState({
     strokeProbability: true,
     cardioProbability: true,
-    diabetesProbability: true
+    diabetesProbability: true,
   });
   const [showSettings, setShowSettings] = useState(!isMobile);
 
   // fetch data from API
   const fetchData = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/health-analytics`, {
-        // Include credentials to send cookies if any for authentication
-        credentials: 'include', 
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}//health-analytics`,
+        {
+          // Include credentials to send cookies if any for authentication
+          credentials: "include",
+        },
+      );
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       //console.log("Fetched data:", data); // Log fetched data
@@ -90,34 +93,43 @@ const HealthAnalytics = () => {
 
   // handle selection change
   const handleMetricChange = (metric) => {
-    setSelectedMetrics(prev => ({
+    setSelectedMetrics((prev) => ({
       ...prev,
-      [metric]: !prev[metric]
+      [metric]: !prev[metric],
     }));
   };
 
   // Helpers for aggregation and y-axis scaling
-  const colors = [theme.palette.primary.main, '#ff7043', '#42a5f5'];
+  const colors = [theme.palette.primary.main, "#ff7043", "#42a5f5"];
 
-  const cardWrapperSx = useMemo(() => ({
-    mb: 3,
-    borderRadius: 2,
-    boxShadow: isMobile ? 3 : 24,
-    bgcolor: '#ffffff',
-    overflow: 'hidden',
-  }), [isMobile]);
+  const cardWrapperSx = useMemo(
+    () => ({
+      mb: 3,
+      borderRadius: 2,
+      boxShadow: isMobile ? 3 : 24,
+      bgcolor: "#ffffff",
+      overflow: "hidden",
+    }),
+    [isMobile],
+  );
 
-  const cardContentSx = useMemo(() => ({
-    p: isMobile ? 2 : 3,
-  }), [isMobile]);
+  const cardContentSx = useMemo(
+    () => ({
+      p: isMobile ? 2 : 3,
+    }),
+    [isMobile],
+  );
 
-  const chartCardContentSx = useMemo(() => ({
-    p: isMobile ? 1 : 3,
-    pt: isMobile ? 2 : 3,
-    '&:last-child': {
-      pb: isMobile ? 1.5 : 3,
-    }
-  }), [isMobile]);
+  const chartCardContentSx = useMemo(
+    () => ({
+      p: isMobile ? 1 : 3,
+      pt: isMobile ? 2 : 3,
+      "&:last-child": {
+        pb: isMobile ? 1.5 : 3,
+      },
+    }),
+    [isMobile],
+  );
 
   const { xAxisData, chartSeries, yAxisMax } = useMemo(() => {
     if (!healthData || healthData.length === 0) {
@@ -142,7 +154,8 @@ const HealthAnalytics = () => {
     const crossYear = minDate.getFullYear() !== maxDate.getFullYear();
     const diffDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
 
-    const needAggregateMonthly = crossYear || diffDays > 180 || parsed.length > 20;
+    const needAggregateMonthly =
+      crossYear || diffDays > 180 || parsed.length > 20;
 
     let working = [];
     let xLabels = [];
@@ -160,17 +173,31 @@ const HealthAnalytics = () => {
         groups.get(key).items.push(d);
       }
 
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       const aggregated = Array.from(groups.values())
         .sort((a, b) => a.y - b.y || a.m - b.m)
         .map(({ y, m, items }) => {
           const n = items.length || 1;
-          const avg = (arr, key) => arr.reduce((sum, it) => sum + (Number(it[key]) || 0), 0) / n;
+          const avg = (arr, key) =>
+            arr.reduce((sum, it) => sum + (Number(it[key]) || 0), 0) / n;
           return {
             label: `${monthNames[m]} ${y}`,
-            strokeProbability: avg(items, 'strokeProbability'),
-            cardioProbability: avg(items, 'cardioProbability'),
-            diabetesProbability: avg(items, 'diabetesProbability'),
+            strokeProbability: avg(items, "strokeProbability"),
+            cardioProbability: avg(items, "cardioProbability"),
+            diabetesProbability: avg(items, "diabetesProbability"),
           };
         });
 
@@ -180,8 +207,8 @@ const HealthAnalytics = () => {
       // Use precise date points; format label as YYYY-MM-DD
       const formatDate = (dt) => {
         const y = dt.getFullYear();
-        const m = String(dt.getMonth() + 1).padStart(2, '0');
-        const d = String(dt.getDate()).padStart(2, '0');
+        const m = String(dt.getMonth() + 1).padStart(2, "0");
+        const d = String(dt.getDate()).padStart(2, "0");
         return `${y}-${m}-${d}`;
       };
       working = parsed;
@@ -193,21 +220,21 @@ const HealthAnalytics = () => {
     if (selectedMetrics.strokeProbability) {
       series.push({
         data: working.map((w) => Number(w.strokeProbability) || 0),
-        label: 'Stroke Probability (%)',
+        label: "Stroke Probability (%)",
         color: colors[0],
       });
     }
     if (selectedMetrics.cardioProbability) {
       series.push({
         data: working.map((w) => Number(w.cardioProbability) || 0),
-        label: 'Cardio Probability (%)',
+        label: "Cardio Probability (%)",
         color: colors[1],
       });
     }
     if (selectedMetrics.diabetesProbability) {
       series.push({
         data: working.map((w) => Number(w.diabetesProbability) || 0),
-        label: 'Diabetes Probability (%)',
+        label: "Diabetes Probability (%)",
         color: colors[2],
       });
     }
@@ -238,19 +265,40 @@ const HealthAnalytics = () => {
   }, [xAxisData, isMobile]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: isMobile ? 3 : 4, px: isMobile ? 2 : 3, ml: "250px", mt: "66px" }}>
-      <Typography variant={isMobile ? "h5" : "h4"} component="h1" gutterBottom color="primary" sx={{ fontWeight: 600, mb: 3 }}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: isMobile ? 3 : 4,
+        px: isMobile ? 2 : 3,
+        ml: "250px",
+        mt: "66px",
+      }}
+    >
+      <Typography
+        variant={isMobile ? "h5" : "h4"}
+        component="h1"
+        gutterBottom
+        color="primary"
+        sx={{ fontWeight: 600, mb: 3 }}
+      >
         Health Analytics
       </Typography>
 
       <Card sx={cardWrapperSx}>
         <CardContent sx={cardContentSx}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: showSettings ? 2 : 0 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: showSettings ? 2 : 0,
+            }}
+          >
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               Probability Metrics Selection
             </Typography>
             {isMobile && (
-              <IconButton 
+              <IconButton
                 onClick={() => setShowSettings(!showSettings)}
                 size="small"
                 sx={{ ml: 1 }}
@@ -259,64 +307,64 @@ const HealthAnalytics = () => {
               </IconButton>
             )}
           </Box>
-          
+
           <Collapse in={showSettings}>
-            <FormControl component="fieldset" sx={{ width: '100%' }}>
+            <FormControl component="fieldset" sx={{ width: "100%" }}>
               <FormGroup row={!isMobile}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={selectedMetrics.strokeProbability}
-                    onChange={() => handleMetricChange('strokeProbability')}
-                    sx={{ 
-                      color: colors[0],
-                      '&.Mui-checked': { color: colors[0] }
-                    }}
-                  />
-                }
-                label="Stroke Probability"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={selectedMetrics.cardioProbability}
-                    onChange={() => handleMetricChange('cardioProbability')}
-                    sx={{ 
-                      color: colors[1],
-                      '&.Mui-checked': { color: colors[1] }
-                    }}
-                  />
-                }
-                label="Cardio Probability"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={selectedMetrics.diabetesProbability}
-                    onChange={() => handleMetricChange('diabetesProbability')}
-                    sx={{ 
-                      color: colors[2],
-                      '&.Mui-checked': { color: colors[2] }
-                    }}
-                  />
-                }
-                label="Diabetes Probability"
-              />
-            </FormGroup>
-          </FormControl>
-          <Box sx={{ mt: 3 }}>
-            <Button 
-              variant="outlined" 
-              onClick={fetchData}
-              sx={{ 
-                py: { xs: '0.8rem', sm: '0.6rem' }, 
-                fontSize: { xs: '1rem', sm: '0.875rem' },
-                fontWeight: 500,
-              }}
-            >
-              Refresh Data
-            </Button>
-          </Box>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={selectedMetrics.strokeProbability}
+                      onChange={() => handleMetricChange("strokeProbability")}
+                      sx={{
+                        color: colors[0],
+                        "&.Mui-checked": { color: colors[0] },
+                      }}
+                    />
+                  }
+                  label="Stroke Probability"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={selectedMetrics.cardioProbability}
+                      onChange={() => handleMetricChange("cardioProbability")}
+                      sx={{
+                        color: colors[1],
+                        "&.Mui-checked": { color: colors[1] },
+                      }}
+                    />
+                  }
+                  label="Cardio Probability"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={selectedMetrics.diabetesProbability}
+                      onChange={() => handleMetricChange("diabetesProbability")}
+                      sx={{
+                        color: colors[2],
+                        "&.Mui-checked": { color: colors[2] },
+                      }}
+                    />
+                  }
+                  label="Diabetes Probability"
+                />
+              </FormGroup>
+            </FormControl>
+            <Box sx={{ mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={fetchData}
+                sx={{
+                  py: { xs: "0.8rem", sm: "0.6rem" },
+                  fontSize: { xs: "1rem", sm: "0.875rem" },
+                  fontWeight: 500,
+                }}
+              >
+                Refresh Data
+              </Button>
+            </Box>
           </Collapse>
         </CardContent>
       </Card>
@@ -327,39 +375,49 @@ const HealthAnalytics = () => {
             Health Risk Trends Over Time
           </Typography>
           {chartSeries.length > 0 && healthData.length > 0 ? (
-            <Box sx={{ 
-              width: '100%', 
-              height: isMobile ? 350 : 420,
-              overflow: 'visible',
-            }}>
+            <Box
+              sx={{
+                width: "100%",
+                height: isMobile ? 350 : 420,
+                overflow: "visible",
+              }}
+            >
               <LineChart
                 series={chartSeries}
-                xAxis={[{ 
-                  data: xAxisData,
-                  scaleType: 'point',
-                  valueFormatter: xAxisValueFormatter,
-                  tickLabelStyle: {
-                    angle: 0,
-                    textAnchor: 'middle',
-                    fontSize: isMobile ? 9 : 11,
-                    fill: '#666',
-                  }
-                }]}
-                yAxis={[{
-                  label: isMobile ? '' : 'Probability (%)',
-                  min: 0,
-                  max: yAxisMax,
-                  tickLabelStyle: {
-                    fontSize: isMobile ? 10 : 12,
-                    fill: '#666',
-                  }
-                }]}
-                margin={isMobile ? { left: 3, right: 30, top: 55, bottom: 50 } : { left: 70, right: 30, top: 40, bottom: 70 }}
+                xAxis={[
+                  {
+                    data: xAxisData,
+                    scaleType: "point",
+                    valueFormatter: xAxisValueFormatter,
+                    tickLabelStyle: {
+                      angle: 0,
+                      textAnchor: "middle",
+                      fontSize: isMobile ? 9 : 11,
+                      fill: "#666",
+                    },
+                  },
+                ]}
+                yAxis={[
+                  {
+                    label: isMobile ? "" : "Probability (%)",
+                    min: 0,
+                    max: yAxisMax,
+                    tickLabelStyle: {
+                      fontSize: isMobile ? 10 : 12,
+                      fill: "#666",
+                    },
+                  },
+                ]}
+                margin={
+                  isMobile
+                    ? { left: 3, right: 30, top: 55, bottom: 50 }
+                    : { left: 70, right: 30, top: 40, bottom: 70 }
+                }
                 grid={{ vertical: true, horizontal: true }}
                 slotProps={{
                   legend: {
-                    direction: isMobile ? 'column' : 'row',
-                    position: { vertical: 'top', horizontal: 'middle' },
+                    direction: isMobile ? "column" : "row",
+                    position: { vertical: "top", horizontal: "middle" },
                     padding: 0,
                     itemMarkWidth: isMobile ? 12 : 20,
                     itemMarkHeight: 2,
@@ -367,31 +425,33 @@ const HealthAnalytics = () => {
                     itemGap: isMobile ? 6 : 10,
                     labelStyle: {
                       fontSize: isMobile ? 9 : 12,
-                      fill: '#333',
-                    }
-                  }
+                      fill: "#333",
+                    },
+                  },
                 }}
               />
             </Box>
           ) : (
-            <Box 
-              sx={{ 
-                height: 300, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: 'text.secondary',
+            <Box
+              sx={{
+                height: 300,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "text.secondary",
               }}
             >
-              <Typography>Select at least one metric to display the chart</Typography>
+              <Typography>
+                Select at least one metric to display the chart
+              </Typography>
             </Box>
           )}
           <Box
             sx={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              justifyContent: isMobile ? 'stretch' : 'flex-end',
-              alignItems: isMobile ? 'stretch' : 'center',
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: isMobile ? "stretch" : "flex-end",
+              alignItems: isMobile ? "stretch" : "center",
               mt: 3,
               gap: isMobile ? 1.5 : 1,
             }}
@@ -399,10 +459,10 @@ const HealthAnalytics = () => {
             <Button
               variant="outlined"
               href="/ai-health-prediction"
-              sx={{ 
-                width: isMobile ? '100%' : 'auto',
-                py: { xs: '0.8rem', sm: '0.6rem' }, 
-                fontSize: { xs: '1rem', sm: '0.875rem' },
+              sx={{
+                width: isMobile ? "100%" : "auto",
+                py: { xs: "0.8rem", sm: "0.6rem" },
+                fontSize: { xs: "1rem", sm: "0.875rem" },
                 fontWeight: 500,
               }}
             >
@@ -411,10 +471,10 @@ const HealthAnalytics = () => {
             <Button
               variant="contained"
               href="/generate-report"
-              sx={{ 
-                width: isMobile ? '100%' : 'auto',
-                py: { xs: '0.8rem', sm: '0.6rem' }, 
-                fontSize: { xs: '1rem', sm: '0.875rem' },
+              sx={{
+                width: isMobile ? "100%" : "auto",
+                py: { xs: "0.8rem", sm: "0.6rem" },
+                fontSize: { xs: "1rem", sm: "0.875rem" },
                 fontWeight: 500,
               }}
             >
