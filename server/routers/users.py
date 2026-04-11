@@ -38,6 +38,7 @@ class HealthMetric(BaseModel):
 
 
 class Report(BaseModel):
+    patientName: Optional[str] = None
     age: int
     weight: float
     height: float
@@ -432,8 +433,15 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     recommendationData = db_conn.query(Recommendation).filter(getattr(
         Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
 
+    patientData = db_conn.query(Patient).filter(Patient.PatientID == healthData.PatientID).first()
+    if patientData:
+        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip() or None
+    else:
+        patient_name = None
+
     # Create health report data to return
     reportData = Report(
+        patientName=patient_name,
         age=int(getattr(healthData, 'Age', 0) or 0),
         weight=float(getattr(healthData, 'WeightKilograms', 0) or 0),
         height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
