@@ -578,7 +578,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
     return result
 
 
-@router.get("/getHealthDataDates/")
+@router.get("/get-health-data-dates/")
 async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)

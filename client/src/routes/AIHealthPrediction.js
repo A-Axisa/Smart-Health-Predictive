@@ -27,7 +27,7 @@ const AIHealthPrediction = ({}) => {
   }
 
   function fetchReportDates() {
-    fetch(`${API_BASE}/getHealthDataDates`, {
+    fetch(`${API_BASE}/get-health-data-dates`, {
       method: "GET",
       credentials: "include",
     })

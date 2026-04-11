@@ -53,7 +53,7 @@ export default function () {
   sleep(1);
 
   // Test health data dates retrieval.
-  let getDatesResult = http.get(`${BASE_URL}/getHealthDataDates`);
+  let getDatesResult = http.get(`${BASE_URL}/get-health-data-dates`);
   check(getDatesResult, {
     "date status 200": (r) => r.status === 200,
   });
