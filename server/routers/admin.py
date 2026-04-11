@@ -25,6 +25,7 @@ router = APIRouter()
 
 @router.get("/roles")
 async def get_roles(db_conn: Session = Depends(get_db)):
+    """Return all roles"""
 
     roles = db_conn.query(AccountRole).all()
 
@@ -40,6 +41,7 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
 @router.get("/users")
 async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn: Session = Depends(get_db)):
+    """Return all user accounts"""
 
     if skip < 0:
         raise HTTPException(
@@ -69,7 +71,8 @@ async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn
             )
 
     total_count = query.count()
-    users = query.order_by(UserAccount.CreatedAt.desc()).offset(skip).limit(limit).all()
+    users = query.order_by(UserAccount.CreatedAt.desc()
+                           ).offset(skip).limit(limit).all()
 
     result = []
     for user, role, patient, clinic in users:
@@ -106,7 +109,7 @@ async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn
 @router.patch("/users/{user_email}/roles/{role_id}")
 async def update_user_role(user_email: str, role_id: int, request: Request,
                            db_conn: Session = Depends(get_db)):
-
+    """Update a user's role"""
     # Check if both the user and role exist.
     user = db_conn.query(UserAccount).filter(
         UserAccount.Email == user_email).first()
@@ -133,7 +136,7 @@ async def update_user_role(user_email: str, role_id: int, request: Request,
     db_conn.commit()
 
     actor_email = None
-    try: # After resolving the authentication issue for this endpoint, this exception handling should be removed
+    try:  # After resolving the authentication issue for this endpoint, this exception handling should be removed
         actor_email = get_current_user(request, db_conn).get('email')
     except Exception:
         pass
@@ -223,6 +226,7 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
 @router.delete("/users/{user_email}")
 async def delete_user_by_admin(user_email: str, request: Request, db_conn: Session = Depends(get_db)):
+    """Delete a user account """
     # Get the current user making the request
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -279,7 +283,7 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
 @router.get("/users/merchants/")
 async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
-
+    """Return all merchant accounts that are not validated"""
     # Query all invalid merchant accounts.
     invalid_merchant_accounts = db_conn.query(UserAccount) \
         .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
@@ -306,7 +310,7 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
 @router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-
+    """Validate a merchant user account"""
     # Check if requesting user is Admin.
     current_user = get_current_user(request, db_conn)
     current_user_email = current_user.get('email')
@@ -350,6 +354,7 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
 @router.get("/logs")
 async def get_logs(request: Request, user_email: str = None, event_type: str = None, skip: int = 0, limit: int = 100, db_conn: Session = Depends(get_db)):
+    """Return logs to an admin user"""
     # Authenticate and authorize admin
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -376,7 +381,8 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         query = query.filter(AuditLog.EventType == event_type)
 
     total_count = query.count()
-    logs = query.order_by(AuditLog.CreatedAt.desc()).offset(skip).limit(limit).all()
+    logs = query.order_by(AuditLog.CreatedAt.desc()
+                          ).offset(skip).limit(limit).all()
 
     result = []
 

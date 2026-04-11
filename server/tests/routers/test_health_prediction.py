@@ -250,7 +250,7 @@ def test_csv_upload_writes_data_import_audit_log():
 
 class TestSanitizeHealthData:
     """Test suite for sanitize_health_data function."""
-    
+
     def test_sanitize_whitespace_in_gender(self):
         """Gender field with leading/trailing spaces."""
         data = HealthDataInput(
@@ -263,7 +263,7 @@ class TestSanitizeHealthData:
         result = sanitize_health_data(data)
         assert result is not None
         assert result["gender"] == "Male"
-    
+
     def test_sanitize_case_insensitive_gender(self):
         """Gender field case-insensitive."""
         data = HealthDataInput(
@@ -276,7 +276,7 @@ class TestSanitizeHealthData:
         result = sanitize_health_data(data)
         assert result is not None
         assert result["gender"] == "Female"
-    
+
     def test_sanitize_case_insensitive_smoker(self):
         """Smoker field case-insensitive."""
         data = HealthDataInput(
@@ -289,7 +289,7 @@ class TestSanitizeHealthData:
         result = sanitize_health_data(data)
         assert result is not None
         assert result["smoker"] == "No"
-    
+
     def test_sanitize_former_smoker_with_spaces(self):
         """Former smoker with leading/trailing spaces and mixed case."""
         data = HealthDataInput(
@@ -302,7 +302,7 @@ class TestSanitizeHealthData:
         result = sanitize_health_data(data)
         assert result is not None
         assert result["smoker"] == "Former smoker"
-    
+
     def test_sanitize_decimal_precision_clamping(self):
         """Blood glucose clamped to 2 decimal places."""
         data = HealthDataInput(
@@ -319,7 +319,7 @@ class TestSanitizeHealthData:
         assert result["height"] == 170.68
         assert result["ap_hi"] == 120.12
         assert result["ap_lo"] == 81.0
-    
+
     def test_sanitize_invalid_gender_returns_none(self):
         """Invalid gender value returns None in sanitized dict."""
         data = HealthDataInput(
@@ -332,7 +332,7 @@ class TestSanitizeHealthData:
         result = sanitize_health_data(data)
         assert result is not None
         assert result["gender"] is None
-    
+
     def test_sanitize_case_insensitive_marital_status(self):
         """Marital status case-insensitive."""
         data = HealthDataInput(
@@ -349,7 +349,7 @@ class TestSanitizeHealthData:
 
 class TestValidateSanitizedData:
     """Test suite for validate_sanitized_data function."""
-    
+
     def test_validate_valid_sanitized_data(self):
         """Validate correctly sanitized data."""
         sanitized = {
@@ -372,7 +372,7 @@ class TestValidateSanitizedData:
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is True
-    
+
     def test_validate_rejects_none_gender(self):
         """Validation fails when gender is None."""
         sanitized = {
@@ -395,7 +395,7 @@ class TestValidateSanitizedData:
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
-    
+
     def test_validate_rejects_none_smoker(self):
         """Validation fails when smoker is None."""
         sanitized = {
@@ -418,7 +418,7 @@ class TestValidateSanitizedData:
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
-    
+
     def test_validate_rejects_out_of_range_age(self):
         """Validation fails for age out of range."""
         sanitized = {
@@ -441,20 +441,21 @@ class TestValidateSanitizedData:
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
-    
+
     def test_validate_rejects_none_dict(self):
         """Validation fails for None dictionary."""
         assert validate_sanitized_data(None) is False
 
 
 class TestHealthPredictionEndpointSanitization:
-    """Integration tests for /healthPrediction/ endpoint with sanitization."""
-    
+    """Integration tests for /health-prediction/ endpoint with sanitization."""
+
     def test_healthprediction_with_lowercase_gender(self):
         """User health prediction endpoint accepts lowercase gender."""
-        login_payload = {'email': 'user1@example.com', 'password': 'thisisalongpassword4$R'}
+        login_payload = {'email': 'user1@example.com',
+                         'password': 'thisisalongpassword4$R'}
         client.post("/login/", json=login_payload)
-        
+
         health_data = {
             "age": 30,
             "weight": 75.0,
@@ -473,19 +474,20 @@ class TestHealthPredictionEndpointSanitization:
             "working_status": "Private",
             "stroke": 0
         }
-        
-        response = client.post("/healthPrediction/", json=health_data)
+
+        response = client.post("/health-prediction/", json=health_data)
         assert response.status_code == status.HTTP_200_OK
         body = response.json()
         assert "cardioProbability" in body
         assert "strokeProbability" in body
         assert "diabetesProbability" in body
-    
+
     def test_healthprediction_with_whitespace_smoker(self):
         """User health prediction endpoint accepts smoker with leading/trailing spaces."""
-        login_payload = {'email': 'user1@example.com', 'password': 'thisisalongpassword4$R'}
+        login_payload = {'email': 'user1@example.com',
+                         'password': 'thisisalongpassword4$R'}
         client.post("/login/", json=login_payload)
-        
+
         health_data = {
             "age": 30,
             "weight": 75.0,
@@ -504,8 +506,8 @@ class TestHealthPredictionEndpointSanitization:
             "working_status": "Private",
             "stroke": 0
         }
-        
-        response = client.post("/healthPrediction/", json=health_data)
+
+        response = client.post("/health-prediction/", json=health_data)
         assert response.status_code == status.HTTP_200_OK
         body = response.json()
         assert "cardioProbability" in body
@@ -522,31 +524,31 @@ class TestCSVUploadSanitization:
             'password': 'thisisavalidpasswordA1!'
         }
         client.post("/login/", json=merchant_credentials)
-    
+
     def test_csv_upload_with_case_variations(self):
         """CSV upload handles case variations in categorical fields."""
         csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
 User,3,user1@example.com,0412345678,31,50,170,male,4.5,135,120,1,1,0,1,0,no,single,private,1"""
-        
+
         pre_count = count_health_data()
         response = upload_csv(csv_data)
         post_count = count_health_data()
         body = response.json()
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert body["processed"] == 1
         assert post_count == pre_count + 1
-    
+
     def test_csv_upload_with_invalid_gender_skipped(self):
         """CSV upload skips rows with invalid gender after attempted sanitization."""
         csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
 User,4,user1@example.com,0412345678,31,50,170,InvalidGender,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1"""
-        
+
         pre_count = count_health_data()
         response = upload_csv(csv_data)
         post_count = count_health_data()
         body = response.json()
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert body["skipped"] == 1
         assert post_count == pre_count

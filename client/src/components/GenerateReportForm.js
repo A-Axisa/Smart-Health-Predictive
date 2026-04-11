@@ -78,18 +78,19 @@ const GenerateReportForm = () => {
     async function fetchPatientData() {
       try {
         const response = await fetch(`${API_BASE}/patient-data`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-        if (!response.ok) {throw new Error(response.status);}
+          method: "GET",
+          credentials: "include",
+        });
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
         const data = await response.json();
 
         setWeight({ isValid: true, value: data.weight });
         setHeight({ isValid: true, value: data.height });
         setGender(data.gender);
         setAge({ isValid: true, value: data.age });
-      }
-      catch(err) {
+      } catch (err) {
         console.log("Failed to fetch patient data.");
       }
     }
@@ -272,7 +273,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/healthPrediction`, {
+    await fetch(`${API_BASE}/health-prediction`, {
       method: "POST",
       credentials: "include",
       headers: {

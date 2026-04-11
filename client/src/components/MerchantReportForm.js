@@ -83,7 +83,7 @@ const GenerateReportForm = () => {
 
   // Retrieve Patient names
   useEffect(() => {
-    fetch(`${API_BASE}/merchants/patient_names`, {
+    fetch(`${API_BASE}/merchants/patient-names`, {
       credentials: "include",
       method: "GET",
       headers: {
@@ -107,19 +107,23 @@ const GenerateReportForm = () => {
       if (!selectedPatient) return;
 
       try {
-        const response = await fetch(`${API_BASE}/merchant/patient-data/${selectedPatient}`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-        if (!response.ok) {throw new Error(response.status);}
+        const response = await fetch(
+          `${API_BASE}/merchant/patient-data/${selectedPatient}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
         const data = await response.json();
 
         setWeight({ isValid: true, value: data.weight });
         setHeight({ isValid: true, value: data.height });
         setGender(data.gender);
         setAge({ isValid: true, value: data.age });
-      }
-      catch(err) {
+      } catch (err) {
         console.log("Failed to fetch patient data.");
       }
     }
@@ -280,7 +284,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/merchantHealthPrediction`, {
+    await fetch(`${API_BASE}/merchant-health-prediction`, {
       method: "POST",
       credentials: "include",
       headers: {
