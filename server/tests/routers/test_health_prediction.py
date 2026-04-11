@@ -256,7 +256,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender=" Male ",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="Yes", marital_status="Married", working_status="Private", stroke=0
         )
@@ -269,7 +269,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender="female",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="Yes", marital_status="Married", working_status="Private", stroke=0
         )
@@ -282,7 +282,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="NO", marital_status="Married", working_status="Private", stroke=0
         )
@@ -295,7 +295,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="  FORMER SMOKER  ", marital_status="Married", working_status="Private", stroke=0
         )
@@ -308,7 +308,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.12345, height=170.6789, gender="Male",
             blood_glucose=5.6789, ap_hi=120.123, ap_lo=80.999,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="Yes", marital_status="Married", working_status="Private", stroke=0
         )
@@ -325,7 +325,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender="InvalidGender",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="Yes", marital_status="Married", working_status="Private", stroke=0
         )
@@ -338,7 +338,7 @@ class TestSanitizeHealthData:
         data = HealthDataInput(
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
-            high_cholesterol=0, hyper_tension=0, heart_disease=0,
+            high_cholesterol=0, hypertension=0, heart_disease=0,
             diabetes=0, alcohol=0,
             smoker="Yes", marital_status="  MARRIED  ", working_status="Private", stroke=0
         )
@@ -361,7 +361,7 @@ class TestValidateSanitizedData:
             "ap_hi": 120.0,
             "ap_lo": 80.0,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,
@@ -384,7 +384,7 @@ class TestValidateSanitizedData:
             "ap_hi": 120.0,
             "ap_lo": 80.0,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,
@@ -407,7 +407,7 @@ class TestValidateSanitizedData:
             "ap_hi": 120.0,
             "ap_lo": 80.0,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,
@@ -430,7 +430,7 @@ class TestValidateSanitizedData:
             "ap_hi": 120.0,
             "ap_lo": 80.0,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,
@@ -465,7 +465,7 @@ class TestHealthPredictionEndpointSanitization:
             "ap_hi": 120,
             "ap_lo": 80,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,
@@ -497,7 +497,7 @@ class TestHealthPredictionEndpointSanitization:
             "ap_hi": 120,
             "ap_lo": 80,
             "high_cholesterol": 0,
-            "hyper_tension": 0,
+            "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
             "alcohol": 0,

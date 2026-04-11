@@ -484,7 +484,7 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
         marital_status=int(getattr(healthData, 'MaritalStatus', 0) or 0),
         working_status=int(getattr(healthData, 'WorkingStatus', 0) or 0),
         stroke_chance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
-        CVD_chance=float(getattr(predictionData, 'CVD_chance', 0) or 0),
+        CVD_chance=float(getattr(predictionData, 'CVDChance', 0) or 0),
         diabetes_chance=float(
             getattr(predictionData, 'DiabetesChance', 0) or 0),
         exercise_recommendation=getattr(

@@ -62,7 +62,7 @@ const MerchantReports = ({}) => {
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
-    fetch(`${API_BASE}/report-data/${selectedDate.healthDataID}`, {
+    fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ const MerchantReports = ({}) => {
   async function deleteReport() {
     if (!selectedDate) return;
     try {
-      fetch(`${API_BASE}/report-data/${selectedDate.healthDataID}`, {
+      fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -45,14 +45,14 @@ const AIHealthPrediction = ({}) => {
   }
 
   // Fetch the users health data ID and Dates
-  React.useEffect(() => {
+  useEffect(() => {
     fetchReportDates();
   }, []);
 
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
-    fetch(`${API_BASE}/report-data/${selectedDate.healthDataID}`, {
+    fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -67,7 +67,7 @@ const AIHealthPrediction = ({}) => {
   async function deleteReport() {
     if (!selectedDate) return;
     try {
-      fetch(`${API_BASE}/report-data/${selectedDate.healthDataID}`, {
+      fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

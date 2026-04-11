@@ -88,7 +88,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
 
     # Sanitize and normalize health data
     sanitized_data = sanitize_health_data(data)
-    
+
     # Check if sanitized data is valid
     if not validate_sanitized_data(sanitized_data):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -111,8 +111,10 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
     patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
     healthData = HealthData(patient_id, sanitized_data["age"], sanitized_data["weight"], sanitized_data["height"], gender_map[sanitized_data["gender"]],
-                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data["ap_lo"], sanitized_data["high_cholesterol"],
-                            sanitized_data["hypertension"], sanitized_data["heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
+                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data[
+                                "ap_lo"], sanitized_data["high_cholesterol"],
+                            sanitized_data["hypertension"], sanitized_data[
+                                "heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
                             smoker_map[sanitized_data["smoker"]],  marital_map[sanitized_data["marital_status"]], working_map[sanitized_data["working_status"]], sanitized_data["stroke"])
 
     # Store health data into the database
@@ -363,7 +365,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
     # Sanitize and normalize health data
     sanitized_data = sanitize_health_data(data)
-    
+
     # Check if sanitized data is valid
     if not validate_sanitized_data(sanitized_data):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -398,8 +400,10 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
     healthData = HealthData(patient.PatientID, sanitized_data["age"], sanitized_data["weight"], sanitized_data["height"], gender_map[sanitized_data["gender"]],
-                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data["ap_lo"], sanitized_data["high_cholesterol"],
-                            sanitized_data["hypertension"], sanitized_data["heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
+                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data[
+                                "ap_lo"], sanitized_data["high_cholesterol"],
+                            sanitized_data["hypertension"], sanitized_data[
+                                "heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
                             smoker_map[sanitized_data["smoker"]],  marital_map[sanitized_data["marital_status"]], working_map[sanitized_data["working_status"]], sanitized_data["stroke"])
     # Store health data into the database
     db_conn.add(healthData)
@@ -594,26 +598,28 @@ def sanitize_health_data(data: HealthDataInput):
         """Helper: case-insensitive lookup with fallback to None."""
         if not isinstance(value, str):
             return None
-        
+
         stripped = value.strip()
         # Try exact match first
         if stripped in mapping:
             return stripped
-        
+
         # Try case-insensitive match
         for key in mapping.keys():
             if key.lower() == stripped.lower():
                 return key
-        
+
         # No match found
         return None
-    
+
     # Normalize categorical fields
     gender = normalize_categorical(data.gender, gender_map, "gender")
     smoker = normalize_categorical(data.smoker, smoker_map, "smoker")
-    marital_status = normalize_categorical(data.marital_status, marital_map, "marital_status")
-    working_status = normalize_categorical(data.working_status, working_map, "working_status")
-    
+    marital_status = normalize_categorical(
+        data.marital_status, marital_map, "marital_status")
+    working_status = normalize_categorical(
+        data.working_status, working_map, "working_status")
+
     # Sanitize numeric fields (clamp to 2 decimal places)
     try:
         weight = round(float(data.weight), 2)
@@ -624,7 +630,7 @@ def sanitize_health_data(data: HealthDataInput):
     except (ValueError, TypeError):
         # If conversion fails, return None to indicate invalid data
         return None
-    
+
     return {
         "age": data.age,
         "weight": weight,
@@ -634,7 +640,7 @@ def sanitize_health_data(data: HealthDataInput):
         "ap_hi": ap_hi,
         "ap_lo": ap_lo,
         "high_cholesterol": data.high_cholesterol,
-        "hyper_tension": data.hyper_tension,
+        "hypertension": data.hypertension,
         "heart_disease": data.heart_disease,
         "diabetes": data.diabetes,
         "alcohol": data.alcohol,
@@ -653,7 +659,7 @@ def validate_sanitized_data(sanitized_data: dict):
     """
     if sanitized_data is None:
         return False
-    
+
     if (
             not is_age_valid(sanitized_data.get("age")) or
             not is_weight_valid(sanitized_data.get("weight")) or
@@ -663,7 +669,7 @@ def validate_sanitized_data(sanitized_data: dict):
             not is_ap_hi_valid(sanitized_data.get("ap_hi")) or
             not is_ap_lo_valid(sanitized_data.get("ap_lo")) or
             not is_high_cholesterol_valid(sanitized_data.get("high_cholesterol")) or
-            not is_hyper_tension_valid(sanitized_data.get("hyper_tension")) or
+            not is_hyper_tension_valid(sanitized_data.get("hypertension")) or
             not is_heart_disease_valid(sanitized_data.get("heart_disease")) or
             not is_diabetes_valid(sanitized_data.get("diabetes")) or
             not is_alcohol_valid(sanitized_data.get("alcohol")) or
@@ -672,7 +678,7 @@ def validate_sanitized_data(sanitized_data: dict):
             sanitized_data.get("working_status") is None or sanitized_data.get("working_status") not in working_map or
             not is_stroke_valid(sanitized_data.get("stroke"))):
         return False
-    
+
     return True
 
 
