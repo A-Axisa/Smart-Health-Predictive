@@ -1,27 +1,30 @@
-import http from 'k6/http';
-import { check, sleep } from 'k6';
+import http from "k6/http";
+import { check, sleep } from "k6";
 
-
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = "http://localhost:8000";
 
 export default function () {
   // Test login.
-  let loginResult = http.post(`${BASE_URL}/login`,
+  let loginResult = http.post(
+    `${BASE_URL}/login`,
     JSON.stringify({
-      email: 'audrey.young@example.com',
-      password: 'whyaretherebirds',
-  }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+      email: "audrey.young@example.com",
+      password: "whyaretherebirds",
+    }),
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
   check(loginResult, {
-    'login status 200': r => r.status === 200
+    "login status 200": (r) => r.status === 200,
   });
 
   if (loginResult.status !== 200) return;
   sleep(1);
 
   // Test health upload.
-  let uploadReportResult = http.post(`${BASE_URL}/healthPrediction/`,
+  let uploadReportResult = http.post(
+    `${BASE_URL}/health-prediction/`,
     JSON.stringify({
       age: 24,
       weight: 81,
@@ -38,21 +41,23 @@ export default function () {
       smoker: "No",
       marital_status: "Single",
       working_status: "Working",
-      stroke: 0
-  }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+      stroke: 0,
+    }),
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
   check(uploadReportResult, {
-    'prediction status 200': r => r.status === 200
+    "prediction status 200": (r) => r.status === 200,
   });
   sleep(1);
 
   // Test health data dates retrieval.
   let getDatesResult = http.get(`${BASE_URL}/getHealthDataDates`);
   check(getDatesResult, {
-    'date status 200': (r) => r.status === 200
-  })
-  sleep(1)
+    "date status 200": (r) => r.status === 200,
+  });
+  sleep(1);
 
   // Test report retrieval.
   let dates = JSON.parse(getDatesResult.body);
@@ -61,7 +66,7 @@ export default function () {
   if (id) {
     let getReportResult = http.get(`${BASE_URL}/reportData/${id}`);
     check(getReportResult, {
-      'report status 200': (r) => r.status === 200
+      "report status 200": (r) => r.status === 200,
     });
     sleep(1);
   }
@@ -69,15 +74,15 @@ export default function () {
   // Test health analytics retrieval.
   let getAnalyticsResult = http.get(`${BASE_URL}/api/health-analytics`);
   check(getAnalyticsResult, {
-    'analytics status 200': (r) => r.status === 200
+    "analytics status 200": (r) => r.status === 200,
   });
   sleep(1);
 
   // Test logout.
   let logoutResult = http.post(`${BASE_URL}/logout`, null, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
   check(logoutResult, {
-    'logout status 200': r => r.status === 200
+    "logout status 200": (r) => r.status === 200,
   });
 }

@@ -81,7 +81,7 @@ def build_model_input_df(model, values):
     return pd.DataFrame([values])
 
 
-@router.post("/healthPrediction/")
+@router.post("/health-prediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
                   csv_patient_id: Optional[int] = None):
 
