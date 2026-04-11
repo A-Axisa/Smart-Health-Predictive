@@ -98,7 +98,7 @@ password_hasher = PasswordHash((owasp_argon2_hasher,))
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails,
                    db_conn: Session = Depends(get_db)):
-    '''Register a new account for the user provided the details are valid.'''
+    """Register a new account for the user provided the details are valid."""
 
     formatted_phone = format_phone_number(user_reg.phone)
 
@@ -127,7 +127,7 @@ async def register(user_reg: UserRegistrationDetails,
         password_hash=password_hash,
         phone_number=formatted_phone
     )
-    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == 'user':
+    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == "user":
         new_user.IsValidated = True
 
     # Only add the user to the database of they don't exist.
@@ -206,6 +206,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Invalid or expired validation token."
     )
+    """Validates a user's account"""
 
     # Find the token in the database
     validation_token_entry = db_conn.query(
@@ -264,7 +265,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials,
                 db_conn: Session = Depends(get_db)):
-    '''Authenticates a user with the credentials and provides an access token.'''
+    """Authenticates a user with the credentials and provides an access token."""
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -320,7 +321,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
 
 def authenticate_user(email: str, password: str, db_conn: Session):
-    '''Authenticates a user from the provided email and password.'''
+    """Authenticates a user from the provided email and password."""
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
@@ -334,12 +335,12 @@ def authenticate_user(email: str, password: str, db_conn: Session):
 
 
 def verify_password(password_text: str, password_hash: str) -> bool:
-    '''Verifies a given password matches with a password hash.'''
+    """Verifies a given password matches with a password hash."""
     return password_hasher.verify(password_text, password_hash)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    '''Returns JWT containing the access token with the given data.'''
+    """Returns JWT containing the access token with the given data."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -352,12 +353,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 @router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
-    '''Endpoint for retrieving the currently active user on a device.'''
+    """Endpoint for retrieving the currently active user on a device."""
     return get_current_user(request, db_conn)
 
 
 def get_current_user(request: Request, db_conn: Session):
-    '''Returns user information from the http-only cookie on their device.'''
+    """Returns user information from the http-only cookie on their device."""
 
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
@@ -415,12 +416,12 @@ def get_current_user(request: Request, db_conn: Session):
 
 
 def get_user(email: str, db_conn: Session):
-    '''Returns user account details from the database using an email.'''
+    """Returns user account details from the database using an email."""
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
 
 def get_patient_by_email(email: str, db_conn: Session):
-    '''Returns patient details from the database using an email.'''
+    """Returns patient details from the database using an email."""
     patient = (
         db_conn.query(Patient)
         .join(UserAccount, Patient.UserID == UserAccount.UserID)
@@ -431,7 +432,7 @@ def get_patient_by_email(email: str, db_conn: Session):
 
 
 def get_user_role(email: str, db_conn: Session):
-    '''Returns the role for a given a user by email.'''
+    """Returns the role for a given a user by email."""
     user_role = (db_conn.query(AccountRole.RoleName)
                  .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
                  .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
@@ -442,7 +443,7 @@ def get_user_role(email: str, db_conn: Session):
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
-    '''Deletes the user cookie and invalidates their access token.'''
+    """Deletes the user cookie and invalidates their access token."""
     user = get_current_user(request, db_conn)
     invalidate_access_token(user['email'], db_conn)
 
@@ -455,14 +456,14 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
 
 
 def invalidate_access_token(email: str, db_conn: Session):
-    '''Increase the user's token version number.'''
+    """Increase the user's token version number."""
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     user.TokenVersion += 1
     db_conn.commit()
 
 
 def is_password_valid(password: str):
-    '''Verifies the password follows policy rules.'''
+    """Verifies the password follows policy rules."""
 
     contains_lower = any(c.islower() for c in password)
     contains_upper = any(c.isupper() for c in password)
@@ -479,7 +480,7 @@ def is_password_valid(password: str):
 
 
 def is_email_valid(email: str):
-    '''Verifies a password follow the pattern xxx@xxx.xxx.'''
+    """Verifies a password follow the pattern xxx@xxx.xxx."""
     if not email:
         return False
     try:
@@ -490,13 +491,13 @@ def is_email_valid(email: str):
 
 
 def format_phone_number(phone: str):
-    '''Removes everything but digits from a given phone number.'''
+    """Removes everything but digits from a given phone number."""
     return ''.join(c for c in phone if c.isdigit())
 
 
 def is_formatted_phone_valid(phone: str):
-    '''Verifies a phone number only containing digits a valid number
-       or is empty.'''
+    """Verifies a phone number only containing digits a valid number
+       or is empty."""
     if phone == '':
         return True
 
@@ -511,22 +512,22 @@ def is_formatted_phone_valid(phone: str):
 
 
 def is_name_valid(name: str):
-    '''Verifies a name is valid.'''
+    """Verifies a name is valid."""
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
 
 def is_role_valid(role: str):
-    '''Verifies the role is valid for registration.'''
+    """Verifies the role is valid for registration."""
     return role in ACCOUNT_TYPE.keys()
 
 
 def is_gender_valid(gender: str):
-    '''Verifies gender is valid'''
+    """Verifies gender is valid"""
     return gender in gender_map
 
 
 def is_age_valid(date_of_birth: date):
-    '''Verifies age is valid and the user is at least 18'''
+    """Verifies age is valid and the user is at least 18"""
     today = date.today()
     year_diff = today.year - date_of_birth.year
 
@@ -540,6 +541,8 @@ def is_age_valid(date_of_birth: date):
 
 @router.post('/change-password')
 def change_password_current_user(password_details: ChangePasswordDetails, request: Request, db_conn: Session = Depends(get_db)):
+    """Change a user's password"""
+
     # Retrieve current user data
     user_email = get_current_user(request, db_conn)
     user = get_user(user_email["email"], db_conn)
@@ -573,7 +576,7 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
 
 @router.post('/forgot-password')
 def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
-    '''Generates a reset password token for a given email.'''
+    """Generates a reset password token for a given email."""
     is_success = False
 
     sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
@@ -625,7 +628,7 @@ async def password_reset(
     request: Request,
     db_conn: Session = Depends(get_db)
 ):
-    '''Updates a user's password if the token is valid and password are valid.'''
+    """Updates a user's password if the token is valid and password are valid."""
     is_successful = False
     user = None
 

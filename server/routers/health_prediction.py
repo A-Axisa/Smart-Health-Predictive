@@ -84,7 +84,7 @@ def build_model_input_df(model, values):
 @router.post("/health-prediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
                   csv_patient_id: Optional[int] = None):
-
+    """Generate a health prediction based on provided health information"""
     # Check if user input is valid
     if validate_all_input(data) == False:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -233,7 +233,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
 @router.post("/upload")
 async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
                      db_conn: Session = Depends(get_db)):
-
+    """Upload a csv file and generate multiple health predictions"""
     # Check if the uploaded file is correct format.
     if not uploaded_file.filename.lower().endswith('.csv'):
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -327,7 +327,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
 
 @router.post("/merchant-health-prediction/")
 async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_conn: Session = Depends(get_db)):
-
+    """Allow a merchant to generate a health prediction for a patient"""
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
     current_user_email = current_user.get('email')

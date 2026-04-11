@@ -435,7 +435,7 @@ async def get_health_analytics(
 
 @router.get("/report-data/{healthDataId}")
 async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
-
+    """Return data for a report"""
     validID = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not validID:
