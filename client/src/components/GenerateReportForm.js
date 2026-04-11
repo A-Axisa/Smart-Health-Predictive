@@ -78,18 +78,19 @@ const GenerateReportForm = () => {
     async function fetchPatientData() {
       try {
         const response = await fetch(`${API_BASE}/patient-data`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-        if (!response.ok) {throw new Error(response.status);}
+          method: "GET",
+          credentials: "include",
+        });
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
         const data = await response.json();
 
         setWeight({ isValid: true, value: data.weight });
         setHeight({ isValid: true, value: data.height });
         setGender(data.gender);
         setAge({ isValid: true, value: data.age });
-      }
-      catch(err) {
+      } catch (err) {
         console.log("Failed to fetch patient data.");
       }
     }
@@ -257,7 +258,7 @@ const GenerateReportForm = () => {
       return;
     }
     // Get condition values for fetch request
-    const hyperTension = condition.includes("Hyper Tension") ? 1 : 0;
+    const hypertension = condition.includes("Hyper Tension") ? 1 : 0;
     const heartDisease = condition.includes("Heart Disease") ? 1 : 0;
     const diabetes = condition.includes("Diabetes") ? 1 : 0;
     const highCholesterol = condition.includes("High Cholesterol") ? 1 : 0;
@@ -283,17 +284,17 @@ const GenerateReportForm = () => {
         weight: weight.value,
         height: height.value,
         gender: gender,
-        blood_glucose: bloodGlucose.value,
-        ap_hi: apHigh.value,
-        ap_lo: apLow.value,
-        high_cholesterol: highCholesterol,
-        hyper_tension: hyperTension,
-        heart_disease: heartDisease,
+        bloodGlucose: bloodGlucose.value,
+        apHi: apHigh.value,
+        apLo: apLow.value,
+        highCholesterol: highCholesterol,
+        hypertension: hypertension,
+        heartDisease: heartDisease,
         diabetes: diabetes,
         alcohol: alcohol,
         smoker: smoker,
-        marital_status: maritalStatus,
-        working_status: workingStatus,
+        maritalStatus: maritalStatus,
+        workingStatus: workingStatus,
         stroke: stroke,
       }),
     })
@@ -307,7 +308,7 @@ const GenerateReportForm = () => {
         navigate("/ai-health-prediction"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log(error);
+        console.log("AN error has occurred");
       });
   }
 

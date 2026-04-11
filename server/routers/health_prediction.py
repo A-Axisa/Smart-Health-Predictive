@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile
 from typing import Optional
 from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 import joblib
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -16,7 +17,7 @@ from ..utils.audit_log import write_audit_log
 # HealthData
 
 
-class HealthDataInput(BaseModel):
+class HealthDataInput(CamelModel):
     age: int
     weight: float           # kg
     height: float           # cm
@@ -25,7 +26,7 @@ class HealthDataInput(BaseModel):
     ap_hi: float            # Systolic Blood Pressure (mmHg)
     ap_lo: float            # Diastolic Blood Pressure (mmHg)
     high_cholesterol: int
-    hyper_tension: int
+    hypertension: int
     heart_disease: int
     diabetes: int
     alcohol: int
@@ -35,7 +36,7 @@ class HealthDataInput(BaseModel):
     stroke: int
 
 
-class MerchantHealthDataInput(BaseModel):
+class MerchantHealthDataInput(CamelModel):
     age: int
     weight: float           # kg
     height: float           # cm
@@ -44,7 +45,7 @@ class MerchantHealthDataInput(BaseModel):
     ap_hi: float            # Systolic Blood Pressure (mmHg)
     ap_lo: float            # Diastolic Blood Pressure (mmHg)
     high_cholesterol: int
-    hyper_tension: int
+    hypertension: int
     heart_disease: int
     diabetes: int
     alcohol: int
@@ -108,7 +109,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
     healthData = HealthData(patient_id, data.age, data.weight, data.height, gender_map[data.gender],
                             data.blood_glucose, data.ap_hi, data.ap_lo, data.high_cholesterol,
-                            data.hyper_tension, data.heart_disease, data.diabetes, data.alcohol,
+                            data.hypertension, data.heart_disease, data.diabetes, data.alcohol,
                             smoker_map[data.smoker],  marital_map[data.marital_status], working_map[data.working_status], data.stroke)
 
     # Store health data into the database
@@ -284,7 +285,7 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
             ap_lo=float(row["APLow"]) if row.get("APLow") else 0,
             high_cholesterol=int(row["HighCholesterol"]) if row.get(
                 "HighCholesterol") else 0,
-            hyper_tension=int(row["HyperTension"]) if row.get(
+            hypertension=int(row["HyperTension"]) if row.get(
                 "HyperTension") else 0,
             heart_disease=int(row["HeartDisease"]) if row.get(
                 "HeartDisease") else 0,
@@ -384,7 +385,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
     healthData = HealthData(patient.PatientID, data.age, data.weight, data.height, gender_map[data.gender],
                             data.blood_glucose, data.ap_hi, data.ap_lo, data.high_cholesterol,
-                            data.hyper_tension, data.heart_disease, data.diabetes, data.alcohol,
+                            data.hypertension, data.heart_disease, data.diabetes, data.alcohol,
                             smoker_map[data.smoker],  marital_map[data.marital_status], working_map[data.working_status], data.stroke)
     # Store health data into the database
     db_conn.add(healthData)
@@ -536,8 +537,8 @@ def is_high_cholesterol_valid(high_cholesterol: int):
     return high_cholesterol == 0 or high_cholesterol == 1
 
 
-def is_hyper_tension_valid(hyper_tension: int):
-    return hyper_tension == 0 or hyper_tension == 1
+def is_hyper_tension_valid(hypertension: int):
+    return hypertension == 0 or hypertension == 1
 
 
 def is_heart_disease_valid(heart_disease: int):
@@ -581,7 +582,7 @@ def validate_all_input(data: HealthDataInput):
             not is_ap_hi_valid(data.ap_hi) or
             not is_ap_lo_valid(data.ap_lo) or
             not is_high_cholesterol_valid(data.high_cholesterol) or
-            not is_hyper_tension_valid(data.hyper_tension) or
+            not is_hyper_tension_valid(data.hypertension) or
             not is_heart_disease_valid(data.heart_disease) or
             not is_diabetes_valid(data.diabetes) or
             not is_alcohol_valid(data.alcohol) or
