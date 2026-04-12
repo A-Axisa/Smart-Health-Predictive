@@ -42,9 +42,9 @@ const AdministratorDashboard = () => {
 
   const userStats = [
     { label: "Total Users", value: data.totalUsers ?? 0, text: "validated accounts" },
-    { label: "Total Patients", value: data.totalPatients ?? 0, text: "standard users" },
-    { label: "Total Merchants", value: data.totalMerchants ?? 0, text: "clinic accounts" },
-    { label: "New Users (30d)", value: data.newUsersLast30days ?? 0, text: "recently registered" },
+    { label: "Total Patients", value: data.totalPatients ?? 0, text: "users" },
+    { label: "Total Partners", value: data.totalMerchants ?? 0, text: "partner accounts" },
+    { label: "New Users last 30 days", value: data.newUsersLast30days ?? 0, text: "recently registered" },
   ];
 
   const activityStats = [
@@ -52,20 +52,20 @@ const AdministratorDashboard = () => {
     { label: "Unvalidated Users", value: data.invalidatedUsers ?? 0, text: "pending verification" },
     { label: "Active Patients", value: data.activePatients ?? 0, text: "submitted in last 30 days" },
     { label: "Inactive Patients", value: data.inactivePatients ?? 0, text: "no recent submission" },
-    { label: "Failed Logins (24h)", value: data.failedLoginAttemptsLastDay ?? 0, text: "failed attempts" },
+    { label: "Failed Logins last 24 hours", value: data.failedLoginAttemptsLastDay ?? 0, text: "failed attempts" },
   ]
 
   const reportStats = [
     { label: "Total Reports", value: data.totalReports ?? 0, text: "all time" },
-    { label: "Reports Today", value: data.reportsLastDay ?? 0, text: "last 24 hours" },
-    { label: "Reports (7d)", value: data.reportsLast7Days ?? 0, text: "last 7 days" },
-    { label: "Reports (30d)", value: data.reportsLast30Days ?? 0, text: "last 30 days" },
+    { label: "Latest Reports", value: data.reportsLastDay ?? 0, text: "last 24 hours" },
+    { label: "Latest Reports", value: data.reportsLast7Days ?? 0, text: "last 7 days" },
+    { label: "Latest Reports", value: data.reportsLast30Days ?? 0, text: "last 30 days" },
   ];
 
   const riskStats = [
-    { label: "Avg Stroke Risk", value: data.averageRiskStroke ?? 0, text: "across all patients" },
-    { label: "Avg CVD Risk", value: data.averageRiskCVD ?? 0, text: "across all patients" },
-    { label: "Avg Diabetes Risk", value: data.averageRiskDiabetes ?? 0, text: "across all patients" },
+    { label: "Average Stroke Risk", value: data.averageRiskStroke ?? 0, text: "across all patients" },
+    { label: "Average CVD Risk", value: data.averageRiskCVD ?? 0, text: "across all patients" },
+    { label: "Average Diabetes Risk", value: data.averageRiskDiabetes ?? 0, text: "across all patients" },
   ]
 
   const reportChartData = fillEmptyDates(data.reportActivity);
@@ -78,7 +78,7 @@ const AdministratorDashboard = () => {
       </Box>
 
       {/* User stats */}
-      <Typography variant="caption" sx={{ color: "#747474" }}>USERS</Typography>
+      <Typography sx={{ color: "#747474" }}>USERS</Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 3, mt: 1 }}>
         {userStats.map(({ label, value, text }) => (
           <Card key={label} sx={{ borderRadius: "10px", flex: 1 }}>
@@ -105,7 +105,7 @@ const AdministratorDashboard = () => {
       </Box>
 
       {/* Report stats */}
-      <Typography variant="caption" sx={{ color: "#747474", letterSpacing: "0.05em" }}>REPORTS</Typography>
+      <Typography sx={{ color: "#747474", letterSpacing: "0.05em" }}>REPORTS</Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 3, mt: 1 }}>
         {reportStats.map(({ label, value, text }) => (
           <Card key={label} sx={{ borderRadius: "10px", flex: 1 }}>
@@ -119,7 +119,7 @@ const AdministratorDashboard = () => {
       </Box>
 
       {/* Average risks */}
-      <Typography variant="caption" sx={{ color: "#747474" }}>AVERAGE RISK</Typography>
+      <Typography sx={{ color: "#747474" }}>AVERAGE RISK</Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 3, mt: 1 }}>
         {riskStats.map(({ label, value, text }) => (
           <Card key={label} sx={{ borderRadius: "10px", flex: 1 }}>
