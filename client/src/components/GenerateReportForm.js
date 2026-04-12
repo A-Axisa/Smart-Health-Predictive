@@ -308,7 +308,7 @@ const GenerateReportForm = () => {
         navigate("/ai-health-prediction"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log("AN error has occurred");
+        console.log("An error has occurred");
       });
   }
 
