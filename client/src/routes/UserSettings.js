@@ -142,9 +142,9 @@ const UserSettings = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        current_password: passwordData.currentPassword,
-        new_password: passwordData.newPassword,
-        confirm_new_password: passwordData.confirmPassword,
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmNewPassword: passwordData.confirmPassword,
       }),
     })
       .then((response) => {

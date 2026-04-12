@@ -15,6 +15,7 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 from typing import Optional
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
@@ -46,7 +47,7 @@ MIN_AGE = 18
 gender_map = {'Male': 1, 'Female': 0}
 
 
-class UserRegistrationDetails(BaseModel):
+class UserRegistrationDetails(CamelModel):
     given_names: str
     family_name: str
     date_of_birth: Optional[date]
@@ -69,7 +70,7 @@ class TokenData(BaseModel):
     version: int
 
 
-class ChangePasswordDetails(BaseModel):
+class ChangePasswordDetails(CamelModel):
     current_password: str
     new_password: str
     confirm_new_password: str

@@ -295,19 +295,19 @@ const GenerateReportForm = () => {
         weight: weight.value,
         height: height.value,
         gender: gender,
-        blood_glucose: bloodGlucose.value,
-        ap_hi: apHigh.value,
-        ap_lo: apLow.value,
-        high_cholesterol: highCholesterol,
-        hyper_tension: hyperTension,
-        heart_disease: heartDisease,
+        bloodGlucose: bloodGlucose.value,
+        apHi: apHigh.value,
+        apLo: apLow.value,
+        highCholesterol: highCholesterol,
+        hypertension: hyperTension,
+        heartDisease: heartDisease,
         diabetes: diabetes,
         alcohol: alcohol,
         smoker: smoker,
-        marital_status: maritalStatus,
-        working_status: workingStatus,
+        maritalStatus: maritalStatus,
+        workingStatus: workingStatus,
         stroke: stroke,
-        patient_id: selectedPatient,
+        patientId: selectedPatient,
       }),
     })
       .then((response) => {
@@ -354,7 +354,7 @@ const GenerateReportForm = () => {
                 </MenuItem>
                 {/* List of available patients */}
                 {patientList.map((patient) => (
-                  <MenuItem key={patient.name} value={patient.patient_id}>
+                  <MenuItem key={patient.name} value={patient.patientId}>
                     {patient.name}
                   </MenuItem>
                 ))}

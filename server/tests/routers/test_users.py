@@ -103,7 +103,7 @@ def setup_once_for_all_tests():
         "ap_hi": 120,
         "ap_lo": 80,
         "high_cholesterol": 0,
-        "hyper_tension": 0,
+        "hypertension": 0,
         "heart_disease": 0,
         "diabetes": 0,
         "alcohol": 1,

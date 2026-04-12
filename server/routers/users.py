@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
 
@@ -28,48 +29,48 @@ MIN_AGE = 18
 gender_map = {'Male': 1, 'Female': 0}
 
 
-class HealthMetric(BaseModel):
+class HealthMetric(CamelModel):
     # ISO datetime string of the prediction creation time
     date: str
     month: str
-    strokeProbability: float
-    cardioProbability: float
-    diabetesProbability: float
+    stroke_probability: float
+    cardio_probability: float
+    diabetes_probability: float
 
 
-class Report(BaseModel):
-    patientName: Optional[str] = None
+class Report(CamelModel):
+    patient_name: Optional[str] = None
     age: int
     weight: float
     height: float
     gender: int
-    bloodGlucose: float
+    blood_glucose: float
     ap_hi: float
     ap_lo: float
-    highCholesterol: int
-    hyperTension: int
-    heartDisease: int
+    high_cholesterol: int
+    hypertension: int
+    heart_disease: int
     diabetes: int
     alcohol: int
     smoker: int
-    maritalStatus: int
-    workingStatus: int
-    strokeChance: float
-    CVDChance: float
-    diabetesChance: float
+    marital_status: int
+    working_status: int
+    stroke_chance: float
+    CVD_chance: float
+    diabetes_chance: float
     # Optional recommendations
-    exerciseRecommendation: Optional[str] = None
-    dietRecommendation: Optional[str] = None
-    lifestyleRecommendation: Optional[str] = None
-    dietToAvoidRecommendation: Optional[str] = None
+    exercise_recommendation: Optional[str] = None
+    diet_recommendation: Optional[str] = None
+    lifestyle_recommendation: Optional[str] = None
+    diet_to_avoid_recommendation: Optional[str] = None
 
 
-class HealthDataDates(BaseModel):
-    healthDataID: int
+class HealthDataDates(CamelModel):
+    health_data_id: int
     date: datetime
 
 
-class ClinicDetails(BaseModel):
+class ClinicDetails(CamelModel):
     clinic_id: int
     clinic_name: str
 
@@ -81,20 +82,20 @@ class Dashboard(BaseModel):
     recommendations: dict
 
 
-class MerchantDashboard(BaseModel):
-    totalPatients: int
-    totalReports: int
-    reportsLast30Days: int
-    inactivePatients: int
-    riskDistribution: dict
-    reportActivity: List[dict]
+class MerchantDashboard(CamelModel):
+    total_patients: int
+    total_reports: int
+    reports_last_30_days: int
+    inactive_patients: int
+    risk_distribution: dict
+    report_activity: List[dict]
 
 
 class UserProfileUpdate(BaseModel):
     phone_number: Optional[str] = None
 
 
-class PatientProfileUpdate(BaseModel):
+class PatientProfileUpdate(CamelModel):
     given_names: Optional[str] = None
     family_name: Optional[str] = None
     gender: Optional[int] = None
@@ -103,7 +104,7 @@ class PatientProfileUpdate(BaseModel):
     date_of_birth: Optional[date] = None
 
 
-class PatientCreationDetails(BaseModel):
+class PatientCreationDetails(CamelModel):
     given_names: str
     family_name: str
     date_of_birth: date
@@ -112,7 +113,7 @@ class PatientCreationDetails(BaseModel):
     height: float
 
 
-class PatientDetails(BaseModel):
+class PatientDetails(CamelModel):
     patient_info: dict
     days: int
     risks: dict
@@ -432,9 +433,9 @@ async def get_health_analytics(
                 date=(created_at.isoformat() if isinstance(
                     created_at, datetime) else str(created_at)),
                 month=month_label(created_at),
-                strokeProbability=_to_float(stroke),
-                cardioProbability=_to_float(cvd),
-                diabetesProbability=_to_float(diab),
+                stroke_probability=_to_float(stroke),
+                cardio_probability=_to_float(cvd),
+                diabetes_probability=_to_float(diab),
             )
         )
 
@@ -459,9 +460,11 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     recommendationData = db_conn.query(Recommendation).filter(getattr(
         Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
 
-    patientData = db_conn.query(Patient).filter(Patient.PatientID == healthData.PatientID).first()
+    patientData = db_conn.query(Patient).filter(
+        Patient.PatientID == healthData.PatientID).first()
     if patientData:
-        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip() or None
+        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip(
+        ) or None
     else:
         patient_name = None
 
@@ -473,33 +476,33 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
         height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
         gender=int(
             1 if bool(getattr(healthData, 'Gender', False) or False) else 0),
-        bloodGlucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
+        blood_glucose=float(getattr(healthData, 'BloodGlucose', 0) or 0),
         ap_hi=float(getattr(healthData, 'APHigh', 0) or 0),
         ap_lo=float(getattr(healthData, 'APLow', 0) or 0),
-        highCholesterol=int(
+        high_cholesterol=int(
             1 if bool(getattr(healthData, 'HighCholesterol', False) or False) else 0),
-        hyperTension=int(
+        hypertension=int(
             1 if bool(getattr(healthData, 'HyperTension', False) or False) else 0),
-        heartDisease=int(
+        heart_disease=int(
             1 if bool(getattr(healthData, 'HeartDisease', False) or False) else 0),
         diabetes=int(
             1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
         alcohol=int(
             1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
         smoker=int(getattr(healthData, 'SmokingStatus', 0) or 0),
-        maritalStatus=int(getattr(healthData, 'MaritalStatus', 0) or 0),
-        workingStatus=int(getattr(healthData, 'WorkingStatus', 0) or 0),
-        strokeChance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
-        CVDChance=float(getattr(predictionData, 'CVDChance', 0) or 0),
-        diabetesChance=float(
+        marital_status=int(getattr(healthData, 'MaritalStatus', 0) or 0),
+        working_status=int(getattr(healthData, 'WorkingStatus', 0) or 0),
+        stroke_chance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
+        CVD_chance=float(getattr(predictionData, 'CVDChance', 0) or 0),
+        diabetes_chance=float(
             getattr(predictionData, 'DiabetesChance', 0) or 0),
-        exerciseRecommendation=getattr(
+        exercise_recommendation=getattr(
             recommendationData, 'ExerciseRecommendation', None) if recommendationData else None,
-        dietRecommendation=getattr(
+        diet_recommendation=getattr(
             recommendationData, 'DietRecommendation', None) if recommendationData else None,
-        lifestyleRecommendation=getattr(
+        lifestyle_recommendation=getattr(
             recommendationData, 'LifestyleRecommendation', None) if recommendationData else None,
-        dietToAvoidRecommendation=getattr(
+        diet_to_avoid_recommendation=getattr(
             recommendationData, 'DietToAvoidRecommendation', None) if recommendationData else None,
     )
 
@@ -567,7 +570,7 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
 
         result.append({
             "name": f'{patient.GivenNames} {patient.FamilyName}',
-            "healthDataID": row.HealthDataID,
+            "healthDataId": row.HealthDataID,
             "date": row.CreatedAt
         })
 
@@ -591,7 +594,7 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
         if patient.PatientID not in existing_patient:
             result.append({
                 "name": f'{patient.GivenNames} {patient.FamilyName}',
-                "patient_id": patient.PatientID
+                "patientId": patient.PatientID
             })
             existing_patient.add(patient.PatientID)
 
@@ -611,7 +614,7 @@ async def get_health_data(request: Request, db_conn: Session = Depends(get_db)):
 
     # Filter by ID and date create to return
     healthDataDates = [HealthDataDates(
-        healthDataID=data.HealthDataID, date=data.CreatedAt) for data in healthData]
+        health_data_id=data.HealthDataID, date=data.CreatedAt) for data in healthData]
 
     return healthDataDates
 
@@ -719,7 +722,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
     if (family_name):
         query = query.filter(Patient.FamilyName.ilike(f"%{family_name}%"))
     # Paginate query
-    totalPatients = query.count()
+    total_patients = query.count()
     patient_info = query.order_by(
         Patient.CreatedAt.desc()).offset(skip).limit(limit).all()
 
@@ -734,7 +737,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
            }
             for patient in patient_info
         ],
-        "totalPatients": totalPatients
+        "totalPatients": total_patients
 
     }
 
@@ -798,6 +801,12 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
                    .filter(HealthData.PatientID == patient_id)
                    .order_by(Prediction.CreatedAt.desc()).limit(5).all())
 
+    # Latest disease prediction.
+    stroke_risk = float(predictions[0].StrokeChance) if predictions else 0.0
+    diabetes_risk = float(
+        predictions[0].DiabetesChance) if predictions else 0.0
+    cvd_risk = float(predictions[0].CVDChance) if predictions else 0.0
+
     # Risk over time trends.
     risk_dates = [p.CreatedAt.strftime("%d/%m/%Y") for p in predictions]
 
@@ -821,7 +830,8 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
 
         disease_diff["stroke"] = float(
             current.StrokeChance) - float(prev.StrokeChance)
-        disease_diff["cvd"] = float(current.CVDChance) - float(prev.CVDChance)
+        disease_diff["cvd"] = float(
+            current.CVDChance) - float(prev.CVDChance)
         disease_diff["diabetes"] = float(
             current.DiabetesChance) - float(prev.DiabetesChance)
 
@@ -850,7 +860,7 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     merchant = get_current_merchant(request, db_conn)
     merchant_id = merchant.UserID
-    
+
     # get all merchant patients
     patients = get_merchant_patients(merchant_id, db_conn)
     patient_ids = [p.PatientID for p in patients]
@@ -858,12 +868,12 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     if total_patients == 0:
         return MerchantDashboard(
-            totalPatients = 0,
-            totalReports = 0,
-            reportsLast30Days = 0,
-            inactivePatients = 0,
-            riskDistribution = {},
-            reportActivity = []
+            total_patients=0,
+            total_reports=0,
+            reports_last_30_days=0,
+            inactive_patients=0,
+            risk_distribution={},
+            report_activity=[]
         )
 
     health_data = (
@@ -885,10 +895,10 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     # Inactive patients
     inactive_patients = 0
-    
+
     for patient in patients:
         latest = (db_conn.query(HealthData).filter(HealthData.PatientID == patient.PatientID)
-                .order_by(HealthData.CreatedAt.desc()).first())
+                  .order_by(HealthData.CreatedAt.desc()).first())
 
         if not latest or latest.CreatedAt < last_30_days:
             inactive_patients += 1
@@ -900,8 +910,8 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     for patient in patients:
         prediction = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
-                    .filter(HealthData.PatientID == patient.PatientID).order_by(Prediction.CreatedAt.desc())
-                    .first())
+                      .filter(HealthData.PatientID == patient.PatientID).order_by(Prediction.CreatedAt.desc())
+                      .first())
 
         if not prediction:
             continue
@@ -910,42 +920,52 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
         cvd = float(prediction.CVDChance or 0)
         diabetes = float(prediction.DiabetesChance or 0)
 
-        if stroke >= 50: stroke_high += 1
-        elif stroke >= 30: stroke_mod += 1
-        else: stroke_low += 1
+        if stroke >= 50:
+            stroke_high += 1
+        elif stroke >= 30:
+            stroke_mod += 1
+        else:
+            stroke_low += 1
 
-        if cvd >= 50: cvd_high += 1
-        elif cvd >= 30: cvd_mod += 1
-        else: cvd_low += 1
+        if cvd >= 50:
+            cvd_high += 1
+        elif cvd >= 30:
+            cvd_mod += 1
+        else:
+            cvd_low += 1
 
-        if diabetes >= 50: diabetes_high += 1
-        elif diabetes >= 30: diabetes_mod += 1
-        else: diabetes_low += 1
+        if diabetes >= 50:
+            diabetes_high += 1
+        elif diabetes >= 30:
+            diabetes_mod += 1
+        else:
+            diabetes_low += 1
 
     # Report activity
     recent_activity = []
 
     reports = (db_conn.query(HealthData).filter(HealthData.PatientID.in_(patient_ids))
-                    .order_by(HealthData.CreatedAt.desc()).limit(20).all())
+               .order_by(HealthData.CreatedAt.desc()).limit(20).all())
 
     for report in reports:
-        patient = db_conn.query(Patient).filter_by(PatientID=report.PatientID).first()
+        patient = db_conn.query(Patient).filter_by(
+            PatientID=report.PatientID).first()
         recent_activity.append({
             "message": f"{patient.GivenNames} {patient.FamilyName} submitted report",
             "createdAt": report.CreatedAt.isoformat()
         })
 
     return MerchantDashboard(
-        totalPatients=total_patients,
-        totalReports=total_reports,
-        reportsLast30Days=reports_last_30,
-        inactivePatients=inactive_patients,
-        riskDistribution={
+        total_patients=total_patients,
+        total_reports=total_reports,
+        reports_last_30_days=reports_last_30,
+        inactive_patients=inactive_patients,
+        risk_distribution={
             "stroke": {"high": stroke_high, "moderate": stroke_mod, "low": stroke_low},
             "cvd": {"high": cvd_high, "moderate": cvd_mod, "low": cvd_low},
             "diabetes": {"high": diabetes_high, "moderate": diabetes_mod, "low": diabetes_low},
         },
-        reportActivity=recent_activity
+        report_activity=recent_activity
     )
 
 
