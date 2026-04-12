@@ -38,6 +38,7 @@ class HealthMetric(BaseModel):
 
 
 class Report(BaseModel):
+    patientName: Optional[str] = None
     age: int
     weight: float
     height: float
@@ -161,18 +162,22 @@ async def update_current_user_profile(
     request: Request,
     db_conn: Session = Depends(get_db),
 ):
+    """Updates a user's account information"""
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     updated_fields = {}
     if "phone_number" in updates:
-        formatted_phone = format_phone_number(updates.get("phone_number") or "")
+        formatted_phone = format_phone_number(
+            updates.get("phone_number") or "")
         if not is_formatted_phone_valid(formatted_phone):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -201,14 +206,17 @@ async def update_current_patient_profile(
     request: Request,
     db_conn: Session = Depends(get_db),
 ):
+    """Update a user's patient information"""
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     updates = payload.dict(exclude_unset=True)
     if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
     patient = get_patient_by_email(user.Email, db_conn)
     if patient is None:
@@ -226,10 +234,12 @@ async def update_current_patient_profile(
 
     updated_fields = {}
     if "given_names" in updates:
-        patient.GivenNames = _validated_name(updates.get("given_names"), "given_names")
+        patient.GivenNames = _validated_name(
+            updates.get("given_names"), "given_names")
         updated_fields["given_names"] = patient.GivenNames
     if "family_name" in updates:
-        patient.FamilyName = _validated_name(updates.get("family_name"), "family_name")
+        patient.FamilyName = _validated_name(
+            updates.get("family_name"), "family_name")
         updated_fields["family_name"] = patient.FamilyName
     if "gender" in updates:
         gender = updates.get("gender")
@@ -241,11 +251,15 @@ async def update_current_patient_profile(
         patient.Gender = gender
         updated_fields["gender"] = patient.Gender
     if "weight" in updates:
-        patient.Weight = _to_nullable_float(updates.get("weight"), "weight", 20.0, 300.0)
-        updated_fields["weight"] = float(patient.Weight) if patient.Weight is not None else None
+        patient.Weight = _to_nullable_float(
+            updates.get("weight"), "weight", 20.0, 300.0)
+        updated_fields["weight"] = float(
+            patient.Weight) if patient.Weight is not None else None
     if "height" in updates:
-        patient.Height = _to_nullable_float(updates.get("height"), "height", 90.0, 250.0)
-        updated_fields["height"] = float(patient.Height) if patient.Height is not None else None
+        patient.Height = _to_nullable_float(
+            updates.get("height"), "height", 90.0, 250.0)
+        updated_fields["height"] = float(
+            patient.Height) if patient.Height is not None else None
     if "date_of_birth" in updates:
         date_of_birth = updates.get("date_of_birth")
         if date_of_birth and date_of_birth > date.today():
@@ -254,7 +268,8 @@ async def update_current_patient_profile(
                 detail="date_of_birth cannot be in the future",
             )
         patient.DateOfBirth = date_of_birth
-        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat() if patient.DateOfBirth else None
+        updated_fields["date_of_birth"] = patient.DateOfBirth.isoformat(
+        ) if patient.DateOfBirth else None
 
     db_conn.commit()
     write_audit_log(
@@ -339,6 +354,7 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
 @router.delete("/users/")
 async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
+    """Delete a users account and their related data"""
     # Current request user
     current = get_current_user(request, db_conn)
     request_user_email = current.get(
@@ -369,7 +385,7 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
 # Health analytics
 
 
-@router.get("/api/health-analytics", response_model=List[HealthMetric])
+@router.get("/health-analytics", response_model=List[HealthMetric])
 async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),
@@ -427,9 +443,9 @@ async def get_health_analytics(
 # Report Data
 
 
-@router.get("/reportData/{healthDataId}")
+@router.get("/report-data/{healthDataId}")
 async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
-
+    """Return data for a report"""
     validID = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not validID:
@@ -443,8 +459,15 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     recommendationData = db_conn.query(Recommendation).filter(getattr(
         Recommendation, 'HealthDataID') == healthDataId).order_by(getattr(Recommendation, 'CreatedAt').desc()).first()
 
+    patientData = db_conn.query(Patient).filter(Patient.PatientID == healthData.PatientID).first()
+    if patientData:
+        patient_name = f"{(patientData.GivenNames or '').strip()} {(patientData.FamilyName or '').strip()}".strip() or None
+    else:
+        patient_name = None
+
     # Create health report data to return
     reportData = Report(
+        patientName=patient_name,
         age=int(getattr(healthData, 'Age', 0) or 0),
         weight=float(getattr(healthData, 'WeightKilograms', 0) or 0),
         height=float(getattr(healthData, 'HeightCentimetres', 0) or 0),
@@ -484,9 +507,9 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     return reportData
 
 
-@router.delete("/reportData/{healthDataId}")
+@router.delete("/report-data/{healthDataId}")
 async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
-
+    """Deletes data from a generated report"""
    # Raise exception if health data is not in the DB
     health_data = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
@@ -514,7 +537,7 @@ async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_d
 
 @router.get("/merchants/reports")
 async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_db)):
-
+    """Retrieves all reports a merchant can view"""
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
     current_user_email = current_user.get('email')
@@ -551,9 +574,9 @@ async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_
     return result
 
 
-@router.get("/merchants/patient_names")
+@router.get("/merchants/patient-names")
 async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)):
-
+    """Retrieves patients names that are associated with the a merchant"""
     # Check if the requesting user is a merchant.
     merchant = get_current_merchant(request, db_conn)
 
@@ -575,8 +598,9 @@ async def get_patient_names(request: Request, db_conn: Session = Depends(get_db)
     return result
 
 
-@router.get("/getHealthDataDates/")
-async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
+@router.get("/get-health-data-dates/")
+async def get_health_data(request: Request, db_conn: Session = Depends(get_db)):
+    """Return the dates for all health reports"""
     # Retrieve user current user information
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
@@ -592,8 +616,9 @@ async def getHealthData(request: Request, db_conn: Session = Depends(get_db)):
     return healthDataDates
 
 
-@router.get("/getClinicNames/")
-async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
+@router.get("/get-clinic-names/")
+async def get_clinic_names(request: Request, db_conn: Session = Depends(get_db)):
+    """Returns the name of all stored clinics"""
 
     # Retrieve the all clinics
     clinics = (
@@ -612,7 +637,7 @@ async def getClinicNames(request: Request, db_conn: Session = Depends(get_db)):
 
 @router.post("/create-patient/")
 async def create_patient(patient: PatientCreationDetails, request: Request, db_conn: Session = Depends(get_db),):
-
+    """Creates a new patient record and creates a relationship between the merchant and patient"""
     # Check if the requesting user is a merchant.
     merchant = get_current_merchant(request, db_conn)
 
@@ -654,7 +679,7 @@ async def create_patient(patient: PatientCreationDetails, request: Request, db_c
 
 @router.delete("/remove-patient/{patient_id}")
 async def remove_patient(patient_id: str, request: Request, db_conn: Session = Depends(get_db),):
-    '''Deletes relationship between patient and merchant'''
+    """Deletes relationship between patient and merchant"""
     # Check if the requesting user is a merchant.
     merchant = get_current_merchant(request, db_conn)
     merchant_id = merchant.UserID
@@ -678,7 +703,7 @@ async def remove_patient(patient_id: str, request: Request, db_conn: Session = D
 
 @router.get("/merchant/associated-patients")
 async def associated_patients(request: Request, given_names: str = None, family_name: str = None, skip: int = 0, limit: int = 25, db_conn: Session = Depends(get_db)):
-    '''Deletes relationship between patient and merchant'''
+    """Deletes relationship between patient and merchant"""
     # Check if the requesting user is a merchant.
     current_merchant = get_current_merchant(request, db_conn)
     merchant_id = current_merchant.UserID
@@ -715,7 +740,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
 
 
 def get_current_merchant(request: Request, db_conn):
-    '''Check if the current user is a merchant'''
+    """Check if the current user is a merchant"""
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
@@ -727,7 +752,7 @@ def get_current_merchant(request: Request, db_conn):
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
     current_user_role = current_user.get('role')
-    if not current_user_role or current_user_role.lower() != 'merchant':
+    if not current_user_role or current_user_role.lower() != "merchant":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
     return merchant
@@ -745,7 +770,7 @@ def get_merchant_patients(merchantID: int, db_conn):
 
 @router.get("/dashboard", response_model=Dashboard)
 async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
-
+    """Returns a user's dashboard information"""
     user = get_current_user(request, db_conn)
     patient = get_patient_by_email(user["email"], db_conn)
 
@@ -968,7 +993,8 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
     # Get the patient by ID.
-    patient = (db_conn.query(Patient).filter(Patient.PatientID == patient_id).first())
+    patient = (db_conn.query(Patient).filter(
+        Patient.PatientID == patient_id).first())
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
@@ -982,9 +1008,10 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
 
     return result
 
-  
+
 @router.get("/patient-details/{patient_id}", response_model=PatientDetails)
 async def get_dashboard(patient_id: str, request: Request, db_conn: Session = Depends(get_db)):
+    """Returns a patient's details"""
     # Check if current user is a merchant
     merchant = get_current_merchant(request, db_conn)
 
@@ -1120,15 +1147,15 @@ def is_weight_valid(weight: float):
 def is_height_valid(height: float):
     '''Verifies height is valid'''
     return 0.0 <= height <= 300.0
-  
+
 
 def get_age(dob):
-  """Calculates an age given a date of birth."""
-  if not dob:
-      return None
+    """Calculates an age given a date of birth."""
+    if not dob:
+        return None
 
-  today = datetime.today()
-  return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    today = datetime.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 
 def get_gender(gender):

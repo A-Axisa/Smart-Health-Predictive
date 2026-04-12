@@ -233,7 +233,7 @@ def test_change_password():
     change_password = {'current_password': VALID_PASSWORD,
                        'new_password': 'thisIsSafer2#',
                        'confirm_new_password': 'thisIsSafer2#'}
-    response = client.post('/changePassword/', json=change_password)
+    response = client.post('/change-password/', json=change_password)
     assert response.json() == {
         'message': 'User successfully changed password.'}
 
@@ -245,7 +245,7 @@ def test_change_password_incorrect_current():
     change_password = {'current_password': '123',
                        'new_password': 'thisIsSafer2#',
                        'confirm_new_password': 'thisIsSafer2#'}
-    response = client.post('/changePassword/', json=change_password)
+    response = client.post('/change-password/', json=change_password)
     assert response.json() == {'detail': 'Invalid password'}
 
 
@@ -256,7 +256,7 @@ def test_change_password_not_matching():
     change_password = {'current_password': 'thisIsSafer2#',
                        'new_password': '123',
                        'confirm_new_password': '321'}
-    response = client.post('/changePassword/', json=change_password)
+    response = client.post('/change-password/', json=change_password)
     assert response.json() == {'detail': 'Invalid password'}
 
 
