@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import List, Optional
 
@@ -79,6 +79,15 @@ class Dashboard(BaseModel):
     risks: dict
     diff: dict
     recommendations: dict
+
+
+class MerchantDashboard(BaseModel):
+    totalPatients: int
+    totalReports: int
+    reportsLast30Days: int
+    inactivePatients: int
+    riskDistribution: dict
+    reportActivity: List[dict]
 
 
 class UserProfileUpdate(BaseModel):
@@ -833,6 +842,110 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
         risks=latest_risk_info,
         diff=disease_diff,
         recommendations=latest_recommendations,
+    )
+
+
+@router.get("/merchant-dashboard", response_model=MerchantDashboard)
+async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+
+    merchant = get_current_merchant(request, db_conn)
+    merchant_id = merchant.UserID
+    
+    # get all merchant patients
+    patients = get_merchant_patients(merchant_id, db_conn)
+    patient_ids = [p.PatientID for p in patients]
+    total_patients = len(patient_ids)
+
+    if total_patients == 0:
+        return MerchantDashboard(
+            totalPatients = 0,
+            totalReports = 0,
+            reportsLast30Days = 0,
+            inactivePatients = 0,
+            riskDistribution = {},
+            reportActivity = []
+        )
+
+    health_data = (
+        db_conn.query(HealthData)
+        .filter(HealthData.PatientID.in_(patient_ids))
+        .all()
+    )
+
+    total_reports = len(health_data)
+
+    # Report in last 30 days
+    last_30_days = datetime.now() - timedelta(days=30)
+    reports_last_30 = 0
+    reports_by_date = {}
+
+    for row in health_data:
+        if row.CreatedAt >= last_30_days:
+            reports_last_30 += 1
+
+    # Inactive patients
+    inactive_patients = 0
+    
+    for patient in patients:
+        latest = (db_conn.query(HealthData).filter(HealthData.PatientID == patient.PatientID)
+                .order_by(HealthData.CreatedAt.desc()).first())
+
+        if not latest or latest.CreatedAt < last_30_days:
+            inactive_patients += 1
+
+    # Total Patient Risks
+    stroke_high = stroke_mod = stroke_low = 0
+    cvd_high = cvd_mod = cvd_low = 0
+    diabetes_high = diabetes_mod = diabetes_low = 0
+
+    for patient in patients:
+        prediction = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
+                    .filter(HealthData.PatientID == patient.PatientID).order_by(Prediction.CreatedAt.desc())
+                    .first())
+
+        if not prediction:
+            continue
+
+        stroke = float(prediction.StrokeChance or 0)
+        cvd = float(prediction.CVDChance or 0)
+        diabetes = float(prediction.DiabetesChance or 0)
+
+        if stroke >= 50: stroke_high += 1
+        elif stroke >= 30: stroke_mod += 1
+        else: stroke_low += 1
+
+        if cvd >= 50: cvd_high += 1
+        elif cvd >= 30: cvd_mod += 1
+        else: cvd_low += 1
+
+        if diabetes >= 50: diabetes_high += 1
+        elif diabetes >= 30: diabetes_mod += 1
+        else: diabetes_low += 1
+
+    # Report activity
+    recent_activity = []
+
+    reports = (db_conn.query(HealthData).filter(HealthData.PatientID.in_(patient_ids))
+                    .order_by(HealthData.CreatedAt.desc()).limit(20).all())
+
+    for report in reports:
+        patient = db_conn.query(Patient).filter_by(PatientID=report.PatientID).first()
+        recent_activity.append({
+            "message": f"{patient.GivenNames} {patient.FamilyName} submitted report",
+            "createdAt": report.CreatedAt.isoformat()
+        })
+
+    return MerchantDashboard(
+        totalPatients=total_patients,
+        totalReports=total_reports,
+        reportsLast30Days=reports_last_30,
+        inactivePatients=inactive_patients,
+        riskDistribution={
+            "stroke": {"high": stroke_high, "moderate": stroke_mod, "low": stroke_low},
+            "cvd": {"high": cvd_high, "moderate": cvd_mod, "low": cvd_low},
+            "diabetes": {"high": diabetes_high, "moderate": diabetes_mod, "low": diabetes_low},
+        },
+        reportActivity=recent_activity
     )
 
 
