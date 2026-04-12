@@ -81,13 +81,14 @@ class Dashboard(BaseModel):
     diff: dict
     recommendations: dict
 
-class MerchantDashboard(BaseModel):
-    totalPatients: int
-    totalReports: int
-    reportsLast30Days: int
-    inactivePatients: int
-    riskDistribution: dict
-    reportActivity: List[dict]
+
+class MerchantDashboard(CamelModel):
+    total_patients: int
+    total_reports: int
+    reports_last_30_days: int
+    inactive_patients: int
+    risk_distribution: dict
+    report_activity: List[dict]
 
 
 class UserProfileUpdate(BaseModel):
@@ -721,7 +722,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
     if (family_name):
         query = query.filter(Patient.FamilyName.ilike(f"%{family_name}%"))
     # Paginate query
-    totalPatients = query.count()
+    total_patients = query.count()
     patient_info = query.order_by(
         Patient.CreatedAt.desc()).offset(skip).limit(limit).all()
 
@@ -736,7 +737,7 @@ async def associated_patients(request: Request, given_names: str = None, family_
            }
             for patient in patient_info
         ],
-        "totalPatients": totalPatients
+        "totalPatients": total_patients
 
     }
 
@@ -859,7 +860,7 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     merchant = get_current_merchant(request, db_conn)
     merchant_id = merchant.UserID
-    
+
     # get all merchant patients
     patients = get_merchant_patients(merchant_id, db_conn)
     patient_ids = [p.PatientID for p in patients]
@@ -867,12 +868,12 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     if total_patients == 0:
         return MerchantDashboard(
-            totalPatients = 0,
-            totalReports = 0,
-            reportsLast30Days = 0,
-            inactivePatients = 0,
-            riskDistribution = {},
-            reportActivity = []
+            total_patients=0,
+            total_reports=0,
+            reports_last_30_days=0,
+            inactive_patients=0,
+            risk_distribution={},
+            report_activity=[]
         )
 
     health_data = (
@@ -894,10 +895,10 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     # Inactive patients
     inactive_patients = 0
-    
+
     for patient in patients:
         latest = (db_conn.query(HealthData).filter(HealthData.PatientID == patient.PatientID)
-                .order_by(HealthData.CreatedAt.desc()).first())
+                  .order_by(HealthData.CreatedAt.desc()).first())
 
         if not latest or latest.CreatedAt < last_30_days:
             inactive_patients += 1
@@ -909,8 +910,8 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
     for patient in patients:
         prediction = (db_conn.query(Prediction).join(HealthData, Prediction.HealthDataID == HealthData.HealthDataID)
-                    .filter(HealthData.PatientID == patient.PatientID).order_by(Prediction.CreatedAt.desc())
-                    .first())
+                      .filter(HealthData.PatientID == patient.PatientID).order_by(Prediction.CreatedAt.desc())
+                      .first())
 
         if not prediction:
             continue
@@ -919,42 +920,52 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
         cvd = float(prediction.CVDChance or 0)
         diabetes = float(prediction.DiabetesChance or 0)
 
-        if stroke >= 50: stroke_high += 1
-        elif stroke >= 30: stroke_mod += 1
-        else: stroke_low += 1
+        if stroke >= 50:
+            stroke_high += 1
+        elif stroke >= 30:
+            stroke_mod += 1
+        else:
+            stroke_low += 1
 
-        if cvd >= 50: cvd_high += 1
-        elif cvd >= 30: cvd_mod += 1
-        else: cvd_low += 1
+        if cvd >= 50:
+            cvd_high += 1
+        elif cvd >= 30:
+            cvd_mod += 1
+        else:
+            cvd_low += 1
 
-        if diabetes >= 50: diabetes_high += 1
-        elif diabetes >= 30: diabetes_mod += 1
-        else: diabetes_low += 1
+        if diabetes >= 50:
+            diabetes_high += 1
+        elif diabetes >= 30:
+            diabetes_mod += 1
+        else:
+            diabetes_low += 1
 
     # Report activity
     recent_activity = []
 
     reports = (db_conn.query(HealthData).filter(HealthData.PatientID.in_(patient_ids))
-                    .order_by(HealthData.CreatedAt.desc()).limit(20).all())
+               .order_by(HealthData.CreatedAt.desc()).limit(20).all())
 
     for report in reports:
-        patient = db_conn.query(Patient).filter_by(PatientID=report.PatientID).first()
+        patient = db_conn.query(Patient).filter_by(
+            PatientID=report.PatientID).first()
         recent_activity.append({
             "message": f"{patient.GivenNames} {patient.FamilyName} submitted report",
             "createdAt": report.CreatedAt.isoformat()
         })
 
     return MerchantDashboard(
-        totalPatients=total_patients,
-        totalReports=total_reports,
-        reportsLast30Days=reports_last_30,
-        inactivePatients=inactive_patients,
-        riskDistribution={
+        total_patients=total_patients,
+        total_reports=total_reports,
+        reports_last_30_days=reports_last_30,
+        inactive_patients=inactive_patients,
+        risk_distribution={
             "stroke": {"high": stroke_high, "moderate": stroke_mod, "low": stroke_low},
             "cvd": {"high": cvd_high, "moderate": cvd_mod, "low": cvd_low},
             "diabetes": {"high": diabetes_high, "moderate": diabetes_mod, "low": diabetes_low},
         },
-        reportActivity=recent_activity
+        report_activity=recent_activity
     )
 
 
