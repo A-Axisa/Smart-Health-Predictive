@@ -1,7 +1,6 @@
 import AuditLogTable from "../components/administrator/AuditLogTable";
 import { Box } from "@mui/material";
 
-
 const AdministratorLogs = () => {
   return (
     <Box
@@ -18,6 +17,6 @@ const AdministratorLogs = () => {
       <AuditLogTable />
     </Box>
   );
-}
+};
 
 export default AdministratorLogs;

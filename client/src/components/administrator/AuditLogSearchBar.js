@@ -1,9 +1,9 @@
-import SearchIcon from '@mui/icons-material/Search';
-import { TextField, InputAdornment } from '@mui/material';
-import { memo, useEffect, useState } from 'react';
+import SearchIcon from "@mui/icons-material/Search";
+import { TextField, InputAdornment } from "@mui/material";
+import { memo, useEffect, useState } from "react";
 
 const AuditLogSearchBar = ({ onSearchChange, delay = 500 }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
