@@ -6,7 +6,6 @@ import {
   ListItemText,
   Divider,
   Card,
-  Grid,
 } from "@mui/material";
 
 const ReportTemplate = ({ report, date }) => {

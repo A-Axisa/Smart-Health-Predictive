@@ -44,8 +44,7 @@ const ResetPasswordForm = () => {
       (primary_password &&
         secondary_password &&
         primary_password === secondary_password) ||
-      (!primary_password &&
-        !secondary_password)
+      (!primary_password && !secondary_password)
     );
   }
 

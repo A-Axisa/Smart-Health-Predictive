@@ -1,7 +1,6 @@
 import AccountApprovalTable from "../components/administrator/AccountApprovalTable";
 import { Box } from "@mui/material";
 
-
 const AdministratorApproval = () => {
   return (
     <Box
@@ -18,6 +17,6 @@ const AdministratorApproval = () => {
       <AccountApprovalTable />
     </Box>
   );
-}
+};
 
 export default AdministratorApproval;

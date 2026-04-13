@@ -1,10 +1,10 @@
-import SearchIcon from '@mui/icons-material/Search'
-import { Input, Box } from '@mui/material'
-import InputAdornment from '@mui/material/InputAdornment';
-import { useEffect, useState, memo } from 'react';
+import SearchIcon from "@mui/icons-material/Search";
+import { Input, Box } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import { useEffect, useState, memo } from "react";
 
 const UserSearchBar = ({ placeholder, onSearchChange, delay = 400 }) => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,9 +17,9 @@ const UserSearchBar = ({ placeholder, onSearchChange, delay = 400 }) => {
   }, [inputValue, onSearchChange, delay]);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ display: "flex", alignItems: "center" }}>
       <Input
-        sx = {{ py: 2 }}
+        sx={{ py: 2 }}
         placeholder={placeholder}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
@@ -32,6 +32,6 @@ const UserSearchBar = ({ placeholder, onSearchChange, delay = 400 }) => {
       />
     </Box>
   );
-}
+};
 
 export default memo(UserSearchBar);

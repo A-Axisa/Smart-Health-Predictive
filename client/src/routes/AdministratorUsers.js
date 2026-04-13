@@ -1,7 +1,6 @@
 import UserManagementTable from "../components/administrator/UserManagementTable";
 import { Box } from "@mui/material";
 
-
 const AdministratorUsers = () => {
   return (
     <Box
@@ -18,6 +17,6 @@ const AdministratorUsers = () => {
       <UserManagementTable />
     </Box>
   );
-}
+};
 
 export default AdministratorUsers;
