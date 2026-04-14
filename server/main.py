@@ -6,6 +6,7 @@ from .routers import health_prediction, authentication, users, admin
 ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
+    "https://smart-health-predictive-test.onrender.com"
 ]
 
 app = FastAPI()
