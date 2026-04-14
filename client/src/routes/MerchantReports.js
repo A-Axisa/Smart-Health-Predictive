@@ -62,7 +62,7 @@ const MerchantReports = ({}) => {
   // Fetch report data
   useEffect(() => {
     if (!selectedDate) return;
-    fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
+    fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ const MerchantReports = ({}) => {
   async function deleteReport() {
     if (!selectedDate) return;
     try {
-      fetch(`${API_BASE}/reportData/${selectedDate.healthDataID}`, {
+      fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +85,7 @@ const MerchantReports = ({}) => {
       });
       // Filter remaining reports and update state
       let updatedReports = reports.filter(
-        (r) => r.healthDataID !== selectedDate.healthDataID,
+        (r) => r.healthDataId !== selectedDate.healthDataId,
       );
       setReports(updatedReports);
       // Re-select the patient reports and update state
@@ -154,20 +154,20 @@ const MerchantReports = ({}) => {
         <List component="nav" sx={{ p: 0 }}>
           {reportDates.map((item) => (
             <ListItem
-              key={item.healthDataID}
-              selected={selectedDate?.healthDataID === item.healthDataID}
+              key={item.healthDataId}
+              selected={selectedDate?.healthDataId === item.healthDataId}
               onClick={(e) => setSelectedDate(item)}
               button
               sx={{
                 py: 2,
                 px: 3,
                 borderLeft:
-                  selectedDate?.healthDataID === item.healthDataID
+                  selectedDate?.healthDataId === item.healthDataId
                     ? "4px solid"
                     : "4px solid transparent",
                 borderLeftColor: "primary.main",
                 bgcolor:
-                  selectedDate?.healthDataID === item.healthDataID
+                  selectedDate?.healthDataId === item.healthDataId
                     ? "action.selected"
                     : "transparent",
               }}
@@ -178,7 +178,7 @@ const MerchantReports = ({}) => {
                   primary: {
                     style: {
                       fontWeight:
-                        selectedDate?.healthDataID === item.healthDataID
+                        selectedDate?.healthDataId === item.healthDataId
                           ? 600
                           : 400,
                     },
@@ -186,7 +186,7 @@ const MerchantReports = ({}) => {
                 }}
               />
               {/* Delete Report Button */}
-              {selectedDate?.healthDataID === item.healthDataID && (
+              {selectedDate?.healthDataId === item.healthDataId && (
                 <IconButton
                   aria-label="delete"
                   color="error"
@@ -206,11 +206,11 @@ const MerchantReports = ({}) => {
           <>
             <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
               <DownloadReportButton
-                healthDataId={selectedDate?.healthDataID}
+                healthDataId={selectedDate?.healthDataId}
                 flatReportData={reportData}
                 meta={{
                   date: selectedDate?.date,
-                  healthDataID: selectedDate?.healthDataID,
+                  healthDataId: selectedDate?.healthDataId,
                 }}
               />
             </Box>

@@ -1,5 +1,5 @@
-import { useContext } from 'react';
-import { UserContext } from './UserContext';
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
 
 /**
  * A custom hook to check if the current user has a specific role.

@@ -1,10 +1,12 @@
 import os
+import html
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone, UTC, date
 from secrets import token_urlsafe
 
 import jwt
 import phonenumbers
+import re
 from email_validator import validate_email, EmailNotValidError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, \
     Response
@@ -13,12 +15,15 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 from typing import Optional
 from sqlalchemy.orm import Session
+from html_sanitizer import Sanitizer
 
 from ..utils.database import get_db
 from ..models.dbmodels import UserAccount, UserAccountRole, \
-    UserAccountValidationToken, AccountRole, LogEventType, Patient
+    UserAccountValidationToken, AccountRole, LogEventType, Patient, \
+    PasswordResetToken
 from ..utils.email_service import send_email
 from ..utils.audit_log import write_audit_log
 
@@ -42,7 +47,7 @@ MIN_AGE = 18
 gender_map = {'Male': 1, 'Female': 0}
 
 
-class UserRegistrationDetails(BaseModel):
+class UserRegistrationDetails(CamelModel):
     given_names: str
     family_name: str
     date_of_birth: Optional[date]
@@ -65,10 +70,19 @@ class TokenData(BaseModel):
     version: int
 
 
-class ChangePasswordDetails(BaseModel):
+class ChangePasswordDetails(CamelModel):
     current_password: str
     new_password: str
     confirm_new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class PasswordResetRequest(BaseModel):
+    token: str
+    password: str
 
 
 load_dotenv()
@@ -85,7 +99,7 @@ password_hasher = PasswordHash((owasp_argon2_hasher,))
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails,
                    db_conn: Session = Depends(get_db)):
-    '''Register a new account for the user provided the details are valid.'''
+    """Register a new account for the user provided the details are valid."""
 
     formatted_phone = format_phone_number(user_reg.phone)
 
@@ -94,7 +108,7 @@ async def register(user_reg: UserRegistrationDetails,
             not is_password_valid(user_reg.password) or
             not is_name_valid(user_reg.given_names) or
             not is_name_valid(user_reg.family_name) or
-            not is_formatted_phone_valid(user_reg.phone) or
+            not is_formatted_phone_valid(formatted_phone) or
             not is_role_valid(user_reg.account_type)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -114,7 +128,7 @@ async def register(user_reg: UserRegistrationDetails,
         password_hash=password_hash,
         phone_number=formatted_phone
     )
-    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == 'user':
+    if EMAIL_VALIDATION_ENABLED == False and user_reg.account_type == "user":
         new_user.IsValidated = True
 
     # Only add the user to the database of they don't exist.
@@ -193,6 +207,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Invalid or expired validation token."
     )
+    """Validates a user's account"""
 
     # Find the token in the database
     validation_token_entry = db_conn.query(
@@ -251,7 +266,7 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials,
                 db_conn: Session = Depends(get_db)):
-    '''Authenticates a user with the credentials and provides an access token.'''
+    """Authenticates a user with the credentials and provides an access token."""
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -307,7 +322,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
 
 def authenticate_user(email: str, password: str, db_conn: Session):
-    '''Authenticates a user from the provided email and password.'''
+    """Authenticates a user from the provided email and password."""
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
@@ -321,12 +336,12 @@ def authenticate_user(email: str, password: str, db_conn: Session):
 
 
 def verify_password(password_text: str, password_hash: str) -> bool:
-    '''Verifies a given password matches with a password hash.'''
+    """Verifies a given password matches with a password hash."""
     return password_hasher.verify(password_text, password_hash)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    '''Returns JWT containing the access token with the given data.'''
+    """Returns JWT containing the access token with the given data."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -339,12 +354,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 @router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
-    '''Endpoint for retrieving the currently active user on a device.'''
+    """Endpoint for retrieving the currently active user on a device."""
     return get_current_user(request, db_conn)
 
 
 def get_current_user(request: Request, db_conn: Session):
-    '''Returns user information from the http-only cookie on their device.'''
+    """Returns user information from the http-only cookie on their device."""
 
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
@@ -391,16 +406,23 @@ def get_current_user(request: Request, db_conn: Session):
         'email': user.Email,
         'role': user_role,
         'name': patient_details.GivenNames if patient_details else user.Email.split('@')[0],
+        'phone_number': user.PhoneNumber,
+        'given_names': patient_details.GivenNames if patient_details else None,
+        'family_name': patient_details.FamilyName if patient_details else None,
+        'gender': patient_details.Gender if patient_details else None,
+        'weight': float(patient_details.Weight) if patient_details and patient_details.Weight is not None else None,
+        'height': float(patient_details.Height) if patient_details and patient_details.Height is not None else None,
+        'date_of_birth': patient_details.DateOfBirth.isoformat() if patient_details and patient_details.DateOfBirth else None,
     }
 
 
 def get_user(email: str, db_conn: Session):
-    '''Returns user account details from the database using an email.'''
+    """Returns user account details from the database using an email."""
     return db_conn.query(UserAccount).filter_by(Email=email).first()
 
 
 def get_patient_by_email(email: str, db_conn: Session):
-    '''Returns patient details from the database using an email.'''
+    """Returns patient details from the database using an email."""
     patient = (
         db_conn.query(Patient)
         .join(UserAccount, Patient.UserID == UserAccount.UserID)
@@ -411,7 +433,7 @@ def get_patient_by_email(email: str, db_conn: Session):
 
 
 def get_user_role(email: str, db_conn: Session):
-    '''Returns the role for a given a user by email.'''
+    """Returns the role for a given a user by email."""
     user_role = (db_conn.query(AccountRole.RoleName)
                  .join(UserAccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
                  .join(UserAccount, UserAccount.UserID == UserAccountRole.UserID)
@@ -422,7 +444,7 @@ def get_user_role(email: str, db_conn: Session):
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
-    '''Deletes the user cookie and invalidates their access token.'''
+    """Deletes the user cookie and invalidates their access token."""
     user = get_current_user(request, db_conn)
     invalidate_access_token(user['email'], db_conn)
 
@@ -435,14 +457,14 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
 
 
 def invalidate_access_token(email: str, db_conn: Session):
-    '''Increase the user's token version number.'''
+    """Increase the user's token version number."""
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     user.TokenVersion += 1
     db_conn.commit()
 
 
 def is_password_valid(password: str):
-    '''Verifies the password follows policy rules.'''
+    """Verifies the password follows policy rules."""
 
     contains_lower = any(c.islower() for c in password)
     contains_upper = any(c.isupper() for c in password)
@@ -459,7 +481,7 @@ def is_password_valid(password: str):
 
 
 def is_email_valid(email: str):
-    '''Verifies a password follow the pattern xxx@xxx.xxx.'''
+    """Verifies a password follow the pattern xxx@xxx.xxx."""
     if not email:
         return False
     try:
@@ -470,43 +492,43 @@ def is_email_valid(email: str):
 
 
 def format_phone_number(phone: str):
-    '''Removes spaces, hyphens, and brackets from a phone number string'''
-    return phone.replace('-', '').replace(' ', ''). \
-        replace('(', '').replace(')', '')
+    """Removes everything but digits from a given phone number."""
+    return ''.join(c for c in phone if c.isdigit())
 
 
 def is_formatted_phone_valid(phone: str):
-    '''Verifies a phone number is empty or a valid number.'''
+    """Verifies a phone number only containing digits a valid number
+       or is empty."""
     if phone == '':
         return True
 
     # Only allow for numbers after the plus sign.
-    if not phone[1:].isalpha:
+    if not phone.isdigit():
         return False
     try:
-        phonenumbers.parse(phone)
+        phonenumbers.parse('+' + phone)
     except phonenumbers.NumberParseException:
         return False
     return True
 
 
 def is_name_valid(name: str):
-    '''Verifies a name is valid.'''
+    """Verifies a name is valid."""
     return name is not None or len(name) <= NAME_MAX_LENGTH
 
 
 def is_role_valid(role: str):
-    '''Verifies the role is valid for registration.'''
+    """Verifies the role is valid for registration."""
     return role in ACCOUNT_TYPE.keys()
 
 
 def is_gender_valid(gender: str):
-    '''Verifies gender is valid'''
+    """Verifies gender is valid"""
     return gender in gender_map
 
 
 def is_age_valid(date_of_birth: date):
-    '''Verifies age is valid and the user is at least 18'''
+    """Verifies age is valid and the user is at least 18"""
     today = date.today()
     year_diff = today.year - date_of_birth.year
 
@@ -518,8 +540,10 @@ def is_age_valid(date_of_birth: date):
     return age >= MIN_AGE
 
 
-@router.post('/changePassword')
+@router.post('/change-password')
 def change_password_current_user(password_details: ChangePasswordDetails, request: Request, db_conn: Session = Depends(get_db)):
+    """Change a user's password"""
+
     # Retrieve current user data
     user_email = get_current_user(request, db_conn)
     user = get_user(user_email["email"], db_conn)
@@ -549,3 +573,127 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
                     description=f"Password successfully changed.")
 
     return {'message': 'User successfully changed password.'}
+
+
+@router.post('/forgot-password')
+def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
+    """Generates a reset password token for a given email."""
+    is_success = False
+
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
+                             forgot_password_request.email)
+    if is_email_valid(sanitised_email):
+        user = db_conn.query(UserAccount, AccountRole) \
+            .filter(UserAccount.Email == sanitised_email) \
+            .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
+            .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
+            .first()
+
+        if user and user.AccountRole.RoleName != 'admin':
+            patient = db_conn.query(Patient).filter_by(
+                UserID=user.UserAccount.UserID).first()
+
+            # Only allow one token to exist per user.
+            existing_token = db_conn.query(
+                PasswordResetToken).filter_by(UserID=user.UserAccount.UserID).first()
+            if existing_token:
+                db_conn.delete(existing_token)
+
+            token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+            expires_at = datetime.now() + timedelta(minutes=30)
+            pass_reset_token = PasswordResetToken(
+                user.UserAccount.UserID,
+                token,
+                expires_at
+            )
+
+            db_conn.add(pass_reset_token)
+            db_conn.commit()
+            is_success = True
+            _send_reset_password_email(
+                user.UserAccount, patient, request, token)
+
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.RESET_PASSWORD_REQUEST,
+        success=is_success,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Password reset requested for {}".format(sanitised_email)
+    )
+
+
+@router.post("/password-reset")
+async def password_reset(
+    reset_request: PasswordResetRequest,
+    request: Request,
+    db_conn: Session = Depends(get_db)
+):
+    """Updates a user's password if the token is valid and password are valid."""
+    is_successful = False
+    user = None
+
+    token_entry = db_conn.query(
+        PasswordResetToken).filter_by(Token=reset_request.token).first()
+    if token_entry \
+            and datetime.now(UTC) < token_entry.ExpiresAt.astimezone(timezone.utc):
+        db_conn.delete(token_entry)
+        db_conn.commit()
+
+        user = db_conn.query(UserAccount) \
+            .filter_by(UserID=token_entry.UserID) \
+            .first()
+        if is_password_valid(reset_request.password) and user:
+            new_password_hash = password_hasher.hash(reset_request.password)
+            user.PasswordHash = new_password_hash
+            is_successful = True
+
+    write_audit_log(
+        db_conn,
+        eventType=LogEventType.PASSWORD_RESET,
+        success=is_successful,
+        userID=None if user is None else user.UserID,
+        userEmail=None if user is None else user.Email,
+        device=request.headers.get("user-agent"),
+        ipAddress=request.client.host,
+        description="Attempt to reset password for account.",
+    )
+
+
+def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
+    """Helper function to send a validation email."""
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    ip_address = sanitizer.sanitize(request.client.host)
+    device = sanitizer.sanitize(request.headers.get("user-agent"))
+
+    url = f"http://localhost:3000/reset-password/{sanitized_token}"
+    subject = "Password reset request for WellAI Smart Health Predictive"
+    content = f"""
+    <html>
+        <body>
+            <p>Greetings {given_names} {family_name},</p>
+            <p>We have received a request to reset the password for your account with WellAI Smart Health Predictive.</p>
+            <p>Click the following link to proceed this process and update your password. For security, this link will expire in 30 minutes:
+              <a href={url}>Reset Password</a>
+            </p>
+            <p>Request Details:
+            <ul>
+              <li>IP Address: _{ip_address} </li>
+              <li>Device: {device} </li>
+            </ul>
+            <p>If you did not request a password reset, your account may be at risk, but you can safely ignore this email and your password will not be altered.</p>
+            <br />
+            <p>Best regards,</p>
+            <p>The WellAI Team</p>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=user.Email,
+        subject=subject,
+        content=content,
+        content_type="html"
+    )

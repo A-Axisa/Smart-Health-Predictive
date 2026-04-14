@@ -1,39 +1,76 @@
-import { Paper, Box, Snackbar, Alert } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import { useState, useEffect } from 'react';
-import ConfirmationDialog from '../confirmationDialog'
-import UserSearchBar from './UserSearchBar';
-import ToolBar from './ToolBar';
-import * as React from 'react';
-
+import { Paper, Box, Snackbar, Alert } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import { useState, useEffect, useCallback } from "react";
+import ConfirmationDialog from "../confirmationDialog";
+import UserSearchBar from "./UserSearchBar";
+import ToolBar from "./ToolBar";
+import * as React from "react";
 
 const UserManagementTable = () => {
-
   const [userData, setUserData] = useState([]); // Stores user data
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 50,
+  });
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [rowSelectionModel, setRowSelectionModel] = React.useState({ type: 'include', ids: new Set() });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({
+    type: "include",
+    ids: new Set(),
+  });
 
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const fetchUsers = () => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      skip: paginationModel.page * paginationModel.pageSize,
+      limit: paginationModel.pageSize,
+    });
+    if (debouncedSearchQuery) {
+      params.append("search", debouncedSearchQuery);
+    }
 
-  useEffect(() => {
-    fetch(`${API_BASE}/users`)
+    fetch(`${API_BASE}/users?${params.toString()}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
         }
         return response.json();
       })
-      .then(data => setUserData(data))
+      .then((data) => {
+        setUserData(data.users || data || []);
+        setTotalUsers(data.total || 0);
+        setLoading(false);
+      })
       .catch((err) => {
         console.log(err);
+        setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [
+    API_BASE,
+    paginationModel.page,
+    paginationModel.pageSize,
+    debouncedSearchQuery,
+  ]);
+
+  useEffect(() => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, [API_BASE]);
 
   useEffect(() => {
@@ -44,7 +81,7 @@ const UserManagementTable = () => {
         }
         return response.json();
       })
-      .then(data => setRoleData(data))
+      .then((data) => setRoleData(data))
       .catch((err) => {
         console.log(err);
       });
@@ -53,30 +90,39 @@ const UserManagementTable = () => {
   const confirmRoleChange = async (e) => {
     e.preventDefault();
     const emails = getSelectedEmails();
-    
+
     try {
       await Promise.all(
-        emails.map(async email => {
-          const response = await fetch(`${API_BASE}/users/${email}/roles/${newRole}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-          });
+        emails.map(async (email) => {
+          const response = await fetch(
+            `${API_BASE}/users/${email}/roles/${newRole}`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+            },
+          );
           if (!response.ok) throw new Error(response.status);
           return response.json();
-        })
+        }),
       );
 
-      const roleName = roleData.find(r => r.id === newRole)?.name;
-      setUserData(prev =>
-        prev.map(user =>
-          emails.includes(user.email) ? { ...user, role: { id: newRole, name: roleName } } : user
-        )
+      const roleName = roleData.find((r) => r.id === newRole)?.name;
+      setUserData((prev) =>
+        prev.map((user) =>
+          emails.includes(user.email)
+            ? { ...user, role: { id: newRole, name: roleName } }
+            : user,
+        ),
       );
 
-      setSnackbar({ open: true, message: `Role updated to "${roleName}" for ${emails.length} user(s).`, severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: `Role updated to "${roleName}" for ${emails.length} user(s).`,
+        severity: "success",
+      });
       setDialogOpen(false);
       setNewRole(null);
-      setRowSelectionModel({ type: 'include', ids: new Set() });
+      setRowSelectionModel({ type: "include", ids: new Set() });
     } catch (err) {
       console.log(err);
     }
@@ -84,16 +130,21 @@ const UserManagementTable = () => {
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
-    const emails = Array.isArray(userToDelete) ? userToDelete : [userToDelete?.email];
+    const emails = Array.isArray(userToDelete)
+      ? userToDelete
+      : [userToDelete?.email];
     if (!emails.length) return;
-    
+
     try {
       await Promise.all(
-        emails.map(async email => {
-          const response = await fetch(`${API_BASE}/users/${email}`, { method: 'DELETE', credentials: 'include' });
+        emails.map(async (email) => {
+          const response = await fetch(`${API_BASE}/users/${email}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
           if (!response.ok) throw new Error(response.status);
           return response.json();
-        })
+        }),
       );
 
       // NOTE: Need to collect deletion reports for each user.
@@ -112,25 +163,23 @@ const UserManagementTable = () => {
       //     reportMessage += ` Cleaned up: ${details}.`;
       //   }
       // }
-  
-      setSnackbar({ open: true, message: `${emails.length} user(s) deleted.`, severity: 'success' });
-      setUserData(prev => prev.filter(user => !emails.includes(user.email)));
+
+      setSnackbar({
+        open: true,
+        message: `${emails.length} user(s) deleted.`,
+        severity: "success",
+      });
+      setUserData((prev) =>
+        prev.filter((user) => !emails.includes(user.email)),
+      );
       setDeleteDialogOpen(false);
       setUserToDelete(null);
-      setRowSelectionModel({ type: 'include', ids: new Set() }); // Reset the checkbox after deletion.
+      setRowSelectionModel({ type: "include", ids: new Set() }); // Reset the checkbox after deletion.
     } catch (error) {
       console.error("Delete user error:", error);
-      setSnackbar({ open: true, message: error.message, severity: 'error' });
+      setSnackbar({ open: true, message: error.message, severity: "error" });
     }
   };
-
-  const filteredUsers = userData.filter((user) => {
-    const query = searchQuery.toLowerCase()
-    return (
-      user.fullName.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query)
-    );
-  });
 
   // Returns array of emails from the selection model.
   const getSelectedEmails = (model = rowSelectionModel) => {
@@ -149,111 +198,139 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   };
 
+  const handleSearchChange = useCallback((value) => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    setDebouncedSearchQuery(value);
+  }, []);
+
   const columns = [
-    { field: 'email', headerName: 'Email', width: 250, sortable: true },
-    { field: 'fullName', headerName: 'Full Name', width: 250, sortable: true },
-    { field: 'createdAt', headerName: 'Created At', width: 200, sortable: true },
-    { field: 'validated', headerName: 'Validation Status', width: 150, sortable: true },
+    { field: "email", headerName: "Email", width: 250, sortable: true },
+    { field: "fullName", headerName: "Full Name", width: 250, sortable: true },
     {
-      field: 'role',
-      headerName: 'Role',
+      field: "createdAt",
+      headerName: "Created At",
+      width: 200,
+      sortable: true,
+    },
+    {
+      field: "validated",
+      headerName: "Validation Status",
+      width: 150,
+      sortable: true,
+    },
+    {
+      field: "role",
+      headerName: "Role",
       width: 220,
       sortable: true,
-      renderCell: (params) => params.row.role.name,
+      valueGetter: (params) => params?.name,
     },
   ];
 
   return (
     <>
-    <Box>
-      <Paper sx={{ mb: '12px' }}>
-        <UserSearchBar
-          placeholder="Search by name or email"
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </Paper>
-      <Paper sx={{ width: '100%'}}>
-        <DataGrid
-          onRowSelectionModelChange={(newSelection) => setRowSelectionModel(newSelection)}
-          rowSelectionModel={rowSelectionModel}
-          showToolbar
-          slots={{ toolbar: ToolBar }}
-          slotProps={{
-            toolbar: {
-              rowSelectionModel,
-              totalRowCount: filteredUsers.length,
-              onUsersDelete: handleUsersDelete,
-              onUsersRoleChange: handleUsersRoleChange,
-              roleData,
-            },
-          }}
-          rows={filteredUsers}
-          columns={columns}
-          getRowId={(row) => row.email}
-          pageSizeOptions={[50, 100, 1000]}
-          initialState={{ pagination: { pageSize: 50 } }}
-          disableColumnResize
-          disableRowSelectionOnClick
-          checkboxSelection
-          sx={{ 
-            border: 0, 
-            p: 1,
-            // Removes cell outline.
-            '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
-              outline: 'none',
-            },
-            '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
-              outline: 'none',
-            },
-            '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
-              backgroundColor: '#f1f1f1f1',
-            },
-          }}
-        />
-      </Paper>
-    </Box>
-    <ConfirmationDialog
-      open={dialogOpen}
-      title={'Confirm Role Change'}
-      message={
-        <>
-          Are you sure you want to change the role of <b>{getSelectedEmails().length}</b> user(s) to
-          <b> {roleData.find(role => role.id === newRole)?.name}</b>?
-        </>
-      }
-      confirmText={'Confirm'}
-      cancelText={'Cancel'}
-      confirmColor={'primary'}
-      cancelColor={'error'}
-      confirm={confirmRoleChange}
-      cancel={() => {
-        setDialogOpen(false);
-        setNewRole(null);
-      }}
-    />
-    <ConfirmationDialog
-      open={deleteDialogOpen}
-      title="Confirm Deletion"
-      message={`Are you sure you want to delete ${Array.isArray(userToDelete) ? `${userToDelete.length} user(s)` : userToDelete?.fullName}? This action cannot be undone.`}
-      confirmText="Delete"
-      cancelText="Cancel"
-      confirmColor="error"
-      cancelColor="primary"
-      confirm={confirmDeleteUser}
-      cancel={() => setDeleteDialogOpen(false)}
-    />
-    <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
+      <Box>
+        <Paper sx={{ mb: "12px" }}>
+          <UserSearchBar
+            placeholder="Search by name or email"
+            onSearchChange={handleSearchChange}
+            delay={400}
+          />
+        </Paper>
+        <Paper sx={{ width: "100%" }}>
+          <DataGrid
+            loading={loading}
+            onRowSelectionModelChange={(newSelection) =>
+              setRowSelectionModel(newSelection)
+            }
+            rowSelectionModel={rowSelectionModel}
+            showToolbar
+            slots={{ toolbar: ToolBar }}
+            slotProps={{
+              toolbar: {
+                rowSelectionModel,
+                totalRowCount: totalUsers,
+                onUsersDelete: handleUsersDelete,
+                onUsersRoleChange: handleUsersRoleChange,
+                roleData,
+              },
+            }}
+            rows={userData}
+            rowCount={totalUsers}
+            columns={columns}
+            getRowId={(row) => row.email}
+            pageSizeOptions={[50, 100, 1000]}
+            paginationModel={paginationModel}
+            paginationMode="server"
+            onPaginationModelChange={setPaginationModel}
+            disableColumnResize
+            disableRowSelectionOnClick
+            checkboxSelection
+            sx={{
+              border: 0,
+              p: 1,
+              // Removes cell outline.
+              "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
+                outline: "none",
+              },
+              "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
+                {
+                  outline: "none",
+                },
+              "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
+                backgroundColor: "#f1f1f1f1",
+              },
+            }}
+          />
+        </Paper>
+      </Box>
+      <ConfirmationDialog
+        open={dialogOpen}
+        title={"Confirm Role Change"}
+        message={
+          <>
+            Are you sure you want to change the role of{" "}
+            <b>{getSelectedEmails().length}</b> user(s) to
+            <b> {roleData.find((role) => role.id === newRole)?.name}</b>?
+          </>
+        }
+        confirmText={"Confirm"}
+        cancelText={"Cancel"}
+        confirmColor={"primary"}
+        cancelColor={"error"}
+        confirm={confirmRoleChange}
+        cancel={() => {
+          setDialogOpen(false);
+          setNewRole(null);
+        }}
+      />
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete ${Array.isArray(userToDelete) ? `${userToDelete.length} user(s)` : userToDelete?.fullName}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={confirmDeleteUser}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-    >
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
-            {snackbar.message}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
         </Alert>
-    </Snackbar>
+      </Snackbar>
     </>
-  )
+  );
 };
 
 export default UserManagementTable;

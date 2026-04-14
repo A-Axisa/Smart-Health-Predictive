@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { Paper, Box, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { useCallback, useEffect, useState } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import {
+  Paper,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import AuditLogSearchBar from "./AuditLogSearchBar";
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const EVENT_TYPES = [
   "LOGIN",
@@ -10,54 +18,49 @@ const EVENT_TYPES = [
   "REGISTRATION",
   "EMAIL_VALIDATION",
   "PASSWORD_CHANGE",
+  "RESET_PASSWORD_REQUEST",
+  "PASSWORD_RESET",
   "ROLE_CHANGED",
   "ACCOUNT_DELETED",
   "MERCHANT_VALIDATED",
   "PREDICTION_REQUEST",
   "DATA_IMPORT",
-  "FAILED_LOGIN_ATTEMPT"
+  "FAILED_LOGIN_ATTEMPT",
+  "USER_PROFILE_UPDATED",
+  "PATIENT_PROFILE_UPDATED",
 ];
 
 const AuditLogTable = () => {
-
   const [logData, setLogData] = useState([]);
   const [totalLogs, setTotalLogs] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 });
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 50,
+  });
 
   // Filter states
-  const [emailInput, setEmailInput] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [eventType, setEventType] = useState('');
-
-  // Debounce email input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // resetting page to 0 when filter changes
-      setPaginationModel((prev) => ({ ...prev, page: 0 }));
-      setUserEmail(emailInput);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [emailInput]);
+  const [userEmail, setUserEmail] = useState("");
+  const [eventType, setEventType] = useState("");
 
   const fetchLogs = () => {
     setLoading(true);
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
-      limit: paginationModel.pageSize
+      limit: paginationModel.pageSize,
     });
-    
-    if (userEmail) params.append('user_email', userEmail);
-    if (eventType) params.append('event_type', eventType);
 
-    fetch(`${API_BASE}/logs?${params.toString()}`, { credentials: 'include' })
+    if (userEmail) params.append("user_email", userEmail);
+    if (eventType) params.append("event_type", eventType);
+
+    fetch(`${API_BASE}/logs?${params.toString()}`, { credentials: "include" })
       .then((response) => {
         if (!response.ok) {
-            throw new Error(response.status);
+          throw new Error(response.status);
         }
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         setLogData(data.logs || []);
         setTotalLogs(data.total || 0);
         setLoading(false);
@@ -72,6 +75,11 @@ const AuditLogTable = () => {
     fetchLogs();
   }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType]);
 
+  const handleEmailSearchChange = useCallback((value) => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    setUserEmail(value);
+  }, []);
+
   const columns = [
     { field: "logID", headerName: "Log ID", width: 70 },
     { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140 },
@@ -84,16 +92,19 @@ const AuditLogTable = () => {
   ];
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <TextField
-            label="Search by Email"
-            variant="outlined"
-            size="small"
-            value={emailInput}
-            onChange={(e) => setEmailInput(e.target.value)}
-            sx={{ width: 300 }}
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <AuditLogSearchBar
+            onSearchChange={handleEmailSearchChange}
+            delay={500}
           />
           <FormControl size="small" sx={{ width: 250 }}>
             <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
@@ -106,20 +117,24 @@ const AuditLogTable = () => {
                 setEventType(e.target.value);
               }}
             >
-              <MenuItem value=""><em>All</em></MenuItem>
+              <MenuItem value="">
+                <em>All</em>
+              </MenuItem>
               {EVENT_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>{type}</MenuItem>
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Box>
       </Paper>
 
-      <Paper sx={{ width: '100%' }}>
+      <Paper sx={{ width: "100%" }}>
         <DataGrid
           rows={logData}
           columns={columns}
-          getRowHeight={() => 'auto'}
+          getRowHeight={() => "auto"}
           getRowId={(row) => row.logID}
           rowCount={totalLogs}
           loading={loading}
@@ -129,30 +144,31 @@ const AuditLogTable = () => {
           onPaginationModelChange={setPaginationModel}
           disableColumnResize
           disableRowSelectionOnClick
-          sx={{ 
+          sx={{
             border: 0,
             p: 1,
             // Removes cell outline.
-            '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
-              outline: 'none',
+            "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
+              outline: "none",
             },
-            '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
-              outline: 'none',
+            "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
+              {
+                outline: "none",
+              },
+            "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
+              backgroundColor: "#f1f1f1f1",
             },
-            '& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader': {
-              backgroundColor: '#f1f1f1f1',
-            },
-            '& .MuiDataGrid-cell': {
-              whiteSpace: 'normal',
-              lineHeight: '1.4rem',
-              alignItems: 'flex-start',
-              py: 1
+            "& .MuiDataGrid-cell": {
+              whiteSpace: "normal",
+              lineHeight: "1.4rem",
+              alignItems: "flex-start",
+              py: 1,
             },
           }}
         />
       </Paper>
     </Box>
   );
-}
+};
 
-export default AuditLogTable
+export default AuditLogTable;

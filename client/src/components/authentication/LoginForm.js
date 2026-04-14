@@ -1,11 +1,20 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react'
-import { Box, Container, Stack, Button, Typography, Link, 
-         Alert, Divider } from '@mui/material'
-import PasswordInputField from '../authentication/PasswordInputField';
-import EmailInputField from '../authentication/EmailInputField';
+import { useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import {
+  Box,
+  Container,
+  Stack,
+  Button,
+  Typography,
+  Link,
+  Alert,
+  Divider,
+} from "@mui/material";
+import PasswordInputField from "../authentication/PasswordInputField";
+import EmailInputField from "../authentication/EmailInputField";
+import { UserContext } from "../../utils/UserContext";
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
  * Provides the user a form with the required fields and buttons to login to
@@ -13,14 +22,15 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
  */
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { refreshUser } = useContext(UserContext);
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
-  const [password, setPassword] = useState(null)
+  const [password, setPassword] = useState(null);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
-  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false)
-  const [email, setEmail] = useState(null)
+  const [alertPasswordRequired, setAlertPasswordRequired] = useState(false);
+  const [email, setEmail] = useState(null);
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const [alertEmailRequired, setAlertEmailRequired] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [alertEmailRequired, setAlertEmailRequired] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function validateEmail(e) {
     setAlertEmailRequired(false);
@@ -35,9 +45,13 @@ const LoginForm = () => {
   }
 
   function generateUnsuccessfulLoginAlert() {
-    if (isLoginUnsuccessful){
-      return <Alert variant="filled" severity="error"> Login details are 
-        incorrect</Alert>
+    if (isLoginUnsuccessful) {
+      return (
+        <Alert variant="filled" severity="error">
+          {" "}
+          Login details are incorrect
+        </Alert>
+      );
     }
     return null;
   }
@@ -46,70 +60,108 @@ const LoginForm = () => {
     e.preventDefault();
 
     // Check if all input fields are valid.
-    if(!isEmailValid) {
+    if (!isEmailValid) {
       setAlertEmailRequired(email === null);
       return;
     }
-    if(!isPasswordValid){
+    if (!isPasswordValid) {
       setAlertPasswordRequired(password === null);
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
-  // Post the fetch request with the supplied credentials.
-  await fetch(`${API_BASE}/login`, {
-      method: 'POST',
-      headers:{
-        'Content-Type': 'application/json'
+    // Post the fetch request with the supplied credentials.
+    await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email: email,
-        password: password
+        password: password,
       }),
-      credentials: 'include'
-    }).then(response => {
-      if (!response.ok) { throw new Error(response.status) }
-      return response.json()
-    }).then(data => {
-      navigate('/landing')
-    }).catch(error => {
-      setIsLoginUnsuccessful(true)
+      credentials: "include",
     })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(async (data) => {
+        await refreshUser();
+        navigate("/landing");
+      })
+      .catch((error) => {
+        setIsLoginUnsuccessful(true);
+      });
 
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   return (
-        <Container sx={{ borderRadius:{xs:0, sm:2}, padding:'25px', 
-          alignItems:'center', boxShadow:24, backgroundColor:'#ffffff', }}>
-          <Box component='form' onSubmit={handleLogin}>
-            <Stack spacing={{xs:2}}>
-              {generateUnsuccessfulLoginAlert()}
-              <EmailInputField onChange={validateEmail} 
-                showRequired={alertEmailRequired} />
-              <PasswordInputField onChange={validatePassword} truncate={true}
-                restrictLength={false} showRequired={alertPasswordRequired}
-                requireCharacters={false}/>
-              <Button loading={isLoading} type='submit' variant="contained" sx={{ 
-                py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
-                Login
-              </Button>
-              <Button href='/register' variant="outlined" sx={{ 
-                py:{xs:'1rem', sm:'.9rem'}, fontSize:{xs:'1.2rem', sm:'1rem'} }}>
-                Create Account
-              </Button>
-              <Divider variant="middle" aria-hidden="true" sx={{py:'5px'}}/>
-              <Stack direction='row' spacing={{xs:1}} 
-                  style={{ justifyContent:"center"}}> 
-                <Typography align='center' style={{ color:'#888888' }}>Forgot 
-                    your password?</Typography>
-                <Link href="" align='center' fontWeight='bold' >Click Here</Link>
-              </Stack>
-            </Stack>
-          </Box>
-        </Container>
-  )
-}
+    <Container
+      sx={{
+        borderRadius: { xs: 0, sm: 2 },
+        padding: "25px",
+        alignItems: "center",
+        boxShadow: 24,
+        backgroundColor: "#ffffff",
+      }}
+    >
+      <Box component="form" onSubmit={handleLogin}>
+        <Stack spacing={{ xs: 2 }}>
+          {generateUnsuccessfulLoginAlert()}
+          <EmailInputField
+            onChange={validateEmail}
+            showRequired={alertEmailRequired}
+          />
+          <PasswordInputField
+            onChange={validatePassword}
+            truncate={true}
+            restrictLength={false}
+            showRequired={alertPasswordRequired}
+            requireCharacters={false}
+          />
+          <Button
+            loading={isLoading}
+            type="submit"
+            variant="contained"
+            sx={{
+              py: { xs: "1rem", sm: ".9rem" },
+              fontSize: { xs: "1.2rem", sm: "1rem" },
+            }}
+          >
+            Login
+          </Button>
+          <Button
+            href="/register"
+            variant="outlined"
+            sx={{
+              py: { xs: "1rem", sm: ".9rem" },
+              fontSize: { xs: "1.2rem", sm: "1rem" },
+            }}
+          >
+            Create Account
+          </Button>
+          <Divider variant="middle" aria-hidden="true" sx={{ py: "5px" }} />
+          <Stack
+            direction="row"
+            spacing={{ xs: 1 }}
+            style={{ justifyContent: "center" }}
+          >
+            <Typography align="center" style={{ color: "#888888" }}>
+              Forgot your password?
+            </Typography>
+            <Link href="/forgot-password" align="center" fontWeight="bold">
+              Click Here
+            </Link>
+          </Stack>
+        </Stack>
+      </Box>
+    </Container>
+  );
+};
 
-export default LoginForm
+export default LoginForm;

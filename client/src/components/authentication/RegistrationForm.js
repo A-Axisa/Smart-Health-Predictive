@@ -61,7 +61,7 @@ const RegistrationForm = () => {
 
   // Retrieve Clinic Names
   useEffect(() => {
-    fetch(`${API_BASE}/getClinicNames/`, {
+    fetch(`${API_BASE}/get-clinic-names/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -69,7 +69,7 @@ const RegistrationForm = () => {
     })
       .then((res) => res.json())
       .then((data) => setClinicList(data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("An error has occurred"));
   }, []);
 
   function updateGivenName(e) {
@@ -83,8 +83,28 @@ const RegistrationForm = () => {
     setAlertFamilyNameRequired(!isNameValid);
   }
   function updateDoB(e) {
-    setAlertDoBRequired(false);
+    if (calculateAge(e.target.value) < 18) {
+      setAlertDoBRequired(true);
+    } else {
+      setAlertDoBRequired(false);
+    }
     setDoBState(e.target.value);
+  }
+
+  function calculateAge(DoB) {
+    // Format dates
+    const today = new Date();
+    const dob = new Date(DoB);
+    // calculate the year different between today and the dob
+    const yearDiff = today.getFullYear() - dob.getFullYear();
+
+    // Check if the users birthday has past
+    const birthdayNotPassed =
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+
+    const age = yearDiff - birthdayNotPassed;
+    return age;
   }
 
   function updateEmail(e) {
@@ -135,7 +155,7 @@ const RegistrationForm = () => {
         confirmPassword === "",
     );
     setAlertGenderRequired(genderState === "");
-    setAlertDoBRequired(DoBState === null);
+    setAlertDoBRequired(DoBState === null || calculateAge(DoBState) < 18);
   }
 
   function updateAllMerchantInputFieldAlerts() {
@@ -156,6 +176,7 @@ const RegistrationForm = () => {
       familyNameState !== null &&
       familyNameState.isValid &&
       DoBState !== null &&
+      calculateAge(DoBState) >= 18 &&
       genderState !== "" &&
       emailState !== null &&
       emailState.isValid &&
@@ -217,15 +238,15 @@ const RegistrationForm = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        given_names: givenNameState ? givenNameState.name : "",
-        family_name: familyNameState ? familyNameState.name : "",
-        date_of_birth: DoBState,
+        givenNames: givenNameState ? givenNameState.name : "",
+        familyName: familyNameState ? familyNameState.name : "",
+        dateOfBirth: DoBState,
         gender: genderState,
         password: passwordState.password,
         email: emailState.email,
         phone: phoneState !== null ? phoneState.phone : "",
-        account_type: e.target.account_type.value,
-        clinic_id: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
+        accountType: e.target.account_type.value,
+        clinicId: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
       }),
     })
       .then((response) => {
@@ -337,7 +358,9 @@ const RegistrationForm = () => {
                 type="date"
                 onChange={updateDoB}
                 error={alertDoBRequired}
-                helperText={alertDoBRequired ? "*Required" : null}
+                helperText={
+                  alertDoBRequired ? "*You must be at least 18 years old" : null
+                }
                 slotProps={{
                   inputLabel: {
                     shrink: true,
@@ -376,8 +399,8 @@ const RegistrationForm = () => {
                 </MenuItem>
                 {/* List of available clinics */}
                 {clinicList.map((clinic) => (
-                  <MenuItem key={clinic.clinic_name} value={clinic.clinic_id}>
-                    {clinic.clinic_name}
+                  <MenuItem key={clinic.clinicName} value={clinic.clinicId}>
+                    {clinic.clinicName}
                   </MenuItem>
                 ))}
               </Select>

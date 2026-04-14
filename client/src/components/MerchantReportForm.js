@@ -8,10 +8,6 @@ import {
   Box,
   Typography,
   TextField,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Button,
 } from "@mui/material";
 
@@ -83,7 +79,7 @@ const GenerateReportForm = () => {
 
   // Retrieve Patient names
   useEffect(() => {
-    fetch(`${API_BASE}/merchants/patient_names`, {
+    fetch(`${API_BASE}/merchants/patient-names`, {
       credentials: "include",
       method: "GET",
       headers: {
@@ -101,6 +97,34 @@ const GenerateReportForm = () => {
     } = e;
     setCondition(typeof value === "string" ? value.split(",") : value);
   }
+
+  useEffect(() => {
+    async function fetchPatientData() {
+      if (!selectedPatient) return;
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/merchant/patient-data/${selectedPatient}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        const data = await response.json();
+
+        setWeight({ isValid: true, value: data.weight });
+        setHeight({ isValid: true, value: data.height });
+        setGender(data.gender);
+        setAge({ isValid: true, value: data.age });
+      } catch (err) {
+        console.log("Failed to fetch patient data.");
+      }
+    }
+    fetchPatientData();
+  }, [selectedPatient]);
 
   function handleChangeLifeStyle(e) {
     const {
@@ -256,7 +280,7 @@ const GenerateReportForm = () => {
         : "No";
 
     // Fetch request for AI Model
-    await fetch(`${API_BASE}/merchantHealthPrediction`, {
+    await fetch(`${API_BASE}/merchant-health-prediction`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -267,19 +291,19 @@ const GenerateReportForm = () => {
         weight: weight.value,
         height: height.value,
         gender: gender,
-        blood_glucose: bloodGlucose.value,
-        ap_hi: apHigh.value,
-        ap_lo: apLow.value,
-        high_cholesterol: highCholesterol,
-        hyper_tension: hyperTension,
-        heart_disease: heartDisease,
+        bloodGlucose: bloodGlucose.value,
+        apHi: apHigh.value,
+        apLo: apLow.value,
+        highCholesterol: highCholesterol,
+        hypertension: hyperTension,
+        heartDisease: heartDisease,
         diabetes: diabetes,
         alcohol: alcohol,
         smoker: smoker,
-        marital_status: maritalStatus,
-        working_status: workingStatus,
+        maritalStatus: maritalStatus,
+        workingStatus: workingStatus,
         stroke: stroke,
-        patient_id: selectedPatient,
+        patientId: selectedPatient,
       }),
     })
       .then((response) => {
@@ -326,7 +350,7 @@ const GenerateReportForm = () => {
                 </MenuItem>
                 {/* List of available patients */}
                 {patientList.map((patient) => (
-                  <MenuItem key={patient.name} value={patient.patient_id}>
+                  <MenuItem key={patient.name} value={patient.patientId}>
                     {patient.name}
                   </MenuItem>
                 ))}
@@ -361,6 +385,7 @@ const GenerateReportForm = () => {
               label="Weight (Kg)"
               type="text"
               inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }}
+              value={weight?.value || ""}
               onChange={updateWeight}
               error={alertWeightRequired}
               helperText={
@@ -376,6 +401,7 @@ const GenerateReportForm = () => {
               type="text"
               inputProps={{ min: 0, max: 100, maxLength: 3 }}
               fullWidth
+              value={age?.value || ""}
               onChange={updateAge}
               error={alertAgeRequired}
               helperText={
@@ -389,6 +415,7 @@ const GenerateReportForm = () => {
               type="text"
               inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }}
               fullWidth
+              value={height?.value || ""}
               onChange={updateHeight}
               error={alertHeightRequired}
               helperText={
@@ -402,7 +429,7 @@ const GenerateReportForm = () => {
               <Select
                 labelId="gender-label"
                 id="gender-required"
-                value={gender}
+                value={gender || ""}
                 onChange={updateGender}
                 label="Gender"
               >

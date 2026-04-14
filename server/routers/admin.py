@@ -1,6 +1,11 @@
+from datetime import datetime, date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List
+from pydantic import BaseModel
+
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
 from ..models.dbmodels import (
@@ -22,8 +27,35 @@ from ..routers.authentication import get_current_user, get_patient_by_email
 router = APIRouter()
 
 
+class AdminDashboard(BaseModel):
+    # User data
+    totalUsers: int
+    totalPatients: int
+    totalMerchants: int
+    newUsersLast30days: int
+    validatedUsers: int
+    invalidatedUsers: int
+    activePatients: int
+    inactivePatients: int
+
+    # Prediction data
+    totalReports: int
+    reportsLastDay: int
+    reportsLast7Days: int
+    reportsLast30Days: int
+    reportActivity: List[dict]
+    averageRiskCVD: float
+    averageRiskDiabetes: float
+    averageRiskStroke: float
+
+    # Log data
+    failedLoginAttemptsLastDay: int
+    loginActivity: List[dict]
+
+
 @router.get("/roles")
 async def get_roles(db_conn: Session = Depends(get_db)):
+    """Return all roles"""
 
     roles = db_conn.query(AccountRole).all()
 
@@ -38,32 +70,53 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
 
 @router.get("/users")
-async def get_users(db_conn: Session = Depends(get_db)):
+async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn: Session = Depends(get_db)):
+    """Return all user accounts"""
 
-    # Query all users and their associated role.
-    users = db_conn.query(UserAccount, AccountRole) \
+    if skip < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="skip must be greater than or equal to 0")
+    if limit <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="limit must be greater than 0")
+
+    # Query users and roles, then apply pagination.
+    query = db_conn.query(UserAccount, AccountRole, Patient, Clinic) \
         .filter(UserAccount.IsValidated == 1) \
         .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
         .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
-        .all()
+        .outerjoin(Patient, Patient.UserID == UserAccount.UserID) \
+        .outerjoin(Clinic, Clinic.ClinicID == UserAccount.ClinicID)
+
+    if search:
+        keyword = f"%{search.strip()}%"
+        if keyword != "%%":
+            query = query.filter(
+                or_(
+                    UserAccount.Email.ilike(keyword),
+                    Patient.GivenNames.ilike(keyword),
+                    Patient.FamilyName.ilike(keyword),
+                    Clinic.ClinicName.ilike(keyword),
+                )
+            )
+
+    total_count = query.count()
+    users = query.order_by(UserAccount.CreatedAt.desc()
+                           ).offset(skip).limit(limit).all()
 
     result = []
-    for user, role in users:
+    for user, role, patient, clinic in users:
         full_name = ""
 
         # Retrieve the patients full name for a standard  user
-        if role.RoleName == "standard_user":
-            patient = (db_conn.query(Patient).filter(
-                user.UserID == Patient.UserID).first())
-
-            full_name = f'{patient.GivenNames} {patient.FamilyName}'
+        if role and role.RoleName == "standard_user":
+            if patient:
+                full_name = f'{patient.GivenNames} {patient.FamilyName}'
 
         # Retrieve Clinic name for a merchant user
-        if role.RoleName == "merchant":
-            clinic = (db_conn.query(Clinic).filter(
-                Clinic.ClinicID == user.ClinicID).first())
-
-            full_name = clinic.ClinicName
+        if role and role.RoleName == "merchant":
+            if clinic:
+                full_name = clinic.ClinicName
 
         result.append({
             "fullName": full_name,
@@ -77,13 +130,16 @@ async def get_users(db_conn: Session = Depends(get_db)):
             }
         })
 
-    return result
+    return {
+        "users": result,
+        "total": total_count
+    }
 
 
 @router.patch("/users/{user_email}/roles/{role_id}")
-async def update_user_role(user_email: str, role_id: int,
+async def update_user_role(user_email: str, role_id: int, request: Request,
                            db_conn: Session = Depends(get_db)):
-
+    """Update a user's role"""
     # Check if both the user and role exist.
     user = db_conn.query(UserAccount).filter(
         UserAccount.Email == user_email).first()
@@ -108,6 +164,20 @@ async def update_user_role(user_email: str, role_id: int,
         db_conn.add(UserAccountRole(UserID=user.UserID, RoleID=role_id))
 
     db_conn.commit()
+
+    actor_email = None
+    try:  # After resolving the authentication issue for this endpoint, this exception handling should be removed
+        actor_email = get_current_user(request, db_conn).get('email')
+    except Exception:
+        pass
+
+    write_audit_log(db_conn,
+                    eventType=LogEventType.ROLE_CHANGED,
+                    success=True,
+                    userEmail=actor_email,
+                    device=request.headers.get("user-agent"),
+                    ipAddress=request.client.host,
+                    description=f"Role changed for {user_email} to {role.RoleName}.")
 
     return {"message": f"Update successful.",
             "role": {
@@ -186,6 +256,7 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
 @router.delete("/users/{user_email}")
 async def delete_user_by_admin(user_email: str, request: Request, db_conn: Session = Depends(get_db)):
+    """Delete a user account """
     # Get the current user making the request
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -201,6 +272,13 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
                                                 UserAccountRole.RoleID).filter(UserAccountRole.UserID == admin_user.UserID).first()
 
     if not user_role or user_role.RoleName.lower() != 'admin':
+        write_audit_log(db_conn,
+                        eventType=LogEventType.ACCOUNT_DELETED,
+                        success=False,
+                        userEmail=requesting_user_email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description=f"Unauthorized delete attempt for account: {user_email}.")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You do not have permission to delete users.")
 
@@ -235,7 +313,7 @@ async def delete_user_by_admin(user_email: str, request: Request, db_conn: Sessi
 
 @router.get("/users/merchants/")
 async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
-
+    """Return all merchant accounts that are not validated"""
     # Query all invalid merchant accounts.
     invalid_merchant_accounts = db_conn.query(UserAccount) \
         .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
@@ -262,7 +340,7 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
 @router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-
+    """Validate a merchant user account"""
     # Check if requesting user is Admin.
     current_user = get_current_user(request, db_conn)
     current_user_email = current_user.get('email')
@@ -274,6 +352,13 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
     current_user_role = current_user.get('role')
     if not current_user_role or current_user_role.lower() != 'admin':
+        write_audit_log(db_conn,
+                        eventType=LogEventType.MERCHANT_VALIDATED,
+                        success=False,
+                        userEmail=current_user_email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description=f"Unauthorized merchant validation attempt for {merchant_email}.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
@@ -299,6 +384,7 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
 @router.get("/logs")
 async def get_logs(request: Request, user_email: str = None, event_type: str = None, skip: int = 0, limit: int = 100, db_conn: Session = Depends(get_db)):
+    """Return logs to an admin user"""
     # Authenticate and authorize admin
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -325,7 +411,8 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         query = query.filter(AuditLog.EventType == event_type)
 
     total_count = query.count()
-    logs = query.order_by(AuditLog.CreatedAt.desc()).offset(skip).limit(limit).all()
+    logs = query.order_by(AuditLog.CreatedAt.desc()
+                          ).offset(skip).limit(limit).all()
 
     result = []
 
@@ -345,3 +432,119 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         "logs": result,
         "total": total_count
     }
+
+
+@router.get("/admin-dashboard")
+async def get_admin_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+
+    # Check if requesting user is Admin.
+    current_user = get_current_user(request, db_conn)
+    current_user_email = current_user.get('email')
+    admin = db_conn.query(UserAccount).filter(UserAccount.Email == current_user_email).first()
+    if not admin:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    current_user_role = current_user.get('role')
+    if not current_user_role or current_user_role.lower() != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    last_30_days = datetime.now() - timedelta(days=30)
+    last_7_days = datetime.now() - timedelta(days=7)
+    last_day = datetime.now() - timedelta(days=1)
+
+    # User data
+    all_users = db_conn.query(UserAccount).filter(UserAccount.IsValidated == 1).all()
+    total_users = len(all_users)
+
+    total_patients = (db_conn.query(UserAccount).join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
+                    .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+                    .filter(AccountRole.RoleName == "standard_user", UserAccount.IsValidated == 1)
+                    .count())
+
+    total_merchants = (db_conn.query(UserAccount).join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
+                    .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+                    .filter(AccountRole.RoleName == "merchant", UserAccount.IsValidated == 1)
+                    .count())
+
+    new_users_last_30 = (db_conn.query(UserAccount)
+                    .filter(UserAccount.IsValidated == 1, UserAccount.CreatedAt >= last_30_days)
+                    .count())
+
+    validated_users = (db_conn.query(UserAccount).filter(UserAccount.IsValidated == 1).count())
+    invalidated_users = (db_conn.query(UserAccount).filter(UserAccount.IsValidated == 0).count())
+
+    active_patients = (db_conn.query(Patient).join(HealthData, HealthData.PatientID == Patient.PatientID)
+                    .filter(HealthData.CreatedAt >= last_30_days)
+                    .distinct().count())
+
+    total_patient_count = db_conn.query(Patient).count()
+    inactive_patients = total_patient_count - active_patients
+
+    # Report data
+    total_reports = db_conn.query(HealthData).count()
+
+    reports_last_day = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_day).count())
+
+    reports_last_7 = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_7_days).count())
+
+    reports_last_30 = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_30_days).count())
+
+    all_recent_reports = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_30_days)
+                        .order_by(HealthData.CreatedAt.asc())
+                        .all())
+
+    report_dates = {}
+
+    for row in all_recent_reports:
+        date = row.CreatedAt.strftime("%Y-%m-%d")
+        report_dates[date] = report_dates.get(date, 0) + 1
+
+    report_activity = [{"date": k, "count": v} for k, v in report_dates.items()]
+
+    all_predictions = db_conn.query(Prediction).all()
+
+    if all_predictions:
+        avg_cvd = int(sum(float(p.CVDChance or 0) for p in all_predictions) / len(all_predictions))
+        avg_diabetes = int(sum(float(p.DiabetesChance or 0) for p in all_predictions) / len(all_predictions))
+        avg_stroke = int(sum(float(p.StrokeChance or 0) for p in all_predictions) / len(all_predictions))
+    else:
+        avg_cvd = avg_diabetes = avg_stroke = 0
+
+    # Log data
+    failed_logins_last_day = (db_conn.query(AuditLog)
+                            .filter(AuditLog.EventType == LogEventType.FAILED_LOGIN_ATTEMPT,
+                            AuditLog.CreatedAt >= last_day)
+                            .count())
+
+    login_logs = (db_conn.query(AuditLog).filter(AuditLog.EventType == LogEventType.LOGIN,
+                AuditLog.CreatedAt >= last_30_days).order_by(AuditLog.CreatedAt.asc())
+                .all())
+
+    login_dates = {}
+
+    for log in login_logs:
+        date = log.CreatedAt.strftime("%Y-%m-%d")
+        login_dates[date] = login_dates.get(date, 0) + 1
+
+    login_activity = [{"date": k, "count": v} for k, v in login_dates.items()]
+
+    return AdminDashboard(
+        totalUsers=total_users,
+        totalPatients=total_patients,
+        totalMerchants=total_merchants,
+        newUsersLast30days=new_users_last_30,
+        validatedUsers=validated_users,
+        invalidatedUsers=invalidated_users,
+        activePatients=active_patients,
+        inactivePatients=inactive_patients,
+        totalReports=total_reports,
+        reportsLastDay=reports_last_day,
+        reportsLast7Days=reports_last_7,
+        reportsLast30Days=reports_last_30,
+        reportActivity=report_activity,
+        averageRiskCVD=avg_cvd,
+        averageRiskDiabetes=avg_diabetes,
+        averageRiskStroke=avg_stroke,
+        failedLoginAttemptsLastDay=failed_logins_last_day,
+        loginActivity=login_activity,
+    )
