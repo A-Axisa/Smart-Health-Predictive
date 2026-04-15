@@ -66,8 +66,16 @@ class LoginCredentials(BaseModel):
 
 class TokenData(BaseModel):
     email: str
-    ip_address: str
+    ip_address: Optional[str] = None
     version: int
+
+
+def _cookie_security_settings(request: Request):
+    """Return cookie settings suitable for local development and HTTPS deployments."""
+    is_https = request.url.scheme == 'https'
+    if is_https:
+        return {'secure': True, 'samesite': 'none'}
+    return {'secure': False, 'samesite': 'lax'}
 
 
 class ChangePasswordDetails(CamelModel):
@@ -298,17 +306,18 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
     expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         'sub': user.Email,
-        'ip_address': request.client.host,
         'version': user.TokenVersion
     }
     token = create_access_token(data, expiration)
+
+    cookie_settings = _cookie_security_settings(request)
 
     response.set_cookie(
         key='auth_token',
         value=token,
         httponly=True,
-        secure=False,  # Set to false for development
-        #samesite='Strict'
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite']
     )
     write_audit_log(db_conn,
                     eventType=LogEventType.LOGIN,
@@ -377,11 +386,9 @@ def get_current_user(request: Request, db_conn: Session):
             token, os.environ['SECRET_KEY'], algorithms=[ALGORITHM])
         token_data = TokenData(
             email=payload.get('sub'),
-            ip_address=payload.get('ip_address'),
             version=payload.get('version')
         )
-        if token_data.email is None or not \
-                token_data.ip_address == request.client.host:
+        if token_data.email is None:
             raise credentials_exception
 
     except InvalidTokenError as exc:
@@ -448,11 +455,13 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
     user = get_current_user(request, db_conn)
     invalidate_access_token(user['email'], db_conn)
 
+    cookie_settings = _cookie_security_settings(request)
+
     response.delete_cookie(
         key='auth_token',
         httponly=True,
-        secure=False,  # Set to false for development
-        #samesite='Strict'
+        secure=cookie_settings['secure'],
+        samesite=cookie_settings['samesite']
     )
 
 
