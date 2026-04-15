@@ -77,8 +77,16 @@ def run_migrations_online() -> None:
 
     url = re.sub(r"\${(.+?)}", lambda m: url_tokens[m.group(1)], url)
 
-    connectable = create_engine(url)
+    # Get the absolute path to the CA certificate
+    cert_path = os.path.join(os.path.dirname(__file__), '..', 'certs', 'DigiCertGlobalRootCA.crt.pem')
 
+    connectable = create_engine(
+        url,
+        connect_args={
+            'ssl_ca': cert_path  # Path to CA certificate
+        }
+    )
+    
     with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata,
