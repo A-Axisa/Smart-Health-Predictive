@@ -308,7 +308,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
         value=token,
         httponly=True,
         secure=False,  # Set to false for development
-        samesite='Strict'
+        #samesite='Strict'
     )
     write_audit_log(db_conn,
                     eventType=LogEventType.LOGIN,
@@ -452,7 +452,7 @@ def logout_current_user(request: Request, response: Response, db_conn: Session =
         key='auth_token',
         httponly=True,
         secure=False,  # Set to false for development
-        samesite='Strict'
+        #samesite='Strict'
     )
 
 
