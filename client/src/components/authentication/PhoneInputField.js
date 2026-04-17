@@ -21,10 +21,26 @@ const PhoneInputField = ({ onChange }) => {
   const [isValidDialingCode, setIsValidDialingCode] = useState(true);
 
   function getDialingCodeDropdownOptions() {
-    return getUniqueDialingCodes().map((code) => ({
-      label: "+" + code,
-      code: code,
+    return getCountryPhoneDetails().map((country) => ({
+      label: country["name"] + ": +" + country["dialingCode"],
+      code: country["dialingCode"],
     }));
+  }
+
+  /**
+   * Returns an array of dictionaries containing countries names and their
+   * dialing codes.
+   * @returns Array of dictionaries for countries dialing codes.
+   */
+  function getCountryPhoneDetails() {
+    const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
+    return getCountries()
+      .map((country) => ({
+        name: countryNames.of(country),
+        countryCode: country,
+        dialingCode: getCountryCallingCode(country),
+      }))
+      .sort((a, b) => a - b);
   }
 
   /**
