@@ -325,7 +325,11 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
 def authenticate_user(email: str, password: str, db_conn: Session):
     """Authenticates a user from the provided email and password."""
-    user = db_conn.query(UserAccount).filter_by(Email=email).first()
+    if not email:
+        return False
+
+    user = db_conn.query(UserAccount).filter(
+        func.lower(UserAccount.Email) == email.lower()).first()
     if not user:
         return False
 
