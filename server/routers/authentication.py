@@ -17,6 +17,7 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel
 from fastapi_camelcase import CamelModel
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
 
@@ -132,7 +133,8 @@ async def register(user_reg: UserRegistrationDetails,
         new_user.IsValidated = True
 
     # Only add the user to the database of they don't exist.
-    user = db_conn.query(UserAccount).filter_by(Email=user_reg.email).first()
+    user = db_conn.query(UserAccount).filter(
+        func.lower(UserAccount.Email) == user_reg.email.lower()).first()
     if not user:
         db_conn.add(new_user)
 
