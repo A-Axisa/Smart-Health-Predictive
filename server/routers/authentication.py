@@ -590,7 +590,7 @@ def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Req
                              forgot_password_request.email)
     if is_email_valid(sanitised_email):
         user = db_conn.query(UserAccount, AccountRole) \
-            .filter(UserAccount.Email == sanitised_email) \
+            .filter(func.lower(UserAccount.Email) == sanitised_email.lower()) \
             .outerjoin(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID) \
             .outerjoin(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID) \
             .first()
