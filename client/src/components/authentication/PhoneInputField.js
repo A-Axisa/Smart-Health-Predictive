@@ -106,7 +106,7 @@ const PhoneInputField = ({ onChange }) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        <Grid size={5}>
+        <Grid size={7}>
           <FormControl sx={{ width: "100%" }}>
             <Autocomplete
               options={getDialingCodeDropdownOptions()}
@@ -122,7 +122,7 @@ const PhoneInputField = ({ onChange }) => {
             />
           </FormControl>
         </Grid>
-        <Grid size={7}>
+        <Grid size={5}>
           <TextField
             error={!isValid}
             id="outlined-input"
