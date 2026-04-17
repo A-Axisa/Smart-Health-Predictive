@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
   CardHeader,
@@ -25,9 +25,16 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const GenerateReportForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageData = location.state;
+  const defaultSelectedPatient =
+    pageData && pageData["patientID"] ? pageData["patientID"] : null;
+
   // Patient data for Merchant to select
   const [patientList, setPatientList] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(
+    defaultSelectedPatient,
+  );
   // List health conditions
   const healthConditions = [
     "Hyper Tension",

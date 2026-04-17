@@ -146,7 +146,11 @@ const PatientDetails = () => {
 
           <Button
             variant="contained"
-            onClick={(e) => navigate("/merchant-generate-report")}
+            onClick={(e) =>
+              navigate("/merchant-generate-report", {
+                state: { patientID: patientID },
+              })
+            }
           >
             Generate Report
           </Button>
