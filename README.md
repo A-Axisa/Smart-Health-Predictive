@@ -30,7 +30,7 @@
 ### Run FastApi
 1. Navigate to FastApi directory
 ```cd server```
-2. (Optional) Configure extra CORS origins via environment variable (comma-separated). The default three origins are always kept.  
+2. (Optional) Configure extra CORS origins via environment variable (comma-separated). 
 ```CORS_ORIGINS="https://example.com,https://another.example.com" fastapi dev main.py```
 3. Run the server
 ```fastapi dev main.py```
