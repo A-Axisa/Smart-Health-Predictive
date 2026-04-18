@@ -30,9 +30,11 @@
 ### Run FastApi
 1. Navigate to FastApi directory
 ```cd server```
-2. Run the server
+2. (Optional) Configure extra CORS origins via environment variable (comma-separated). The default three origins are always kept.  
+```CORS_ORIGINS="https://example.com,https://another.example.com"```
+3. Run the server
 ```fastapi dev main.py```
-3. Go to http://127.0.0.1:8000/docs to interact with API
+4. Go to http://127.0.0.1:8000/docs to interact with API
 
 ## Database Setup (Docker Compose + Alembic)
 ### Initial Setup
@@ -81,4 +83,3 @@ The amount of data generated can be modified at the head of the script.
 4. Tests will now begin running and the terminal will log the status of completed tests.
 Proceeding this it will open a window in your browser with a more detailed overview. This can also
 be accessed directly on http://localhost:9323/.
-
