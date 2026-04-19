@@ -273,7 +273,7 @@ const RegistrationForm = () => {
         alignItems: "center",
         boxShadow: 24,
         backgroundColor: "#ffffff",
-        width: { xs: "auto", sm: "500px" },
+        width: { xs: "auto", sm: "600px" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >

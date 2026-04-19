@@ -452,7 +452,6 @@ def get_user_role(email: str, db_conn: Session):
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
     """Deletes the user cookie and invalidates their access token."""
-
     try:
         user = get_current_user(request, db_conn)
         if user:
