@@ -4,12 +4,29 @@ import '@fontsource/russo-one';
 
 // Centralized MUI theme for the app
 export const appTheme = createTheme({
+  shape: {
+    borderRadius: 20,
+  },
   palette: {
     primary: { main: 'rgb(113, 43, 135)' },
     secondary: { main: 'rgb(66, 118, 56)' },
     background: { default: '#f8f9fa', paper: '#ffffff' },
   },
   components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         color: 'primary',
