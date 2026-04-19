@@ -1,27 +1,40 @@
 import React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
+import '@fontsource/russo-one';
 
 // Centralized MUI theme for the app
 export const appTheme = createTheme({
   palette: {
-    primary: { main: '#127067' },
+    primary: { main: 'rgb(113, 43, 135)' },
+    secondary: { main: 'rgb(66, 118, 56)' },
     background: { default: '#f8f9fa', paper: '#ffffff' },
   },
   components: {
     MuiButton: {
+      defaultProps: {
+        color: 'primary',
+      },
       styleOverrides: {
-        root: { textTransform: 'uppercase', fontWeight: 600 },
-        containedPrimary: {
-          backgroundColor: '#127067',
-          '&:hover': { backgroundColor: '#0f5a52' },
+        root: {
+          textTransform: 'uppercase',
+          fontWeight: 600,
+          fontFamily: '"Russo One", sans-serif',
+          borderRadius: 12,
         },
-        outlinedPrimary: {
-          borderColor: '#127067',
-          color: '#127067',
+        outlined: {
+          borderColor: 'rgb(66, 118, 56)',
+          color: 'rgb(66, 118, 56)',
           '&:hover': {
-            borderColor: '#0f5a52',
-            backgroundColor: 'rgba(18,112,103,.06)'
+            borderColor: 'rgb(53, 94, 45)',
+            backgroundColor: 'rgba(66,118,56,.08)',
           },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
         },
       },
     },
