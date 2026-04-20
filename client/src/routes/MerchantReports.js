@@ -5,6 +5,7 @@ import IconButton from "@mui/material/IconButton";
 
 import ConfirmationDialog from "../components/confirmationDialog";
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 import {
   Box,
@@ -21,12 +22,17 @@ import {
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const MerchantReports = ({}) => {
+  const location = useLocation();
+  const pageData = location.state;
+  const defaultSelectedPatientId =
+    pageData && pageData["patientName"] ? pageData["patientName"] : null;
+
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [patients, setPatients] = useState([]); // Stores list of patients
-  const [selectedPatient, setSelectedPatient] = useState(null); // Stores the selected patient
+  const [selectedPatient, setSelectedPatient] = useState(""); // Stores the selected patient
   const [reports, setReports] = useState([]); // Stores all report data
 
   function fetchMerchantReports() {
@@ -45,8 +51,16 @@ const MerchantReports = ({}) => {
           // Creates an array of distinct patient names
           let distinctPatientNames = [...new Set(data.map((r) => r.name))];
           setPatients(distinctPatientNames);
-          setSelectedPatient(null);
+          setSelectedPatient(defaultSelectedPatientId);
           setSelectedDate(null);
+
+          if (defaultSelectedPatientId) {
+            const selectedReports = data.filter(
+              (r) => r.name === defaultSelectedPatientId,
+            );
+            setReportDates(selectedReports);
+            setSelectedDate(selectedReports[0]); // Select first report
+          }
         }
       })
       .catch((err) => {

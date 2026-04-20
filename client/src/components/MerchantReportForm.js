@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
   CardHeader,
@@ -25,9 +25,17 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const GenerateReportForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageData = location.state;
+  const defaultSelectedPatient =
+    pageData && pageData["patientID"] ? pageData["patientID"] : null;
+  const [patientName, setPatientName] = useState(null);
+
   // Patient data for Merchant to select
   const [patientList, setPatientList] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(
+    defaultSelectedPatient,
+  );
   // List health conditions
   const healthConditions = [
     "Hyper Tension",
@@ -87,7 +95,15 @@ const GenerateReportForm = () => {
       },
     })
       .then((res) => res.json())
-      .then((data) => setPatientList(data))
+      .then((data) => {
+        setPatientList(data);
+        if (defaultSelectedPatient) {
+          const name = data.find(
+            (item) => item.patientId == defaultSelectedPatient,
+          );
+          setPatientName(name.name);
+        }
+      })
       .catch((err) => console.log(err));
   }, []);
 
@@ -218,9 +234,12 @@ const GenerateReportForm = () => {
     setWorkingStatus(e.target.value);
     setAlertWorkingStatusRequired(false);
   }
-  function updatePatient(e) {
+  function updatePatient(e, child) {
     setSelectedPatient(e.target.value);
     setAlertPatientRequired(false);
+    if (child) {
+      setPatientName(child.props.children);
+    }
   }
 
   function isAllInputsValid() {
@@ -313,7 +332,9 @@ const GenerateReportForm = () => {
         return response.json();
       })
       .then((data) => {
-        navigate("/merchant-reports"); // Route the user to the Health prediction page after submission
+        navigate("/merchant-reports", {
+          state: { patientName: patientName },
+        }); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
         console.log(error);
