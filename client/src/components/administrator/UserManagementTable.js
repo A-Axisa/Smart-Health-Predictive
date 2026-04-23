@@ -14,6 +14,9 @@ const UserManagementTable = () => {
     page: 0,
     pageSize: 50,
   });
+  const [sortModel, setSortModel] = useState([
+    { field: "createdAt", sort: "desc" },
+  ]);
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]); // Stores role data
@@ -41,6 +44,11 @@ const UserManagementTable = () => {
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
     }
+    // Append sort params when sort is active
+    if (sortModel.length > 0) {
+      params.append("sort_by", sortModel[0].field);
+      params.append("sort_order", sortModel[0].sort || "desc");
+    }
 
     fetch(`${API_BASE}/users?${params.toString()}`)
       .then((response) => {
@@ -67,6 +75,7 @@ const UserManagementTable = () => {
     paginationModel.page,
     paginationModel.pageSize,
     debouncedSearchQuery,
+    sortModel,
   ]);
 
   useEffect(() => {
@@ -203,9 +212,15 @@ const UserManagementTable = () => {
     setDebouncedSearchQuery(value);
   }, []);
 
+  const handleSortModelChange = useCallback((newSortModel) => {
+    setSortModel(newSortModel);
+    // Reset to first page whene sort changes
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  }, []);
+
   const columns = [
     { field: "email", headerName: "Email", width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", width: 250, sortable: true },
+    { field: "fullName", headerName: "Full Name", width: 250, sortable: false },
     {
       field: "createdAt",
       headerName: "Created At",
@@ -222,7 +237,7 @@ const UserManagementTable = () => {
       field: "role",
       headerName: "Role",
       width: 220,
-      sortable: true,
+      sortable: false,
       valueGetter: (params) => params?.name,
     },
   ];
@@ -263,6 +278,9 @@ const UserManagementTable = () => {
             paginationModel={paginationModel}
             paginationMode="server"
             onPaginationModelChange={setPaginationModel}
+            sortingMode="server"
+            sortModel={sortModel}
+            onSortModelChange={handleSortModelChange}
             disableColumnResize
             disableRowSelectionOnClick
             checkboxSelection
@@ -274,9 +292,9 @@ const UserManagementTable = () => {
                 outline: "none",
               },
               "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-                {
-                  outline: "none",
-                },
+              {
+                outline: "none",
+              },
               "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
                 backgroundColor: "#f1f1f1f1",
               },
