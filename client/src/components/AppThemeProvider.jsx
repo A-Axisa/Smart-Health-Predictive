@@ -48,6 +48,22 @@ export const appTheme = createTheme({
         },
       },
     },
+    MuiBox: {
+      variants: [
+        {
+          props: { variant: "gradient" },
+          style: {
+            backgroundImage: "linear-gradient(to top left, #e0e0e0, #ffffff)",
+          },
+        },
+        {
+          props: { variant: "background" },
+          style: {
+            backgroundColor: "background",
+          },
+        },
+      ],
+    },
     MuiCard: {
       styleOverrides: {
         root: {
@@ -57,7 +73,7 @@ export const appTheme = createTheme({
         },
       },
     },
-    MuiBox: {
+    MuiContainer: {
       variants: [
         {
           props: { variant: "gradient" },
