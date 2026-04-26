@@ -117,6 +117,13 @@ const MerchantReports = ({}) => {
     setDeleteDialogOpen(false);
   }
 
+  function onPatientChange(e, newValue) {
+    const selectedReports = reports.filter((r) => r.name === newValue);
+    setSelectedPatient(newValue);
+    setReportDates(selectedReports);
+    setSelectedDate(selectedReports[0]);
+  }
+
   return (
     <Box
       sx={{
@@ -146,13 +153,7 @@ const MerchantReports = ({}) => {
             fullWidth
             options={patients}
             value={selectedPatient}
-            onChange={(event, newValue) => {
-              // Filter reports by selected user
-              const selectedReports = reports.filter((r) => r.name === newValue);
-              setSelectedPatient(newValue);
-              setReportDates(selectedReports);
-              setSelectedDate(selectedReports[0]); // Select first report
-            }}
+            onChange={onPatientChange}
             getOptionLabel={(option) => option}
               renderInput={(params) => (
                 <TextField
