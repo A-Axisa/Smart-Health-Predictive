@@ -9,6 +9,7 @@ import {
   Typography,
   TextField,
   Button,
+  Autocomplete,
 } from "@mui/material";
 
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -358,28 +359,23 @@ const GenerateReportForm = () => {
         <Box component="form" onSubmit={handleSubmit}>
           {/* Patient List */}
           <Box sx={{ p: 2 }}>
-            <FormControl fullWidth error={alertPatientRequired}>
-              <InputLabel id="patient-select-label">Patient</InputLabel>
-              <Select
-                labelId="patient-select-label"
-                value={selectedPatient}
-                label={"Patient"}
-                onChange={updatePatient}
-              >
-                <MenuItem value="" disabled>
-                  Select a patient
-                </MenuItem>
-                {/* List of available patients */}
-                {patientList.map((patient) => (
-                  <MenuItem key={patient.name} value={patient.patientId}>
-                    {patient.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {alertPatientRequired && (
-                <FormHelperText>*Please enter a patient</FormHelperText>
+            <Autocomplete
+              fullWidth
+              options={patientList}
+              value={patientList.find(p => p.patientId === selectedPatient)}
+              onChange={(event, newValue) => {
+                updatePatient({target: { value: newValue ? newValue.patientId : "" }});
+              }}
+              getOptionLabel={(option) => option.name}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Patient"
+                  error={alertPatientRequired}
+                  helperText={alertPatientRequired ? "*Please enter a patient" : ""}
+                />
               )}
-            </FormControl>
+            />
           </Box>
           {/* Age & Physique Section */}
           <Typography
