@@ -235,11 +235,11 @@ const GenerateReportForm = () => {
     setWorkingStatus(e.target.value);
     setAlertWorkingStatusRequired(false);
   }
-  function updatePatient(e, child) {
+  function updatePatient(e, name) {
     setSelectedPatient(e.target.value);
     setAlertPatientRequired(false);
-    if (child) {
-      setPatientName(child.props.children);
+    if (name) {
+      setPatientName(name);
     }
   }
 
@@ -364,7 +364,7 @@ const GenerateReportForm = () => {
               options={patientList}
               value={patientList.find(p => p.patientId === selectedPatient)}
               onChange={(event, newValue) => {
-                updatePatient({target: { value: newValue ? newValue.patientId : "" }});
+                updatePatient({target: { value: newValue ? newValue.patientId : "" }}, newValue.name);
               }}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
