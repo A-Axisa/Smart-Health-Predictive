@@ -17,6 +17,8 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Autocomplete,
+  TextField,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -140,30 +142,25 @@ const MerchantReports = ({}) => {
         </Box>
         {/* Patient List */}
         <Box sx={{ p: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel id="patient-select-label">Patient</InputLabel>
-            <Select
-              labelId="patient-select-label"
-              value={selectedPatient}
-              label={"Patient"}
-              onChange={(e) => {
-                // Filter reports by selected user
-                const selectedReports = reports.filter(
-                  (r) => r.name === e.target.value,
-                );
-                setSelectedPatient(e.target.value);
-                setReportDates(selectedReports);
-                setSelectedDate(selectedReports[0]); // Select first report
-              }}
-            >
-              {/* List of available patients */}
-              {patients.map((name) => (
-                <MenuItem key={name} value={name}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            fullWidth
+            options={patients}
+            value={selectedPatient}
+            onChange={(event, newValue) => {
+              // Filter reports by selected user
+              const selectedReports = reports.filter((r) => r.name === newValue);
+              setSelectedPatient(newValue);
+              setReportDates(selectedReports);
+              setSelectedDate(selectedReports[0]); // Select first report
+            }}
+            getOptionLabel={(option) => option}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Patient"
+                />
+              )}
+          />
         </Box>
         <List component="nav" sx={{ p: 0 }}>
           {reportDates.map((item) => (
