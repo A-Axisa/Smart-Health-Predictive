@@ -35,7 +35,6 @@ export const appTheme = createTheme({
       styleOverrides: {
         root: {
           textTransform: "uppercase",
-          fontWeight: 600,
           fontFamily: "'Russo One', 'sans-serif'",
         },
         outlined: {
