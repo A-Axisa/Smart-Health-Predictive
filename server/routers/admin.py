@@ -92,8 +92,8 @@ async def get_users(
         "email": UserAccount.Email,
         "createdAt": UserAccount.CreatedAt,
         "validated": UserAccount.IsValidated,
-        "fullName": None,   # Computed field – not sortable server-side
-        "role": None,        # Joined field – not sortable server-side
+        "fullName": None,
+        "role": None,
     }
 
     # Query users and roles, then apply pagination.
