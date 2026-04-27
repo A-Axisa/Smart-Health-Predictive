@@ -38,6 +38,9 @@ const AuditLogTable = () => {
     page: 0,
     pageSize: 50,
   });
+  const [sortModel, setSortModel] = useState([
+    { field: "createdAt", sort: "desc" },
+  ]);
 
   // Filter states
   const [userEmail, setUserEmail] = useState("");
@@ -52,6 +55,10 @@ const AuditLogTable = () => {
 
     if (userEmail) params.append("user_email", userEmail);
     if (eventType) params.append("event_type", eventType);
+    if (sortModel.length > 0) {
+      params.append("sort_by", sortModel[0].field);
+      params.append("sort_order", sortModel[0].sort || "desc");
+    }
 
     fetch(`${API_BASE}/logs?${params.toString()}`, { credentials: "include" })
       .then((response) => {
@@ -73,22 +80,27 @@ const AuditLogTable = () => {
 
   useEffect(() => {
     fetchLogs();
-  }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType]);
+  }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType, sortModel]);
 
   const handleEmailSearchChange = useCallback((value) => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
     setUserEmail(value);
   }, []);
 
+  const handleSortModelChange = useCallback((newSortModel) => {
+    setSortModel(newSortModel);
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  }, []);
+
   const columns = [
-    { field: "logID", headerName: "Log ID", width: 70 },
-    { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140 },
-    { field: "success", headerName: "Success", width: 80, type: "boolean" },
-    { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180 },
-    { field: "ipAddress", headerName: "IP Address", flex: 0.8, minWidth: 100 },
-    { field: "device", headerName: "Device", flex: 1, minWidth: 120 },
-    { field: "createdAt", headerName: "Created At", flex: 1, minWidth: 160 },
-    { field: "description", headerName: "Description", flex: 2, minWidth: 200 },
+    { field: "logID", headerName: "Log ID", width: 70, sortable: true },
+    { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140, sortable: true },
+    { field: "success", headerName: "Success", width: 80, type: "boolean", sortable: true },
+    { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180, sortable: true },
+    { field: "ipAddress", headerName: "IP Address", flex: 0.8, minWidth: 100, sortable: true },
+    { field: "device", headerName: "Device", flex: 1, minWidth: 120, sortable: false },
+    { field: "createdAt", headerName: "Created At", flex: 1, minWidth: 160, sortable: true },
+    { field: "description", headerName: "Description", flex: 2, minWidth: 200, sortable: false },
   ];
 
   return (
@@ -142,12 +154,14 @@ const AuditLogTable = () => {
           paginationModel={paginationModel}
           paginationMode="server"
           onPaginationModelChange={setPaginationModel}
+          sortingMode="server"
+          sortModel={sortModel}
+          onSortModelChange={handleSortModelChange}
           disableColumnResize
           disableRowSelectionOnClick
           sx={{
             border: 0,
             p: 1,
-            // Removes cell outline.
             "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
               outline: "none",
             },
