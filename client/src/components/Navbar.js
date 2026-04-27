@@ -4,7 +4,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
@@ -27,9 +27,35 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const NavBar = ({ role }) => {
+
+  // Maps each route to the corrosponding page title.
+  const routePageMap = {
+
+    // User Pages
+    "/user-landing": "Dashboard",
+    "/generate-report": "Generate Report",
+    "/ai-health-prediction": "Report History",
+    "/health-analytics": "Health Analytics",
+
+    // Merchant Pages
+    "/merchant-landing": "Dashboard",
+    "/merchant-generate-report": "Generate Report",
+    "/merchant-reports": "Report History",
+    "/patient-management": "Patient Management",
+    "/create-patient": "Patient Management",
+
+    // Admin Pages
+    "/admin-dashboard": "Dashboard",
+    "/admin-users": "Users",
+    "/admin-account-approval": "Account Requests",
+    "/admin-audit-logs": "Audit Logs",
+  };
+
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
-  const [selectedPage, setSelectedPage] = useState("Dashboard");
+  const location = useLocation();
+  const selectedPage = routePageMap[location.pathname] ?? null;
+
 
   // Page options for each user type
   const standardUserPages = [
@@ -81,7 +107,6 @@ const NavBar = ({ role }) => {
 
   // Handle navigation for each page option
   function handleNavigate(page) {
-    setSelectedPage(page);
     if (page === "Dashboard") {
       if (role === "standard_user") {
         navigate("/user-landing");
