@@ -135,11 +135,11 @@ const ForgotPasswordForm = () => {
               <Typography variant="h4" align="center">
                 Request Successful!
               </Typography>
-              <Typography align="start" style={{ color: "#777777" }}>
+              <Typography align="start" variant="subtle">
                 We have sent an email to your email address with instruction to
                 reset your password and should appear shortly.
               </Typography>
-              <Typography align="start" style={{ color: "#777777" }}>
+              <Typography align="start" variant="subtle">
                 If you do not see the the email, check your spam folder.
               </Typography>
             </Stack>
