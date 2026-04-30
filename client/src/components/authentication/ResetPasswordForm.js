@@ -1,15 +1,18 @@
 import { useState } from "react";
 import {
   Box,
-  Container,
   Stack,
   Button,
   Typography,
-  Link,
   TextField,
+  Card,
+  CardContent,
+  Divider,
 } from "@mui/material";
-import PasswordInputField from "../authentication/PasswordInputField";
 import { useParams } from "react-router-dom";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import CheckIcon from "@mui/icons-material/Check";
+import PasswordInputField from "../authentication/PasswordInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -83,93 +86,111 @@ const ResetPasswordForm = () => {
   }
 
   return (
-    <Container
+    <Card
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "40px",
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
         width: { xs: "auto", sm: "500px" },
+        height: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >
-      {/* Input form */}
-      {!isFormSubmitted && (
-        <Stack
-          direction="column"
-          spacing={{ xs: 5 }}
-          pl={3}
-          pr={3}
-          style={{ justifyContent: "center" }}
-        >
-          <Stack direction="column" spacing={{ xs: 2 }}>
-            <h1>Reset Password</h1>
-            <Typography align="start" style={{ color: "#777777" }}>
-              Enter your new password below and submit to update your password.
-            </Typography>
-          </Stack>
-          <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={{ xs: 2 }}>
-              <PasswordInputField
-                onChange={validatePassword}
-                truncate={true}
-                showRequired={alertPasswordRequired}
-              />
-              <TextField
-                id="outlined-password-input"
-                label="Confirm Password"
-                onChange={updateConfirmPassword}
-                type="password"
-                error={!isPasswordsMatching && password !== null}
-                helperText={
-                  !isPasswordsMatching && password !== null
-                    ? "*Passwords do not match"
-                    : null
-                }
-              ></TextField>
-              <Button
-                loading={isLoading}
-                type="submit"
-                variant="contained"
-                sx={{
-                  py: { xs: "1rem", sm: ".9rem" },
-                  fontSize: { xs: "1.2rem", sm: "1rem" },
-                }}
-              >
-                Submit
-              </Button>
-            </Stack>
-          </Box>
-          <Link href="/login" align="end" fontWeight="bold">
-            Cancel
-          </Link>
-        </Stack>
-      )}
-
-      {/* Success response */}
-      {isFormSubmitted && (
-        <Stack direction="column" spacing={{ xs: 5 }} pl={3} pr={3}>
-          <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
-            <h1>Password Successfully Changed </h1>
-            <Typography align="start" style={{ color: "#777777" }}>
-              Your password has been updated successfully. You can now login to
-              your account with your new password.
-            </Typography>
-          </Stack>
-          <Button
-            href="/login"
-            variant="outlined"
-            sx={{
-              py: { xs: "1rem", sm: ".9rem" },
-              fontSize: { xs: "1.2rem", sm: "1rem" },
-            }}
+      <CardContent>
+        {/* Input form */}
+        {!isFormSubmitted && (
+          <Stack
+            direction="column"
+            spacing={{ xs: 5 }}
+            pl={3}
+            pr={3}
+            style={{ justifyContent: "center" }}
           >
-            Go to Login
-          </Button>
-        </Stack>
-      )}
-    </Container>
+            <Stack direction="column" spacing={{ xs: 2 }}>
+              <Stack alignItems="center">
+                <LockResetIcon alignItem="center" sx={{ fontSize: 80 }} />
+              </Stack>
+              <Typography variant="h4" align="center">
+                Reset Password
+              </Typography>
+              <Typography align="start" variant="subtle">
+                Enter your new password below and submit to update your
+                password.
+              </Typography>
+            </Stack>
+            <Box component="form" onSubmit={handleSubmit}>
+              <Stack spacing={{ xs: 2 }}>
+                <PasswordInputField
+                  onChange={validatePassword}
+                  truncate={true}
+                  showRequired={alertPasswordRequired}
+                />
+                <TextField
+                  id="outlined-password-input"
+                  label="Confirm Password"
+                  onChange={updateConfirmPassword}
+                  type="password"
+                  error={!isPasswordsMatching && password !== null}
+                  helperText={
+                    !isPasswordsMatching && password !== null
+                      ? "*Passwords do not match"
+                      : null
+                  }
+                ></TextField>
+                <Button
+                  loading={isLoading}
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    py: { xs: "1rem", sm: ".9rem" },
+                    fontSize: { xs: "1.2rem", sm: "1rem" },
+                  }}
+                >
+                  Submit
+                </Button>
+                <Divider />
+                <Button
+                  href="/login"
+                  variant="outlined"
+                  sx={{
+                    py: { xs: "1rem", sm: ".9rem" },
+                    fontSize: "1rem",
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+
+        {/* Success response */}
+        {isFormSubmitted && (
+          <Stack direction="column" spacing={{ xs: 5 }} pl={3} pr={3}>
+            <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
+              <Stack alignItems="center">
+                <CheckIcon alignItem="center" sx={{ fontSize: 80 }} />
+              </Stack>
+              <Typography variant="h4" align="center">
+                Password Change Successful!
+              </Typography>
+              <Typography align="start" variant="subtle" display="inline">
+                Your password has been updated successfully. You can now login
+                to your account with your new password.
+              </Typography>
+            </Stack>
+            <Button
+              href="/login"
+              variant="outlined"
+              sx={{
+                py: { xs: "1rem", sm: ".9rem" },
+                fontSize: { xs: "1.2rem", sm: "1rem" },
+              }}
+            >
+              Go to Login
+            </Button>
+          </Stack>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
