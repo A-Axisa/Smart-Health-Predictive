@@ -1,12 +1,4 @@
-import {
-  Box,
-  Container,
-  Stack,
-  Typography,
-  Button,
-  Link,
-  Divider,
-} from "@mui/material";
+import { Container } from "@mui/material";
 import ResetPasswordForm from "../components/authentication/ResetPasswordForm";
 
 /**
@@ -15,16 +7,17 @@ import ResetPasswordForm from "../components/authentication/ResetPasswordForm";
 const ResetPassword = () => {
   return (
     <Container
+      variant="gradient"
       maxWidth={false}
       sx={{
-        backgroundColor: "#127067",
         width: "100vw",
-        height: "100dvh",
+        height: "100vh",
         padding: "0",
         margin: "0",
         display: "flex",
-        alignItems: "center",
+        alignItems: { xs: "flex-start", sm: "center" },
         justifyContent: "center",
+        flexGrow: 1,
       }}
     >
       <ResetPasswordForm />
