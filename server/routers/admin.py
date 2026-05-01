@@ -573,5 +573,5 @@ async def get_clinics(db_conn: Session = Depends(get_db)):
             "id": clinic.ClinicID if clinic else None,
             "name": clinic.ClinicName if clinic else None,
         })
-    print(f"TESTING: {result}")
+
     return result
