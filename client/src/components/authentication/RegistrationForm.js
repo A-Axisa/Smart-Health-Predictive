@@ -314,7 +314,7 @@ const RegistrationForm = () => {
       <CardContent>
         {/* Success Dialog */}
         <Dialog open={showSuccessMessage}>
-          <DialogTitle>{"Account Creation Successful!"}</DialogTitle>
+          <DialogTitle>Account Creation Successful!</DialogTitle>
           <DialogContent>
             <Typography>
               A verification email has been sent to your inbox. Please check
@@ -322,7 +322,7 @@ const RegistrationForm = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseMessage} autoFocus>
+            <Button variant="outlined" onClick={handleCloseMessage} autoFocus>
               Back to login
             </Button>
           </DialogActions>
