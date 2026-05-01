@@ -157,6 +157,14 @@ const RegistrationForm = () => {
 
   function goToAccountTypeSelection() {
     setIsAccountTypeSelected(false);
+    resetPersistantInputDetails();
+  }
+
+  function resetPersistantInputDetails() {
+    setGenderState(null);
+    setAlertGenderRequired(false);
+    setClinicState(null);
+    setAlertClinicRequired(false);
   }
 
   function updateClinic(e) {
