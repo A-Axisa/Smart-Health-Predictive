@@ -8,15 +8,15 @@ import RegistrationForm from "../components/authentication/RegistrationForm";
 const Register = () => {
   return (
     <Container
+      variant="gradient"
       maxWidth={false}
       sx={{
-        backgroundColor: "#127067",
         width: "100vw",
-        height: "100dvh",
+        minHeight: "100vh",
         padding: "0",
         margin: "0",
         display: "flex",
-        alignItems: "center",
+        alignItems: { xs: "flex-start", sm: "center" },
         justifyContent: "center",
       }}
     >
