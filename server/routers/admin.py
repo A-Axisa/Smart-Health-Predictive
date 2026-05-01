@@ -70,7 +70,7 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
 
 @router.get("/users")
-async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn: Session = Depends(get_db)):
+async def get_users(skip: int = 0, limit: int = 100, search: str = None, clinic_id: int = None, db_conn: Session = Depends(get_db)):
     """Return all user accounts"""
 
     if skip < 0:
@@ -548,3 +548,20 @@ async def get_admin_dashboard(request: Request, db_conn: Session = Depends(get_d
         failedLoginAttemptsLastDay=failed_logins_last_day,
         loginActivity=login_activity,
     )
+
+
+@router.get("/clinics")
+async def get_clinics(db_conn: Session = Depends(get_db)):
+    """Returns a list of all clinics."""
+
+    clinics = db_conn.query(Clinic).order_by(Clinic.ClinicName).all()
+
+    result = []
+
+    for clinic in clinics:
+        result.append({
+            "id": clinic.ClinicID if clinic else None,
+            "name": clinic.ClinicName if clinic else None,
+        })
+    print(f"TESTING: {result}")
+    return result
