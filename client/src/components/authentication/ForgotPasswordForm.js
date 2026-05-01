@@ -66,7 +66,7 @@ const ForgotPasswordForm = () => {
       sx={{
         alignItems: "center",
         width: { xs: "auto", sm: "500px" },
-        height: { xs: "100vh", sm: "auto" },
+        minHeight: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >

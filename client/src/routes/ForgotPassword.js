@@ -11,7 +11,7 @@ const ForgotPassword = () => {
       maxWidth={false}
       sx={{
         width: "100vw",
-        height: "100vh",
+        minHeight: "100vh",
         padding: "0",
         margin: "0",
         display: "flex",
