@@ -18,7 +18,7 @@ const UserManagementTable = () => {
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
   const [roleData, setRoleData] = useState([]);
   const [clinicData, setClinicData] = useState([]);
-  const [selectedClinic, setSelectedClinic] = useState(null);
+  const [selectedClinic, setSelectedClinic] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({
