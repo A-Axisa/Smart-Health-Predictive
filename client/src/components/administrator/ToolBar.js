@@ -6,7 +6,10 @@ const ToolBar = ({
   totalRowCount,
   onUsersDelete,
   onUsersRoleChange,
+  onClinicChange,
   roleData,
+  clinicData,
+  selectedClinic,
 }) => {
   // Return row count instead of set size.
   const getEmailCount = () => {
@@ -29,6 +32,24 @@ const ToolBar = ({
         justifyContent: "flex-end",
       }}
     >
+      <Select
+        size="small"
+        displayEmpty
+        value={selectedClinic}
+        onChange={(e) => onClinicChange(e.target.value)}
+        sx={{
+          width: 250,
+         }}
+      >
+        <MenuItem value="">
+          All Clinics
+        </MenuItem>
+        {clinicData.map((clinic) => (
+          <MenuItem key={clinic.id} value={clinic.id}>
+            {clinic.name}
+          </MenuItem>
+        ))}
+      </Select>
       <Select
         size="small"
         displayEmpty
