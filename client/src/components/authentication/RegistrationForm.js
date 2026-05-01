@@ -78,11 +78,13 @@ const RegistrationForm = () => {
     setGivenNameState({ isValid: isNameValid, name: e.target.value });
     setAlertGivenNameRequired(!isNameValid);
   }
+
   function updateFamilyName(e) {
     const isNameValid = e.target.value !== "";
     setFamilyNameState({ isValid: isNameValid, name: e.target.value });
     setAlertFamilyNameRequired(!isNameValid);
   }
+
   function updateDoB(e) {
     if (calculateAge(e.target.value) < 18) {
       setAlertDoBRequired(true);
@@ -221,17 +223,6 @@ const RegistrationForm = () => {
     );
   }
 
-  function generateUnsuccessfulCreationAlert() {
-    if (showFailMessage) {
-      return (
-        <Alert variant="filled" severity="error">
-          Account creation unsuccessful.
-        </Alert>
-      );
-    }
-    return null;
-  }
-
   function handleCloseMessage() {
     setShowSuccessMessage(false);
     navigate("/login");
@@ -253,8 +244,7 @@ const RegistrationForm = () => {
       }
     }
 
-    console.log(e.target.account_type);
-    // setIsLoading(true);
+    setIsLoading(true);
     // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/register`, {
       method: "POST",
@@ -383,7 +373,12 @@ const RegistrationForm = () => {
         {/* Details */}
         {isAccountTypeSelected && (
           <Box sx={{ width: { sm: "auto", md: "500px" } }}>
-            {generateUnsuccessfulCreationAlert()}
+            {showFailMessage && (
+              <Alert variant="filled" severity="error">
+                Account creation unsuccessful.
+              </Alert>
+            )}
+
             <Stack spacing={6}>
               {/* Standard Account Details */}
               {accountType === ACCOUNT_TYPES.STANDARD && (
