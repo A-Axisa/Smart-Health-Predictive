@@ -99,6 +99,16 @@ async def get_users(skip: int = 0, limit: int = 100, search: str = None, clinic_
                     Clinic.ClinicName.ilike(keyword),
                 )
             )
+    
+    if clinic_id:
+        merchants = db_conn.query(UserAccount.UserID).filter(UserAccount.ClinicID == clinic_id)
+
+        patients = (db_conn.query(Patient.UserID)
+                .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+                .join(UserAccount, UserAccount.UserID == UserPatientAccess.UserID)
+                .filter(UserAccount.ClinicID == clinic_id))
+
+        query = query.filter(or_(UserAccount.UserID.in_(merchants), UserAccount.UserID.in_(patients)))
 
     total_count = query.count()
     users = query.order_by(UserAccount.CreatedAt.desc()
