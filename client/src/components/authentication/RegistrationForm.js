@@ -393,6 +393,7 @@ const RegistrationForm = () => {
         {/* Details */}
         {isAccountTypeSelected && (
           <Box sx={{ width: { sm: "auto", md: "500px" } }}>
+            {generateUnsuccessfulCreationAlert()}
             <Stack spacing={6}>
               {/* Standard Account Details */}
               {accountType === ACCOUNT_TYPES.STANDARD && (
