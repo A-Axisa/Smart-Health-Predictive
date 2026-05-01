@@ -2,21 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Container,
   Stack,
   TextField,
   Button,
   Typography,
-  Link,
-  FormControlLabel,
   Alert,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogActions,
   Divider,
-  Radio,
-  RadioGroup,
   InputLabel,
   MenuItem,
   FormControl,
@@ -138,11 +133,6 @@ const RegistrationForm = () => {
   function updateGender(e) {
     setAlertGenderRequired(false);
     setGenderState(e.target.value);
-  }
-
-  function updateAccountType(e) {
-    console.log(e.target.value);
-    setAccountType(e.target.value);
   }
 
   function setAccountTypeToStandard() {
