@@ -1,16 +1,17 @@
 import { useState } from "react";
 import {
   Box,
-  Stack,
   Button,
-  Typography,
-  Divider,
   Card,
   CardContent,
+  Divider,
+  Stack,
+  Typography,
 } from "@mui/material";
 import ForwardToInboxOutlinedIcon from "@mui/icons-material/ForwardToInboxOutlined";
 import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 import EmailInputField from "./EmailInputField";
+import Logo from "../../assets/WellAiLogoTR.png";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -74,13 +75,20 @@ const ForgotPasswordForm = () => {
         {/* Input form */}
         {!isFormSubmitted && (
           <Stack
-            direction="column"
             spacing={{ xs: 5 }}
             pl={3}
             pr={3}
             style={{ justifyContent: "center" }}
           >
-            <Stack direction="column" spacing={{ xs: 2 }}>
+            <Stack spacing={{ xs: 1 }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
               <Stack alignItems="center">
                 <PsychologyAltIcon alignItem="center" sx={{ fontSize: 80 }} />
               </Stack>
@@ -127,8 +135,16 @@ const ForgotPasswordForm = () => {
 
         {/* Success response */}
         {isFormSubmitted && (
-          <Stack direction="column" spacing={5} pl={3} pr={3}>
-            <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
+          <Stack spacing={5} pl={3} pr={3}>
+            <Stack spacing={{ xs: 1, position: "relative" }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
               <Stack alignItems="center">
                 <ForwardToInboxOutlinedIcon sx={{ fontSize: 80 }} />
               </Stack>
