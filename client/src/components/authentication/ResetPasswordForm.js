@@ -1,17 +1,18 @@
 import { useState } from "react";
 import {
   Box,
-  Stack,
   Button,
-  Typography,
-  TextField,
   Card,
   CardContent,
   Divider,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import LockResetIcon from "@mui/icons-material/LockReset";
 import CheckIcon from "@mui/icons-material/Check";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import Logo from "../../assets/WellAiLogoTR.png";
 import PasswordInputField from "../authentication/PasswordInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -98,13 +99,20 @@ const ResetPasswordForm = () => {
         {/* Input form */}
         {!isFormSubmitted && (
           <Stack
-            direction="column"
             spacing={{ xs: 5 }}
             pl={3}
             pr={3}
             style={{ justifyContent: "center" }}
           >
-            <Stack direction="column" spacing={{ xs: 2 }}>
+            <Stack spacing={{ xs: 1 }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
               <Stack alignItems="center">
                 <LockResetIcon alignItem="center" sx={{ fontSize: 80 }} />
               </Stack>
@@ -164,8 +172,16 @@ const ResetPasswordForm = () => {
 
         {/* Success response */}
         {isFormSubmitted && (
-          <Stack direction="column" spacing={{ xs: 5 }} pl={3} pr={3}>
-            <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
+          <Stack spacing={{ xs: 5 }} pl={3} pr={3}>
+            <Stack spacing={{ xs: 1, position: "relative" }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
               <Stack alignItems="center">
                 <CheckIcon alignItem="center" sx={{ fontSize: 80 }} />
               </Stack>
