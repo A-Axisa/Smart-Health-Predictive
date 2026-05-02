@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
+  Paper,
   Stack,
   TextField,
   Button,
@@ -15,6 +16,7 @@ import {
   FormControl,
   Select,
   FormHelperText,
+  Typography,
 } from "@mui/material";
 
 const FULL_NAME_MAX_LENGTH = 255;
@@ -45,11 +47,13 @@ const CreatePatientForm = () => {
     setGivenNames({ isValid: isNameValid, name: e.target.value });
     setAlertGivenNameRequired(!isNameValid);
   }
+
   function updateFamilyName(e) {
     const isNameValid = e.target.value !== "";
     setFamilyName({ isValid: isNameValid, name: e.target.value });
     setAlertFamilyNameRequired(!isNameValid);
   }
+
   function updateDoB(e) {
     if (calculateAge(e.target.value) < 18) {
       setAlertDoBRequired(true);
@@ -59,26 +63,23 @@ const CreatePatientForm = () => {
     setDoB(e.target.value);
   }
 
-  function calculateAge(DoB) {
-    // Format dates
+  function calculateAge(dob) {
     const today = new Date();
-    const dob = new Date(DoB);
-    // calculate the year different between today and the dob
-    const yearDiff = today.getFullYear() - dob.getFullYear();
-
-    // Check if the users birthday has past
+    const birthDate = new Date(dob);
+    const yearDiff = today.getFullYear() - birthDate.getFullYear();
     const birthdayNotPassed =
-      today.getMonth() < dob.getMonth() ||
-      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() < birthDate.getDate());
 
-    const age = yearDiff - birthdayNotPassed;
-    return age;
+    return yearDiff - birthdayNotPassed;
   }
 
   function updateGender(e) {
     setAlertGenderRequired(false);
     setGender(e.target.value);
   }
+
   function updateWeight(e) {
     const weightValue = e.target.value;
     const isWeightValid =
@@ -144,7 +145,6 @@ const CreatePatientForm = () => {
       return;
     }
     setIsLoading(true);
-    // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/create-patient`, {
       method: "POST",
       credentials: "include",
@@ -166,25 +166,23 @@ const CreatePatientForm = () => {
         }
         return response.json();
       })
-      .then((data) => {
+      .then(() => {
         setShowSuccessMessage(true);
         setShowFailMessage(false);
       })
-      .catch((err) => {
+      .catch(() => {
         console.log("An error has occurred");
       });
     setIsLoading(false);
   }
 
   return (
-    <Container
+    <Paper
       sx={{
         borderRadius: { xs: 0, sm: 2 },
-        padding: "25px",
+        padding: { xs: 3, sm: 4 },
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
-        width: { xs: "auto", sm: "500px" },
+        width: { xs: "100%", sm: "560px" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >
@@ -198,7 +196,14 @@ const CreatePatientForm = () => {
       </Dialog>
 
       <Container component="form" onSubmit={handlePatientCreation}>
-        <Stack spacing={{ xs: 2 }}>
+        <Stack spacing={2}>
+          <Stack spacing={1} sx={{ textAlign: "center" }}>
+            <Typography variant="h4">Create Patient</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Enter patient details to create a new record.
+            </Typography>
+          </Stack>
+
           {generateUnsuccessfulCreationAlert()}
 
           <Divider
@@ -217,7 +222,8 @@ const CreatePatientForm = () => {
             slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
             error={alertGivenNameRequired}
             helperText={alertGivenNameRequired ? "*Required" : null}
-          ></TextField>
+            fullWidth
+          />
 
           <TextField
             id="outlined-familyName-input"
@@ -227,7 +233,9 @@ const CreatePatientForm = () => {
             slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
             error={alertFamilyNameRequired}
             helperText={alertFamilyNameRequired ? "*Required" : null}
-          ></TextField>
+            fullWidth
+          />
+
           <TextField
             label="Select Date of Birth"
             name="date_of_birth"
@@ -242,8 +250,10 @@ const CreatePatientForm = () => {
                 shrink: true,
               },
             }}
+            fullWidth
           />
-          <FormControl error={alertGenderRequired}>
+
+          <FormControl error={alertGenderRequired} fullWidth>
             <InputLabel id="gender-label">Gender</InputLabel>
             <Select
               labelId="gender-label"
@@ -257,6 +267,7 @@ const CreatePatientForm = () => {
             </Select>
             {alertGenderRequired && <FormHelperText>*Required</FormHelperText>}
           </FormControl>
+
           <TextField
             name="weight"
             label="Weight (Kg)"
@@ -268,13 +279,13 @@ const CreatePatientForm = () => {
                 ? "*Please enter a valid weight (0-200kg)"
                 : null
             }
+            fullWidth
           />
 
           <TextField
             name="height"
             label="Height (cm)"
             type="text"
-            fullWidth
             onChange={updateHeight}
             error={alertHeightRequired}
             helperText={
@@ -282,6 +293,7 @@ const CreatePatientForm = () => {
                 ? "*Please enter a valid height (0-300cm)"
                 : null
             }
+            fullWidth
           />
 
           <Button
@@ -295,6 +307,7 @@ const CreatePatientForm = () => {
           >
             Create Patient
           </Button>
+
           <Stack
             direction="row"
             spacing={{ xs: 1 }}
@@ -302,7 +315,7 @@ const CreatePatientForm = () => {
           ></Stack>
         </Stack>
       </Container>
-    </Container>
+    </Paper>
   );
 };
 
