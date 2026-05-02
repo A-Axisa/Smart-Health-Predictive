@@ -1,4 +1,4 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone, UTC
 from decimal import Decimal
 from typing import List, Optional
 from secrets import token_urlsafe
@@ -25,7 +25,7 @@ from ..models.dbmodels import (
     Clinic,
     PatientRequestToken
 )
-from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid, authenticate_user
 
 NAME_MAX_LENGTH = 255
 MIN_AGE = 18
@@ -127,6 +127,12 @@ class PatientDetails(CamelModel):
 
 class PatientRequest(BaseModel):
     email: str
+
+
+class PatientAcceptDetails(BaseModel):
+    token: str
+    email: str
+    password: str
 
 
 def _to_float(val) -> float:
@@ -1174,6 +1180,66 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
     db_conn.add(pass_reset_token)
     db_conn.commit()
     is_success = True
+    return {"message": "Patient access request sent successfully"}
+
+
+@router.post('/patient-accept-request')
+def patient_accept_request(patient_accept_details: PatientAcceptDetails, request: Request, db_conn: Session = Depends(get_db)):
+    """Allows a patient to accept a request to be added to a merchant account"""
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Incorrect email or password',
+    )
+
+    # Ensure user inputs are valid.
+    if len(patient_accept_details.password) < 1 or \
+            not is_email_valid(patient_accept_details.email):
+        raise credentials_exception
+
+    user = authenticate_user(patient_accept_details.email,
+                             patient_accept_details.password, db_conn)
+    if not user:
+        # Log failed login attempts.
+        write_audit_log(db_conn,
+                        eventType=LogEventType.FAILED_LOGIN_ATTEMPT,
+                        success=False,
+                        userEmail=patient_accept_details.email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description="Login failed with incorrect credentials.")
+        raise credentials_exception
+
+    # Retrieve token
+    token_entry = db_conn.query(
+        PatientRequestToken).filter_by(Token=patient_accept_details.token).first()
+
+    if not token_entry or datetime.now(UTC) > token_entry.ExpiresAt.astimezone(timezone.utc):
+        raise HTTPException(
+            status_code=404,
+            detail="Invalid or expired token"
+        )
+    # Check the user is a patient
+    patient = db_conn.query(Patient).filter(
+        Patient.UserID == user.UserID).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    # Check the user who validated their credentials is the patient the request was created for
+    if patient.PatientID != token_entry.PatientID:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Not authorized access to accept request',
+        )
+
+    # Create relationship between patient and merchant
+    merchant_access = UserPatientAccess(
+        user_id=token_entry.MerchantID, patient_id=token_entry.PatientID)
+    db_conn.delete(token_entry)
+    db_conn.add(merchant_access)
+    db_conn.commit()
+
+    return {"message": "Merchant access successfully granted"}
 
 
 def is_name_valid(name: str):
