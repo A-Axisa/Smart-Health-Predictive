@@ -1,12 +1,14 @@
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import List, Optional
+from secrets import token_urlsafe
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
+import re
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -20,12 +22,14 @@ from ..models.dbmodels import (
     LogEventType,
     Patient,
     UserPatientAccess,
-    Clinic
+    Clinic,
+    PatientRequestToken
 )
-from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid
 
 NAME_MAX_LENGTH = 255
 MIN_AGE = 18
+VALIDATION_TOKEN_LENGTH = 128
 gender_map = {'Male': 1, 'Female': 0}
 
 
@@ -119,6 +123,10 @@ class PatientDetails(CamelModel):
     risks: dict
     diff: dict
     recommendations: dict
+
+
+class PatientRequest(BaseModel):
+    email: str
 
 
 def _to_float(val) -> float:
@@ -542,18 +550,7 @@ async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_d
 async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_db)):
     """Retrieves all reports a merchant can view"""
     # Check if the requesting user is a merchant.
-    current_user = get_current_user(request, db_conn)
-    current_user_email = current_user.get('email')
-    merchant = db_conn.query(UserAccount).filter_by(
-        Email=current_user_email).first()
-    if not merchant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-
-    current_user_role = current_user.get('role')
-    if not current_user_role or current_user_role.lower() != 'merchant':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+    merchant = get_current_merchant(request, db_conn)
 
     # Get patients associated with the merchant.
     patients = get_merchant_patients(merchant.UserID, db_conn)
@@ -1127,6 +1124,47 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
         diff=disease_diff,
         recommendations=latest_recommendations
     )
+
+
+@router.post('/patient-request')
+def patient_request(patient_request: PatientRequest, request: Request, db_conn: Session = Depends(get_db)):
+    """Generates a patient request token for a given patient email."""
+    is_success = False
+
+    # Check the current user is a merchant
+    merchant = get_current_merchant(request, db_conn)
+
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
+                             patient_request.email)
+    if not is_email_valid(sanitised_email):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    # Check if the provided email is a patient
+    patient = get_patient_by_email(sanitised_email, db_conn)
+
+    if patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+
+    # Only allow one token to exist per patient & merchant pair.
+    existing_token = db_conn.query(
+        PatientRequestToken).filter_by(MerchantID=merchant.UserID, PatientID=patient.UserID).first()
+    if existing_token:
+        db_conn.delete(existing_token)
+    # Create patient request token
+    token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+    expires_at = datetime.now() + timedelta(days=7)
+    pass_reset_token = PatientRequestToken(
+        merchant.UserID,
+        patient.UserID,
+        token,
+        expires_at
+    )
+
+    db_conn.add(pass_reset_token)
+    db_conn.commit()
+    is_success = True
 
 
 def is_name_valid(name: str):
