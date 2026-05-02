@@ -1147,6 +1147,15 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
 
+    # Check if the merchant currently has access to the patient account
+    merchant_access = db_conn.query(UserPatientAccess).filter(
+        UserPatientAccess.UserID == merchant.UserID,
+        UserPatientAccess.PatientID == patient.PatientID
+    ).first()
+
+    if merchant_access:
+        return {"message": "This Merchant already has access to this patient record"}
+
     # Only allow one token to exist per patient & merchant pair.
     existing_token = db_conn.query(
         PatientRequestToken).filter_by(MerchantID=merchant.UserID, PatientID=patient.UserID).first()
