@@ -25,7 +25,7 @@ from ..models.dbmodels import (
     Clinic,
     PatientRequestToken
 )
-from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid, authenticate_user
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid, authenticate_user, send_email
 
 NAME_MAX_LENGTH = 255
 MIN_AGE = 18
@@ -1135,7 +1135,6 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
 @router.post('/patient-request')
 def patient_request(patient_request: PatientRequest, request: Request, db_conn: Session = Depends(get_db)):
     """Generates a patient request token for a given patient email."""
-    is_success = False
 
     # Check the current user is a merchant
     merchant = get_current_merchant(request, db_conn)
@@ -1170,16 +1169,22 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
     # Create patient request token
     token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
     expires_at = datetime.now() + timedelta(days=7)
-    pass_reset_token = PatientRequestToken(
+    patient_access_token = PatientRequestToken(
         merchant.UserID,
         patient.PatientID,
         token,
         expires_at
     )
 
-    db_conn.add(pass_reset_token)
+    db_conn.add(patient_access_token)
     db_conn.commit()
-    is_success = True
+
+    clinic = db_conn.query(Clinic.ClinicName).filter(
+        Clinic.ClinicID == merchant.ClinicID
+    ).scalar()
+
+    send_patient_request_email(
+        sanitised_email, patient, clinic, request, token)
     return {"message": "Patient access request sent successfully"}
 
 
@@ -1240,6 +1245,46 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
     db_conn.commit()
 
     return {"message": "Merchant access successfully granted"}
+
+
+def send_patient_request_email(email: str, patient: Patient, clinic: str, request: Request, token: str):
+    """Helper function to send a patient request email."""
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    clinic_name = sanitizer.sanitize(clinic)
+
+    url = f"http://localhost:3000/merchant-request/{sanitized_token}"
+    subject = "Password reset request for WellAI Smart Health Predictive"
+    content = f"""
+    <html>
+        <body>
+            <p>Greetings {given_names} {family_name},</p>
+            <p>You have received a request from our partner {clinic_name} at WellAI Smart Health Predictive to access your patient record.</p>
+            <p>Click the following link to proceed with this process and provide access to {clinic_name} to manage your patient record. 
+            <p>This will allow {clinic_name} to:</p>
+            <ul>
+                <li>View your health report history</li>
+                <li>Generate new health reports based on your data</li>
+                <li>View your health data</li>
+            </ul>
+            For security, this link will expire in 7 days:
+              <a href={url}>Accept Request</a>
+            </p>
+            <br />
+            <p>If you did not expect this request, you can safely ignore this email.</p>
+            <p>Best regards,</p>
+            <p>The WellAI Team</p>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=email,
+        subject=subject,
+        content=content,
+        content_type="html"
+    )
 
 
 def is_name_valid(name: str):
