@@ -11,7 +11,7 @@ const Register = () => {
       variant="gradient"
       maxWidth={false}
       sx={{
-        width: "100vw",
+        width: "100%",
         minHeight: "100vh",
         padding: "0",
         margin: "0",
