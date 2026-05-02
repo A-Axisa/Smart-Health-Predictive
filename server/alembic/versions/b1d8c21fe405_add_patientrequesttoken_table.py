@@ -1,8 +1,8 @@
 """Add PatientRequestToken table
 
-Revision ID: 6a4edceb11a3
+Revision ID: b1d8c21fe405
 Revises: 27b8726914b4
-Create Date: 2026-05-02 14:20:10.867715
+Create Date: 2026-05-02 15:31:29.028523
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6a4edceb11a3'
+revision: str = 'b1d8c21fe405'
 down_revision: Union[str, Sequence[str], None] = '27b8726914b4'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,7 +28,7 @@ def upgrade() -> None:
     sa.Column('Token', sa.String(length=999), nullable=False),
     sa.Column('ExpiresAt', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['MerchantID'], ['UserAccount.UserID'], ),
-    sa.ForeignKeyConstraint(['PatientID'], ['UserAccount.UserID'], ),
+    sa.ForeignKeyConstraint(['PatientID'], ['Patient.PatientID'], ),
     sa.PrimaryKeyConstraint('TokenID')
     )
     # ### end Alembic commands ###

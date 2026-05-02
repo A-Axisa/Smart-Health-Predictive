@@ -372,7 +372,7 @@ class PatientRequestToken(Base):
     MerchantID = Column(Integer, ForeignKey(
         'UserAccount.UserID'), nullable=False)
     PatientID = Column(Integer, ForeignKey(
-        'UserAccount.UserID'), nullable=False)
+        'Patient.PatientID'), nullable=False)
 
     Token = Column(String(999), nullable=False)
     ExpiresAt = Column(DateTime, nullable=False)

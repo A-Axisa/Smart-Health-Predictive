@@ -1158,7 +1158,7 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
 
     # Only allow one token to exist per patient & merchant pair.
     existing_token = db_conn.query(
-        PatientRequestToken).filter_by(MerchantID=merchant.UserID, PatientID=patient.UserID).first()
+        PatientRequestToken).filter_by(MerchantID=merchant.UserID, PatientID=patient.PatientID).first()
     if existing_token:
         db_conn.delete(existing_token)
     # Create patient request token
@@ -1166,7 +1166,7 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
     expires_at = datetime.now() + timedelta(days=7)
     pass_reset_token = PatientRequestToken(
         merchant.UserID,
-        patient.UserID,
+        patient.PatientID,
         token,
         expires_at
     )
