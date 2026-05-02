@@ -1,30 +1,31 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
-  Stack,
-  TextField,
-  Button,
-  Typography,
   Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogActions,
   Divider,
+  FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
-  FormControl,
   Select,
-  FormHelperText,
-  Card,
-  CardContent,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PasswordInputField from "../authentication/PasswordInputField";
 import EmailInputField from "../authentication/EmailInputField";
 import PhoneInputField from "../authentication/PhoneInputField";
+import Logo from "../../assets/WellAiLogoTR.png";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({
@@ -312,6 +313,14 @@ const RegistrationForm = () => {
         {!isAccountTypeSelected && (
           <Box>
             <Stack alignItems="center" spacing={3}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
               <Stack alignItems="center" spacing={1} paddingBottom={1}>
                 <Typography variant="h4">Account Type</Typography>
                 <Typography variant="subtle">
@@ -378,6 +387,14 @@ const RegistrationForm = () => {
                 Account creation unsuccessful.
               </Alert>
             )}
+            <Stack alignItems="center">
+              <Box
+                component="img"
+                alt="Well AI Logo"
+                src={Logo}
+                sx={{ width: "10em", paddingBottom: "30px" }}
+              />
+            </Stack>
 
             <Stack spacing={6}>
               {/* Standard Account Details */}
