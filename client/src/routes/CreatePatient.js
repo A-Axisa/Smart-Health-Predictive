@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import CreatePatientForm from "../components/authentication/CreatePatientForm";
 
 /**
@@ -7,18 +7,29 @@ import CreatePatientForm from "../components/authentication/CreatePatientForm";
 const CreatePatient = () => {
   return (
     <Container
+      variant="gradient"
       maxWidth={false}
       sx={{
         width: "100vw",
-        height: "100dvh",
+        minHeight: "100vh",
         padding: "0",
         margin: "0",
         display: "flex",
-        alignItems: "center",
+        alignItems: { xs: "flex-start", sm: "center" },
         justifyContent: "center",
       }}
     >
-      <CreatePatientForm />
+      <Box
+        variant="gradient"
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          py: { xs: 4, sm: 6 },
+        }}
+      >
+        <CreatePatientForm />
+      </Box>
     </Container>
   );
 };
