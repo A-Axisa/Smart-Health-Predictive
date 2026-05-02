@@ -1,4 +1,4 @@
-import { Box, Container, Stack, Typography, Paper } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import Logo from "../assets/WellAiLogoTR.png";
 
 /**
