@@ -9,7 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, Link as RouterLink } from "react-router-dom";
 import CheckIcon from "@mui/icons-material/Check";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import Logo from "../../assets/WellAiLogoTR.png";
@@ -156,7 +156,8 @@ const ResetPasswordForm = () => {
                 </Button>
                 <Divider />
                 <Button
-                  href="/login"
+                  component={RouterLink}
+                  to="/login"
                   variant="outlined"
                   sx={{
                     py: { xs: "1rem", sm: ".9rem" },
@@ -194,7 +195,8 @@ const ResetPasswordForm = () => {
               </Typography>
             </Stack>
             <Button
-              href="/login"
+              component={RouterLink}
+              to="/login"
               variant="outlined"
               sx={{
                 py: { xs: "1rem", sm: ".9rem" },

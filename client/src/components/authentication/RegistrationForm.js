@@ -366,7 +366,8 @@ const RegistrationForm = () => {
                 OR
               </Divider>
               <Button
-                href="/login"
+                component={RouterLink}
+                to="/login"
                 variant="outlined"
                 sx={{
                   py: { xs: "1rem", sm: ".9rem" },

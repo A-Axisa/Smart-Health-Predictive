@@ -170,7 +170,12 @@ const LoginForm = () => {
             <Typography align="center" variant="subtle">
               Forgot your password?
             </Typography>
-            <Button href="/forgot-password" variant="outlined" align="center">
+            <Button
+              component={RouterLink}
+              to="/forgot-password"
+              variant="outlined"
+              align="center"
+            >
               Click Here
             </Button>
           </Stack>
