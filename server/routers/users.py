@@ -131,8 +131,6 @@ class PatientRequest(BaseModel):
 
 class PatientAcceptDetails(BaseModel):
     token: str
-    email: str
-    password: str
 
 
 def _to_float(val) -> float:
@@ -1192,28 +1190,14 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
 def patient_accept_request(patient_accept_details: PatientAcceptDetails, request: Request, db_conn: Session = Depends(get_db)):
     """Allows a patient to accept a request to be added to a merchant account"""
 
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Incorrect email or password',
-    )
+    # Get current user's details
+    current_user = get_current_user(request, db_conn)
+    current_user_role = current_user.get("role")
+    if not current_user_role or current_user_role.lower() != "standard_user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
-    # Ensure user inputs are valid.
-    if len(patient_accept_details.password) < 1 or \
-            not is_email_valid(patient_accept_details.email):
-        raise credentials_exception
-
-    user = authenticate_user(patient_accept_details.email,
-                             patient_accept_details.password, db_conn)
-    if not user:
-        # Log failed login attempts.
-        write_audit_log(db_conn,
-                        eventType=LogEventType.FAILED_LOGIN_ATTEMPT,
-                        success=False,
-                        userEmail=patient_accept_details.email,
-                        device=request.headers.get("user-agent"),
-                        ipAddress=request.client.host,
-                        description="Login failed with incorrect credentials.")
-        raise credentials_exception
+    user = get_user(current_user["email"], db_conn)
 
     # Retrieve token
     token_entry = db_conn.query(
@@ -1224,6 +1208,7 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
             status_code=404,
             detail="Invalid or expired token"
         )
+
     # Check the user is a patient
     patient = db_conn.query(Patient).filter(
         Patient.UserID == user.UserID).first()
