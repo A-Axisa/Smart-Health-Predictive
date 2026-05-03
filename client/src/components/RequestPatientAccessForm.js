@@ -14,6 +14,7 @@ const RequestPatientAccessForm = () => {
   const [alertEmailRequired, setAlertEmailRequired] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   function validateEmail(e) {
     setAlertEmailRequired(false);
@@ -43,7 +44,14 @@ const RequestPatientAccessForm = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(response.status);
+          if (response.status === 404) {
+            setErrorMessage("Patient not found");
+          } else if (response.status === 409) {
+            setErrorMessage("You already have access to this patient record");
+          } else {
+            setErrorMessage("Something went wrong");
+          }
+          return;
         }
         setIsFormSubmitted(true);
         return response.json();
@@ -78,7 +86,11 @@ const RequestPatientAccessForm = () => {
             <Typography align="start" style={{ color: "#777777" }}>
               Enter the email of the patient you are requesting access for.
             </Typography>
+            {errorMessage && (
+              <Typography color="error">{errorMessage}</Typography>
+            )}
           </Stack>
+
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={{ xs: 2 }}>
               <EmailInputField

@@ -20,6 +20,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const AcceptRequestForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { token } = useParams();
 
@@ -39,7 +40,8 @@ const AcceptRequestForm = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(response.status);
+          setErrorMessage("Request has expired or is invalid");
+          return;
         }
         setIsFormSubmitted(true);
         return response.json();
@@ -97,6 +99,9 @@ const AcceptRequestForm = () => {
                 <ListItemText primary="View your health data" />
               </ListItem>
             </List>
+            {errorMessage && (
+              <Typography color="error">{errorMessage}</Typography>
+            )}
           </Stack>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={{ xs: 2 }}>
