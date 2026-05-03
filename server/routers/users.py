@@ -1255,7 +1255,7 @@ def send_patient_request_email(email: str, patient: Patient, clinic: str, reques
     family_name = sanitizer.sanitize(patient.FamilyName)
     clinic_name = sanitizer.sanitize(clinic)
 
-    url = f"http://localhost:3000/merchant-request/{sanitized_token}"
+    url = f"http://localhost:3000/accept-access-request/{sanitized_token}"
     subject = "Password reset request for WellAI Smart Health Predictive"
     content = f"""
     <html>

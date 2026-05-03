@@ -28,6 +28,7 @@ import PatientDetails from "./routes/PatientDetails";
 import CreatePatient from "./routes/CreatePatient";
 import ForgotPassword from "./routes/ForgotPassword";
 import ResetPassword from "./routes/ResetPassword";
+import AcceptAccessRequest from "./routes/AcceptAccessRequest";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -45,6 +46,10 @@ root.render(
               <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
+              />
+              <Route
+                path="/accept-access-request/:token"
+                element={<AcceptAccessRequest />}
               />
             </Route>
 
