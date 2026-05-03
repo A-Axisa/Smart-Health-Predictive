@@ -5,6 +5,7 @@ import {
   Typography,
   Card,
   CardContent,
+  Stack,
   FormControl,
   FormGroup,
   FormControlLabel,
@@ -265,225 +266,237 @@ const HealthAnalytics = () => {
   }, [xAxisData, isMobile]);
 
   return (
-    <Container
-      maxWidth="lg"
+    <Box
+      variant="gradient"
       sx={{
-        py: isMobile ? 3 : 4,
-        px: isMobile ? 2 : 3,
-        ml: "250px",
-        mt: "66px",
+        minHeight: "100vh",
+        width: "100%",
+        py: { xs: 3, sm: 4 },
       }}
     >
-      <Typography
-        variant={isMobile ? "h5" : "h4"}
-        component="h1"
-        gutterBottom
-        color="primary"
-        sx={{ fontWeight: 600, mb: 3 }}
+      <Container
+        maxWidth="lg"
+        sx={{
+          px: isMobile ? 2 : 3,
+          ml: "250px",
+          mt: "66px",
+        }}
       >
-        Health Analytics
-      </Typography>
-
-      <Card sx={cardWrapperSx}>
-        <CardContent sx={cardContentSx}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: showSettings ? 2 : 0,
-            }}
+        <Stack spacing={1.5} sx={{ mb: 3 }}>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            component="h1"
+            color="primary"
+            sx={{ fontWeight: 600 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Probability Metrics Selection
-            </Typography>
-            {isMobile && (
-              <IconButton
-                onClick={() => setShowSettings(!showSettings)}
-                size="small"
-                sx={{ ml: 1 }}
-              >
-                {showSettings ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-            )}
-          </Box>
+            Health Analytics
+          </Typography>
+          <Typography color="text.secondary">
+            Track longitudinal risk trends and refine the metrics displayed.
+          </Typography>
+        </Stack>
 
-          <Collapse in={showSettings}>
-            <FormControl component="fieldset" sx={{ width: "100%" }}>
-              <FormGroup row={!isMobile}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedMetrics.strokeProbability}
-                      onChange={() => handleMetricChange("strokeProbability")}
-                      sx={{
-                        color: colors[0],
-                        "&.Mui-checked": { color: colors[0] },
-                      }}
-                    />
+        <Card sx={cardWrapperSx}>
+          <CardContent sx={cardContentSx}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: showSettings ? 2 : 0,
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Probability Metrics Selection
+              </Typography>
+              {isMobile && (
+                <IconButton
+                  onClick={() => setShowSettings(!showSettings)}
+                  size="small"
+                  sx={{ ml: 1 }}
+                >
+                  {showSettings ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              )}
+            </Box>
+
+            <Collapse in={showSettings}>
+              <FormControl component="fieldset" sx={{ width: "100%" }}>
+                <FormGroup row={!isMobile}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selectedMetrics.strokeProbability}
+                        onChange={() => handleMetricChange("strokeProbability")}
+                        sx={{
+                          color: colors[0],
+                          "&.Mui-checked": { color: colors[0] },
+                        }}
+                      />
+                    }
+                    label="Stroke Probability"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selectedMetrics.cardioProbability}
+                        onChange={() => handleMetricChange("cardioProbability")}
+                        sx={{
+                          color: colors[1],
+                          "&.Mui-checked": { color: colors[1] },
+                        }}
+                      />
+                    }
+                    label="Cardio Probability"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selectedMetrics.diabetesProbability}
+                        onChange={() => handleMetricChange("diabetesProbability")}
+                        sx={{
+                          color: colors[2],
+                          "&.Mui-checked": { color: colors[2] },
+                        }}
+                      />
+                    }
+                    label="Diabetes Probability"
+                  />
+                </FormGroup>
+              </FormControl>
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant="outlined"
+                  onClick={fetchData}
+                  sx={{
+                    py: { xs: "0.8rem", sm: "0.6rem" },
+                    fontSize: { xs: "1rem", sm: "0.875rem" },
+                    fontWeight: 500,
+                  }}
+                >
+                  Refresh Data
+                </Button>
+              </Box>
+            </Collapse>
+          </CardContent>
+        </Card>
+
+        <Card sx={cardWrapperSx}>
+          <CardContent sx={chartCardContentSx}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              Health Risk Trends Over Time
+            </Typography>
+            {chartSeries.length > 0 && healthData.length > 0 ? (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: isMobile ? 350 : 420,
+                  overflow: "visible",
+                }}
+              >
+                <LineChart
+                  series={chartSeries}
+                  xAxis={[
+                    {
+                      data: xAxisData,
+                      scaleType: "point",
+                      valueFormatter: xAxisValueFormatter,
+                      tickLabelStyle: {
+                        angle: 0,
+                        textAnchor: "middle",
+                        fontSize: isMobile ? 9 : 11,
+                        fill: "#666",
+                      },
+                    },
+                  ]}
+                  yAxis={[
+                    {
+                      label: isMobile ? "" : "Probability (%)",
+                      min: 0,
+                      max: yAxisMax,
+                      tickLabelStyle: {
+                        fontSize: isMobile ? 10 : 12,
+                        fill: "#666",
+                      },
+                    },
+                  ]}
+                  margin={
+                    isMobile
+                      ? { left: 3, right: 30, top: 55, bottom: 50 }
+                      : { left: 70, right: 30, top: 40, bottom: 70 }
                   }
-                  label="Stroke Probability"
+                  grid={{ vertical: true, horizontal: true }}
+                  slotProps={{
+                    legend: {
+                      direction: isMobile ? "column" : "row",
+                      position: { vertical: "top", horizontal: "middle" },
+                      padding: 0,
+                      itemMarkWidth: isMobile ? 12 : 20,
+                      itemMarkHeight: 2,
+                      markGap: isMobile ? 4 : 5,
+                      itemGap: isMobile ? 6 : 10,
+                      labelStyle: {
+                        fontSize: isMobile ? 9 : 12,
+                        fill: "#333",
+                      },
+                    },
+                  }}
                 />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedMetrics.cardioProbability}
-                      onChange={() => handleMetricChange("cardioProbability")}
-                      sx={{
-                        color: colors[1],
-                        "&.Mui-checked": { color: colors[1] },
-                      }}
-                    />
-                  }
-                  label="Cardio Probability"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedMetrics.diabetesProbability}
-                      onChange={() => handleMetricChange("diabetesProbability")}
-                      sx={{
-                        color: colors[2],
-                        "&.Mui-checked": { color: colors[2] },
-                      }}
-                    />
-                  }
-                  label="Diabetes Probability"
-                />
-              </FormGroup>
-            </FormControl>
-            <Box sx={{ mt: 3 }}>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  height: 300,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "text.secondary",
+                }}
+              >
+                <Typography>
+                  Select at least one metric to display the chart
+                </Typography>
+              </Box>
+            )}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                justifyContent: isMobile ? "stretch" : "flex-end",
+                alignItems: isMobile ? "stretch" : "center",
+                mt: 3,
+                gap: isMobile ? 1.5 : 1,
+              }}
+            >
               <Button
                 variant="outlined"
-                onClick={fetchData}
+                href="/ai-health-prediction"
                 sx={{
+                  width: isMobile ? "100%" : "auto",
                   py: { xs: "0.8rem", sm: "0.6rem" },
                   fontSize: { xs: "1rem", sm: "0.875rem" },
                   fontWeight: 500,
                 }}
               >
-                Refresh Data
+                Detail Reports
+              </Button>
+              <Button
+                variant="contained"
+                href="/generate-report"
+                sx={{
+                  width: isMobile ? "100%" : "auto",
+                  py: { xs: "0.8rem", sm: "0.6rem" },
+                  fontSize: { xs: "1rem", sm: "0.875rem" },
+                  fontWeight: 500,
+                }}
+              >
+                Add New
               </Button>
             </Box>
-          </Collapse>
-        </CardContent>
-      </Card>
-
-      <Card sx={cardWrapperSx}>
-        <CardContent sx={chartCardContentSx}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-            Health Risk Trends Over Time
-          </Typography>
-          {chartSeries.length > 0 && healthData.length > 0 ? (
-            <Box
-              sx={{
-                width: "100%",
-                height: isMobile ? 350 : 420,
-                overflow: "visible",
-              }}
-            >
-              <LineChart
-                series={chartSeries}
-                xAxis={[
-                  {
-                    data: xAxisData,
-                    scaleType: "point",
-                    valueFormatter: xAxisValueFormatter,
-                    tickLabelStyle: {
-                      angle: 0,
-                      textAnchor: "middle",
-                      fontSize: isMobile ? 9 : 11,
-                      fill: "#666",
-                    },
-                  },
-                ]}
-                yAxis={[
-                  {
-                    label: isMobile ? "" : "Probability (%)",
-                    min: 0,
-                    max: yAxisMax,
-                    tickLabelStyle: {
-                      fontSize: isMobile ? 10 : 12,
-                      fill: "#666",
-                    },
-                  },
-                ]}
-                margin={
-                  isMobile
-                    ? { left: 3, right: 30, top: 55, bottom: 50 }
-                    : { left: 70, right: 30, top: 40, bottom: 70 }
-                }
-                grid={{ vertical: true, horizontal: true }}
-                slotProps={{
-                  legend: {
-                    direction: isMobile ? "column" : "row",
-                    position: { vertical: "top", horizontal: "middle" },
-                    padding: 0,
-                    itemMarkWidth: isMobile ? 12 : 20,
-                    itemMarkHeight: 2,
-                    markGap: isMobile ? 4 : 5,
-                    itemGap: isMobile ? 6 : 10,
-                    labelStyle: {
-                      fontSize: isMobile ? 9 : 12,
-                      fill: "#333",
-                    },
-                  },
-                }}
-              />
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                height: 300,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "text.secondary",
-              }}
-            >
-              <Typography>
-                Select at least one metric to display the chart
-              </Typography>
-            </Box>
-          )}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: isMobile ? "column" : "row",
-              justifyContent: isMobile ? "stretch" : "flex-end",
-              alignItems: isMobile ? "stretch" : "center",
-              mt: 3,
-              gap: isMobile ? 1.5 : 1,
-            }}
-          >
-            <Button
-              variant="outlined"
-              href="/ai-health-prediction"
-              sx={{
-                width: isMobile ? "100%" : "auto",
-                py: { xs: "0.8rem", sm: "0.6rem" },
-                fontSize: { xs: "1rem", sm: "0.875rem" },
-                fontWeight: 500,
-              }}
-            >
-              Detail Reports
-            </Button>
-            <Button
-              variant="contained"
-              href="/generate-report"
-              sx={{
-                width: isMobile ? "100%" : "auto",
-                py: { xs: "0.8rem", sm: "0.6rem" },
-                fontSize: { xs: "1rem", sm: "0.875rem" },
-                fontWeight: 500,
-              }}
-            >
-              Add New
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
-    </Container>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 };
 
