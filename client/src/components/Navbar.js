@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
-import { Drawer, List, ListItemButton, IconButton, Tooltip, ClickAwayListener } from "@mui/material";
+import { Drawer, List, ListItemButton, IconButton, Tooltip, ClickAwayListener, Backdrop } from "@mui/material";
 import { UserContext } from "../utils/UserContext";
 import PrivacyNotice from "./PrivacyNotice";
 import DisclaimerPolicy from "./DisclaimerPolicy";
@@ -61,7 +61,7 @@ const NavBar = ({ role }) => {
   const { setUser } = useContext(UserContext);
   const location = useLocation();
   const selectedPage = routePageMap[location.pathname] ?? null;
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [privacyNoticeOpen, setPrivacyNoticeOpen] = useState(false);
   const [disclaimerPolicyOpen, setDisclaimerPolicyOpen] = useState(false);
 
@@ -194,6 +194,11 @@ const NavBar = ({ role }) => {
   if (role === "standard_user")
     return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -224,53 +229,96 @@ const NavBar = ({ role }) => {
         </AppBar>
 
         {/* Nav Options */}
-        <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-          <Drawer
-            variant="permanent"
-            anchor="left"
-            sx={{
+        <Drawer
+          variant="permanent"
+          anchor="left"
+          sx={{
+            width: isOpen ? 250 : 65,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
               width: isOpen ? 250 : 65,
-              flexShrink: 0,
-              "& .MuiDrawer-paper": {
-                width: isOpen ? 250 : 65,
-                top: "66px",
-                overflowX: "hidden",
-                transition: "width 0.2s ease",
-              },
+              top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
+            },
+          }}
+        >
+          <Box
+            sx={{
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
             <Box
               sx={{
-                overflow: "auto",
                 display: "flex",
-                flexDirection: "column",
-                height: "100%",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: isOpen ? "flex-end" : "center",
-                  px: 1,
-                  pt: 2,
-                  pb: 1
-                }}
-              >
-                <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
-                  {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
-                </IconButton>
-              </Box>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
 
+            {isOpen && (
+              <Typography
+                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
+              >
+                Overview
+              </Typography>
+            )}
+
+            <List>
+              {standardUserPages.map((page) => (
+                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7"
+                        sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
+              ))}
+            </List>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
               {isOpen && (
                 <Typography
                   sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
                 >
-                  Overview
+                  Account
                 </Typography>
               )}
-
               <List>
-                {standardUserPages.map((page) => (
+                {userAccountPages.map((page) => (
                   <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
                     <ListItemButton
                       key={page.title}
@@ -298,81 +346,36 @@ const NavBar = ({ role }) => {
                   </Tooltip>
                 ))}
               </List>
-
               <Box
                 sx={{
-                  mt: "auto",
-                  mb: 8,
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
                 }}
               >
-                {/* Account Options */}
+                {/* Footer */}
                 {isOpen && (
-                  <Typography
-                    sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                  >
-                    Account
-                  </Typography>
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+
+                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Privacy Notice</u></b>
+                      </Box> &{" "}
+
+                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Disclaimer Policy</u></b>
+                      </Box>.
+
+                    </Typography>
+                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
+                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                  </>
                 )}
-                <List>
-                  {userAccountPages.map((page) => (
-                    <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
-                      <ListItemButton
-                        key={page.title}
-                        sx={{
-                          color: selectedPage === page.title ? "#fff" : "383838",
-                          backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
-                          mb: 1,
-                          px: 3,
-                          py: 1.5,
-                          justifyContent: isOpen ? "initial" : "center",
-                          "&:hover": {
-                            backgroundColor: selectedPage === page.title ? "#712b89" : "",
-                          },
-                        }}
-                        onClick={() => handleNavigate(page.title)}
-                      >
-                        {page.icon}
-                        {isOpen && (
-                          <Typography variant="h7"
-                            sx={{ ml: 3 }}>
-                            {page.title}
-                          </Typography>
-                        )}
-                      </ListItemButton>
-                    </Tooltip>
-                  ))}
-                </List>
-                <Box
-                  sx={{
-                    borderTop: "2px solid #e9e9e9",
-                    py: 3,
-                    textAlign: "center",
-                  }}
-                >
-                  {/* Footer */}
-                  {isOpen && (
-                    <>
-                      <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                        © 2024 WellAI. All rights reserved.{" "}
-
-                        <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Privacy Notice</u></b>
-                        </Box> &{" "}
-
-                        <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Disclaimer Policy</u></b>
-                        </Box>.
-
-                      </Typography>
-                      <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                      <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
-                    </>
-                  )}
-                </Box>
               </Box>
             </Box>
-          </Drawer>
-        </ClickAwayListener>
+          </Box>
+        </Drawer>
       </>
     );
 
@@ -380,6 +383,11 @@ const NavBar = ({ role }) => {
   if (role === "merchant")
      return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -410,53 +418,96 @@ const NavBar = ({ role }) => {
         </AppBar>
 
         {/* Nav Options */}
-        <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-          <Drawer
-            variant="permanent"
-            anchor="left"
-            sx={{
+        <Drawer
+          variant="permanent"
+          anchor="left"
+          sx={{
+            width: isOpen ? 250 : 65,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
               width: isOpen ? 250 : 65,
-              flexShrink: 0,
-              "& .MuiDrawer-paper": {
-                width: isOpen ? 250 : 65,
-                top: "66px",
-                overflowX: "hidden",
-                transition: "width 0.2s ease",
-              },
+              top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
+            },
+          }}
+        >
+          <Box
+            sx={{
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
             <Box
               sx={{
-                overflow: "auto",
                 display: "flex",
-                flexDirection: "column",
-                height: "100%",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: isOpen ? "flex-end" : "center",
-                  px: 1,
-                  pt: 2,
-                  pb: 1
-                }}
-              >
-                <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
-                  {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
-                </IconButton>
-              </Box>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
 
+            {isOpen && (
+              <Typography
+                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
+              >
+                Overview
+              </Typography>
+            )}
+
+            <List>
+              {merchantPages.map((page) => (
+                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor: selectedPage === page.title ? "#417638" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7"
+                        sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
+              ))}
+            </List>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
               {isOpen && (
                 <Typography
                   sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
                 >
-                  Overview
+                  Account
                 </Typography>
               )}
-
               <List>
-                {merchantPages.map((page) => (
+                {merchantAccountPages.map((page) => (
                   <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
                     <ListItemButton
                       key={page.title}
@@ -484,81 +535,36 @@ const NavBar = ({ role }) => {
                   </Tooltip>
                 ))}
               </List>
-
               <Box
                 sx={{
-                  mt: "auto",
-                  mb: 8,
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
                 }}
               >
-                {/* Account Options */}
+                {/* Footer */}
                 {isOpen && (
-                  <Typography
-                    sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                  >
-                    Account
-                  </Typography>
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+
+                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Privacy Notice</u></b>
+                      </Box> &{" "}
+
+                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Disclaimer Policy</u></b>
+                      </Box>.
+
+                    </Typography>
+                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
+                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                  </>
                 )}
-                <List>
-                  {merchantAccountPages.map((page) => (
-                    <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
-                      <ListItemButton
-                        key={page.title}
-                        sx={{
-                          color: selectedPage === page.title ? "#fff" : "383838",
-                          backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
-                          mb: 1,
-                          px: 3,
-                          py: 1.5,
-                          justifyContent: isOpen ? "initial" : "center",
-                          "&:hover": {
-                            backgroundColor: selectedPage === page.title ? "#417638" : "",
-                          },
-                        }}
-                        onClick={() => handleNavigate(page.title)}
-                      >
-                        {page.icon}
-                        {isOpen && (
-                          <Typography variant="h7"
-                            sx={{ ml: 3 }}>
-                            {page.title}
-                          </Typography>
-                        )}
-                      </ListItemButton>
-                    </Tooltip>
-                  ))}
-                </List>
-                <Box
-                  sx={{
-                    borderTop: "2px solid #e9e9e9",
-                    py: 3,
-                    textAlign: "center",
-                  }}
-                >
-                  {/* Footer */}
-                  {isOpen && (
-                    <>
-                      <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                        © 2024 WellAI. All rights reserved.{" "}
-
-                        <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Privacy Notice</u></b>
-                        </Box> &{" "}
-
-                        <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Disclaimer Policy</u></b>
-                        </Box>.
-
-                      </Typography>
-                      <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                      <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
-                    </>
-                  )}
-                </Box>
               </Box>
             </Box>
-          </Drawer>
-        </ClickAwayListener>
+          </Box>
+        </Drawer>
       </>
     );
 
@@ -566,6 +572,11 @@ const NavBar = ({ role }) => {
   if (role === "admin")
     return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -596,53 +607,96 @@ const NavBar = ({ role }) => {
         </AppBar>
 
         {/* Nav Options */}
-        <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-          <Drawer
-            variant="permanent"
-            anchor="left"
-            sx={{
+        <Drawer
+          variant="permanent"
+          anchor="left"
+          sx={{
+            width: isOpen ? 250 : 65,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
               width: isOpen ? 250 : 65,
-              flexShrink: 0,
-              "& .MuiDrawer-paper": {
-                width: isOpen ? 250 : 65,
-                top: "66px",
-                overflowX: "hidden",
-                transition: "width 0.2s ease",
-              },
+              top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
+            },
+          }}
+        >
+          <Box
+            sx={{
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
             <Box
               sx={{
-                overflow: "auto",
                 display: "flex",
-                flexDirection: "column",
-                height: "100%",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: isOpen ? "flex-end" : "center",
-                  px: 1,
-                  pt: 2,
-                  pb: 1
-                }}
-              >
-                <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
-                  {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
-                </IconButton>
-              </Box>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
 
+            {isOpen && (
+              <Typography
+                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
+              >
+                Overview
+              </Typography>
+            )}
+
+            <List>
+              {adminPages.map((page) => (
+                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor: selectedPage === page.title ? "#417638" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7"
+                        sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
+              ))}
+            </List>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
               {isOpen && (
                 <Typography
                   sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
                 >
-                  Overview
+                  Account
                 </Typography>
               )}
-
               <List>
-                {adminPages.map((page) => (
+                {adminAccountPages.map((page) => (
                   <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
                     <ListItemButton
                       key={page.title}
@@ -670,81 +724,36 @@ const NavBar = ({ role }) => {
                   </Tooltip>
                 ))}
               </List>
-
               <Box
                 sx={{
-                  mt: "auto",
-                  mb: 8,
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
                 }}
               >
-                {/* Account Options */}
+                {/* Footer */}
                 {isOpen && (
-                  <Typography
-                    sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                  >
-                    Account
-                  </Typography>
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+
+                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Privacy Notice</u></b>
+                      </Box> &{" "}
+
+                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Disclaimer Policy</u></b>
+                      </Box>.
+
+                    </Typography>
+                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
+                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                  </>
                 )}
-                <List>
-                  {adminAccountPages.map((page) => (
-                    <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
-                      <ListItemButton
-                        key={page.title}
-                        sx={{
-                          color: selectedPage === page.title ? "#fff" : "383838",
-                          backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
-                          mb: 1,
-                          px: 3,
-                          py: 1.5,
-                          justifyContent: isOpen ? "initial" : "center",
-                          "&:hover": {
-                            backgroundColor: selectedPage === page.title ? "#417638" : "",
-                          },
-                        }}
-                        onClick={() => handleNavigate(page.title)}
-                      >
-                        {page.icon}
-                        {isOpen && (
-                          <Typography variant="h7"
-                            sx={{ ml: 3 }}>
-                            {page.title}
-                          </Typography>
-                        )}
-                      </ListItemButton>
-                    </Tooltip>
-                  ))}
-                </List>
-                <Box
-                  sx={{
-                    borderTop: "2px solid #e9e9e9",
-                    py: 3,
-                    textAlign: "center",
-                  }}
-                >
-                  {/* Footer */}
-                  {isOpen && (
-                    <>
-                      <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                        © 2024 WellAI. All rights reserved.{" "}
-
-                        <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Privacy Notice</u></b>
-                        </Box> &{" "}
-
-                        <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                          <b><u>Disclaimer Policy</u></b>
-                        </Box>.
-
-                      </Typography>
-                      <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                      <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
-                    </>
-                  )}
-                </Box>
               </Box>
             </Box>
-          </Drawer>
-        </ClickAwayListener>
+          </Box>
+        </Drawer>
       </>
     );
 };
