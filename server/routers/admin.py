@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
-
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List
@@ -51,6 +51,29 @@ class AdminDashboard(BaseModel):
     # Log data
     failedLoginAttemptsLastDay: int
     loginActivity: List[dict]
+
+
+class AdminReportAnalytics(CamelModel):
+    total_reports: int
+
+
+class ActiveAccountAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class ActiveMerchantAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class RecentReportsGeneratedAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class PendingMerchantAnalytics(CamelModel):
+    amount: int
 
 
 @router.get("/roles")
@@ -548,3 +571,130 @@ async def get_admin_dashboard(request: Request, db_conn: Session = Depends(get_d
         failedLoginAttemptsLastDay=failed_logins_last_day,
         loginActivity=login_activity,
     )
+
+
+@router.get("/admin-dashboard/active-account-analytics")
+async def get_active_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
+
+    accounts_past_month = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "standard_user")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_month)
+        .distinct()
+        .count()
+    )
+
+    accounts_past_week = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "standard_user")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_week)
+        .distinct()
+        .count()
+    )
+
+    return ActiveAccountAnalytics(
+        past_month=accounts_past_month,
+        past_week=accounts_past_week,
+    )
+
+
+@router.get("/admin-dashboard/active-merchant-analytics")
+async def get_active_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
+
+    merchants_past_month = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "merchant")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_month)
+        .distinct()
+        .count()
+    )
+
+    merchants_past_week = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "standard_user")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_month)
+        .distinct()
+        .count()
+    )
+
+    return ActiveMerchantAnalytics(
+        past_month=merchants_past_month,
+        past_week=merchants_past_week,
+    )
+
+
+@router.get("/admin-dashboard/recent-reports-generated-analytics")
+async def get_reports_generated_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
+
+    reports_past_month = (
+        db_conn.query(HealthData)
+        .filter(HealthData.CreatedAt >= prev_month)
+        .count()
+    )
+
+    reports_past_week = (
+        db_conn.query(HealthData)
+        .filter(HealthData.CreatedAt >= prev_week)
+        .count()
+    )
+
+    return RecentReportsGeneratedAnalytics(
+        past_month=reports_past_month,
+        past_week=reports_past_week,
+    )
+
+
+@router.get("/admin-dashboard/pending-merchants-analytics")
+async def get_pending_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    pending_merchants = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "merchant",
+            UserAccount.IsValidated is False,
+        )
+        .distinct()
+        .count()
+    )
+
+    return PendingMerchantAnalytics(
+        amount=pending_merchants,
+    )
+
+
+def _confirm_admin(request: Request, db_conn: Session):
+    user = get_current_user(request, db_conn)
+    admin = db_conn.query(UserAccount).filter(
+        UserAccount.Email == user["email"]).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Impermissible action.")
+
+    if not user["role"] or user["role"].lower() != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
