@@ -36,6 +36,9 @@ const NavBar = ({ role }) => {
   // Maps each route to the corrosponding page title.
   const routePageMap = {
 
+    // Shared Pages
+    "/user-settings": "Settings",
+
     // User Pages
     "/user-landing": "Dashboard",
     "/generate-report": "Generate Report",
@@ -72,8 +75,8 @@ const NavBar = ({ role }) => {
     { icon: <TimelineIcon />, title: "Health Analytics" },
   ];
 
-  const settings = [
-    { icon: <SettingsIcon sx={{ colo: "#383838" }} />, title: "Account" },
+  const accountPages = [
+    { icon: <SettingsIcon sx={{ colo: "#383838" }} />, title: "Settings" },
     { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
   ];
 
@@ -144,7 +147,7 @@ const NavBar = ({ role }) => {
     if (page === "Health Analytics") {
       navigate("/health-analytics");
     }
-    if (page === "Account") {
+    if (page === "Settings") {
       handleCloseSettings();
       navigate("/user-settings");
     }
@@ -211,47 +214,10 @@ const NavBar = ({ role }) => {
                 sx={{ height: 50, cursor: "pointer" }}
               />
             </Box>
-            {/*Account Settings Section  */}
-            <Box sx={{ flexGrow: 0 }}>
-              <Button color="inherit">
-                <AccountCircleIcon
-                  fontSize="large"
-                  onClick={handleOpenSettings}
-                  sx={{ p: 0, color: "#383838" }}
-                ></AccountCircleIcon>
-                <Menu
-                  sx={{ mt: "45px" }}
-                  id="menu-appbar"
-                  anchorEl={openMenu}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(openMenu)}
-                  onClose={handleCloseSettings}
-                >
-                  {settings.map((page) => (
-                    <MenuItem
-                      key={page.title}
-                      onClick={() => handleNavigate(page.title)}
-                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                    >
-                      {page.icon}
-                      <Typography>{page.title}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Button>
-            </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Nav options relocated here. */}
+        {/* Nav Options */}
         <Drawer
           variant="permanent"
           anchor="left"
@@ -325,33 +291,77 @@ const NavBar = ({ role }) => {
                 </Tooltip>
               ))}
             </List>
+
             <Box
               sx={{
-                borderTop: "2px solid #e9e9e9",
-                py: 3,
-                textAlign: "center",
                 mt: "auto",
                 mb: 8,
               }}
-            > 
+            >
+              {/* Account Options */}
               {isOpen && (
-                <>
-                  <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                    © 2024 WellAI. All rights reserved.{" "}
-
-                    <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                      <b><u>Privacy Notice</u></b>
-                    </Box> &{" "}
-
-                    <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                      <b><u>Disclaimer Policy</u></b>
-                    </Box>.
-
-                  </Typography>
-                  <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                  <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
-                </>
+                <Typography
+                  sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
+                >
+                  Account
+                </Typography>
               )}
+              <List>
+                {accountPages.map((page) => (
+                  <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                    <ListItemButton
+                      key={page.title}
+                      sx={{
+                        color: selectedPage === page.title ? "#fff" : "383838",
+                        backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
+                        mb: 1,
+                        px: 3,
+                        py: 1.5,
+                        justifyContent: isOpen ? "initial" : "center",
+                        "&:hover": {
+                          backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                        },
+                      }}
+                      onClick={() => handleNavigate(page.title)}
+                    >
+                      {page.icon}
+                      {isOpen && (
+                        <Typography variant="h7"
+                          sx={{ ml: 3 }}>
+                          {page.title}
+                        </Typography>
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                ))}
+              </List>
+              <Box
+                sx={{
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
+                }}
+              >
+                {/* Footer */}
+                {isOpen && (
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+
+                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Privacy Notice</u></b>
+                      </Box> &{" "}
+
+                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
+                        <b><u>Disclaimer Policy</u></b>
+                      </Box>.
+
+                    </Typography>
+                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
+                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                  </>
+                )}
+              </Box>
             </Box>
           </Box>
         </Drawer>
@@ -412,7 +422,7 @@ const NavBar = ({ role }) => {
                   open={Boolean(openMenu)}
                   onClose={handleCloseSettings}
                 >
-                  {settings.map((page) => (
+                  {accountPages.map((page) => (
                     <MenuItem
                       key={page.title}
                       onClick={() => handleNavigate(page.title)}
@@ -550,7 +560,7 @@ const NavBar = ({ role }) => {
                   open={Boolean(openMenu)}
                   onClose={handleCloseSettings}
                 >
-                  {settings.map((page) => (
+                  {accountPages.map((page) => (
                     <MenuItem
                       key={page.title}
                       onClick={() => handleNavigate(page.title)}
