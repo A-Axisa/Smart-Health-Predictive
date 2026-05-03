@@ -20,6 +20,7 @@ import MerchantLanding from "./routes/MerchantLanding";
 import MerchantReports from "./routes/MerchantReports";
 import AppThemeProvider from "./components/AppThemeProvider";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
+import PublicOnlyRoutes from "./utils/PublicOnlyRoutes";
 import LandingRoute from "./utils/LandingRoute";
 import { UserProvider } from "./utils/UserContext";
 import ErrorPage from "./routes/ErrorPage";
@@ -37,7 +38,7 @@ root.render(
       <UserProvider>
         <BrowserRouter>
           <Routes>
-            <Route element={<ProtectedRoutes />}>
+            <Route element={<PublicOnlyRoutes />}>
               {/*This can be changed later. This will make login render on loading*/}
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
@@ -46,10 +47,6 @@ root.render(
               <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
-              />
-              <Route
-                path="/accept-access-request/:token"
-                element={<AcceptAccessRequest />}
               />
             </Route>
 
@@ -66,6 +63,10 @@ root.render(
               />
               <Route path="/generate-report" element={<GenerateReport />} />
               <Route path="/health-analytics" element={<HealthAnalytics />} />
+              <Route
+                path="/accept-access-request/:token"
+                element={<AcceptAccessRequest />}
+              />
             </Route>
 
             {/*Merchant routes*/}
