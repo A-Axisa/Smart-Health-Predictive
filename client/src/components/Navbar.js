@@ -10,6 +10,8 @@ import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
 import { Drawer, List, ListItemButton, ListItemText, IconButton, Tooltip } from "@mui/material";
 import { UserContext } from "../utils/UserContext";
+import PrivacyNotice from "./PrivacyNotice";
+import DisclaimerPolicy from "./DisclaimerPolicy";
 
 // Icons
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -59,6 +61,8 @@ const NavBar = ({ role }) => {
   const location = useLocation();
   const selectedPage = routePageMap[location.pathname] ?? null;
   const [isOpen, setIsOpen] = useState(true);
+  const [privacyNoticeOpen, setPrivacyNoticeOpen] = useState(false);
+  const [disclaimerPolicyOpen, setDisclaimerPolicyOpen] = useState(false);
 
   // Page options for each user type
   const standardUserPages = [
@@ -331,9 +335,22 @@ const NavBar = ({ role }) => {
               }}
             > 
               {isOpen && (
-                <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                  © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer Policy
-                </Typography>
+                <>
+                  <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                    © 2024 WellAI. All rights reserved.{" "}
+
+                    <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
+                      <b><u>Privacy Notice</u></b>
+                    </Box> &{" "}
+
+                    <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
+                      <b><u>Disclaimer Policy</u></b>
+                    </Box>.
+
+                  </Typography>
+                  <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
+                  <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                </>
               )}
             </Box>
           </Box>
