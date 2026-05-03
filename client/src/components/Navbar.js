@@ -252,10 +252,10 @@ const NavBar = ({ role }) => {
           variant="permanent"
           anchor="left"
           sx={{
-            width: isOpen ? 250 : 70,
+            width: isOpen ? 250 : 65,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: isOpen ? 250 : 70,
+              width: isOpen ? 250 : 65,
               top: "66px",
               overflowX: "hidden",
               transition: "width 0.2s ease",
@@ -286,8 +286,7 @@ const NavBar = ({ role }) => {
 
             {isOpen && (
               <Typography
-                color="#A9A9A9"
-                sx={{ fontSize: 12, px: 3, py: 1 }}
+                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
               >
                 Overview
               </Typography>
@@ -300,14 +299,10 @@ const NavBar = ({ role }) => {
                     key={page.title}
                     sx={{
                       color: selectedPage === page.title ? "#fff" : "383838",
-                      backgroundColor:
-                        selectedPage === page.title ? "#712b89" : "transparent",
-                      borderRadius: "10px",
-                      ml: 2,
-                      mr: 2,
+                      backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
                       mb: 1,
-                      px: 2,
-                      py: 1,
+                      px: 3,
+                      py: 1.5,
                       justifyContent: isOpen ? "initial" : "center",
                       "&:hover": {
                         backgroundColor: selectedPage === page.title ? "#712b89" : "",
@@ -317,10 +312,10 @@ const NavBar = ({ role }) => {
                   >
                     {page.icon}
                     {isOpen && (
-                      <ListItemText
-                        primary={page.title}
-                        sx={{ ml: 3 }}
-                      />
+                      <Typography variant="h7"
+                        sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
                     )}
                   </ListItemButton>
                 </Tooltip>

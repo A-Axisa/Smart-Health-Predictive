@@ -114,6 +114,10 @@ export const appTheme = createTheme({
           fontWeight: 600,
           fontFamily: "'Russo One', 'sans-serif'",
         },
+        h7: {
+          fontWeight: 600,
+          fontFamily: "'Russo One', 'sans-serif'",
+        },
       },
     },
   },
