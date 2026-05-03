@@ -10,7 +10,7 @@ import {
 import AcceptRequestForm from "../components/AcceptRequestForm";
 
 /**
- * Displays the form to send accept a access request
+ * Displays the form to accept an access request
  */
 const AcceptAccessRequest = () => {
   return (
