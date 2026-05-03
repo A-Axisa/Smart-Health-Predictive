@@ -74,7 +74,7 @@ async def get_users(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None,
-    clinic_id: Optional[int] = None
+    clinic_id: Optional[int] = None,
     sort_by: Optional[str] = None,
     sort_order: Optional[str] = "desc",
     db_conn: Session = Depends(get_db)

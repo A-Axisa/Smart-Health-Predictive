@@ -48,6 +48,7 @@ const UserManagementTable = () => {
     }
     if (selectedClinic) {
       params.append("clinic_id", selectedClinic);
+    }
       
     // Append sort params when sort is active
     if (sortModel.length > 0) {
