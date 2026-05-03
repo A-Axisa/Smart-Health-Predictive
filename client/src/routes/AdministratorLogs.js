@@ -10,7 +10,7 @@ const AdministratorLogs = () => {
         flexDirection: "column",
         p: 10,
         alignItems: "center",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >

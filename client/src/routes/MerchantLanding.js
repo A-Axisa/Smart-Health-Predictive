@@ -61,7 +61,7 @@ const MerchantLanding = () => {
       sx={{
         minHeight: "100vh",
         bgcolor: "#f7fffd",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
         pt: 1,
         pl: 5,

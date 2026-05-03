@@ -46,7 +46,7 @@ const UserLanding = ({}) => {
       sx={{
         minHeight: "100vh",
         bgcolor: "#fdf7ff",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
         pt: 1,
         pl: 5,

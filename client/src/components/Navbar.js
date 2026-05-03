@@ -88,7 +88,7 @@ const NavBar = ({ role }) => {
   ];
 
   const userAccountPages = [
-    { icon: <SettingsIcon sx={{ colo: "#383838" }} />, title: "Settings" },
+    { icon: <SettingsIcon />, title: "Settings" },
     { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
   ];
 

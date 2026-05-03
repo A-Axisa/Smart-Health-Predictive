@@ -121,7 +121,7 @@ const MerchantReports = ({}) => {
         display: "flex",
         minHeight: "100vh",
         bgcolor: "background.default",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >
