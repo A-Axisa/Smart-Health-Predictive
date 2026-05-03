@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Box, Container, Stack, Button, Typography, Link } from "@mui/material";
+import {
+  Box,
+  Container,
+  Stack,
+  Button,
+  Typography,
+  Link,
+  Divider,
+} from "@mui/material";
 import EmailInputField from "./authentication/EmailInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -108,16 +116,20 @@ const RequestPatientAccessForm = () => {
               >
                 Request Access
               </Button>
+              <Divider />
+              <Button
+                component={RouterLink}
+                to="/patient-management"
+                variant="outlined"
+                sx={{
+                  py: { xs: "1rem", sm: ".9rem" },
+                  fontSize: "1rem",
+                }}
+              >
+                Return to Patient Management
+              </Button>
             </Stack>
           </Box>
-          <Link
-            component={RouterLink}
-            to="/patient-management"
-            align="end"
-            fontWeight="bold"
-          >
-            Return to Patient Management
-          </Link>
         </Stack>
       )}
 

@@ -10,6 +10,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Divider,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -117,16 +118,20 @@ const AcceptRequestForm = () => {
               >
                 Accept Request
               </Button>
+              <Divider />
+              <Button
+                component={RouterLink}
+                to="/landing"
+                variant="outlined"
+                sx={{
+                  py: { xs: "1rem", sm: ".9rem" },
+                  fontSize: "1rem",
+                }}
+              >
+                Return to dashboard
+              </Button>
             </Stack>
           </Box>
-          <Link
-            component={RouterLink}
-            to="/landing"
-            align="end"
-            fontWeight="bold"
-          >
-            Return to dashboard
-          </Link>
         </Stack>
       )}
 
