@@ -15,7 +15,8 @@ import {
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides the user a form to request a password reset using their email.
+ * Allows the user to accept an access request from a merchant user.
+ * This will allow the merchant to view manage the patients record.
  */
 const AcceptRequestForm = () => {
   const [isLoading, setIsLoading] = useState(false);

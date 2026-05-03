@@ -6,7 +6,7 @@ import EmailInputField from "./authentication/EmailInputField";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides the user a form to request a password reset using their email.
+ * Provides a merchant user with a form to send an access request to an existing patient.
  */
 const RequestPatientAccessForm = () => {
   const [email, setEmail] = useState(null);

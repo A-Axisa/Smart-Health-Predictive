@@ -11,7 +11,7 @@ import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm"
 import RequestPatientAccessForm from "../components/RequestPatientAccessForm";
 
 /**
- * Displays the form to reset a user's password if it has been forgotten.
+ * Displays the form to request access to a patients record.
  */
 const RequestPatientAccess = () => {
   return (

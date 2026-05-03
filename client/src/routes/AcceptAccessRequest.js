@@ -10,7 +10,7 @@ import {
 import AcceptRequestForm from "../components/AcceptRequestForm";
 
 /**
- * Displays the form to reset a user's password if it has been forgotten.
+ * Displays the form to send accept a access request
  */
 const AcceptAccessRequest = () => {
   return (
