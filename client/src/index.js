@@ -30,6 +30,7 @@ import CreatePatient from "./routes/CreatePatient";
 import ForgotPassword from "./routes/ForgotPassword";
 import ResetPassword from "./routes/ResetPassword";
 import AcceptAccessRequest from "./routes/AcceptAccessRequest";
+import RequestPatientAccess from "./routes/RequestPatientAccess";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -86,6 +87,10 @@ root.render(
                 element={<PatientDetails />}
               />
               <Route path="/create-patient" element={<CreatePatient />} />
+              <Route
+                path="/request-patient-access"
+                element={<RequestPatientAccess />}
+              />
             </Route>
 
             {/*Admin routes*/}

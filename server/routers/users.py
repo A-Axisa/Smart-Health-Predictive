@@ -1157,7 +1157,10 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
     ).first()
 
     if merchant_access:
-        return {"message": "This Merchant already has access to this patient record"}
+        raise HTTPException(
+            status_code=409,
+            detail="Merchant already has access to this patient record"
+        )
 
     # Only allow one token to exist per patient & merchant pair.
     existing_token = db_conn.query(
