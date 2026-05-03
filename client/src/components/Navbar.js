@@ -265,7 +265,9 @@ const NavBar = ({ role }) => {
           <Box
             sx={{
               overflow: "auto",
-              height: "780px",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
             <Box
@@ -324,19 +326,21 @@ const NavBar = ({ role }) => {
                 </Tooltip>
               ))}
             </List>
-
-          </Box>
-          <Box
-            sx={{
-              borderTop: "2px solid #e9e9e9",
-              py: 3,
-              textAlign: "center",
-            }}
-          > {isOpen && (
-              <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-                © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer Policy
-            </Typography>
-          )}
+            <Box
+              sx={{
+                borderTop: "2px solid #e9e9e9",
+                py: 3,
+                textAlign: "center",
+                mt: "auto",
+                mb: 8,
+              }}
+            > 
+              {isOpen && (
+                <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                  © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer Policy
+                </Typography>
+              )}
+            </Box>
           </Box>
         </Drawer>
       </>
