@@ -1,30 +1,31 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
-  Container,
-  Stack,
-  TextField,
-  Button,
-  Typography,
-  Link,
-  FormControlLabel,
   Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogActions,
   Divider,
-  Radio,
-  RadioGroup,
+  FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
-  FormControl,
   Select,
-  FormHelperText,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PasswordInputField from "../authentication/PasswordInputField";
 import EmailInputField from "../authentication/EmailInputField";
 import PhoneInputField from "../authentication/PhoneInputField";
+import Logo from "../../assets/WellAiLogoTR.png";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({
@@ -58,6 +59,7 @@ const RegistrationForm = () => {
   const [clinicList, setClinicList] = useState();
   const [clinicState, setClinicState] = useState("");
   const [alertClinicRequired, setAlertClinicRequired] = useState(false);
+  const [isAccountTypeSelected, setIsAccountTypeSelected] = useState(false);
 
   // Retrieve Clinic Names
   useEffect(() => {
@@ -77,11 +79,13 @@ const RegistrationForm = () => {
     setGivenNameState({ isValid: isNameValid, name: e.target.value });
     setAlertGivenNameRequired(!isNameValid);
   }
+
   function updateFamilyName(e) {
     const isNameValid = e.target.value !== "";
     setFamilyNameState({ isValid: isNameValid, name: e.target.value });
     setAlertFamilyNameRequired(!isNameValid);
   }
+
   function updateDoB(e) {
     if (calculateAge(e.target.value) < 18) {
       setAlertDoBRequired(true);
@@ -128,13 +132,34 @@ const RegistrationForm = () => {
         confirmPasswordInput === "",
     );
   }
+
   function updateGender(e) {
     setAlertGenderRequired(false);
     setGenderState(e.target.value);
   }
-  function updateAccountType(e) {
-    setAccountType(e.target.value);
+
+  function setAccountTypeToStandard() {
+    setAccountType(ACCOUNT_TYPES.STANDARD);
+    setIsAccountTypeSelected(true);
   }
+
+  function setAccountTypeToMerchant() {
+    setAccountType(ACCOUNT_TYPES.MERCHANT);
+    setIsAccountTypeSelected(true);
+  }
+
+  function goToAccountTypeSelection() {
+    setIsAccountTypeSelected(false);
+    resetPersistantInputDetails();
+  }
+
+  function resetPersistantInputDetails() {
+    setGenderState(null);
+    setAlertGenderRequired(false);
+    setClinicState(null);
+    setAlertClinicRequired(false);
+  }
+
   function updateClinic(e) {
     setAlertClinicRequired(false);
     setClinicState(e.target.value);
@@ -199,17 +224,6 @@ const RegistrationForm = () => {
     );
   }
 
-  function generateUnsuccessfulCreationAlert() {
-    if (showFailMessage) {
-      return (
-        <Alert variant="filled" severity="error">
-          Account creation unsuccessful.
-        </Alert>
-      );
-    }
-    return null;
-  }
-
   function handleCloseMessage() {
     setShowSuccessMessage(false);
     navigate("/login");
@@ -230,6 +244,7 @@ const RegistrationForm = () => {
         return;
       }
     }
+
     setIsLoading(true);
     // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/register`, {
@@ -245,7 +260,7 @@ const RegistrationForm = () => {
         password: passwordState.password,
         email: emailState.email,
         phone: phoneState !== null ? phoneState.phone : "",
-        accountType: e.target.account_type.value,
+        accountType: accountType,
         clinicId: accountType === ACCOUNT_TYPES.STANDARD ? null : clinicState,
       }),
     })
@@ -266,206 +281,326 @@ const RegistrationForm = () => {
   }
 
   return (
-    <Container
+    <Card
+      component="form"
+      onSubmit={handleRegistration}
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "25px",
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
-        width: { xs: "auto", sm: "600px" },
+        width: "auto",
+        minHeight: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
+        margin: { xs: "0px", sm: "60px" },
       }}
     >
-      <Dialog open={showSuccessMessage}>
-        <DialogTitle>{"Account Creation Successful!"}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            A verification email has been sent to your inbox. Please check your
-            email to complete the registration process.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseMessage} autoFocus>
-            Back to login
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Container component="form" onSubmit={handleRegistration}>
-        <Stack spacing={{ xs: 2 }}>
-          {generateUnsuccessfulCreationAlert()}
-          <Divider
-            variant="middle"
-            aria-hidden="true"
-            sx={{ fontWeight: "bold", py: "5px" }}
-          >
-            Account Type
-          </Divider>
-          <Container display="flex" justifyContent="center">
-            <RadioGroup
-              row
-              defaultValue={ACCOUNT_TYPES.STANDARD}
-              name="account_type"
-              align="center"
-              sx={{ gap: 5 }}
-              onChange={updateAccountType}
-            >
-              <FormControlLabel
-                value={ACCOUNT_TYPES.STANDARD}
-                control={<Radio />}
-                label="Standard User"
-              />
-              <FormControlLabel
-                value={ACCOUNT_TYPES.MERCHANT}
-                control={<Radio />}
-                label="Merchant"
-              />
-            </RadioGroup>
-          </Container>
-
-          <Divider
-            variant="middle"
-            aria-hidden="true"
-            sx={{ fontWeight: "bold", py: "5px" }}
-          >
-            Details
-          </Divider>
-          {accountType === ACCOUNT_TYPES.STANDARD && (
-            <>
-              <TextField
-                id="outlined-givenName-input"
-                name="given_names"
-                label="Given Names"
-                onChange={updateGivenName}
-                slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
-                error={alertGivenNameRequired}
-                helperText={alertGivenNameRequired ? "*Required" : null}
-              ></TextField>
-
-              <TextField
-                id="outlined-familyName-input"
-                name="family_name"
-                label="Family Name"
-                onChange={updateFamilyName}
-                slotProps={{ htmlInput: { maxLength: FULL_NAME_MAX_LENGTH } }}
-                error={alertFamilyNameRequired}
-                helperText={alertFamilyNameRequired ? "*Required" : null}
-              ></TextField>
-              <TextField
-                label="Select Date of Birth"
-                name="date_of_birth"
-                type="date"
-                onChange={updateDoB}
-                error={alertDoBRequired}
-                helperText={
-                  alertDoBRequired ? "*You must be at least 18 years old" : null
-                }
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-              <FormControl error={alertGenderRequired}>
-                <InputLabel id="gender-label">Gender</InputLabel>
-                <Select
-                  labelId="gender-label"
-                  id="gender-required"
-                  value={genderState}
-                  onChange={updateGender}
-                  label="Gender"
-                >
-                  <MenuItem value={"Male"}>Male</MenuItem>
-                  <MenuItem value={"Female"}>Female</MenuItem>
-                </Select>
-                {alertGenderRequired && (
-                  <FormHelperText>*Required</FormHelperText>
-                )}
-              </FormControl>
-            </>
-          )}
-          {accountType === ACCOUNT_TYPES.MERCHANT && (
-            <FormControl fullWidth error={alertClinicRequired}>
-              <InputLabel id="clinic-select-label">Clinic</InputLabel>
-              <Select
-                labelId="clinic-select-label"
-                value={clinicState}
-                label={"clinic"}
-                onChange={updateClinic}
-              >
-                <MenuItem value="" disabled>
-                  Select a clinic
-                </MenuItem>
-                {/* List of available clinics */}
-                {clinicList.map((clinic) => (
-                  <MenuItem key={clinic.clinicName} value={clinic.clinicId}>
-                    {clinic.clinicName}
-                  </MenuItem>
-                ))}
-              </Select>
-              {alertClinicRequired && (
-                <FormHelperText>*Required</FormHelperText>
-              )}
-            </FormControl>
-          )}
-          <PhoneInputField onChange={setPhoneState} />
-          <EmailInputField
-            onChange={updateEmail}
-            showRequired={alertEmailRequired}
-          />
-          <PasswordInputField
-            onChange={updatePassword}
-            truncate={true}
-            showRequired={alertPasswordRequired}
-          />
-          <TextField
-            id="outlined-password-input"
-            name="confirmPassword"
-            label="Confirm Password"
-            onChange={updateConfirmPassword}
-            type="password"
-            error={alertPasswordsDontMatch}
-            helperText={
-              alertPasswordsDontMatch ? "*Passwords do not match" : null
-            }
-          ></TextField>
-
-          <Button
-            loading={isLoading}
-            type="submit"
-            variant="contained"
-            sx={{
-              py: { xs: "1rem", sm: ".9rem" },
-              fontSize: { xs: "1.2rem", sm: "1rem" },
-            }}
-          >
-            Create Account
-          </Button>
-          <Stack
-            direction="row"
-            spacing={{ xs: 1 }}
-            style={{ justifyContent: "center" }}
-          >
-            <Typography
-              noWrap={true}
-              align="center"
-              style={{ color: "#888888" }}
-            >
-              Already have an account?
+      <CardContent>
+        {/* Success Dialog */}
+        <Dialog open={showSuccessMessage}>
+          <DialogTitle>Account Creation Successful!</DialogTitle>
+          <DialogContent>
+            <Typography>
+              A verification email has been sent to your inbox. Please check
+              your email to complete the registration process.
             </Typography>
-            <Link
-              component={RouterLink}
-              to="/login"
-              align="center"
-              fontWeight="bold"
-            >
-              Log in
-            </Link>
-          </Stack>
-        </Stack>
-      </Container>
-    </Container>
+          </DialogContent>
+          <DialogActions>
+            <Button variant="outlined" onClick={handleCloseMessage} autoFocus>
+              Back to login
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Account Type Selection*/}
+        {!isAccountTypeSelected && (
+          <Box>
+            <Stack alignItems="center" spacing={3}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
+              <Stack alignItems="center" spacing={1} paddingBottom={1}>
+                <Typography variant="h4">Account Type</Typography>
+                <Typography variant="subtle">
+                  Select which type of account you want to create
+                </Typography>
+              </Stack>
+              <Button
+                variant="contained"
+                onClick={setAccountTypeToStandard}
+                sx={{
+                  py: { xs: "1rem", sm: ".9rem" },
+                  fontSize: "1rem",
+                  width: "300px",
+                  height: "100px",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <AccountCircleIcon sx={{ fontSize: 60 }} />
+                Personal
+              </Button>
+              <Button
+                variant="contained"
+                onClick={setAccountTypeToMerchant}
+                sx={{
+                  py: { xs: "1rem", sm: ".9rem" },
+                  fontSize: "1rem",
+                  width: "300px",
+                  height: "100px",
+                  justifyContent: "flex-start",
+                  whiteSpace: "pre",
+                }}
+              >
+                <Stack direction="row" spacing={5} alignItems="center">
+                  <AccountBalanceIcon sx={{ fontSize: 60 }} />
+                  Partner
+                </Stack>
+              </Button>
+              <Divider
+                variant="middle"
+                aria-hidden="true"
+                sx={{ fontWeight: "bold", py: "5px", minWidth: "100%" }}
+              >
+                OR
+              </Divider>
+              <Button
+                href="/login"
+                variant="outlined"
+                sx={{
+                  py: { xs: "1rem", sm: ".9rem" },
+                  fontSize: "1rem",
+                }}
+              >
+                Return to login
+              </Button>
+            </Stack>
+          </Box>
+        )}
+
+        {/* Details */}
+        {isAccountTypeSelected && (
+          <Box sx={{ width: { sm: "auto", md: "500px" } }}>
+            {showFailMessage && (
+              <Alert variant="filled" severity="error">
+                Account creation unsuccessful.
+              </Alert>
+            )}
+            <Stack alignItems="center">
+              <Box
+                component="img"
+                alt="Well AI Logo"
+                src={Logo}
+                sx={{ width: "10em", paddingBottom: "30px" }}
+              />
+            </Stack>
+
+            <Stack spacing={6}>
+              {/* Standard Account Details */}
+              {accountType === ACCOUNT_TYPES.STANDARD && (
+                <Stack spacing={2}>
+                  <Stack spacing={1} paddingBottom={3}>
+                    <Stack alignItems="center">
+                      <AccountCircleIcon
+                        justifyContent="center"
+                        sx={{ fontSize: 80 }}
+                      />
+                    </Stack>
+                    <Typography variant="h4" align="center">
+                      Personal Account
+                    </Typography>
+                    <Typography variant="subtle" align="center">
+                      Fill in your details to create an account
+                    </Typography>
+                  </Stack>
+                  <Divider
+                    variant="middle"
+                    aria-hidden="true"
+                    sx={{ fontWeight: "bold", py: "5px" }}
+                  >
+                    Personal Details
+                  </Divider>
+                  <TextField
+                    id="outlined-givenName-input"
+                    name="given_names"
+                    label="Given Names"
+                    onChange={updateGivenName}
+                    slotProps={{
+                      htmlInput: { maxLength: FULL_NAME_MAX_LENGTH },
+                    }}
+                    error={alertGivenNameRequired}
+                    helperText={alertGivenNameRequired ? "*Required" : null}
+                  ></TextField>
+
+                  <TextField
+                    id="outlined-familyName-input"
+                    name="family_name"
+                    label="Family Name"
+                    onChange={updateFamilyName}
+                    slotProps={{
+                      htmlInput: { maxLength: FULL_NAME_MAX_LENGTH },
+                    }}
+                    error={alertFamilyNameRequired}
+                    helperText={alertFamilyNameRequired ? "*Required" : null}
+                  ></TextField>
+                  <TextField
+                    label="Select Date of Birth"
+                    name="date_of_birth"
+                    type="date"
+                    onChange={updateDoB}
+                    error={alertDoBRequired}
+                    helperText={
+                      alertDoBRequired
+                        ? "*You must be at least 18 years old"
+                        : null
+                    }
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true,
+                      },
+                    }}
+                  />
+                  <FormControl error={alertGenderRequired}>
+                    <InputLabel id="gender-label">Gender</InputLabel>
+                    <Select
+                      labelId="gender-label"
+                      id="gender-required"
+                      value={genderState}
+                      onChange={updateGender}
+                      label="Gender"
+                    >
+                      <MenuItem value={"Male"}>Male</MenuItem>
+                      <MenuItem value={"Female"}>Female</MenuItem>
+                    </Select>
+                    {alertGenderRequired && (
+                      <FormHelperText>*Required</FormHelperText>
+                    )}
+                  </FormControl>
+                  <PhoneInputField onChange={setPhoneState} />
+                </Stack>
+              )}
+
+              {/* Merchant Account Details */}
+              {accountType === ACCOUNT_TYPES.MERCHANT && (
+                <Stack spacing={2}>
+                  <Stack alignItems="center" spacing={1} paddingBottom={3}>
+                    <Stack alignItems="center">
+                      <AccountBalanceIcon
+                        justifyContent="center"
+                        sx={{ fontSize: 80 }}
+                      />
+                    </Stack>
+                    <Typography variant="h4">Partner Account</Typography>
+                    <Typography variant="subtle">
+                      Fill in your details to create an account
+                    </Typography>
+                  </Stack>
+                  <Divider
+                    variant="middle"
+                    aria-hidden="true"
+                    sx={{ fontWeight: "bold", py: "5px" }}
+                  >
+                    Partner Details
+                  </Divider>
+                  <FormControl fullWidth error={alertClinicRequired}>
+                    <InputLabel id="clinic-select-label">Clinic</InputLabel>
+                    <Select
+                      labelId="clinic-select-label"
+                      value={clinicState}
+                      label={"clinic"}
+                      onChange={updateClinic}
+                    >
+                      <MenuItem value="" disabled>
+                        Select a clinic
+                      </MenuItem>
+
+                      {/* List of available clinics */}
+                      {clinicList.map((clinic) => (
+                        <MenuItem
+                          key={clinic.clinicName}
+                          value={clinic.clinicId}
+                        >
+                          {clinic.clinicName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {alertClinicRequired && (
+                      <FormHelperText>*Required</FormHelperText>
+                    )}
+                  </FormControl>
+                  <PhoneInputField onChange={setPhoneState} />
+                </Stack>
+              )}
+
+              {/* Account Details */}
+              <Stack spacing={2}>
+                <Divider
+                  variant="middle"
+                  aria-hidden="true"
+                  sx={{ fontWeight: "bold", py: "5px" }}
+                >
+                  Account Details
+                </Divider>
+                <EmailInputField
+                  onChange={updateEmail}
+                  showRequired={alertEmailRequired}
+                />
+                <PasswordInputField
+                  onChange={updatePassword}
+                  truncate={true}
+                  showRequired={alertPasswordRequired}
+                />
+                <TextField
+                  id="outlined-password-input"
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  onChange={updateConfirmPassword}
+                  type="password"
+                  error={alertPasswordsDontMatch}
+                  helperText={
+                    alertPasswordsDontMatch ? "*Passwords do not match" : null
+                  }
+                ></TextField>
+              </Stack>
+
+              <Stack spacing={3}>
+                <Divider
+                  variant="middle"
+                  aria-hidden="true"
+                  sx={{ fontWeight: "bold", py: "5px" }}
+                ></Divider>
+                <Stack spacing={2} alignItems="center">
+                  <Button
+                    loading={isLoading}
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      py: "1rem",
+                      fontSize: "1rem",
+                      width: "100%",
+                    }}
+                  >
+                    Create Account
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={goToAccountTypeSelection}
+                    sx={{
+                      py: "1rem",
+                      fontSize: "1rem",
+                      width: "100%",
+                    }}
+                  >
+                    Back
+                  </Button>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Box>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
