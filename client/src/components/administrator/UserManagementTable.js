@@ -113,7 +113,7 @@ const UserManagementTable = () => {
       })
       .then((data) => setClinicData(data))
       .catch((err) => {
-        console.log(err);
+        console.log("Failed to fetch Clinics:", err.message);
       });
   }, [API_BASE]);
 
