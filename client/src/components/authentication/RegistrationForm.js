@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Container,
   Stack,
@@ -454,7 +454,12 @@ const RegistrationForm = () => {
             >
               Already have an account?
             </Typography>
-            <Link href="/login" align="center" fontWeight="bold">
+            <Link
+              component={RouterLink}
+              to="/login"
+              align="center"
+              fontWeight="bold"
+            >
               Log in
             </Link>
           </Stack>

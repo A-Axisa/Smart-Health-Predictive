@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { Box, Container, Stack, Button, Typography, Link } from "@mui/material";
 import EmailInputField from "./EmailInputField";
 
@@ -98,7 +99,12 @@ const ForgotPasswordForm = () => {
               </Button>
             </Stack>
           </Box>
-          <Link href="/login" align="end" fontWeight="bold">
+          <Link
+            component={RouterLink}
+            to="/login"
+            align="end"
+            fontWeight="bold"
+          >
             Return to Login
           </Link>
         </Stack>
@@ -118,7 +124,8 @@ const ForgotPasswordForm = () => {
             </Typography>
           </Stack>
           <Button
-            href="/login"
+            component={RouterLink}
+            to="/login"
             variant="outlined"
             sx={{
               py: { xs: "1rem", sm: ".9rem" },
