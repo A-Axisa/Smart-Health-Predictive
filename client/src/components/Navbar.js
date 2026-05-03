@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
-import { Drawer, List, ListItemButton, ListItemText } from "@mui/material";
+import { Drawer, List, ListItemButton, ListItemText, IconButton, Tooltip } from "@mui/material";
 import { UserContext } from "../utils/UserContext";
 
 // Icons
@@ -23,6 +23,9 @@ import GroupIcon from "@mui/icons-material/Group";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -55,7 +58,7 @@ const NavBar = ({ role }) => {
   const { setUser } = useContext(UserContext);
   const location = useLocation();
   const selectedPage = routePageMap[location.pathname] ?? null;
-
+  const [isOpen, setIsOpen] = useState(true);
 
   // Page options for each user type
   const standardUserPages = [
@@ -249,12 +252,13 @@ const NavBar = ({ role }) => {
           variant="permanent"
           anchor="left"
           sx={{
-            width: 240,
-            borderRight: "2px solid #e9e9e9",
+            width: isOpen ? 250 : 70,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: 250,
+              width: isOpen ? 250 : 70,
               top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
             },
           }}
         >
@@ -264,38 +268,63 @@ const NavBar = ({ role }) => {
               height: "780px",
             }}
           >
-            <Typography
-              color="#A9A9A9"
-              sx={{ fontSize: 12, px: 3, py: 1, mt: 5 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1
+              }}
             >
-              Overview
-            </Typography>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
+
+            {isOpen && (
+              <Typography
+                color="#A9A9A9"
+                sx={{ fontSize: 12, px: 3, py: 1 }}
+              >
+                Overview
+              </Typography>
+            )}
+
             <List>
               {standardUserPages.map((page) => (
-                <ListItemButton
-                  key={page.title}
-                  sx={{
-                    color: selectedPage === page.title ? "#fff" : "383838",
-                    backgroundColor:
-                      selectedPage === page.title ? "#712b89" : "transparent",
-                    borderRadius: "10px",
-                    ml: 2,
-                    mr: 2,
-                    mb: 1,
-                    px: 2,
-                    py: 1,
-                    "&:hover": {
+                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
                       backgroundColor:
-                        selectedPage === page.title ? "#712b89" : "",
-                    },
-                  }}
-                  onClick={() => handleNavigate(page.title)}
-                >
-                  {page.icon}{" "}
-                  <ListItemText primary={page.title} sx={{ ml: 3 }} />
-                </ListItemButton>
+                        selectedPage === page.title ? "#712b89" : "transparent",
+                      borderRadius: "10px",
+                      ml: 2,
+                      mr: 2,
+                      mb: 1,
+                      px: 2,
+                      py: 1,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <ListItemText
+                        primary={page.title}
+                        sx={{ ml: 3 }}
+                      />
+                    )}
+                  </ListItemButton>
+                </Tooltip>
               ))}
             </List>
+
           </Box>
           <Box
             sx={{
@@ -303,11 +332,11 @@ const NavBar = ({ role }) => {
               py: 3,
               textAlign: "center",
             }}
-          >
-            <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-              © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer
-              Policy
+          > {isOpen && (
+              <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer Policy
             </Typography>
+          )}
           </Box>
         </Drawer>
       </>
