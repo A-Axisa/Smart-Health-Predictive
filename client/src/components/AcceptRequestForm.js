@@ -1,5 +1,16 @@
-import { useState } from "react";
-import { Box, Container, Stack, Button, Typography, Link } from "@mui/material";
+import { useState, useEffect } from "react";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Container,
+  Stack,
+  Button,
+  Typography,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -7,37 +18,24 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  * Provides the user a form to request a password reset using their email.
  */
 const AcceptRequestForm = () => {
-  const [email, setEmail] = useState(null);
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [alertEmailRequired, setAlertEmailRequired] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
-  function validateEmail(e) {
-    setAlertEmailRequired(false);
-    setIsEmailValid(e.isValid);
-    setEmail(e.email.trim());
-  }
+  const { token } = useParams();
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // Only accept emails structured correctly.
-    if (!isEmailValid) {
-      setAlertEmailRequired(email === null);
-      return;
-    }
-
     setIsLoading(true);
-    await fetch(`${API_BASE}/forgot-password`, {
+    await fetch(`${API_BASE}/patient-accept-request`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: email,
+        token: token,
       }),
+      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
@@ -47,6 +45,7 @@ const AcceptRequestForm = () => {
         return response.json();
       })
       .catch((_error) => {});
+
     setIsLoading(false);
   }
 
@@ -72,10 +71,32 @@ const AcceptRequestForm = () => {
           style={{ justifyContent: "center" }}
         >
           <Stack direction="column" spacing={{ xs: 2 }}>
-            <h1>Patient Record Request</h1>
-            <Typography align="start" style={{ color: "#777777" }}>
-              Placeholder
+            <Typography variant="h4" fontWeight={600}>
+              Partner Access Request
             </Typography>
+            <Typography align="start">
+              You have received a request from one of our partner's to access
+              your patient record. This will allow the partner to:
+            </Typography>
+            <List
+              sx={{
+                pl: 2,
+                "& .MuiListItem-root::before": {
+                  content: '"•"',
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <ListItem disablePadding>
+                <ListItemText primary="View your health report history" />
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemText primary="Generate new health reports based on your data" />
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemText primary="View your health data" />
+              </ListItem>
+            </List>
           </Stack>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={{ xs: 2 }}>
@@ -92,7 +113,12 @@ const AcceptRequestForm = () => {
               </Button>
             </Stack>
           </Box>
-          <Link href="/dashboard" align="end" fontWeight="bold">
+          <Link
+            component={RouterLink}
+            to="/landing"
+            align="end"
+            fontWeight="bold"
+          >
             Return to dashboard
           </Link>
         </Stack>
@@ -104,22 +130,19 @@ const AcceptRequestForm = () => {
           <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
             <h1>Request Successful</h1>
             <Typography align="start" style={{ color: "#777777" }}>
-              We have sent an email to your email address with instruction to
-              reset your password and should appear shortly.
-            </Typography>
-            <Typography align="start" style={{ color: "#777777" }}>
-              If you do not see the it, check your spam folder.
+              You have successfully accept this request.
             </Typography>
           </Stack>
           <Button
-            href="/login"
+            component={RouterLink}
+            to="/landing"
             variant="outlined"
             sx={{
               py: { xs: "1rem", sm: ".9rem" },
               fontSize: { xs: "1.2rem", sm: "1rem" },
             }}
           >
-            Return to login
+            Return to Dashboard
           </Button>
         </Stack>
       )}
