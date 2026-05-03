@@ -462,7 +462,8 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     validID = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not validID:
-        raise HTTPException(status_code=404, detail="Report data not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Report data not found")
 
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(
@@ -529,7 +530,8 @@ async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_d
     health_data = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not health_data:
-        raise HTTPException(status_code=404, detail="Health report not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Health report not found")
 
     try:
         # Delete recommendation and prediction data first to avoid a foreign key error
@@ -779,7 +781,8 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
     patient = get_patient_by_email(user["email"], db_conn)
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     patient_id = patient.PatientID
 
@@ -981,7 +984,8 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
     patient = get_patient_by_email(user["email"], db_conn)
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     result = {
         "weight": float(patient.Weight) if patient.Weight else None,
@@ -1018,7 +1022,8 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         Patient.PatientID == patient_id).first())
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     result = {
         "weight": float(patient.Weight) if patient.Weight else None,
@@ -1158,7 +1163,7 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
 
     if merchant_access:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Merchant already has access to this patient record"
         )
 
@@ -1184,6 +1189,9 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
         Clinic.ClinicID == merchant.ClinicID
     ).scalar()
 
+    if clinic is None:
+        clinic = ""
+
     send_patient_request_email(
         sanitised_email, patient, clinic, request, token)
     return {"message": "Patient access request sent successfully"}
@@ -1208,7 +1216,7 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
 
     if not token_entry or datetime.now(UTC) > token_entry.ExpiresAt.astimezone(timezone.utc):
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Invalid or expired token"
         )
 
@@ -1216,7 +1224,8 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
     patient = db_conn.query(Patient).filter(
         Patient.UserID == user.UserID).first()
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     # Check the user who validated their credentials is the patient the request was created for
     if patient.PatientID != token_entry.PatientID:
