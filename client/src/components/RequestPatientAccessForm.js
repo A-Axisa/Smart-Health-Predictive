@@ -52,13 +52,7 @@ const RequestPatientAccessForm = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          if (response.status === 404) {
-            setErrorMessage("Patient not found");
-          } else if (response.status === 409) {
-            setErrorMessage("You already have access to this patient record");
-          } else {
-            setErrorMessage("Something went wrong");
-          }
+          setErrorMessage("Unable to process this request");
           return;
         }
         setIsFormSubmitted(true);

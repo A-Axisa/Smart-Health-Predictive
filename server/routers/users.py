@@ -1153,7 +1153,7 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
 
     if patient is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     # Check if the merchant currently has access to the patient account
     merchant_access = db_conn.query(UserPatientAccess).filter(
@@ -1164,7 +1164,7 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
     if merchant_access:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Merchant already has access to this patient record"
+            detail="Access already exists"
         )
 
     # Only allow one token to exist per patient & merchant pair.
@@ -1217,7 +1217,7 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
     if not token_entry or datetime.now(UTC) > token_entry.ExpiresAt.astimezone(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invalid or expired token"
+            detail="Invalid or expired request"
         )
 
     # Check the user is a patient
@@ -1225,13 +1225,12 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
         Patient.UserID == user.UserID).first()
     if not patient:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired request")
 
     # Check the user who validated their credentials is the patient the request was created for
     if patient.PatientID != token_entry.PatientID:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Not authorized access to accept request',
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.",
         )
 
     # Create relationship between patient and merchant
