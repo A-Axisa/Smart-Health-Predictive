@@ -28,6 +28,7 @@ const AdministratorDashboard = () => {
       variant="gradient"
       sx={{
         minHeight: "100vh",
+        overflow: "hidden",
       }}
     >
       <Box
