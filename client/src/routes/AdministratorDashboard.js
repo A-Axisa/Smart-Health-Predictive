@@ -29,7 +29,6 @@ const AdministratorDashboard = () => {
       sx={{
         minHeight: "100vh",
         overflow: "hidden",
-        bgcolor: "#f7fffd",
         pt: 1,
         pl: 5,
       }}
