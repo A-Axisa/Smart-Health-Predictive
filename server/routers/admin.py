@@ -2,8 +2,8 @@ from datetime import datetime, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List
+from sqlalchemy import or_, asc, desc
+from typing import List, Optional
 from pydantic import BaseModel
 
 from sqlalchemy import func, extract, desc
@@ -84,7 +84,15 @@ async def get_roles(db_conn: Session = Depends(get_db)):
 
 
 @router.get("/users")
-async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn: Session = Depends(get_db)):
+async def get_users(
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    clinic_id: Optional[int] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = "desc",
+    db_conn: Session = Depends(get_db)
+):
     """Return all user accounts"""
 
     if skip < 0:
@@ -93,6 +101,15 @@ async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn
     if limit <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="limit must be greater than 0")
+
+    # Mapping from frontend column field names to sortable DB columns
+    SORT_FIELD_MAP = {
+        "email": UserAccount.Email,
+        "createdAt": UserAccount.CreatedAt,
+        "validated": UserAccount.IsValidated,
+        "fullName": None,
+        "role": None,
+    }
 
     # Query users and roles, then apply pagination.
     query = db_conn.query(UserAccount, AccountRole, Patient, Clinic) \
@@ -113,10 +130,28 @@ async def get_users(skip: int = 0, limit: int = 100, search: str = None, db_conn
                     Clinic.ClinicName.ilike(keyword),
                 )
             )
+    
+    if clinic_id:
+        merchants = db_conn.query(UserAccount.UserID).filter(UserAccount.ClinicID == clinic_id)
+
+        patients = (db_conn.query(Patient.UserID)
+                .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+                .join(UserAccount, UserAccount.UserID == UserPatientAccess.UserID)
+                .filter(UserAccount.ClinicID == clinic_id))
+
+        query = query.filter(or_(UserAccount.UserID.in_(merchants), UserAccount.UserID.in_(patients)))
 
     total_count = query.count()
-    users = query.order_by(UserAccount.CreatedAt.desc()
-                           ).offset(skip).limit(limit).all()
+
+    # Determine sort column fall back to CreatedAt desc when unsortable or unknown
+    sort_col = SORT_FIELD_MAP.get(sort_by) if sort_by else None
+    if sort_col is not None:
+        order_fn = asc if (sort_order or "desc").lower() == "asc" else desc
+        order_clause = order_fn(sort_col)
+    else:
+        order_clause = UserAccount.CreatedAt.desc()
+
+    users = query.order_by(order_clause).offset(skip).limit(limit).all()
 
     result = []
     for user, role, patient, clinic in users:
@@ -397,7 +432,16 @@ async def validate_merchant(merchant_email: str, request: Request, db_conn: Sess
 
 
 @router.get("/logs")
-async def get_logs(request: Request, user_email: str = None, event_type: str = None, skip: int = 0, limit: int = 100, db_conn: Session = Depends(get_db)):
+async def get_logs(
+    request: Request,
+    user_email: str = None,
+    event_type: str = None,
+    skip: int = 0,
+    limit: int = 100,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = "desc",
+    db_conn: Session = Depends(get_db)
+):
     """Return logs to an admin user"""
     # Authenticate and authorize admin
     current_user_data = get_current_user(request, db_conn)
@@ -416,7 +460,17 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You do not have permission to view logs.")
 
-    # Build query
+    SORT_FIELD_MAP = {
+        "logID":       AuditLog.LogID,
+        "eventType":   AuditLog.EventType,
+        "success":     AuditLog.Success,
+        "userEmail":   AuditLog.UserEmail,
+        "ipAddress":   AuditLog.IPAddress,
+        "createdAt":   AuditLog.CreatedAt,
+        "device":      None,
+        "description": None,
+    }
+
     query = db_conn.query(AuditLog)
 
     if user_email:
@@ -425,8 +479,15 @@ async def get_logs(request: Request, user_email: str = None, event_type: str = N
         query = query.filter(AuditLog.EventType == event_type)
 
     total_count = query.count()
-    logs = query.order_by(AuditLog.CreatedAt.desc()
-                          ).offset(skip).limit(limit).all()
+
+    sort_col = SORT_FIELD_MAP.get(sort_by) if sort_by else None
+    if sort_col is not None:
+        order_fn = asc if (sort_order or "desc").lower() == "asc" else desc
+        order_clause = order_fn(sort_col)
+    else:
+        order_clause = AuditLog.CreatedAt.desc()
+
+    logs = query.order_by(order_clause).offset(skip).limit(limit).all()
 
     result = []
 
@@ -666,3 +727,19 @@ def _confirm_admin(request: Request, db_conn: Session):
     if not user["role"] or user["role"].lower() != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+@router.get("/clinics")
+async def get_clinics(db_conn: Session = Depends(get_db)):
+    """Returns a list of all clinics."""
+
+    clinics = db_conn.query(Clinic).order_by(Clinic.ClinicName).all()
+
+    result = []
+
+    for clinic in clinics:
+        result.append({
+            "id": clinic.ClinicID if clinic else None,
+            "name": clinic.ClinicName if clinic else None,
+        })
+
+    return result

@@ -14,9 +14,14 @@ const UserManagementTable = () => {
     page: 0,
     pageSize: 50,
   });
+  const [sortModel, setSortModel] = useState([
+    { field: "createdAt", sort: "desc" },
+  ]);
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
-  const [roleData, setRoleData] = useState([]); // Stores role data
+  const [roleData, setRoleData] = useState([]);
+  const [clinicData, setClinicData] = useState([]);
+  const [selectedClinic, setSelectedClinic] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({
@@ -40,6 +45,15 @@ const UserManagementTable = () => {
     });
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
+    }
+    if (selectedClinic) {
+      params.append("clinic_id", selectedClinic);
+    }
+      
+    // Append sort params when sort is active
+    if (sortModel.length > 0) {
+      params.append("sort_by", sortModel[0].field);
+      params.append("sort_order", sortModel[0].sort || "desc");
     }
 
     fetch(`${API_BASE}/users?${params.toString()}`)
@@ -67,6 +81,8 @@ const UserManagementTable = () => {
     paginationModel.page,
     paginationModel.pageSize,
     debouncedSearchQuery,
+    selectedClinic,
+    sortModel,
   ]);
 
   useEffect(() => {
@@ -86,6 +102,21 @@ const UserManagementTable = () => {
         console.log(err);
       });
   }, [API_BASE]);
+
+    useEffect(() => {
+    fetch(`${API_BASE}/clinics`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then((data) => setClinicData(data))
+      .catch(() => {
+        console.log("Failed to fetch Clinics");
+      });
+  }, [API_BASE]);
+
 
   const confirmRoleChange = async (e) => {
     e.preventDefault();
@@ -198,14 +229,25 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   };
 
+  const handleClinicChange = (clinicId) => {
+    setSelectedClinic(clinicId);
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  };
+
   const handleSearchChange = useCallback((value) => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
     setDebouncedSearchQuery(value);
   }, []);
 
+  const handleSortModelChange = useCallback((newSortModel) => {
+    setSortModel(newSortModel);
+    // Reset to first page whene sort changes
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  }, []);
+
   const columns = [
     { field: "email", headerName: "Email", width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", width: 250, sortable: true },
+    { field: "fullName", headerName: "Full Name", width: 250, sortable: false },
     {
       field: "createdAt",
       headerName: "Created At",
@@ -222,7 +264,7 @@ const UserManagementTable = () => {
       field: "role",
       headerName: "Role",
       width: 220,
-      sortable: true,
+      sortable: false,
       valueGetter: (params) => params?.name,
     },
   ];
@@ -252,7 +294,10 @@ const UserManagementTable = () => {
                 totalRowCount: totalUsers,
                 onUsersDelete: handleUsersDelete,
                 onUsersRoleChange: handleUsersRoleChange,
+                onClinicChange: handleClinicChange,
                 roleData,
+                clinicData,
+                selectedClinic,
               },
             }}
             rows={userData}
@@ -263,6 +308,9 @@ const UserManagementTable = () => {
             paginationModel={paginationModel}
             paginationMode="server"
             onPaginationModelChange={setPaginationModel}
+            sortingMode="server"
+            sortModel={sortModel}
+            onSortModelChange={handleSortModelChange}
             disableColumnResize
             disableRowSelectionOnClick
             checkboxSelection
@@ -274,9 +322,9 @@ const UserManagementTable = () => {
                 outline: "none",
               },
               "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-                {
-                  outline: "none",
-                },
+              {
+                outline: "none",
+              },
               "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
                 backgroundColor: "#f1f1f1f1",
               },

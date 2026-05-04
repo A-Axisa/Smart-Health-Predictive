@@ -1,12 +1,27 @@
-import { Box, Typography, Button, Paper, TextField } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmationDialog from "../components/confirmationDialog";
 
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  TextField,
+  Menu,
+  MenuItem,
+  Divider,
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+
 // Icons
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import ArchiveIcon from "@mui/icons-material/Archive";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 /**
  * A page used to display a list of all patients for a merchant user.
@@ -27,6 +42,17 @@ const PatientManagement = () => {
   const [selectedPatientID, setSelectedPatientID] = useState(null);
   const [givenNameInput, setGivenNameInput] = useState("");
   const [familyNameInput, setFamilyNameInput] = useState("");
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const columns = [
     {
@@ -159,7 +185,7 @@ const PatientManagement = () => {
         flexDirection: "column",
         p: 5,
         alignItems: "center",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >
@@ -201,12 +227,39 @@ const PatientManagement = () => {
               sx={{ width: 300 }}
             />
             <Button
+              id="add-patient-button"
               variant="contained"
+              disableElevation
               sx={{ ml: "auto" }}
-              onClick={() => navigate("/create-patient")}
+              onClick={handleClick}
+              endIcon={<KeyboardArrowDownIcon />}
             >
-              Create New Patient
+              Add Patient
             </Button>
+            <Menu
+              id="demo-customized-menu"
+              slotProps={{
+                list: {
+                  "aria-labelledby": "demo-customized-button",
+                },
+              }}
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+            >
+              <MenuItem
+                onClick={() => navigate("/create-patient")}
+                disableRipple
+              >
+                Create New Patient
+              </MenuItem>
+              <MenuItem
+                onClick={() => navigate("/request-patient-access")}
+                disableRipple
+              >
+                Request Patient Access
+              </MenuItem>
+            </Menu>
           </Box>
         </Paper>
 
