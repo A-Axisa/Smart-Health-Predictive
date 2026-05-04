@@ -80,12 +80,24 @@ const AverageRiskSeriesAnalytics = () => {
       <CardContent>
         <Grid container rowSpacing={1}>
           <Grid size={1} />
-          <Grid alignContent="center" size={10}>
-            <Typography variant="h6" textAlign="center">
+          <Grid alignContent="center" size={9}>
+            <Typography
+              variant="h6"
+              textAlign="center"
+              sx={{
+                fontSize: {
+                  xs: "1.0em",
+                  sm: "0.9em",
+                  md: "1.0em",
+                  lg: "1.0em",
+                  xl: "1.2em",
+                },
+              }}
+            >
               Average Disease Risk (%)
             </Typography>
           </Grid>
-          <Grid size={1}>
+          <Grid size={2}>
             <FormControl>
               <InputLabel id="year-label-id">Year</InputLabel>
               <Select

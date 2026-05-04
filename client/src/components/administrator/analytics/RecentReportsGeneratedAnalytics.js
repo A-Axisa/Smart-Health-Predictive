@@ -1,13 +1,19 @@
-import { Card, CardContent, Container, Paper, Typography } from "@mui/material";
-import { Stack } from "@mui/system";
+import {
+  Card,
+  CardContent,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
-import Divider from "@mui/material/Divider";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * A page used to display registration information and provide a form to allow
- * users to register.
+ * Displays the amount of health reports that have been generated over the
+ * past month and past week.
  */
 const RecentReportsGeneratedAnalytics = () => {
   const [data, setData] = useState({});
@@ -24,7 +30,6 @@ const RecentReportsGeneratedAnalytics = () => {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         setData(data);
       });
   }, []);
@@ -33,10 +38,47 @@ const RecentReportsGeneratedAnalytics = () => {
     <Card sx={{ p: "5px" }}>
       <CardContent>
         <Stack spacing={1}>
-          <Typography variant="h6">Recent Reports</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: {
+                xs: "1.0em",
+                sm: "0.9em",
+                md: "1.0em",
+                lg: "1.0em",
+                xl: "1.2em",
+              },
+            }}
+          >
+            Recent Reports
+          </Typography>
           <Stack>
-            <Typography variant="h2">{data.pastMonth}</Typography>
-            <Typography variant="subtle">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: {
+                  xs: "2.0em",
+                  sm: "1.5em",
+                  md: "3.0em",
+                  lg: "3.0em",
+                  xl: "3.6em",
+                },
+              }}
+            >
+              {data.pastMonth}
+            </Typography>
+            <Typography
+              variant="subtle"
+              sx={{
+                fontSize: {
+                  xs: "1.0em",
+                  sm: "0.8em",
+                  md: "1.0em",
+                  lg: "1.0em",
+                  xl: "1.2em",
+                },
+              }}
+            >
               {data.pastWeek} in the past week
             </Typography>
           </Stack>

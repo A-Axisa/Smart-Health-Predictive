@@ -55,6 +55,15 @@ const LoginActivityAnalytics = () => {
               textAlign="center"
               paddingTop="12px"
               paddingBottom="12px"
+              sx={{
+                fontSize: {
+                  xs: "1.0em",
+                  sm: "0.9em",
+                  md: "1.0em",
+                  lg: "1.0em",
+                  xl: "1.2em",
+                },
+              }}
             >
               Login Activity (7 Days)
             </Typography>
