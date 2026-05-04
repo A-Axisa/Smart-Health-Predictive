@@ -5,7 +5,7 @@ from datetime import datetime
 
 from server.main import app
 
-from ... models.dbmodels import HealthData, AuditLog, LogEventType, Patient, UserPatientAccess, UserAccount
+from ... models.dbmodels import HealthData, AuditLog, LogEventType, Patient, UserPatientAccess, UserAccount, PatientRequestToken
 from ... main import app
 from ... utils.database import get_db
 
@@ -385,3 +385,82 @@ def test_remove_patient():
         f"/remove-patient/{response.json()["patient_id"]}")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'message': f'Patient successfully removed.'}
+
+
+class TestPatientAccessRequestFlow():
+    def test_successful_request(self):
+
+        credentials_user = {"email": "RealGuy@example.com",
+                            "password": "thisisavalidpasswordA1!"}
+
+        credentials_merchant = {
+            "email": "merchant@example.com",
+            "password": "thisisavalidpasswordA1!"
+        }
+
+        db_conn = next(get_db())
+
+        merchant = db_conn.query(UserAccount).filter_by(
+            Email=credentials_merchant["email"]).first()
+
+        user = db_conn.query(UserAccount).filter_by(
+            Email=credentials_user["email"]).first()
+
+        patient = db_conn.query(Patient).filter_by(
+            UserID=user.UserID).first()
+        # Remove any existing relationship between patient and merchant
+        db_conn.query(UserPatientAccess).filter(
+            (UserPatientAccess.PatientID == patient.PatientID) & (UserPatientAccess.UserID == merchant.UserID)).delete()
+        db_conn.commit()
+
+        # Login as a merchant
+        response = client.post("/login/", json=credentials_merchant)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in as merchant"
+
+        # Send access request to patient
+        response = client.post(
+            "/patient-request", json={'email': credentials_user["email"]})
+        assert response.status_code == status.HTTP_200_OK, "Failed to send access request."
+
+        client.post("/logout/")
+
+        # Login as patient
+        response = client.post("/login/", json=credentials_user)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in as user"
+
+        access_request = db_conn.query(
+            PatientRequestToken).filter_by(PatientID=patient.PatientID).first()
+        # Accept the access request
+        response = client.post("/patient-accept-request", json={
+            'token': access_request.Token
+        })
+        assert response.status_code == status.HTTP_200_OK, "Failed to accept access request"
+
+    def test_invalid_patient_email(self):
+
+        credentials_merchant = {
+            "email": "merchant@example.com",
+            "password": "thisisavalidpasswordA1!"
+        }
+
+        # Login as a merchant
+        response = client.post("/login/", json=credentials_merchant)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in as merchant"
+
+        response = client.post(
+            "/patient-request", json={"email": "invalidemail@fakermail.com"})
+        assert response.status_code == status.HTTP_404_NOT_FOUND, "Patient record found"
+
+    def test_invalid_access_token(self):
+
+        credentials_user = {"email": "RealGuy@example.com",
+                            "password": "thisisavalidpasswordA1!"}
+        # Login to user account
+        response = client.post('/login/', json=credentials_user)
+        assert response.status_code == status.HTTP_200_OK, "Failed to log in as user"
+
+        # Send invalid token request
+        response = client.post("/patient-accept-request", json={
+            'token': "123"
+        })
+        assert response.status_code == status.HTTP_404_NOT_FOUND, "Access request accepted"

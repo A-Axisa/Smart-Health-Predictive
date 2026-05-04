@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -366,7 +366,8 @@ const RegistrationForm = () => {
                 OR
               </Divider>
               <Button
-                href="/login"
+                component={RouterLink}
+                to="/login"
                 variant="outlined"
                 sx={{
                   py: { xs: "1rem", sm: ".9rem" },

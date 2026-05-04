@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import { useContext, useState } from "react";
 import {
   Alert,
@@ -24,6 +24,8 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { refreshUser } = useContext(UserContext);
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
   const [password, setPassword] = useState(null);
@@ -93,7 +95,10 @@ const LoginForm = () => {
       })
       .then(async (data) => {
         await refreshUser();
-        navigate("/landing");
+
+        const from = location.state?.from || "/landing";
+
+        navigate(from, { replace: true });
       })
       .catch((error) => {
         setIsLoginUnsuccessful(true);
@@ -145,7 +150,8 @@ const LoginForm = () => {
             Login
           </Button>
           <Button
-            href="/register"
+            component={RouterLink}
+            to="/register"
             variant="outlined"
             sx={{
               py: "1rem",
@@ -164,7 +170,12 @@ const LoginForm = () => {
             <Typography align="center" variant="subtle">
               Forgot your password?
             </Typography>
-            <Button href="/forgot-password" variant="outlined" align="center">
+            <Button
+              component={RouterLink}
+              to="/forgot-password"
+              variant="outlined"
+              align="center"
+            >
               Click Here
             </Button>
           </Stack>

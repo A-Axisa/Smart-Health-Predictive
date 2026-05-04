@@ -20,6 +20,7 @@ import MerchantLanding from "./routes/MerchantLanding";
 import MerchantReports from "./routes/MerchantReports";
 import AppThemeProvider from "./components/AppThemeProvider";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
+import PublicOnlyRoutes from "./utils/PublicOnlyRoutes";
 import LandingRoute from "./utils/LandingRoute";
 import { UserProvider } from "./utils/UserContext";
 import ErrorPage from "./routes/ErrorPage";
@@ -28,6 +29,8 @@ import PatientDetails from "./routes/PatientDetails";
 import CreatePatient from "./routes/CreatePatient";
 import ForgotPassword from "./routes/ForgotPassword";
 import ResetPassword from "./routes/ResetPassword";
+import AcceptAccessRequest from "./routes/AcceptAccessRequest";
+import RequestPatientAccess from "./routes/RequestPatientAccess";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -36,7 +39,7 @@ root.render(
       <UserProvider>
         <BrowserRouter>
           <Routes>
-            <Route element={<ProtectedRoutes />}>
+            <Route element={<PublicOnlyRoutes />}>
               {/*This can be changed later. This will make login render on loading*/}
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
@@ -61,6 +64,10 @@ root.render(
               />
               <Route path="/generate-report" element={<GenerateReport />} />
               <Route path="/health-analytics" element={<HealthAnalytics />} />
+              <Route
+                path="/accept-access-request/:token"
+                element={<AcceptAccessRequest />}
+              />
             </Route>
 
             {/*Merchant routes*/}
@@ -80,6 +87,10 @@ root.render(
                 element={<PatientDetails />}
               />
               <Route path="/create-patient" element={<CreatePatient />} />
+              <Route
+                path="/request-patient-access"
+                element={<RequestPatientAccess />}
+              />
             </Route>
 
             {/*Admin routes*/}

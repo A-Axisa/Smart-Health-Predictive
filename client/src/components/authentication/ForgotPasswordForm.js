@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
@@ -119,7 +120,8 @@ const ForgotPasswordForm = () => {
                 </Button>
                 <Divider />
                 <Button
-                  href="/login"
+                  component={RouterLink}
+                  to="/login"
                   variant="outlined"
                   sx={{
                     py: { xs: "1rem", sm: ".9rem" },
@@ -160,7 +162,8 @@ const ForgotPasswordForm = () => {
               </Typography>
             </Stack>
             <Button
-              href="/login"
+              component={RouterLink}
+              to="/login"
               variant="outlined"
               sx={{
                 py: { xs: "1rem", sm: ".9rem" },
