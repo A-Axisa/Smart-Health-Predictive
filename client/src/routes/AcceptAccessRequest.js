@@ -1,10 +1,18 @@
-import { Box, Container } from "@mui/material";
-import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm";
+import {
+  Box,
+  Container,
+  Stack,
+  Typography,
+  Button,
+  Link,
+  Divider,
+} from "@mui/material";
+import AcceptRequestForm from "../components/AcceptRequestForm";
 
 /**
- * Displays the form to reset a user's password if it has been forgotten.
+ * Displays the form to accept an access request
  */
-const ForgotPassword = () => {
+const AcceptAccessRequest = () => {
   return (
     <Container
       variant="gradient"
@@ -20,10 +28,10 @@ const ForgotPassword = () => {
       }}
     >
       <Box variant="gradient">
-        <ForgotPasswordForm />
+        <AcceptRequestForm />
       </Box>
     </Container>
   );
 };
 
-export default ForgotPassword;
+export default AcceptAccessRequest;

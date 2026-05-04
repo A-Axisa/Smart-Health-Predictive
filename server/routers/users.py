@@ -1,12 +1,14 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone, UTC
 from decimal import Decimal
 from typing import List, Optional
+from secrets import token_urlsafe
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
+import re
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -20,12 +22,14 @@ from ..models.dbmodels import (
     LogEventType,
     Patient,
     UserPatientAccess,
-    Clinic
+    Clinic,
+    PatientRequestToken
 )
-from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid
+from ..routers.authentication import get_current_user, get_user, get_patient_by_email, format_phone_number, is_formatted_phone_valid, is_email_valid, authenticate_user, send_email
 
 NAME_MAX_LENGTH = 255
 MIN_AGE = 18
+VALIDATION_TOKEN_LENGTH = 128
 gender_map = {'Male': 1, 'Female': 0}
 
 
@@ -119,6 +123,14 @@ class PatientDetails(CamelModel):
     risks: dict
     diff: dict
     recommendations: dict
+
+
+class PatientRequest(BaseModel):
+    email: str
+
+
+class PatientAcceptDetails(BaseModel):
+    token: str
 
 
 def _to_float(val) -> float:
@@ -450,7 +462,8 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
     validID = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not validID:
-        raise HTTPException(status_code=404, detail="Report data not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Report data not found")
 
     # Retrieve user health data
     healthData = db_conn.query(HealthData).filter(
@@ -517,7 +530,8 @@ async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_d
     health_data = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not health_data:
-        raise HTTPException(status_code=404, detail="Health report not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Health report not found")
 
     try:
         # Delete recommendation and prediction data first to avoid a foreign key error
@@ -542,18 +556,7 @@ async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_d
 async def get_merchant_reports(request: Request, db_conn: Session = Depends(get_db)):
     """Retrieves all reports a merchant can view"""
     # Check if the requesting user is a merchant.
-    current_user = get_current_user(request, db_conn)
-    current_user_email = current_user.get('email')
-    merchant = db_conn.query(UserAccount).filter_by(
-        Email=current_user_email).first()
-    if not merchant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-
-    current_user_role = current_user.get('role')
-    if not current_user_role or current_user_role.lower() != 'merchant':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+    merchant = get_current_merchant(request, db_conn)
 
     # Get patients associated with the merchant.
     patients = get_merchant_patients(merchant.UserID, db_conn)
@@ -778,7 +781,8 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
     patient = get_patient_by_email(user["email"], db_conn)
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     patient_id = patient.PatientID
 
@@ -980,7 +984,8 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
     patient = get_patient_by_email(user["email"], db_conn)
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     result = {
         "weight": float(patient.Weight) if patient.Weight else None,
@@ -1017,7 +1022,8 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         Patient.PatientID == patient_id).first())
 
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
 
     result = {
         "weight": float(patient.Weight) if patient.Weight else None,
@@ -1126,6 +1132,154 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
         risks=latest_risk_info,
         diff=disease_diff,
         recommendations=latest_recommendations
+    )
+
+
+@router.post('/patient-request')
+def patient_request(patient_request: PatientRequest, request: Request, db_conn: Session = Depends(get_db)):
+    """Generates a patient request token for a given patient email."""
+
+    # Check the current user is a merchant
+    merchant = get_current_merchant(request, db_conn)
+
+    sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
+                             patient_request.email)
+    if not is_email_valid(sanitised_email):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    # Check if the provided email is a patient
+    patient = get_patient_by_email(sanitised_email, db_conn)
+
+    if patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found.")
+
+    # Check if the merchant currently has access to the patient account
+    merchant_access = db_conn.query(UserPatientAccess).filter(
+        UserPatientAccess.UserID == merchant.UserID,
+        UserPatientAccess.PatientID == patient.PatientID
+    ).first()
+
+    if merchant_access:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Access already exists"
+        )
+
+    # Only allow one token to exist per patient & merchant pair.
+    existing_token = db_conn.query(
+        PatientRequestToken).filter_by(MerchantID=merchant.UserID, PatientID=patient.PatientID).first()
+    if existing_token:
+        db_conn.delete(existing_token)
+    # Create patient request token
+    token = token_urlsafe(VALIDATION_TOKEN_LENGTH)
+    expires_at = datetime.now() + timedelta(days=7)
+    patient_access_token = PatientRequestToken(
+        merchant.UserID,
+        patient.PatientID,
+        token,
+        expires_at
+    )
+
+    db_conn.add(patient_access_token)
+    db_conn.commit()
+
+    clinic = db_conn.query(Clinic.ClinicName).filter(
+        Clinic.ClinicID == merchant.ClinicID
+    ).scalar()
+
+    if clinic is None:
+        clinic = ""
+
+    send_patient_request_email(
+        sanitised_email, patient, clinic, request, token)
+    return {"message": "Patient access request sent successfully"}
+
+
+@router.post('/patient-accept-request')
+def patient_accept_request(patient_accept_details: PatientAcceptDetails, request: Request, db_conn: Session = Depends(get_db)):
+    """Allows a patient to accept a request to be added to a merchant account"""
+
+    # Get current user's details
+    current_user = get_current_user(request, db_conn)
+    current_user_role = current_user.get("role")
+    if not current_user_role or current_user_role.lower() != "standard_user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
+    user = get_user(current_user["email"], db_conn)
+
+    # Retrieve token
+    token_entry = db_conn.query(
+        PatientRequestToken).filter_by(Token=patient_accept_details.token).first()
+
+    if not token_entry or datetime.now(UTC) > token_entry.ExpiresAt.astimezone(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid or expired request"
+        )
+
+    # Check the user is a patient
+    patient = db_conn.query(Patient).filter(
+        Patient.UserID == user.UserID).first()
+    if not patient:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired request")
+
+    # Check the user who validated their credentials is the patient the request was created for
+    if patient.PatientID != token_entry.PatientID:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.",
+        )
+
+    # Create relationship between patient and merchant
+    merchant_access = UserPatientAccess(
+        user_id=token_entry.MerchantID, patient_id=token_entry.PatientID)
+    db_conn.delete(token_entry)
+    db_conn.add(merchant_access)
+    db_conn.commit()
+
+    return {"message": "Merchant access successfully granted"}
+
+
+def send_patient_request_email(email: str, patient: Patient, clinic: str, request: Request, token: str):
+    """Helper function to send a patient request email."""
+    sanitizer = Sanitizer()
+    sanitized_token = sanitizer.sanitize(token)
+    given_names = sanitizer.sanitize(patient.GivenNames)
+    family_name = sanitizer.sanitize(patient.FamilyName)
+    clinic_name = sanitizer.sanitize(clinic)
+
+    url = f"http://localhost:3000/accept-access-request/{sanitized_token}"
+    subject = "Patient Access Request for WellAI Smart Health Predictive"
+    content = f"""
+    <html>
+        <body>
+            <p>Greetings {given_names} {family_name},</p>
+            <p>You have received a request from our partner {clinic_name} at WellAI Smart Health Predictive to access your patient record.</p>
+            <p>Click the following link to proceed with this process and provide access to {clinic_name} to manage your patient record. 
+            <p>This will allow {clinic_name} to:</p>
+            <ul>
+                <li>View your health report history</li>
+                <li>Generate new health reports based on your data</li>
+                <li>View your health data</li>
+            </ul>
+            For security, this link will expire in 7 days:
+              <a href={url}>Accept Request</a>
+            </p>
+            <br />
+            <p>If you did not expect this request, you can safely ignore this email.</p>
+            <p>Best regards,</p>
+            <p>The WellAI Team</p>
+        </body>
+    </html>
+    """
+    send_email(
+        recipient=email,
+        subject=subject,
+        content=content,
+        content_type="html"
     )
 
 

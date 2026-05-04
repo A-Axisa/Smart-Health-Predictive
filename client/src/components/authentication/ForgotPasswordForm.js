@@ -1,6 +1,18 @@
 import { useState } from "react";
-import { Box, Container, Stack, Button, Typography, Link } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
+import ForwardToInboxOutlinedIcon from "@mui/icons-material/ForwardToInboxOutlined";
+import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 import EmailInputField from "./EmailInputField";
+import Logo from "../../assets/WellAiLogoTR.png";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -52,84 +64,118 @@ const ForgotPasswordForm = () => {
   }
 
   return (
-    <Container
+    <Card
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "40px",
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
         width: { xs: "auto", sm: "500px" },
+        minHeight: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >
-      {/* Input form */}
-      {!isFormSubmitted && (
-        <Stack
-          direction="column"
-          spacing={{ xs: 5 }}
-          pl={3}
-          pr={3}
-          style={{ justifyContent: "center" }}
-        >
-          <Stack direction="column" spacing={{ xs: 2 }}>
-            <h1>Forgot Password?</h1>
-            <Typography align="start" style={{ color: "#777777" }}>
-              Enter the email associated with your WellAI account and we'll send
-              you an email that will allow you to reset your password
-            </Typography>
-          </Stack>
-          <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={{ xs: 2 }}>
-              <EmailInputField
-                onChange={validateEmail}
-                showRequired={alertEmailRequired}
-              />
-              <Button
-                loading={isLoading}
-                type="submit"
-                variant="contained"
-                sx={{
-                  py: { xs: "1rem", sm: ".9rem" },
-                  fontSize: { xs: "1.2rem", sm: "1rem" },
-                }}
-              >
-                Reset Password
-              </Button>
-            </Stack>
-          </Box>
-          <Link href="/login" align="end" fontWeight="bold">
-            Return to Login
-          </Link>
-        </Stack>
-      )}
-
-      {/* Success response */}
-      {isFormSubmitted && (
-        <Stack direction="column" spacing={{ xs: 5 }} pl={3} pr={3}>
-          <Stack direction="column" spacing={{ xs: 2, position: "relative" }}>
-            <h1>Request Successful</h1>
-            <Typography align="start" style={{ color: "#777777" }}>
-              We have sent an email to your email address with instruction to
-              reset your password and should appear shortly.
-            </Typography>
-            <Typography align="start" style={{ color: "#777777" }}>
-              If you do not see the it, check your spam folder.
-            </Typography>
-          </Stack>
-          <Button
-            href="/login"
-            variant="outlined"
-            sx={{
-              py: { xs: "1rem", sm: ".9rem" },
-              fontSize: { xs: "1.2rem", sm: "1rem" },
-            }}
+      <CardContent>
+        {/* Input form */}
+        {!isFormSubmitted && (
+          <Stack
+            spacing={{ xs: 5 }}
+            pl={3}
+            pr={3}
+            style={{ justifyContent: "center" }}
           >
-            Return to login
-          </Button>
-        </Stack>
-      )}
-    </Container>
+            <Stack spacing={{ xs: 1 }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
+              <Stack alignItems="center">
+                <PsychologyAltIcon alignItem="center" sx={{ fontSize: 80 }} />
+              </Stack>
+              <Typography variant="h4" align="center">
+                Forgot Password?
+              </Typography>
+              <Typography variant="subtle" align="start">
+                Enter the email associated with your WellAI account and we'll
+                send you an email that will allow you to reset your password
+              </Typography>
+            </Stack>
+            <Box component="form" onSubmit={handleSubmit}>
+              <Stack spacing={{ xs: 2 }}>
+                <EmailInputField
+                  onChange={validateEmail}
+                  showRequired={alertEmailRequired}
+                />
+                <Button
+                  loading={isLoading}
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    py: { xs: "1rem", sm: ".9rem" },
+                    fontSize: "1rem",
+                  }}
+                >
+                  Reset Password
+                </Button>
+                <Divider />
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="outlined"
+                  sx={{
+                    py: { xs: "1rem", sm: ".9rem" },
+                    fontSize: "1rem",
+                  }}
+                >
+                  Return to Login
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+
+        {/* Success response */}
+        {isFormSubmitted && (
+          <Stack spacing={5} pl={3} pr={3}>
+            <Stack spacing={{ xs: 1, position: "relative" }}>
+              <Stack alignItems="center">
+                <Box
+                  component="img"
+                  alt="Well AI Logo"
+                  src={Logo}
+                  sx={{ width: "10em", paddingBottom: "30px" }}
+                />
+              </Stack>
+              <Stack alignItems="center">
+                <ForwardToInboxOutlinedIcon sx={{ fontSize: 80 }} />
+              </Stack>
+              <Typography variant="h4" align="center">
+                Request Successful!
+              </Typography>
+              <Typography align="start" variant="subtle">
+                We have sent an email to your email address with instruction to
+                reset your password and should appear shortly.
+              </Typography>
+              <Typography align="start" variant="subtle">
+                If you do not see the the email, check your spam folder.
+              </Typography>
+            </Stack>
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="outlined"
+              sx={{
+                py: { xs: "1rem", sm: ".9rem" },
+                fontSize: "1rem",
+              }}
+            >
+              Return to login
+            </Button>
+          </Stack>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

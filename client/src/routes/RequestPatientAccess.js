@@ -1,10 +1,19 @@
-import { Box, Container } from "@mui/material";
+import {
+  Box,
+  Container,
+  Stack,
+  Typography,
+  Button,
+  Link,
+  Divider,
+} from "@mui/material";
 import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm";
+import RequestPatientAccessForm from "../components/RequestPatientAccessForm";
 
 /**
- * Displays the form to reset a user's password if it has been forgotten.
+ * Displays the form to request access to a patients record.
  */
-const ForgotPassword = () => {
+const RequestPatientAccess = () => {
   return (
     <Container
       variant="gradient"
@@ -20,10 +29,10 @@ const ForgotPassword = () => {
       }}
     >
       <Box variant="gradient">
-        <ForgotPasswordForm />
+        <RequestPatientAccessForm />
       </Box>
     </Container>
   );
 };
 
-export default ForgotPassword;
+export default RequestPatientAccess;

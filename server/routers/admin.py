@@ -74,6 +74,7 @@ async def get_users(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None,
+    clinic_id: Optional[int] = None,
     sort_by: Optional[str] = None,
     sort_order: Optional[str] = "desc",
     db_conn: Session = Depends(get_db)
@@ -115,6 +116,16 @@ async def get_users(
                     Clinic.ClinicName.ilike(keyword),
                 )
             )
+    
+    if clinic_id:
+        merchants = db_conn.query(UserAccount.UserID).filter(UserAccount.ClinicID == clinic_id)
+
+        patients = (db_conn.query(Patient.UserID)
+                .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+                .join(UserAccount, UserAccount.UserID == UserPatientAccess.UserID)
+                .filter(UserAccount.ClinicID == clinic_id))
+
+        query = query.filter(or_(UserAccount.UserID.in_(merchants), UserAccount.UserID.in_(patients)))
 
     total_count = query.count()
 
@@ -598,3 +609,20 @@ async def get_admin_dashboard(request: Request, db_conn: Session = Depends(get_d
         failedLoginAttemptsLastDay=failed_logins_last_day,
         loginActivity=login_activity,
     )
+
+
+@router.get("/clinics")
+async def get_clinics(db_conn: Session = Depends(get_db)):
+    """Returns a list of all clinics."""
+
+    clinics = db_conn.query(Clinic).order_by(Clinic.ClinicName).all()
+
+    result = []
+
+    for clinic in clinics:
+        result.append({
+            "id": clinic.ClinicID if clinic else None,
+            "name": clinic.ClinicName if clinic else None,
+        })
+
+    return result

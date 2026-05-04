@@ -18,6 +18,8 @@ import {
   InputLabel,
   Select,
   Button,
+  Autocomplete,
+  TextField,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -134,6 +136,14 @@ const MerchantReports = ({}) => {
   const handleClear = () => {
     setSelectedYear(null);
     setSelectedMonth(null);
+    
+  function onPatientChange(e, newValue) {
+    const selectedReports = reports.filter((r) => r.name === newValue);
+    setSelectedYear(null);
+    setSelectedMonth(null);
+    setSelectedPatient(newValue);
+    setReportDates(selectedReports);
+    setSelectedDate(selectedReports[0]);
   }
 
   return (
@@ -161,32 +171,19 @@ const MerchantReports = ({}) => {
         </Box>
         {/* Patient List */}
         <Box sx={{ p: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel id="patient-select-label">Patient</InputLabel>
-            <Select
-              labelId="patient-select-label"
-              value={selectedPatient}
-              label={"Patient"}
-              onChange={(e) => {
-                // Filter reports by selected user
-                const selectedReports = reports.filter(
-                  (r) => r.name === e.target.value,
-                );
-                setSelectedMonth(null);
-                setSelectedYear(null);
-                setSelectedPatient(e.target.value);
-                setReportDates(selectedReports);
-                setSelectedDate(selectedReports[0]); // Select first report
-              }}
-            >
-              {/* List of available patients */}
-              {patients.map((name) => (
-                <MenuItem key={name} value={name}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            fullWidth
+            options={patients}
+            value={selectedPatient}
+            onChange={onPatientChange}
+            getOptionLabel={(option) => option}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Patient"
+                />
+              )}
+          />
         </Box>
 
         <Box sx={{ p: 2, display: "flex", gap: 2 }}>

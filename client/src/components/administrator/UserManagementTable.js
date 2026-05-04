@@ -19,7 +19,9 @@ const UserManagementTable = () => {
   ]);
   const [newRole, setNewRole] = useState(null); // Temp store for the pending role
   const [dialogOpen, setDialogOpen] = useState(false); // Determines dialog visibility
-  const [roleData, setRoleData] = useState([]); // Stores role data
+  const [roleData, setRoleData] = useState([]);
+  const [clinicData, setClinicData] = useState([]);
+  const [selectedClinic, setSelectedClinic] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({
@@ -44,6 +46,10 @@ const UserManagementTable = () => {
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
     }
+    if (selectedClinic) {
+      params.append("clinic_id", selectedClinic);
+    }
+      
     // Append sort params when sort is active
     if (sortModel.length > 0) {
       params.append("sort_by", sortModel[0].field);
@@ -75,6 +81,7 @@ const UserManagementTable = () => {
     paginationModel.page,
     paginationModel.pageSize,
     debouncedSearchQuery,
+    selectedClinic,
     sortModel,
   ]);
 
@@ -95,6 +102,21 @@ const UserManagementTable = () => {
         console.log(err);
       });
   }, [API_BASE]);
+
+    useEffect(() => {
+    fetch(`${API_BASE}/clinics`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then((data) => setClinicData(data))
+      .catch(() => {
+        console.log("Failed to fetch Clinics");
+      });
+  }, [API_BASE]);
+
 
   const confirmRoleChange = async (e) => {
     e.preventDefault();
@@ -207,6 +229,11 @@ const UserManagementTable = () => {
     setDialogOpen(true);
   };
 
+  const handleClinicChange = (clinicId) => {
+    setSelectedClinic(clinicId);
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  };
+
   const handleSearchChange = useCallback((value) => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
     setDebouncedSearchQuery(value);
@@ -267,7 +294,10 @@ const UserManagementTable = () => {
                 totalRowCount: totalUsers,
                 onUsersDelete: handleUsersDelete,
                 onUsersRoleChange: handleUsersRoleChange,
+                onClinicChange: handleClinicChange,
                 roleData,
+                clinicData,
+                selectedClinic,
               },
             }}
             rows={userData}
