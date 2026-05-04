@@ -709,7 +709,27 @@ async def get_average_risk_series(year: int, request: Request, db_conn: Session 
         func.avg(Prediction.StrokeChance).label('stroke'),
         func.avg(Prediction.DiabetesChance).label('diabetes'),
         func.avg(Prediction.CVDChance).label('cvd'),
-    ).filter(Prediction.CreatedAt > year_start, Prediction.CreatedAt < year_end).group_by("date").order_by("date").all()
+    ).filter(
+        Prediction.CreatedAt > year_start,
+        Prediction.CreatedAt < year_end
+    ).group_by("date").order_by("date").all()
+
+    return [row._asdict() for row in query]
+
+
+@router.get("/admin-dashboard/login-activity/{timespanInDays}")
+async def get_login_activity(timespanInDays: int, request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    start_date = datetime.now() - timedelta(days=timespanInDays)
+
+    query = db_conn.query(
+        func.count(AuditLog.EventType).label("total"),
+        func.date_format(AuditLog.CreatedAt, "%Y-%m-%d").label('date'),
+    ).filter(
+        AuditLog.EventType == LogEventType.LOGIN,
+        AuditLog.CreatedAt > start_date,
+    ).group_by("date").order_by("date").all()
 
     return [row._asdict() for row in query]
 
