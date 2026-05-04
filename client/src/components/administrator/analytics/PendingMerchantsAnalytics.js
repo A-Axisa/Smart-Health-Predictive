@@ -37,7 +37,7 @@ const PendingMerchantsAnalytics = () => {
           <Stack direction="row" justifyContent="space-around">
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography variant="h4">{data.amount}</Typography>
-              <Typography variant="h7">Merchants awaiting review</Typography>
+              <Typography variant="h7">Partners awaiting review</Typography>
             </Stack>
             {data.amount > 0 && (
               <ErrorIcon sx={{ fontSize: 40, color: "red" }} />

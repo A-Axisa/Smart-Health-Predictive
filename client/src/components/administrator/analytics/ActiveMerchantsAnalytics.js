@@ -33,7 +33,7 @@ const ActiveMerchantsAnalytics = () => {
     <Card sx={{ p: "5px" }}>
       <CardContent>
         <Stack spacing={1}>
-          <Typography variant="h6">Active Merchants</Typography>
+          <Typography variant="h6">Active Partners</Typography>
           <Stack>
             <Typography variant="h2">{data.pastMonth}</Typography>
             <Typography variant="subtle">
