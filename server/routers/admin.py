@@ -86,6 +86,13 @@ class LoginActivity(CamelModel):
     amount_by_day: dict
 
 
+class AdminUserAnalytics(CamelModel):
+    total_accounts: int
+    total_standard: int
+    total_patients: int
+    total_merchants: int
+
+
 @router.get("/roles")
 async def get_roles(db_conn: Session = Depends(get_db)):
     """Return all roles"""
@@ -643,6 +650,33 @@ async def get_unvalidated_account_analytics(request: Request, db_conn: Session =
 
     return UnvalidatedAccountsAnalytic(
         amount=unvalidated_accounts,
+    )
+
+
+@router.get("/admin-dashboard/user-analytics")
+async def get_user_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    account_total = db_conn.query(UserAccount).filter(
+        UserAccount.IsValidated == 1).count()
+
+    patient_total = db_conn.query(Patient).filter(
+        Patient.UserID == None).count()
+    merchant_total = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
+        .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "merchant",
+            UserAccount.IsValidated == 1
+        )
+        .count())
+
+    return AdminUserAnalytics(
+        total_accounts=account_total,
+        total_standard=(account_total - merchant_total),
+        total_patients=patient_total,
+        total_merchants=merchant_total,
     )
 
 
