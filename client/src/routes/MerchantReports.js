@@ -136,6 +136,7 @@ const MerchantReports = ({}) => {
   const handleClear = () => {
     setSelectedYear(null);
     setSelectedMonth(null);
+  }
     
   function onPatientChange(e, newValue) {
     const selectedReports = reports.filter((r) => r.name === newValue);
