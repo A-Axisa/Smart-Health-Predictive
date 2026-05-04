@@ -277,9 +277,12 @@ const HealthAnalytics = () => {
       <Container
         maxWidth="lg"
         sx={{
-          px: isMobile ? 2 : 3,
-          ml: "250px",
+          px: isMobile ? 1.5 : 3,
           mt: "66px",
+          ml: "65px",
+          width: "calc(100% - 65px)",
+          maxWidth: "calc(100% - 65px)",
+          boxSizing: "border-box",
         }}
       >
         <Stack spacing={1.5} sx={{ mb: 3 }}>
