@@ -30,7 +30,6 @@ const ActiveUsersAnalytics = () => {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         setData(data);
       });
   }, []);
