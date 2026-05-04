@@ -29,32 +29,6 @@ from ..routers.authentication import get_current_user, get_patient_by_email
 router = APIRouter()
 
 
-class AdminDashboard(BaseModel):
-    # User data
-    totalUsers: int
-    totalPatients: int
-    totalMerchants: int
-    newUsersLast30days: int
-    validatedUsers: int
-    invalidatedUsers: int
-    activePatients: int
-    inactivePatients: int
-
-    # Prediction data
-    totalReports: int
-    reportsLastDay: int
-    reportsLast7Days: int
-    reportsLast30Days: int
-    reportActivity: List[dict]
-    averageRiskCVD: float
-    averageRiskDiabetes: float
-    averageRiskStroke: float
-
-    # Log data
-    failedLoginAttemptsLastDay: int
-    loginActivity: List[dict]
-
-
 class AdminReportAnalytics(CamelModel):
     total_reports: int
 
