@@ -78,6 +78,10 @@ class PendingMerchantAnalytics(CamelModel):
     amount: int
 
 
+class UnvalidatedAccountsAnalytic(CamelModel):
+    amount: int
+
+
 @router.get("/roles")
 async def get_roles(db_conn: Session = Depends(get_db)):
     """Return all roles"""
@@ -732,6 +736,26 @@ async def get_login_activity(timespanInDays: int, request: Request, db_conn: Ses
     ).group_by("date").order_by("date").all()
 
     return [row._asdict() for row in query]
+
+
+@router.get("/admin-dashboard/unvalidated-account-analytics")
+async def get_unvalidated_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    unvalidated_accounts = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "standard_user",
+            UserAccount.IsValidated is False,
+        )
+        .count()
+    )
+
+    return PendingMerchantAnalytics(
+        amount=unvalidated_accounts,
+    )
 
 
 def _confirm_admin(request: Request, db_conn: Session):
