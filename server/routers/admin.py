@@ -82,6 +82,10 @@ class UnvalidatedAccountsAnalytic(CamelModel):
     amount: int
 
 
+class LoginActivity(CamelModel):
+    amount_by_day: dict
+
+
 @router.get("/roles")
 async def get_roles(db_conn: Session = Depends(get_db)):
     """Return all roles"""
