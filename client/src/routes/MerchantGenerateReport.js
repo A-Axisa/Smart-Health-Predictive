@@ -14,7 +14,7 @@ const MerchantGenerateReport = ({}) => {
           display: "flex",
           justifyContent: "center",
           p: 5,
-          ml: "250px",
+          ml: "65px",
           mt: "66px",
         }}
       >

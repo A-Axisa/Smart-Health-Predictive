@@ -42,7 +42,7 @@ const PatientDetails = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
         pt: 1,
         pl: 5,

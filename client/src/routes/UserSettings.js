@@ -703,7 +703,7 @@ const UserSettings = () => {
         flexDirection: isMobile ? "column" : "row",
         minHeight: "100vh",
         bgcolor: "#f5f5f5",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >

@@ -270,7 +270,7 @@ const HealthAnalytics = () => {
       sx={{
         py: isMobile ? 3 : 4,
         px: isMobile ? 2 : 3,
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >
