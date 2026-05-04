@@ -30,8 +30,6 @@ const AdministratorDashboard = () => {
         minHeight: "100vh",
         overflow: "hidden",
         bgcolor: "#f7fffd",
-        ml: "65px",
-        mt: "66px",
         pt: 1,
         pl: 5,
         pr: 5,
@@ -39,11 +37,11 @@ const AdministratorDashboard = () => {
     >
       <Box
         sx={{
-          pl: "250px",
           mr: "-25px",
-          pr: "20px",
-          pt: "90px",
-          pb: "20px",
+          pt: "75px",
+          pl: "70px",
+          pb: "30px",
+          pr: "30px",
         }}
       >
         <Stack spacing={{ xs: 2, sm: 3, md: 5, lg: 5 }}>
