@@ -6,7 +6,8 @@ from sqlalchemy import or_
 from typing import List
 from pydantic import BaseModel
 
-from sqlalchemy import cast, func, Date
+from sqlalchemy import func, extract, desc
+
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
 from ..models.dbmodels import (
@@ -685,6 +686,15 @@ async def get_pending_merchant_analytics(request: Request, db_conn: Session = De
     return PendingMerchantAnalytics(
         amount=pending_merchants,
     )
+
+
+@router.get("/admin-dashboard/predictions-distinct-years")
+async def get_predictions_distinct_years(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    query = db_conn.query(
+        extract("year", Prediction.CreatedAt).label("year")
+    ).distinct().order_by(desc("year")).all()
+    return [row._asdict() for row in query]
 
 
 @router.get("/admin-dashboard/ave-risk-series/{year}")

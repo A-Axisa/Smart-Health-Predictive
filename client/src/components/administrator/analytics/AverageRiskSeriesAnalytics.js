@@ -7,6 +7,8 @@ import {
   Select,
   MenuItem,
   Grid,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import { Stack } from "@mui/system";
 import { useEffect, useState } from "react";
@@ -18,19 +20,39 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const DEFAULT_YEAR = 2026;
 
 /**
- * A page used to display registration information and provide a form to allow
- * users to register.
+ * Displays the average progression for stroke, diabetes, and cardiovascular
+ * disease of the years.
  */
 const AverageRiskSeriesAnalytics = () => {
-  const [data, setData] = useState({});
-  const [availableYears, setAvailableYears] = useState({});
-  const [year, setYear] = useState(DEFAULT_YEAR);
+  const [availableYears, setAvailableYears] = useState([]);
+  const [year, setYear] = useState("");
   const [xAxisData, setXAxisData] = useState([]);
   const [strokeData, setStrokeData] = useState([]);
   const [diabetesData, setDiabetesData] = useState([]);
   const [cvdData, setCVDData] = useState([]);
 
   useEffect(() => {
+    fetch(`${API_BASE}/admin-dashboard/predictions-distinct-years`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setAvailableYears(data);
+        setYear(data[0].year);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!year) {
+      return;
+    }
+
     fetch(`${API_BASE}/admin-dashboard/ave-risk-series/${year}`, {
       method: "GET",
       credentials: "include",
@@ -46,7 +68,6 @@ const AverageRiskSeriesAnalytics = () => {
         setStrokeData(data.map((d) => d.stroke));
         setDiabetesData(data.map((d) => d.diabetes));
         setCVDData(data.map((d) => d.cvd));
-        setData(data);
       });
   }, [year]);
 
@@ -65,16 +86,22 @@ const AverageRiskSeriesAnalytics = () => {
             </Typography>
           </Grid>
           <Grid size={1}>
-            <Select
-              value={year}
-              label="Year"
-              onChange={(e) => setYear(e.target.value)}
-            >
-              <MenuItem value={2026}>2026</MenuItem>
-              <MenuItem value={2025}>2025</MenuItem>
-              <MenuItem value={2024}>2024</MenuItem>
-              <MenuItem value={2023}>2023</MenuItem>
-            </Select>
+            <FormControl>
+              <InputLabel id="year-label-id">Year</InputLabel>
+              <Select
+                labelId="year-label-id"
+                value={year}
+                label="Year"
+                defaultValue={0}
+                onChange={(e) => setYear(e.target.value)}
+              >
+                {availableYears.map((item) => (
+                  <MenuItem key={item.year} value={item.year}>
+                    {item.year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
           <Grid size={12}>
             <Divider />
@@ -93,7 +120,7 @@ const AverageRiskSeriesAnalytics = () => {
                   label: "Month",
                   height: 60,
                   tickLabelStyle: {
-                    angle: -20, // Rotation angle
+                    angle: -20,
                     textAnchor: "end",
                   },
                 },
