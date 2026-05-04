@@ -37,6 +37,7 @@ const AdministratorDashboard = () => {
           mr: "-25px",
           pr: "20px",
           pt: "90px",
+          pb: "20px",
         }}
       >
         <Stack spacing={{ xs: 2, sm: 3, md: 5, lg: 5 }}>
@@ -83,6 +84,29 @@ const AdministratorDashboard = () => {
               <LoginActivityAnalytics />
             </Grid>
           </Grid>
+          <Stack spacing={4}>
+            <Stack spacing={1}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontSize: {
+                    xs: "1.6em",
+                    sm: "1.6em",
+                    md: "2.1em",
+                    lg: "2.1em",
+                  },
+                }}
+              >
+                Accounts
+              </Typography>
+              <Divider />
+            </Stack>
+            <Grid container spacing={{ xs: 1, sm: 2, md: 5 }} maxWidth="1600px">
+              <Grid size={12}>
+                <UserAccountAnalytics />
+              </Grid>
+            </Grid>
+          </Stack>
         </Stack>
       </Box>
     </Container>
