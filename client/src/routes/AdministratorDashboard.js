@@ -32,16 +32,15 @@ const AdministratorDashboard = () => {
         bgcolor: "#f7fffd",
         pt: 1,
         pl: 5,
-        pr: 5,
       }}
     >
       <Box
         sx={{
-          mr: "-25px",
-          pt: "75px",
-          pl: "70px",
-          pb: "30px",
-          pr: "30px",
+          pt: { xs: "65px", sm: "67px", md: "75px" },
+          pl: { xs: "45px", sm: "62px", md: "70px" },
+          pb: { xs: "2px", sm: "0px", md: "4px" },
+          pr: { xs: "2px", sm: "0px", md: "4px" },
+          mr: "0px",
         }}
       >
         <Stack spacing={{ xs: 2, sm: 3, md: 5, lg: 5 }}>
