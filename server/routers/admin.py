@@ -753,7 +753,7 @@ async def get_unvalidated_account_analytics(request: Request, db_conn: Session =
         .count()
     )
 
-    return PendingMerchantAnalytics(
+    return UnvalidatedAccountsAnalytic(
         amount=unvalidated_accounts,
     )
 
