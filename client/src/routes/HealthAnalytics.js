@@ -275,13 +275,12 @@ const HealthAnalytics = () => {
       }}
     >
       <Container
-        maxWidth="lg"
+        maxWidth={false}
         sx={{
           px: isMobile ? 1.5 : 3,
           mt: "66px",
           ml: "65px",
           width: "calc(100% - 65px)",
-          maxWidth: "calc(100% - 65px)",
           boxSizing: "border-box",
         }}
       >
@@ -293,9 +292,6 @@ const HealthAnalytics = () => {
             sx={{ fontWeight: 600 }}
           >
             Health Analytics
-          </Typography>
-          <Typography color="text.secondary">
-            Track longitudinal risk trends and refine the metrics displayed.
           </Typography>
         </Stack>
 
@@ -367,19 +363,6 @@ const HealthAnalytics = () => {
                   />
                 </FormGroup>
               </FormControl>
-              <Box sx={{ mt: 3 }}>
-                <Button
-                  variant="outlined"
-                  onClick={fetchData}
-                  sx={{
-                    py: { xs: "0.8rem", sm: "0.6rem" },
-                    fontSize: { xs: "1rem", sm: "0.875rem" },
-                    fontWeight: 500,
-                  }}
-                >
-                  Refresh Data
-                </Button>
-              </Box>
             </Collapse>
           </CardContent>
         </Card>
