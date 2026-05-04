@@ -200,7 +200,7 @@ const CreatePatientForm = () => {
           <Stack spacing={1} sx={{ textAlign: "center" }}>
             <Typography variant="h4">Create Patient</Typography>
             <Typography variant="body2" color="text.secondary">
-              Enter patient details to create a new record.
+              Register a patient profile to enable adding health records for them.
             </Typography>
           </Stack>
 
