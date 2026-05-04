@@ -17,6 +17,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Button,
   Autocomplete,
   TextField,
 } from "@mui/material";
@@ -36,6 +37,8 @@ const MerchantReports = ({}) => {
   const [patients, setPatients] = useState([]); // Stores list of patients
   const [selectedPatient, setSelectedPatient] = useState(""); // Stores the selected patient
   const [reports, setReports] = useState([]); // Stores all report data
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null);
 
   function fetchMerchantReports() {
     fetch(`${API_BASE}/merchants/reports`, {
@@ -117,8 +120,28 @@ const MerchantReports = ({}) => {
     setDeleteDialogOpen(false);
   }
 
+  // Extract and sort month and years for drop down.
+  const years = [...new Set(reportDates.map((r) => new Date(r.date).getFullYear()))].sort((a, b) => a - b);
+  const months = [...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1))].sort((a, b) => a - b);
+  
+  // Filters reports based on selected year and month if any.
+  const filteredReportDates = reportDates.filter((r) => {
+    const date = new Date(r.date);
+    return (
+      (!selectedYear || date.getFullYear() === selectedYear) &&
+      (!selectedMonth || date.getMonth() + 1 === selectedMonth)
+    );
+  });
+
+  const handleClear = () => {
+    setSelectedYear(null);
+    setSelectedMonth(null);
+  }
+    
   function onPatientChange(e, newValue) {
     const selectedReports = reports.filter((r) => r.name === newValue);
+    setSelectedYear(null);
+    setSelectedMonth(null);
     setSelectedPatient(newValue);
     setReportDates(selectedReports);
     setSelectedDate(selectedReports[0]);
@@ -163,8 +186,50 @@ const MerchantReports = ({}) => {
               )}
           />
         </Box>
+
+        <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+          {/* Year */}
+          <FormControl fullWidth disabled={!selectedPatient}>
+            <InputLabel>Year</InputLabel>
+            <Select
+              value={selectedYear}
+              label="Year"
+              onChange={(e) => {
+                setSelectedYear(e.target.value);
+                setSelectedMonth(null);
+              }}
+            >
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Month */}
+          <FormControl fullWidth disabled={!selectedPatient}>
+            <InputLabel>Month</InputLabel>
+            <Select
+              value={selectedMonth}
+              label="Month"
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              {months.map((month) => (
+                <MenuItem key={month} value={month}>
+                  {new Date(0, month - 1).toLocaleString("en-AU", { month: "long" })}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Button onClick={handleClear}>
+            Clear
+          </Button>
+        </Box>
+
         <List component="nav" sx={{ p: 0 }}>
-          {reportDates.map((item) => (
+          {filteredReportDates.map((item) => (
             <ListItem
               key={item.healthDataId}
               selected={selectedDate?.healthDataId === item.healthDataId}
