@@ -63,16 +63,20 @@ const CreatePatientForm = () => {
     setDoB(e.target.value);
   }
 
-  function calculateAge(dob) {
+  function calculateAge(DoB) {
+    // Format dates
     const today = new Date();
-    const birthDate = new Date(dob);
-    const yearDiff = today.getFullYear() - birthDate.getFullYear();
-    const birthdayNotPassed =
-      today.getMonth() < birthDate.getMonth() ||
-      (today.getMonth() === birthDate.getMonth() &&
-        today.getDate() < birthDate.getDate());
+    const dob = new Date(DoB);
+    // calculate the year different between today and the dob
+    const yearDiff = today.getFullYear() - dob.getFullYear();
 
-    return yearDiff - birthdayNotPassed;
+    // Check if the users birthday has past
+    const birthdayNotPassed =
+      today.getMonth() < dob.getMonth() ||
+      (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+
+    const age = yearDiff - birthdayNotPassed;
+    return age;
   }
 
   function updateGender(e) {
@@ -145,6 +149,7 @@ const CreatePatientForm = () => {
       return;
     }
     setIsLoading(true);
+    // Post the fetch request with the supplied details.
     await fetch(`${API_BASE}/create-patient`, {
       method: "POST",
       credentials: "include",
@@ -166,11 +171,11 @@ const CreatePatientForm = () => {
         }
         return response.json();
       })
-      .then(() => {
+      .then((data) => {
         setShowSuccessMessage(true);
         setShowFailMessage(false);
       })
-      .catch(() => {
+      .catch((err) => {
         console.log("An error has occurred");
       });
     setIsLoading(false);
