@@ -197,21 +197,29 @@ const PatientDetails = () => {
           <Box
             sx={{
               display: "flex",
-              gap: 2,
-              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 1, sm: 2 },
+              flexDirection: "row",
             }}
           >
             {["stroke", "diabetes", "cvd"].map((key) => (
-              <Card key={key} sx={{ flex: 1 }}>
-                <CardContent>
+              <Card key={key} sx={{ flex: 1, minWidth: 0 }}>
+                <CardContent 
+                  sx={{ 
+                    p: { xs: 1.5, sm: 2 }, 
+                    "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center"
+                  }}
+                >
                   <Typography
-                    variant="h6"
                     gutterBottom
-                    sx={{ color: "#747474" }}
+                    sx={{ color: "#747474", fontSize: { xs: "0.7rem", sm: "1.25rem" }, fontWeight: 500 }}
                   >
                     {key.toUpperCase()}
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography sx={{ fontSize: { xs: "1.4rem", sm: "2.125rem" }, fontWeight: 400, lineHeight: 1.2 }}>
                     {patientData?.risks?.[key]?.slice(-1)[0] ?? 0}%
                   </Typography>
                   <Box
@@ -220,7 +228,8 @@ const PatientDetails = () => {
                       display: "inline-block",
                       px: 0.4,
                       py: 0.1,
-                      mt: 2,
+                      mt: { xs: 0.5, sm: 2 },
+                      whiteSpace: "nowrap",
                       borderRadius: "5px",
                       backgroundColor:
                         (patientData?.diff?.[key] ?? 0) >= 0
@@ -232,6 +241,7 @@ const PatientDetails = () => {
                       component="span"
                       sx={{
                         fontWeight: "bold",
+                        fontSize: { xs: "0.72rem", sm: "0.875rem" },
                         color:
                           (patientData?.diff?.[key] ?? 0) >= 0
                             ? "#ff2424"
