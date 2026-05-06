@@ -1,7 +1,11 @@
-import { Box, Typography, Card, CardContent, Button } from "@mui/material";
+import { Box, Typography, Card, CardContent, Button, useTheme, useMediaQuery } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BarChart } from "@mui/x-charts/BarChart";
+
+// AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
+const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
+const DRAWER_WIDTH = "65px";
 
 /**
  * A page used to display a individual patient information for a merchant user.
@@ -10,6 +14,9 @@ const PatientDetails = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState({});
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { patientID } = useParams();
 
@@ -41,14 +48,20 @@ const PatientDetails = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        ml: "65px",
-        mt: "66px",
+        ml: DRAWER_WIDTH,
+        mt: APPBAR_HEIGHT,
+        minHeight: {
+          xs: `calc(100vh - 58px)`,
+          sm: `calc(100vh - 66px)`,
+        },
         pt: 1,
-        pl: 5,
-        pr: 5,
+        pl: { xs: 2, sm: 5 },
+        pr: { xs: 2, sm: 5 },
+        pb: 4,
+        boxSizing: "border-box",
       }}
     >
+      {/* Patient info header card */}
       <Box
         sx={{
           borderBottom: "1px solid #d6d6d6",
@@ -69,7 +82,12 @@ const PatientDetails = () => {
             Patient Details
           </Typography>
           <hr />
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr " }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            }}
+          >
             <Typography sx={{ mb: 1 }}>
               <Box
                 component="span"
@@ -157,12 +175,34 @@ const PatientDetails = () => {
         </Card>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 3 }}>
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-          {/* Card Percentages */}
-          <Box sx={{ display: "flex", gap: 2 }}>
+      {/* Main content: risk cards + chart + recommendations */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+        }}
+      >
+        {/* Left column: risk percentage cards + bar chart */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            minWidth: 0,
+          }}
+        >
+          {/* Risk percentage cards */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
             {["stroke", "diabetes", "cvd"].map((key) => (
-              <Card key={key} sx={{ borderRadius: "10px", flex: 1 }}>
+              <Card key={key} sx={{ flex: 1 }}>
                 <CardContent>
                   <Typography
                     variant="h6"
@@ -208,7 +248,7 @@ const PatientDetails = () => {
           </Box>
 
           {/* Bar chart */}
-          <Card sx={{ p: 2 }}>
+          <Card sx={{ p: 2, overflow: "hidden" }}>
             <BarChart
               dataset={chartData}
               xAxis={[{ dataKey: "date" }]}
@@ -218,18 +258,17 @@ const PatientDetails = () => {
                 { dataKey: "cvd", label: "CVD (%)" },
               ]}
               colors={["#712b89", "#e091ff", "#3a0050"]}
-              height={400}
+              height={isMobile ? 280 : 400}
             />
           </Card>
         </Box>
 
-        {/* Recommendations */}
-        <Box sx={{ flex: 1 }}>
+        {/* Right column: recommendations */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Card
             sx={{
-              borderRadius: "10px",
               p: 2,
-              height: "95%",
+              height: { xs: "auto", md: "95%" },
             }}
           >
             <Typography variant="h5" sx={{ mb: 2 }}>
