@@ -308,7 +308,7 @@ const UserSettings = () => {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", sm: "center" },
           mt: 3,
           flexWrap: "wrap",
           gap: 2,
@@ -342,14 +342,38 @@ const UserSettings = () => {
             {deleteBusy ? "Deleting…" : "Delete My Account"}
           </Button>
         </Box>
-        <Box sx={{ ml: "auto" }}>
+        <Box
+          sx={{
+            ml: { xs: 0, sm: "auto" },
+            width: { xs: "100%", sm: "auto" },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: { xs: "center", sm: "flex-end" },
+            alignItems: "center",
+            gap: { xs: 1.25, sm: 2 },
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={handleAccountSave}
+            disabled={accountSaving || userLoading}
+            sx={{
+              px: 4,
+              width: { xs: "min(260px, 100%)", sm: "auto" },
+              py: { xs: "0.7rem", sm: "0.6rem" },
+              fontSize: { xs: "0.95rem", sm: "0.875rem" },
+              fontWeight: 500,
+            }}
+          >
+            {accountSaving ? "Saving…" : "Save Changes"}
+          </Button>
           <Button
             variant="outlined"
             disabled={accountSaving}
             sx={{
-              mr: 2,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
+              width: { xs: "min(260px, 100%)", sm: "auto" },
+              py: { xs: "0.7rem", sm: "0.6rem" },
+              fontSize: { xs: "0.95rem", sm: "0.875rem" },
               fontWeight: 500,
             }}
             onClick={() => {
@@ -362,19 +386,6 @@ const UserSettings = () => {
             }}
           >
             Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAccountSave}
-            disabled={accountSaving || userLoading}
-            sx={{
-              px: 4,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
-              fontWeight: 500,
-            }}
-          >
-            {accountSaving ? "Saving…" : "Save Changes"}
           </Button>
         </Box>
       </Box>
