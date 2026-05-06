@@ -701,7 +701,7 @@ const UserSettings = () => {
       sx={{
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
-        minHeight: "100vh",
+        minHeight: "calc(100vh - 66px)",
         bgcolor: "#f5f5f5",
         ml: "65px",
         mt: "66px",
