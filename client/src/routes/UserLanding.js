@@ -1,4 +1,4 @@
-import { Card, CardContent, Box, Typography } from "@mui/material";
+import { Card, CardContent, Box, Divider, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -45,7 +45,6 @@ const UserLanding = ({}) => {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#fdf7ff",
         ml: "65px",
         mt: "66px",
         pt: 1,
@@ -60,7 +59,20 @@ const UserLanding = ({}) => {
           py: 3,
         }}
       >
-        <Typography variant="h4">Health Overview</Typography>
+        <Typography
+          variant="h3"
+          sx={{
+            fontSize: {
+              xs: "2em",
+              sm: "2em",
+              md: "3em",
+              lg: "3em",
+            },
+          }}
+        >
+          Health Overview
+        </Typography>
+        <Divider sx={{ my: 2 }} />
         <Typography variant="h6">Welcome back, {name}!</Typography>
         <Typography variant="h6">
           It has been{" "}
