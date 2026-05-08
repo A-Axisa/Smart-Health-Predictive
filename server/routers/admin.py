@@ -1,10 +1,12 @@
 from datetime import datetime, date, timedelta
-
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, asc, desc
 from typing import List, Optional
 from pydantic import BaseModel
+
+from sqlalchemy import func, extract, desc
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -27,30 +29,42 @@ from ..routers.authentication import get_current_user, get_patient_by_email
 router = APIRouter()
 
 
-class AdminDashboard(BaseModel):
-    # User data
-    totalUsers: int
-    totalPatients: int
-    totalMerchants: int
-    newUsersLast30days: int
-    validatedUsers: int
-    invalidatedUsers: int
-    activePatients: int
-    inactivePatients: int
+class AdminReportAnalytics(CamelModel):
+    total_reports: int
 
-    # Prediction data
-    totalReports: int
-    reportsLastDay: int
-    reportsLast7Days: int
-    reportsLast30Days: int
-    reportActivity: List[dict]
-    averageRiskCVD: float
-    averageRiskDiabetes: float
-    averageRiskStroke: float
 
-    # Log data
-    failedLoginAttemptsLastDay: int
-    loginActivity: List[dict]
+class ActiveAccountAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class ActiveMerchantAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class RecentReportsGeneratedAnalytics(CamelModel):
+    past_month: int
+    past_week: int
+
+
+class PendingMerchantAnalytics(CamelModel):
+    amount: int
+
+
+class UnvalidatedAccountsAnalytic(CamelModel):
+    amount: int
+
+
+class LoginActivity(CamelModel):
+    amount_by_day: dict
+
+
+class AdminUserAnalytics(CamelModel):
+    total_accounts: int
+    total_standard: int
+    total_patients: int
+    total_merchants: int
 
 
 @router.get("/roles")
@@ -495,121 +509,224 @@ async def get_logs(
     }
 
 
-@router.get("/admin-dashboard")
-async def get_admin_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+@router.get("/admin-dashboard/active-account-analytics")
+async def get_active_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
 
-    # Check if requesting user is Admin.
-    current_user = get_current_user(request, db_conn)
-    current_user_email = current_user.get('email')
-    admin = db_conn.query(UserAccount).filter(UserAccount.Email == current_user_email).first()
-    if not admin:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-
-    current_user_role = current_user.get('role')
-    if not current_user_role or current_user_role.lower() != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
-
-    last_30_days = datetime.now() - timedelta(days=30)
-    last_7_days = datetime.now() - timedelta(days=7)
-    last_day = datetime.now() - timedelta(days=1)
-
-    # User data
-    all_users = db_conn.query(UserAccount).filter(UserAccount.IsValidated == 1).all()
-    total_users = len(all_users)
-
-    total_patients = (db_conn.query(UserAccount).join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
-                    .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
-                    .filter(AccountRole.RoleName == "standard_user", UserAccount.IsValidated == 1)
-                    .count())
-
-    total_merchants = (db_conn.query(UserAccount).join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
-                    .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
-                    .filter(AccountRole.RoleName == "merchant", UserAccount.IsValidated == 1)
-                    .count())
-
-    new_users_last_30 = (db_conn.query(UserAccount)
-                    .filter(UserAccount.IsValidated == 1, UserAccount.CreatedAt >= last_30_days)
-                    .count())
-
-    validated_users = (db_conn.query(UserAccount).filter(UserAccount.IsValidated == 1).count())
-    invalidated_users = (db_conn.query(UserAccount).filter(UserAccount.IsValidated == 0).count())
-
-    active_patients = (db_conn.query(Patient).join(HealthData, HealthData.PatientID == Patient.PatientID)
-                    .filter(HealthData.CreatedAt >= last_30_days)
-                    .distinct().count())
-
-    total_patient_count = db_conn.query(Patient).count()
-    inactive_patients = total_patient_count - active_patients
-
-    # Report data
-    total_reports = db_conn.query(HealthData).count()
-
-    reports_last_day = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_day).count())
-
-    reports_last_7 = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_7_days).count())
-
-    reports_last_30 = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_30_days).count())
-
-    all_recent_reports = (db_conn.query(HealthData).filter(HealthData.CreatedAt >= last_30_days)
-                        .order_by(HealthData.CreatedAt.asc())
-                        .all())
-
-    report_dates = {}
-
-    for row in all_recent_reports:
-        date = row.CreatedAt.strftime("%Y-%m-%d")
-        report_dates[date] = report_dates.get(date, 0) + 1
-
-    report_activity = [{"date": k, "count": v} for k, v in report_dates.items()]
-
-    all_predictions = db_conn.query(Prediction).all()
-
-    if all_predictions:
-        avg_cvd = int(sum(float(p.CVDChance or 0) for p in all_predictions) / len(all_predictions))
-        avg_diabetes = int(sum(float(p.DiabetesChance or 0) for p in all_predictions) / len(all_predictions))
-        avg_stroke = int(sum(float(p.StrokeChance or 0) for p in all_predictions) / len(all_predictions))
-    else:
-        avg_cvd = avg_diabetes = avg_stroke = 0
-
-    # Log data
-    failed_logins_last_day = (db_conn.query(AuditLog)
-                            .filter(AuditLog.EventType == LogEventType.FAILED_LOGIN_ATTEMPT,
-                            AuditLog.CreatedAt >= last_day)
-                            .count())
-
-    login_logs = (db_conn.query(AuditLog).filter(AuditLog.EventType == LogEventType.LOGIN,
-                AuditLog.CreatedAt >= last_30_days).order_by(AuditLog.CreatedAt.asc())
-                .all())
-
-    login_dates = {}
-
-    for log in login_logs:
-        date = log.CreatedAt.strftime("%Y-%m-%d")
-        login_dates[date] = login_dates.get(date, 0) + 1
-
-    login_activity = [{"date": k, "count": v} for k, v in login_dates.items()]
-
-    return AdminDashboard(
-        totalUsers=total_users,
-        totalPatients=total_patients,
-        totalMerchants=total_merchants,
-        newUsersLast30days=new_users_last_30,
-        validatedUsers=validated_users,
-        invalidatedUsers=invalidated_users,
-        activePatients=active_patients,
-        inactivePatients=inactive_patients,
-        totalReports=total_reports,
-        reportsLastDay=reports_last_day,
-        reportsLast7Days=reports_last_7,
-        reportsLast30Days=reports_last_30,
-        reportActivity=report_activity,
-        averageRiskCVD=avg_cvd,
-        averageRiskDiabetes=avg_diabetes,
-        averageRiskStroke=avg_stroke,
-        failedLoginAttemptsLastDay=failed_logins_last_day,
-        loginActivity=login_activity,
+    accounts_past_month = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "standard_user")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_month)
+        .distinct()
+        .count()
     )
 
+    accounts_past_week = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "standard_user")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_week)
+        .distinct()
+        .count()
+    )
+
+    return ActiveAccountAnalytics(
+        past_month=accounts_past_month,
+        past_week=accounts_past_week,
+    )
+
+
+@router.get("/admin-dashboard/active-merchant-analytics")
+async def get_active_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
+
+    merchants_past_month = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "merchant")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_month)
+        .distinct()
+        .count()
+    )
+
+    merchants_past_week = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(AccountRole.RoleName == "merchant")
+        .join(AuditLog, AuditLog.UserEmail == UserAccount.Email)
+        .filter(AuditLog.CreatedAt >= prev_week)
+        .distinct()
+        .count()
+    )
+
+    return ActiveMerchantAnalytics(
+        past_month=merchants_past_month,
+        past_week=merchants_past_week,
+    )
+
+
+@router.get("/admin-dashboard/recent-reports-generated-analytics")
+async def get_reports_generated_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    prev_month = datetime.now() - timedelta(days=30)
+    prev_week = datetime.now() - timedelta(days=7)
+
+    reports_past_month = (
+        db_conn.query(HealthData)
+        .filter(HealthData.CreatedAt >= prev_month)
+        .count()
+    )
+
+    reports_past_week = (
+        db_conn.query(HealthData)
+        .filter(HealthData.CreatedAt >= prev_week)
+        .count()
+    )
+
+    return RecentReportsGeneratedAnalytics(
+        past_month=reports_past_month,
+        past_week=reports_past_week,
+    )
+
+
+@router.get("/admin-dashboard/pending-merchants-analytics")
+async def get_pending_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    pending_merchants = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "merchant",
+            UserAccount.IsValidated is False,
+        )
+        .distinct()
+        .count()
+    )
+
+    return PendingMerchantAnalytics(
+        amount=pending_merchants,
+    )
+
+
+@router.get("/admin-dashboard/predictions-distinct-years")
+async def get_predictions_distinct_years(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+    query = db_conn.query(
+        extract("year", Prediction.CreatedAt).label("year")
+    ).distinct().order_by(desc("year")).all()
+    return [row._asdict() for row in query]
+
+
+@router.get("/admin-dashboard/ave-risk-series/{year}")
+async def get_average_risk_series(year: int, request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    year_start = datetime(year, 1, 1)
+    year_end = datetime(year+1, 1, 1)
+
+    query = db_conn.query(
+        func.date_format(Prediction.CreatedAt, "%Y-%m").label('date'),
+        func.avg(Prediction.StrokeChance).label('stroke'),
+        func.avg(Prediction.DiabetesChance).label('diabetes'),
+        func.avg(Prediction.CVDChance).label('cvd'),
+    ).filter(
+        Prediction.CreatedAt > year_start,
+        Prediction.CreatedAt < year_end
+    ).group_by("date").order_by("date").all()
+
+    return [row._asdict() for row in query]
+
+
+@router.get("/admin-dashboard/login-activity/{timespanInDays}")
+async def get_login_activity(timespanInDays: int, request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    start_date = datetime.now() - timedelta(days=timespanInDays)
+
+    query = db_conn.query(
+        func.count(AuditLog.EventType).label("total"),
+        func.date_format(AuditLog.CreatedAt, "%Y-%m-%d").label('date'),
+    ).filter(
+        AuditLog.EventType == LogEventType.LOGIN,
+        AuditLog.CreatedAt > start_date,
+    ).group_by("date").order_by("date").all()
+
+    return [row._asdict() for row in query]
+
+
+@router.get("/admin-dashboard/unvalidated-account-analytics")
+async def get_unvalidated_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    unvalidated_accounts = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccountRole.UserID == UserAccount.UserID)
+        .join(AccountRole, AccountRole.RoleID == UserAccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "standard_user",
+            UserAccount.IsValidated is False,
+        )
+        .count()
+    )
+
+    return UnvalidatedAccountsAnalytic(
+        amount=unvalidated_accounts,
+    )
+
+
+@router.get("/admin-dashboard/user-analytics")
+async def get_user_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    _confirm_admin(request, db_conn)
+
+    account_total = db_conn.query(UserAccount).filter(
+        UserAccount.IsValidated == 1).count()
+
+    patient_total = db_conn.query(Patient).filter(
+        Patient.UserID == None).count()
+    merchant_total = (
+        db_conn.query(UserAccount)
+        .join(UserAccountRole, UserAccount.UserID == UserAccountRole.UserID)
+        .join(AccountRole, UserAccountRole.RoleID == AccountRole.RoleID)
+        .filter(
+            AccountRole.RoleName == "merchant",
+            UserAccount.IsValidated == 1
+        )
+        .count())
+
+    return AdminUserAnalytics(
+        total_accounts=account_total,
+        total_standard=(account_total - merchant_total),
+        total_patients=patient_total,
+        total_merchants=merchant_total,
+    )
+
+
+def _confirm_admin(request: Request, db_conn: Session):
+    user = get_current_user(request, db_conn)
+    admin = db_conn.query(UserAccount).filter(
+        UserAccount.Email == user["email"]).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Impermissible action.")
+
+    if not user["role"] or user["role"].lower() != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
 @router.get("/clinics")
 async def get_clinics(db_conn: Session = Depends(get_db)):
