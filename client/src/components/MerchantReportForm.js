@@ -21,10 +21,14 @@ import Select from "@mui/material/Select";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormHelperText from "@mui/material/FormHelperText";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import { styled } from "@mui/material/styles";
+
+import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const GenerateReportForm = () => {
+const MerchantReportForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const pageData = location.state;
@@ -71,7 +75,7 @@ const GenerateReportForm = () => {
   const [alertHeightRequired, setAlertHeightRequired] = useState(false);
   const [gender, setGender] = useState(null);
   const [alertGenderRequired, setAlertGenderRequired] = useState(false);
-  const [bloodGlucose, setBloodGlucose] = useState(null);
+  const [bloodGlucose, setBloodGlucose] = useState("");
   const [alertBloodGlucoseRequired, setAlertBloodGlucoseRequired] =
     useState(false);
   const [apLow, setApLow] = useState(null);
@@ -85,6 +89,8 @@ const GenerateReportForm = () => {
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
   const [alertPatientRequired, setAlertPatientRequired] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // Retrieve Patient names
   useEffect(() => {
@@ -278,10 +284,62 @@ const GenerateReportForm = () => {
     setAlertPatientRequired(selectedPatient === null);
   }
 
+  // Fills in fields with information found in the blood reports.
+  async function readBloodReport(e) {
+    if (e.aveBloodGlucose !== NaN) {
+      // Value needs to be in a specific dictionary format to be validated and set.
+      updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
+    }
+
+    // Create a new conditions array as state arrays cannot be modified.
+    let newConditions = condition.filter(
+      (e) => !["Diabetes", "High Cholesterol"].includes(e),
+    );
+    if (e.isDiabetic) {
+      newConditions.push("Diabetes");
+    }
+    if (e.hasHighCholesterol) {
+      newConditions.push("High Cholesterol");
+    }
+    setCondition(newConditions);
+  }
+
+  // Handles uploading CSV files for bulk upload
+  const handleReportUpload = async (e) => {
+    // Retrieve the selcted file from upload
+    const file = e.target.files[0];
+
+    // Add file to FormData object for request
+    const formData = new FormData();
+    formData.append("uploaded_file", file);
+
+    setIsLoading(true);
+
+    // Sends the file to the upload endpoint for parsing
+    await fetch(`${API_BASE}/upload`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .catch((error) => {
+        console.log("Something went wrong.");
+      });
+    navigate("/merchant-reports");
+    setIsLoading(false);
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
+    setIsLoading(true);
     updateAllInputFieldAlerts();
     if (!isAllInputsValid()) {
+      setIsLoading(false);
       return;
     }
     // Get condition values for fetch request
@@ -328,43 +386,108 @@ const GenerateReportForm = () => {
     })
       .then((response) => {
         if (!response.ok) {
+          setIsLoading(false);
           throw new Error(response.status);
         }
         return response.json();
       })
       .then((data) => {
+        setIsLoading(false);
         navigate("/merchant-reports", {
           state: { patientName: patientName },
         }); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Something went wrong");
       });
   }
+  const HiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
   return (
     <Card
       variant="outlined"
-      sx={{ maxWidth: 800, margin: "2rem auto", padding: 2, boxShadow: 24 }}
+      sx={{
+        margin: "1rem auto",
+        padding: 2,
+        boxShadow: 24,
+        width: {
+          xs: "100%",
+          sm: "90%",
+          md: "75%",
+        },
+        maxWidth: "1100px",
+        alignContent: "center",
+      }}
     >
-      <CardHeader
-        title="Generate Report"
+      <Typography
+        variant="h2"
         sx={{
-          mb: 3,
-          color: "primary.main",
-          fontWeight: 600,
+          mb: 2,
+          mt: 2,
           textAlign: "center",
         }}
-      />
+      >
+        Generate Report
+      </Typography>
       <CardContent>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 5,
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              textAlign: "center",
+              mb: 3,
+              color: "text.secondary",
+              maxWidth: 600,
+              mx: "auto",
+            }}
+          >
+            Upload a CSV file to bulk upload multiple patient reports.
+          </Typography>
+          <Button
+            component="label"
+            variant="contained"
+            tabIndex={-1}
+            size="large"
+            startIcon={<FileUploadIcon />}
+            loading={isLoading}
+          >
+            Upload File
+            <HiddenInput
+              type="file"
+              accept=".csv"
+              onChange={handleReportUpload}
+            />
+          </Button>
+        </Box>
         <Box component="form" onSubmit={handleSubmit}>
           {/* Patient List */}
           <Box sx={{ p: 2 }}>
             <Autocomplete
               fullWidth
               options={patientList}
-              value={patientList.find(p => p.patientId === selectedPatient)}
+              value={patientList.find((p) => p.patientId === selectedPatient)}
               onChange={(event, newValue) => {
-                updatePatient({target: { value: newValue ? newValue.patientId : "" }}, newValue.name);
+                updatePatient(
+                  { target: { value: newValue ? newValue.patientId : "" } },
+                  newValue.name,
+                );
               }}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
@@ -372,20 +495,44 @@ const GenerateReportForm = () => {
                   {...params}
                   label="Patient"
                   error={alertPatientRequired}
-                  helperText={alertPatientRequired ? "*Please enter a patient" : ""}
+                  helperText={
+                    alertPatientRequired ? "*Please enter a patient" : ""
+                  }
                 />
               )}
             />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  textAlign: "center",
+                  mt: 2,
+                  mb: 3,
+                  color: "text.secondary",
+                  maxWidth: 600,
+                  mx: "auto",
+                }}
+              >
+                Upload a blood report to automatically pre-fill some of the
+                patient's health data, or enter the details manually below to
+                generate your health report.
+              </Typography>
+              <BloodReportUpload onChange={readBloodReport} />
+            </Box>
           </Box>
           {/* Age & Physique Section */}
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
             Age & Physique
@@ -401,7 +548,6 @@ const GenerateReportForm = () => {
               name="weight"
               label="Weight (Kg)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 200, maxLength: 5 }}
               value={weight?.value || ""}
               onChange={updateWeight}
               error={alertWeightRequired}
@@ -430,7 +576,6 @@ const GenerateReportForm = () => {
               name="height"
               label="Height (cm)"
               type="text"
-              inputProps={{ step: "0.01", min: 0, max: 3, maxLength: 3 }}
               fullWidth
               value={height?.value || ""}
               onChange={updateHeight}
@@ -454,88 +599,29 @@ const GenerateReportForm = () => {
                 <MenuItem value={"Female"}>Female</MenuItem>
               </Select>
               {alertGenderRequired && (
-                <FormHelperText>*Please select your gender</FormHelperText>
+                <FormHelperText>*Required</FormHelperText>
               )}
             </FormControl>
           </Box>
           {/* Fitness Section */}
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
-            Fitness
+            Health & Fitness
           </Typography>
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
               gap: 3,
             }}
           >
-            <TextField
-              name="bloodGlucose"
-              label="Blood Glucose (mmol/L)"
-              type="text"
-              inputProps={{ step: "0.01", min: 0, max: 20, maxLength: 4 }}
-              fullWidth
-              onChange={updateBloodGlucose}
-              error={alertBloodGlucoseRequired}
-              helperText={
-                alertBloodGlucoseRequired
-                  ? "*Please enter a valid BloodGlucose (0-20mmol/L)"
-                  : null
-              }
-            />
-            <TextField
-              name="apHigh"
-              label="Systolic Blood Pressure (mmHg)"
-              type="text"
-              inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
-              fullWidth
-              onChange={updateApHigh}
-              error={alertApHighRequired}
-              helperText={
-                alertApHighRequired
-                  ? "*Please enter a valid AP High (0-200 mmHg)"
-                  : null
-              }
-            />
-            <TextField
-              name="apLow"
-              label="Diastolic Blood Pressure (mmHg)"
-              type="text"
-              inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
-              fullWidth
-              onChange={updateApLow}
-              error={alertApLowRequired}
-              helperText={
-                alertApLowRequired
-                  ? "*Please enter a valid Diastolic Pressure (0-200 mmHg)"
-                  : null
-              }
-            />
-          </Box>
-          {/*Multi-select Health Conditions  */}
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 2,
-              mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Health Conditions
-          </Typography>
-          <Box sx={{ mt: 3, mb: 2 }}>
-            <FormControl fullWidth>
+            {/*Multi-select Health Conditions  */}
+            <FormControl>
               <InputLabel id="health-conditions">
                 Health Conditions (if any)
               </InputLabel>
@@ -570,22 +656,70 @@ const GenerateReportForm = () => {
                 })}
               </Select>
             </FormControl>
+            <TextField
+              name="bloodGlucose"
+              label="Blood Glucose (mmol/L)"
+              type="text"
+              inputProps={{ step: "0.01", min: 0, max: 20, maxLength: 4 }}
+              fullWidth
+              onChange={updateBloodGlucose}
+              error={alertBloodGlucoseRequired}
+              helperText={
+                alertBloodGlucoseRequired
+                  ? "*Please enter a valid BloodGlucose (0-20mmol/L)"
+                  : null
+              }
+              value={bloodGlucose.value}
+            />
+            <TextField
+              name="apHigh"
+              label="Systolic Blood Pressure (mmHg)"
+              type="text"
+              inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
+              fullWidth
+              onChange={updateApHigh}
+              error={alertApHighRequired}
+              helperText={
+                alertApHighRequired
+                  ? "*Please enter a valid AP High (0-200 mmHg)"
+                  : null
+              }
+            />
+            <TextField
+              name="apLow"
+              label="Diastolic Blood Pressure (mmHg)"
+              type="text"
+              inputProps={{ step: "0.1", min: 0, max: 200, maxLength: 5 }}
+              fullWidth
+              onChange={updateApLow}
+              error={alertApLowRequired}
+              helperText={
+                alertApLowRequired
+                  ? "*Please enter a valid Diastolic Pressure (0-200 mmHg)"
+                  : null
+              }
+            />
           </Box>
 
           {/*Multi-select LifeStyle Habits */}
+
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
             Life Style
           </Typography>
-          <Box sx={{ mt: 3, mb: 2 }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 3,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel id="life-style">
                 Life Style Habits (if any)
@@ -622,75 +756,59 @@ const GenerateReportForm = () => {
                 })}
               </Select>
             </FormControl>
-            {/*Multi-select LifeStyle Habits */}
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 2,
-                mt: 2,
-                color: "primary.main",
-                fontWeight: 600,
-                textAlign: "center",
-              }}
-            >
-              Personal Information
-            </Typography>
-            <Box
-              sx={{
-                mt: 2,
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                gap: 3,
-              }}
-            >
-              {/* Marital Status Selection */}
-              <FormControl error={alertMaritalStatusRequired}>
-                <InputLabel id="marital-status-label">
-                  Marital Status
-                </InputLabel>
-                <Select
-                  labelId="marital-status-label"
-                  id="marital-status-required"
-                  value={maritalStatus}
-                  onChange={updateMaritalStatus}
-                  label="Marital Status"
-                >
-                  <MenuItem value={"Single"}>Single</MenuItem>
-                  <MenuItem value={"Married"}>Married</MenuItem>
-                </Select>
-                {alertMaritalStatusRequired && (
-                  <FormHelperText>
-                    *Please enter your working status
-                  </FormHelperText>
-                )}
-              </FormControl>
-              {/* Working Status Selection */}
-              <FormControl error={alertWorkingStatusRequired}>
-                <InputLabel id="working-status-label">
-                  Working Status
-                </InputLabel>
-                <Select
-                  labelId="working-status-label"
-                  id="working-status-required"
-                  value={workingStatus}
-                  label="Working Status"
-                  onChange={updateWorkingStatus}
-                >
-                  <MenuItem value={"Unemployed"}>Unemployed</MenuItem>
-                  <MenuItem value={"Private"}>Private</MenuItem>
-                  <MenuItem value={"Student"}>Student</MenuItem>
-                  <MenuItem value={"Public"}>Public</MenuItem>
-                </Select>
-                {alertWorkingStatusRequired && (
-                  <FormHelperText>
-                    *Please enter your working status
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Box>
+
+            {/* Marital Status Selection */}
+            <FormControl error={alertMaritalStatusRequired}>
+              <InputLabel id="marital-status-label">Marital Status</InputLabel>
+              <Select
+                labelId="marital-status-label"
+                id="marital-status-required"
+                value={maritalStatus}
+                onChange={updateMaritalStatus}
+                label="Marital Status"
+              >
+                <MenuItem value={"Single"}>Single</MenuItem>
+                <MenuItem value={"Married"}>Married</MenuItem>
+              </Select>
+              {alertMaritalStatusRequired && (
+                <FormHelperText>
+                  *Please enter your working status
+                </FormHelperText>
+              )}
+            </FormControl>
+            {/* Working Status Selection */}
+            <FormControl error={alertWorkingStatusRequired}>
+              <InputLabel id="working-status-label">Working Status</InputLabel>
+              <Select
+                labelId="working-status-label"
+                id="working-status-required"
+                value={workingStatus}
+                label="Working Status"
+                onChange={updateWorkingStatus}
+              >
+                <MenuItem value={"Unemployed"}>Unemployed</MenuItem>
+                <MenuItem value={"Private"}>Private</MenuItem>
+                <MenuItem value={"Student"}>Student</MenuItem>
+                <MenuItem value={"Public"}>Public</MenuItem>
+              </Select>
+              {alertWorkingStatusRequired && (
+                <FormHelperText>
+                  *Please enter your working status
+                </FormHelperText>
+              )}
+            </FormControl>
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "end" }}>
-            <Button variant="contained" type="submit" size="large">
+
+          <Box sx={{ display: "flex", justifyContent: "end", mt: 2 }}>
+            <Button
+              loading={isLoading}
+              variant="contained"
+              type="submit"
+              size="large"
+              sx={{
+                width: { xs: "100%", md: "auto" },
+              }}
+            >
               Submit
             </Button>
           </Box>
@@ -700,4 +818,4 @@ const GenerateReportForm = () => {
   );
 };
 
-export default GenerateReportForm;
+export default MerchantReportForm;
