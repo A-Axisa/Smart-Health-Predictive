@@ -328,7 +328,7 @@ const MerchantReportForm = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Something went wrong.");
       });
     navigate("/merchant-reports");
     setIsLoading(false);
@@ -398,7 +398,7 @@ const MerchantReportForm = () => {
         }); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Something went wrong");
       });
   }
   const HiddenInput = styled("input")({
