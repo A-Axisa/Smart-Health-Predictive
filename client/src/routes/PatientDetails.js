@@ -71,10 +71,8 @@ const PatientDetails = () => {
       >
         <Card sx={{ p: 2 }}>
           <Typography
-            variant="h4"
+            variant="h3"
             sx={{
-              color: "primary.main",
-              fontWeight: 600,
               textAlign: "center",
               mb: 2,
             }}
