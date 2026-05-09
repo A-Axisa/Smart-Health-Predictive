@@ -1,7 +1,11 @@
-import { Box, Typography, Card, CardContent, Button } from "@mui/material";
+import { Box, Typography, Card, CardContent, Button, useTheme, useMediaQuery } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BarChart } from "@mui/x-charts/BarChart";
+
+// AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
+const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
+const DRAWER_WIDTH = "65px";
 
 /**
  * A page used to display a individual patient information for a merchant user.
@@ -10,6 +14,9 @@ const PatientDetails = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState({});
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { patientID } = useParams();
 
@@ -41,14 +48,20 @@ const PatientDetails = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        ml: "65px",
-        mt: "66px",
+        ml: DRAWER_WIDTH,
+        mt: APPBAR_HEIGHT,
+        minHeight: {
+          xs: `calc(100vh - 58px)`,
+          sm: `calc(100vh - 66px)`,
+        },
         pt: 1,
-        pl: 5,
-        pr: 5,
+        pl: { xs: 2, sm: 5 },
+        pr: { xs: 2, sm: 5 },
+        pb: 4,
+        boxSizing: "border-box",
       }}
     >
+      {/* Patient info header card */}
       <Box
         sx={{
           borderBottom: "1px solid #d6d6d6",
@@ -58,10 +71,8 @@ const PatientDetails = () => {
       >
         <Card sx={{ p: 2 }}>
           <Typography
-            variant="h4"
+            variant="h3"
             sx={{
-              color: "primary.main",
-              fontWeight: 600,
               textAlign: "center",
               mb: 2,
             }}
@@ -69,7 +80,12 @@ const PatientDetails = () => {
             Patient Details
           </Typography>
           <hr />
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr " }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            }}
+          >
             <Typography sx={{ mb: 1 }}>
               <Box
                 component="span"
@@ -157,21 +173,51 @@ const PatientDetails = () => {
         </Card>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 3 }}>
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-          {/* Card Percentages */}
-          <Box sx={{ display: "flex", gap: 2 }}>
+      {/* Main content: risk cards + chart + recommendations */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+        }}
+      >
+        {/* Left column: risk percentage cards + bar chart */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            minWidth: 0,
+          }}
+        >
+          {/* Risk percentage cards */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: { xs: 1, sm: 2 },
+              flexDirection: "row",
+            }}
+          >
             {["stroke", "diabetes", "cvd"].map((key) => (
-              <Card key={key} sx={{ borderRadius: "10px", flex: 1 }}>
-                <CardContent>
+              <Card key={key} sx={{ flex: 1, minWidth: 0 }}>
+                <CardContent 
+                  sx={{ 
+                    p: { xs: 1.5, sm: 2 }, 
+                    "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center"
+                  }}
+                >
                   <Typography
-                    variant="h6"
                     gutterBottom
-                    sx={{ color: "#747474" }}
+                    sx={{ color: "#747474", fontSize: { xs: "0.7rem", sm: "1.25rem" }, fontWeight: 500 }}
                   >
                     {key.toUpperCase()}
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography sx={{ fontSize: { xs: "1.4rem", sm: "2.125rem" }, fontWeight: 400, lineHeight: 1.2 }}>
                     {patientData?.risks?.[key]?.slice(-1)[0] ?? 0}%
                   </Typography>
                   <Box
@@ -180,7 +226,8 @@ const PatientDetails = () => {
                       display: "inline-block",
                       px: 0.4,
                       py: 0.1,
-                      mt: 2,
+                      mt: { xs: 0.5, sm: 2 },
+                      whiteSpace: "nowrap",
                       borderRadius: "5px",
                       backgroundColor:
                         (patientData?.diff?.[key] ?? 0) >= 0
@@ -192,6 +239,7 @@ const PatientDetails = () => {
                       component="span"
                       sx={{
                         fontWeight: "bold",
+                        fontSize: { xs: "0.72rem", sm: "0.875rem" },
                         color:
                           (patientData?.diff?.[key] ?? 0) >= 0
                             ? "#ff2424"
@@ -208,7 +256,7 @@ const PatientDetails = () => {
           </Box>
 
           {/* Bar chart */}
-          <Card sx={{ p: 2 }}>
+          <Card sx={{ p: 2, overflow: "hidden" }}>
             <BarChart
               dataset={chartData}
               xAxis={[{ dataKey: "date" }]}
@@ -218,18 +266,17 @@ const PatientDetails = () => {
                 { dataKey: "cvd", label: "CVD (%)" },
               ]}
               colors={["#712b89", "#e091ff", "#3a0050"]}
-              height={400}
+              height={isMobile ? 280 : 400}
             />
           </Card>
         </Box>
 
-        {/* Recommendations */}
-        <Box sx={{ flex: 1 }}>
+        {/* Right column: recommendations */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Card
             sx={{
-              borderRadius: "10px",
               p: 2,
-              height: "95%",
+              height: { xs: "auto", md: "95%" },
             }}
           >
             <Typography variant="h5" sx={{ mb: 2 }}>
