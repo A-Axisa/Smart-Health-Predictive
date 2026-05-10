@@ -1,35 +1,60 @@
-import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
+import {
+  Typography,
+  Button,
+  Box,
+  Stack,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Logo from "../assets/WellAiLogoTR.png";
+
+
 const ErrorPage = () => {
   const navigate = useNavigate();
   return (
-    <Grid
-      container
-      spacing={0}
-      direction="column"
+    <Stack
+      spacing={6}
       alignItems="center"
       justifyContent="center"
-      sx={{ minHeight: "100vh" }}
+      sx={{
+        minHeight: "100vh",
+        textAlign: "center",
+        background: {
+          xs: "#ffffff",
+          sm: "linear-gradient(to top left, #e0e0e0, #ffffff)",
+        },
+      }}
     >
-      <Grid item xs={3}>
-        <Typography align="center" variant="h3">
-          404
+      <Box>
+        <Box
+          component="img"
+          alt="WellAI Logo"
+          src={Logo}
+          sx={{ height: 50, mb: 3 }}
+        />
+        <Typography
+          variant="h3"
+        >
+          Error 404
         </Typography>
-        <Typography align="center" variant="h5">
-          Page Not Found{" "}
+        <Typography
+          variant="h6"
+          sx={{
+            overflow: "hidden",
+            px: 8,
+            wordBreak: "break-word"
+          }}
+        >
+          The requested URL cannot be found.
         </Typography>
-      </Grid>
+      </Box>
       <Button
-        type="submit"
-        onClick={() => navigate("/")}
+        onClick={() => navigate(-1)}
         variant="contained"
         size="large"
       >
-        Return{" "}
+        Go Back
       </Button>
-    </Grid>
+    </Stack>
   );
 };
 export default ErrorPage;
