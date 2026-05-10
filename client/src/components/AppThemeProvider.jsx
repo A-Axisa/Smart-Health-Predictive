@@ -135,6 +135,7 @@ export const appTheme = createTheme({
           p: 1,
           borderRadius: 12,
           overflow: "hidden",
+          minWidth: 900,
         },
         columnHeaders: {
           backgroundColor: "rgb(239, 239, 239)",

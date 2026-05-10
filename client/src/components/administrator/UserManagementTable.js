@@ -3,7 +3,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect, useCallback } from "react";
 import ConfirmationDialog from "../confirmationDialog";
 import UserSearchBar from "./UserSearchBar";
-import ToolBar from "./ToolBar";
+import UserToolBar from "./UserToolBar";
 import * as React from "react";
 
 const UserManagementTable = () => {
@@ -246,46 +246,61 @@ const UserManagementTable = () => {
       }}
     >
       <Box>
-        <Paper sx={{ mb: "16px" }}>
+        <Paper sx={{
+          mb: "16px",
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { md: "center" },
+          }}
+        >
           <UserSearchBar
             placeholder="Search by name or email"
             onSearchChange={handleSearchChange}
             delay={400}
           />
-        </Paper>
-        <Paper sx={{ width: "100%" }}>
-          <DataGrid
-            loading={loading}
-            onRowSelectionModelChange={(newSelection) =>
-              setRowSelectionModel(newSelection)
-            }
-            rowSelectionModel={rowSelectionModel}
-            showToolbar
-            slots={{ toolbar: ToolBar }}
-            slotProps={{
-              toolbar: {
-                rowSelectionModel,
-                totalRowCount: totalUsers,
-                onUsersDelete: handleUsersDelete,
-                onUsersRoleChange: handleUsersRoleChange,
-                onClinicChange: handleClinicChange,
-                roleData,
-                clinicData,
-                selectedClinic,
-              },
-            }}
-            rows={userData}
-            rowCount={totalUsers}
-            columns={columns}
-            getRowId={(row) => row.email}
-            paginationModel={paginationModel}
-            paginationMode="server"
-            onPaginationModelChange={setPaginationModel}
-            sortingMode="server"
-            sortModel={sortModel}
-            onSortModelChange={handleSortModelChange}
-            checkboxSelection
+          <Divider
+          orientation="vertical"
+          flexItem sx={{
+            display: { xs: "none", md: "block" },
+            }} 
           />
+          <Divider
+            sx={{
+              display: { xs: "block", md: "none" },
+            }}
+          />
+            <UserToolBar
+              rowSelectionModel={rowSelectionModel}
+              totalRowCount={totalUsers}
+              onUsersDelete={handleUsersDelete}
+              onUsersRoleChange={handleUsersRoleChange}
+              onClinicChange={handleClinicChange}
+              roleData={roleData}
+              clinicData={clinicData}
+              selectedClinic={selectedClinic}
+            />
+        </Paper>
+        <Paper sx={{ width: "100%", overflow: "hidden" }}>
+          <Box sx={{ width: "100%", overflowX: "auto"}}>
+            <DataGrid
+              loading={loading}
+              onRowSelectionModelChange={(newSelection) =>
+                setRowSelectionModel(newSelection)
+              }
+              rowSelectionModel={rowSelectionModel}
+              rows={userData}
+              rowCount={totalUsers}
+              columns={columns}
+              getRowId={(row) => row.email}
+              paginationModel={paginationModel}
+              paginationMode="server"
+              onPaginationModelChange={setPaginationModel}
+              sortingMode="server"
+              sortModel={sortModel}
+              onSortModelChange={handleSortModelChange}
+              checkboxSelection
+            />
+          </Box>
         </Paper>
       </Box>
       <ConfirmationDialog
