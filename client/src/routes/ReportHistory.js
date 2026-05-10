@@ -6,6 +6,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ConfirmationDialog from "../components/confirmationDialog";
 import Stack from "@mui/material/Stack";
 import React, { useState, useEffect } from "react";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import {
   Box,
@@ -18,25 +20,27 @@ import {
   Select,
   MenuItem,
   Button,
+  Drawer,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const ReportHistory = ({}) => {
+const AIHealthPrediction = ({}) => {
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [openSideBar, setOpenSideBar] = useState(true);
+  const [openSideBar, setOpenSideBar] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   function openBar() {
-    if (openSideBar === true) {
-      setOpenSideBar(false);
+    if (isOpen === true) {
+      setIsOpen(false);
       return;
     }
-    setOpenSideBar(true);
+    setIsOpen(true);
   }
 
   function fetchReportDates() {
@@ -134,11 +138,20 @@ const ReportHistory = ({}) => {
           mt: "66px",
         }}
       >
-        {/* Sidebar */}
-        {openSideBar && (
+        <Drawer
+          anchor="top"
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          variant="temporary"
+          PaperProps={{
+            sx: {
+              p: 2,
+              maxHeight: "50vh",
+            },
+          }}
+        >
           <Box
             sx={{
-              width: { xs: 300, md: 400 },
               bgcolor: "background.paper",
               borderRight: "1px solid #e0e0e0",
             }}
@@ -149,11 +162,9 @@ const ReportHistory = ({}) => {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Report History
-                </Typography>
+                <Typography variant="h3">Report History</Typography>
                 <IconButton aria-label="menu" onClick={openBar}>
-                  <MenuIcon fontSize="large" />
+                  <KeyboardArrowUpIcon fontSize="large" />
                 </IconButton>
               </Stack>
             </Box>
@@ -222,17 +233,19 @@ const ReportHistory = ({}) => {
                   }}
                 >
                   <ListItemText
-                    primary={`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
-                    slotProps={{
-                      primary: {
-                        style: {
+                    primary={
+                      <Typography
+                        variant="h7"
+                        sx={{
                           fontWeight:
                             selectedDate.healthDataId === item.healthDataId
-                              ? 600
-                              : 400,
-                        },
-                      },
-                    }}
+                              ? 400
+                              : 0,
+                        }}
+                      >
+                        {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                      </Typography>
+                    }
                   />
                   {/* Delete Report Button */}
                   {selectedDate.healthDataId === item.healthDataId && (
@@ -248,15 +261,20 @@ const ReportHistory = ({}) => {
               ))}
             </List>
           </Box>
-        )}
+        </Drawer>
+
         {/* Menu and Download Buttons */}
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-            {!openSideBar && (
+            <Typography variant="h7" sx={{ color: "#747474", ml: 2 }}>
+              Report History
+            </Typography>
+            {!isOpen && (
               <IconButton aria-label="menu" onClick={openBar}>
-                <MenuIcon fontSize="large" />
+                <KeyboardArrowDownIcon fontSize="large" />
               </IconButton>
             )}
+
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}
@@ -293,4 +311,4 @@ const ReportHistory = ({}) => {
   }
 };
 
-export default ReportHistory;
+export default AIHealthPrediction;
