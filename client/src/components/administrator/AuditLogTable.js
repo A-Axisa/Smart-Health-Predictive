@@ -7,6 +7,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Divider,
 } from "@mui/material";
 import AuditLogSearchBar from "./AuditLogSearchBar";
 
@@ -112,13 +113,46 @@ const AuditLogTable = () => {
         flexDirection: "column",
       }}
     >
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          <AuditLogSearchBar
-            onSearchChange={handleEmailSearchChange}
-            delay={500}
-          />
-          <FormControl size="small" sx={{ width: 250 }}>
+      <Paper
+        sx={{
+          mb: "16px",
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { md: "center" },
+        }}
+      >
+        <AuditLogSearchBar
+          onSearchChange={handleEmailSearchChange}
+          delay={500}
+          placeholder="Search by email"
+        />
+        <Divider
+          orientation="vertical"
+          flexItem sx={{
+            display: { xs: "none", md: "block" },
+            }} 
+        />
+        <Divider
+          sx={{
+            display: { xs: "block", md: "none" },
+          }}
+        />
+        <Box
+          sx={{
+            p: 1,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 1,
+            justifyContent: { sm: "flex-end" },
+          }}
+        >
+          <FormControl
+            size="small"
+            sx={{
+              width: { xs: "100%", sm: 250 }
+            }}
+          >
             <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
             <Select
               labelId="event-type-label"
@@ -140,28 +174,31 @@ const AuditLogTable = () => {
             </Select>
           </FormControl>
         </Box>
+
       </Paper>
 
-      <Paper sx={{ width: "100%" }}>
-        <DataGrid
-          rows={logData}
-          columns={columns}
-          getRowHeight={() => "auto"}
-          getRowId={(row) => row.logID}
-          rowCount={totalLogs}
-          loading={loading}
-          paginationModel={paginationModel}
-          paginationMode="server"
-          onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={handleSortModelChange}
-          sx={{
-            "& .MuiDataGrid-cell": {
-              lineHeight: "1.4rem",
-            },
-          }}
-        />
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <Box sx={{ width: "100%", overflowX: "auto"}}>
+          <DataGrid
+            rows={logData}
+            columns={columns}
+            getRowHeight={() => "auto"}
+            getRowId={(row) => row.logID}
+            rowCount={totalLogs}
+            loading={loading}
+            paginationModel={paginationModel}
+            paginationMode="server"
+            onPaginationModelChange={setPaginationModel}
+            sortingMode="server"
+            sortModel={sortModel}
+            onSortModelChange={handleSortModelChange}
+            sx={{
+              "& .MuiDataGrid-cell": {
+                lineHeight: "1.4rem",
+              },
+            }}
+          />
+          </Box>
       </Paper>
     </Box>
   );
