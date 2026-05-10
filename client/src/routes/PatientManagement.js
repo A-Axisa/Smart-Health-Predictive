@@ -191,7 +191,7 @@ const PatientManagement = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "1600px",
           display: "flex",
           flexDirection: "column",
         }}

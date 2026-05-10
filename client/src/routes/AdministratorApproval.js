@@ -26,6 +26,7 @@ const AdministratorApproval = () => {
           pb: { xs: "2px", sm: "0px", md: "4px" },
           pr: { xs: "2px", sm: "0px", md: "4px" },
           mr: "0px",
+          maxWidth: "1600px", 
         }}
       >
         <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>
