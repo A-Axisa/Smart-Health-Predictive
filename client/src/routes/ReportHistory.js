@@ -126,7 +126,21 @@ const AIHealthPrediction = ({}) => {
 
   // Prevents page from loading if the user has no health record
   if (!reportData) {
-    return <h1>User has no Health Prediction Reports</h1>;
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+        }}
+      >
+        <Typography variant="h5" sx={{ color: "text.secondary" }}>
+          No Health Prediction Reports Available
+        </Typography>
+      </Box>
+    );
   } else {
     return (
       <Box
@@ -266,8 +280,8 @@ const AIHealthPrediction = ({}) => {
         {/* Menu and Download Buttons */}
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-            <Typography variant="h7" sx={{ color: "#747474", ml: 2 }}>
-              Report History
+            <Typography variant="h5" sx={{ ml: 2 }}>
+              View Report History
             </Typography>
             {!isOpen && (
               <IconButton aria-label="menu" onClick={openBar}>
