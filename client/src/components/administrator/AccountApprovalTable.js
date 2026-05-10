@@ -88,12 +88,14 @@ const AccountApprovalTable = ({}) => {
         flexDirection: "column",
       }}
     >
-      <Paper sx={{ width: "100%", minWidth: 0, flex: 1, }}>
-        <DataGrid
-          rows={userData}
-          columns={columns}
-          getRowId={(row) => row.email}
-        />
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
+          <DataGrid
+            rows={userData}
+            columns={columns}
+            getRowId={(row) => row.email}
+          />
+        </Box>
       </Paper>
       <ConfirmationDialog
         open={dialogOpen}
