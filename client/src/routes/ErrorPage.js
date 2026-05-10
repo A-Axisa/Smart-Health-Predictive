@@ -40,7 +40,7 @@ const ErrorPage = () => {
           variant="h6"
           sx={{
             overflow: "hidden",
-            px: 8,
+            px: { xs: 2, sm: 8 },
             wordBreak: "break-word"
           }}
         >
