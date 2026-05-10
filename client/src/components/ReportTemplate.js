@@ -6,6 +6,7 @@ import {
   ListItemText,
   Divider,
   Card,
+  Paper,
 } from "@mui/material";
 
 const ReportTemplate = ({ report, date }) => {
@@ -22,286 +23,289 @@ const ReportTemplate = ({ report, date }) => {
     2: "Former",
   };
 
+  const healthFields = [
+    { label: "Age", value: report.age },
+    { label: "Weight", value: `${report.weight}kg` },
+    { label: "Height", value: `${report.height}cm` },
+    { label: "Gender", value: report.gender === 0 ? "Female" : "Male" },
+
+    {
+      label: "Blood Glucose",
+      value: `${report.bloodGlucose}mmol/L`,
+    },
+
+    {
+      label: "Systolic Blood Pressure",
+      value: `${report.apHi}mmHg`,
+    },
+
+    {
+      label: "Diastolic Blood Pressure",
+      value: `${report.apLo}mmHg`,
+    },
+
+    {
+      label: "Exercise",
+      value: report.exercise === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "Hypertension",
+      value: report.hypertension === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "Heart Disease",
+      value: report.heartDisease === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "Diabetes",
+      value: report.diabetes === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "High Cholesterol",
+      value: report.highCholesterol === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "Alcohol",
+      value: report.alcohol === 1 ? "Yes" : "No",
+    },
+
+    {
+      label: "Smoker",
+      value: smokingStatusMap[report.smoker],
+    },
+
+    {
+      label: "Marital Status",
+      value: report.maritalStatus === 1 ? "Married" : "Single",
+    },
+
+    {
+      label: "Working Status",
+      value: workingStatusMap[report.workingStatus],
+    },
+  ];
+
+  function getRiskLevel(risk) {
+    if (risk < 30) return "Low";
+    if (risk < 70) return "Medium";
+    return "High";
+  }
+  function getRiskColor(risk) {
+    if (risk < 30) return "#00B050";
+    if (risk < 70) return "#FFB800";
+    return "#FF0000";
+  }
   return (
-    <Box>
-      <Typography
-        variant="h3"
-        sx={{
-          fontWeight: 600,
-          textAlign: "center",
-          mt: 3,
-          mb: 3,
-          color: "primary.main",
-        }}
-      >
-        Report {new Date(date).toLocaleDateString("en-AU")}
-      </Typography>
-      <Divider sx={{ borderColor: "#e0e0e0" }} />
+    <Box
+      sx={{
+        display: "grid",
+        gap: 3,
+      }}
+    >
+      <Paper variant="report-section">
+        <Typography
+          variant="h2"
+          sx={{
+            textAlign: "center",
+            mt: 3,
+          }}
+        >
+          Health Risk Report
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            textAlign: "center",
+            mb: 1,
+            color: "text.secondary",
+            maxWidth: 600,
+            mx: "auto",
+          }}
+        >
+          Generated on: {new Date(date).toLocaleDateString("en-AU")}
+        </Typography>
+      </Paper>
 
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          mt: 3,
-          color: "primary.main",
-          fontWeight: 600,
-          textAlign: "center",
-        }}
-      >
-        Health Information Summary
-      </Typography>
+      <Paper variant="report-section">
+        {/* Health Predictions */}
+        <Typography
+          variant="h3"
+          sx={{
+            mx: 3,
+            mt: 3,
+            borderBottom: "1px solid #E0E0E0",
+          }}
+        >
+          Health Risk Prediction
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+            gap: 3,
+            p: 2,
+          }}
+        >
+          <Card sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              Stroke
+            </Typography>
+            <Typography variant="h5">{report.strokeChance}%</Typography>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              Predicted Risk
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{ color: getRiskColor(report.strokeChance) }}
+            >
+              {getRiskLevel(report.strokeChance)}
+            </Typography>
+          </Card>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-          gap: 2,
-          p: 2,
-          px: 5,
-        }}
-      >
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Age:</Typography>
-          <Typography>{report.age}</Typography>
-        </Box>
+          <Card sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              Diabetes
+            </Typography>
+            <Typography variant="h5">{report.diabetesChance}%</Typography>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              Predicted Risk
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{ color: getRiskColor(report.diabetesChance) }}
+            >
+              {getRiskLevel(report.diabetesChance)}
+            </Typography>
+          </Card>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Weight:</Typography>
-          <Typography>{report.weight}kg</Typography>
+          <Card sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              CVD
+            </Typography>
+            <Typography variant="h5">{report.cvdChance}%</Typography>
+            <Typography variant="h4" sx={{ color: "#747474" }}>
+              Predicted Risk
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{ color: getRiskColor(report.cvdChance) }}
+            >
+              {getRiskLevel(report.cvdChance)}
+            </Typography>
+          </Card>
         </Box>
+      </Paper>
+      <Paper variant="report-section">
+        <Typography
+          variant="h3"
+          sx={{
+            mx: 2,
+            mt: 3,
+            borderBottom: "1px solid #E0E0E0",
+          }}
+        >
+          Health Recommendations
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 3,
+            p: 2,
+          }}
+        >
+          {/* Lifestyle */}
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Lifestyle Recommendations
+            </Typography>
+            <Typography variant="body1">
+              {report.lifestyleRecommendation ||
+                "No lifestyle recommendation available."}
+            </Typography>
+          </Box>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Height:</Typography>
-          <Typography>{report.height}cm</Typography>
-        </Box>
+          {/* Exercise */}
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Exercise Recommendations
+            </Typography>
+            <Typography variant="body1">
+              {report.exerciseRecommendation ||
+                "No exercise recommendation available."}
+            </Typography>
+          </Box>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Gender:</Typography>
-          <Typography>{report.gender === 0 ? "Female" : "Male"}</Typography>
-        </Box>
+          {/* Diet */}
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Diet Recommendations
+            </Typography>
+            <Typography variant="body1">
+              {report.dietRecommendation || "No diet recommendation available."}
+            </Typography>
+          </Box>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Blood Glucose:</Typography>
-          <Typography>{report.bloodGlucose}mmol/L</Typography>
+          {/* Diet to Avoid */}
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Diet to Avoid
+            </Typography>
+            <Typography variant="body1">
+              {report.dietToAvoidRecommendation ||
+                "No diet-to-avoid recommendation available."}
+            </Typography>
+          </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>
-            Systolic Blood Pressure:
-          </Typography>
-          <Typography>{report.apHi}mmHg</Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>
-            Diastolic Blood Pressure:
-          </Typography>
-          <Typography>{report.apLo}mmHg</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Exercise:</Typography>
-          <Typography>{report.exercise === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Hypertension:</Typography>
-          <Typography>{report.hypertension === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Heart Disease:</Typography>
-          <Typography>{report.heartDisease === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Diabetes:</Typography>
-          <Typography>{report.diabetes === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>High Cholesterol:</Typography>
-          <Typography>{report.highCholesterol === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Alcohol:</Typography>
-          <Typography>{report.alcohol === 1 ? "Yes" : "No"}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Smoker:</Typography>
-          <Typography>{smokingStatusMap[report.smoker]}</Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Marital Status:</Typography>
-          <Typography>
-            {report.maritalStatus === 1 ? "Married" : "Single"}
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography sx={{ fontWeight: 600 }}>Working Status:</Typography>
-          <Typography>{workingStatusMap[report.workingStatus]}</Typography>
-        </Box>
-      </Box>
-
-      <Divider sx={{ borderColor: "#e0e0e0" }} />
-      {/* Health Predictions */}
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          mt: 3,
-          color: "primary.main",
-          fontWeight: 600,
-          textAlign: "center",
-        }}
-      >
-        Health Prediction
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-          gap: 3,
-          p: 2,
-        }}
-      >
-        <Typography variant="h6" sx={{ textAlign: "center" }}>
-          Stroke: {report.strokeChance}%
+      </Paper>
+      <Paper variant="report-section" sx={{ mb: 3 }}>
+        <Typography
+          variant="h3"
+          sx={{
+            mx: 3,
+            mb: 3,
+            borderBottom: "1px solid #E0E0E0",
+          }}
+        >
+          Health Information Summary
         </Typography>
 
-        <Typography variant="h6" sx={{ textAlign: "center" }}>
-          Diabetes: {report.diabetesChance}%
-        </Typography>
-
-        <Typography variant="h6" sx={{ textAlign: "center" }}>
-          CVD: {report.cvdChance}%
-        </Typography>
-      </Box>
-
-      <Divider sx={{ borderColor: "#e0e0e0" }} />
-
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-          gap: 3,
-          p: 2,
-        }}
-      >
-        {/* Lifestyle Recommendations */}
-        <Card
-          variant="outlined"
-          sx={{ width: "90%", margin: "2rem auto", padding: 2, height: "90%" }}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 3,
+            p: 3,
+          }}
         >
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Lifestyle Recommendations
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={
-                  report.lifestyleRecommendation ||
-                  "No lifestyle recommendation available."
-                }
-              />
-            </ListItem>
-          </List>
-        </Card>
+          {healthFields.map((field) => (
+            <Box
+              key={field.label}
+              sx={{
+                borderBottom: "1px solid #E0E0E0",
+                pb: 1.5,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#888888",
+                  textTransform: "uppercase",
+                  mb: 0.5,
+                }}
+              >
+                {field.label}
+              </Typography>
 
-        {/* Exercise Recommendations*/}
-        <Card
-          variant="outlined"
-          sx={{ width: "90%", margin: "2rem auto", padding: 2, height: "90%" }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Exercise Recommendations
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={
-                  report.exerciseRecommendation ||
-                  "No exercise recommendation available."
-                }
-              />
-            </ListItem>
-          </List>
-        </Card>
-
-        {/* Diet Recommendations*/}
-        <Card
-          variant="outlined"
-          sx={{ width: "90%", margin: "2rem auto", padding: 2, height: "90%" }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Diet Recommendations
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={
-                  report.dietRecommendation ||
-                  "No diet recommendation available."
-                }
-              />
-            </ListItem>
-          </List>
-        </Card>
-
-        {/* Diet to Avoid */}
-        <Card
-          variant="outlined"
-          sx={{ width: "90%", margin: "2rem auto", padding: 2, height: "90%" }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Diet to Avoid
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={
-                  report.dietToAvoidRecommendation ||
-                  "No diet-to-avoid recommendation available."
-                }
-              />
-            </ListItem>
-          </List>
-        </Card>
-      </Box>
+              <Typography variant="h5">{field.value}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Paper>
     </Box>
   );
 };
