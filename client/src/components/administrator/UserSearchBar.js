@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { Input, Box } from "@mui/material";
+import { TextField, Box } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useEffect, useState, memo } from "react";
 
@@ -17,18 +17,22 @@ const UserSearchBar = ({ placeholder, onSearchChange, delay = 400 }) => {
   }, [inputValue, onSearchChange, delay]);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Input
+    <Box sx={{ display: "flex", alignItems: "center", mx: 1, flex: 1 }}>
+      <TextField
+        variant="standard"
         sx={{ py: 2 }}
         placeholder={placeholder}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         fullWidth
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        }
+        InputProps={{
+          disableUnderline: true,
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
       />
     </Box>
   );

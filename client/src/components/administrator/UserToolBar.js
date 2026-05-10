@@ -1,7 +1,7 @@
 import { Box, Select, Button, MenuItem } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
-const ToolBar = ({
+const UserToolBar = ({
   rowSelectionModel,
   totalRowCount,
   onUsersDelete,
@@ -27,9 +27,10 @@ const ToolBar = ({
       sx={{
         p: 1,
         display: "flex",
-        alignItems: "center",
-        gap: 2,
-        justifyContent: "flex-end",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: { xs: "stretch", sm: "center" },
+        gap: 1,
+        justifyContent: { xs: "flex-end" },
       }}
     >
       <Select
@@ -38,8 +39,8 @@ const ToolBar = ({
         value={selectedClinic}
         onChange={(e) => onClinicChange(e.target.value)}
         sx={{
-          width: 250,
-         }}
+          width: { xs: "100%", sm:200},
+        }}
       >
         <MenuItem value="">
           All Clinics
@@ -56,7 +57,9 @@ const ToolBar = ({
         disabled={emailCount === 0}
         value=""
         onChange={(e) => onUsersRoleChange(e.target.value)}
-        sx={{ minWidth: 150 }}
+        sx={{
+          width: { xs: "100%", sm: "auto" }
+        }}
       >
         <MenuItem value="" disabled>
           Change Role...
@@ -73,6 +76,9 @@ const ToolBar = ({
         variant="contained"
         disabled={emailCount === 0}
         onClick={onUsersDelete}
+        sx={{
+          width: { xs: "100%", sm: "auto" }
+        }}
       >
         <DeleteForeverIcon /> Delete Selected
       </Button>
@@ -80,4 +86,4 @@ const ToolBar = ({
   );
 };
 
-export default ToolBar;
+export default UserToolBar;

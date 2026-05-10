@@ -211,8 +211,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}
@@ -400,8 +402,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}
@@ -589,8 +593,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}

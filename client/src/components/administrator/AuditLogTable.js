@@ -7,6 +7,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Divider,
 } from "@mui/material";
 import AuditLogSearchBar from "./AuditLogSearchBar";
 
@@ -36,7 +37,7 @@ const AuditLogTable = () => {
   const [loading, setLoading] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 50,
+    pageSize: 25,
   });
   const [sortModel, setSortModel] = useState([
     { field: "createdAt", sort: "desc" },
@@ -93,7 +94,7 @@ const AuditLogTable = () => {
   }, []);
 
   const columns = [
-    { field: "logID", headerName: "Log ID", width: 70, sortable: true },
+    { field: "logID", headerName: "Log ID", flex: 0.7, width: 70, sortable: true },
     { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140, sortable: true },
     { field: "success", headerName: "Success", width: 80, type: "boolean", sortable: true },
     { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180, sortable: true },
@@ -112,13 +113,46 @@ const AuditLogTable = () => {
         flexDirection: "column",
       }}
     >
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          <AuditLogSearchBar
-            onSearchChange={handleEmailSearchChange}
-            delay={500}
-          />
-          <FormControl size="small" sx={{ width: 250 }}>
+      <Paper
+        sx={{
+          mb: "16px",
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { md: "center" },
+        }}
+      >
+        <AuditLogSearchBar
+          onSearchChange={handleEmailSearchChange}
+          delay={500}
+          placeholder="Search by email"
+        />
+        <Divider
+          orientation="vertical"
+          flexItem sx={{
+            display: { xs: "none", md: "block" },
+            }} 
+        />
+        <Divider
+          sx={{
+            display: { xs: "block", md: "none" },
+          }}
+        />
+        <Box
+          sx={{
+            p: 1,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 1,
+            justifyContent: { sm: "flex-end" },
+          }}
+        >
+          <FormControl
+            size="small"
+            sx={{
+              width: { xs: "100%", sm: 250 }
+            }}
+          >
             <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
             <Select
               labelId="event-type-label"
@@ -140,46 +174,31 @@ const AuditLogTable = () => {
             </Select>
           </FormControl>
         </Box>
+
       </Paper>
 
-      <Paper sx={{ width: "100%" }}>
-        <DataGrid
-          rows={logData}
-          columns={columns}
-          getRowHeight={() => "auto"}
-          getRowId={(row) => row.logID}
-          rowCount={totalLogs}
-          loading={loading}
-          pageSizeOptions={[50, 100]}
-          paginationModel={paginationModel}
-          paginationMode="server"
-          onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={handleSortModelChange}
-          disableColumnResize
-          disableRowSelectionOnClick
-          sx={{
-            border: 0,
-            p: 1,
-            "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-              {
-                outline: "none",
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <Box sx={{ width: "100%", overflowX: "auto"}}>
+          <DataGrid
+            rows={logData}
+            columns={columns}
+            getRowHeight={() => "auto"}
+            getRowId={(row) => row.logID}
+            rowCount={totalLogs}
+            loading={loading}
+            paginationModel={paginationModel}
+            paginationMode="server"
+            onPaginationModelChange={setPaginationModel}
+            sortingMode="server"
+            sortModel={sortModel}
+            onSortModelChange={handleSortModelChange}
+            sx={{
+              "& .MuiDataGrid-cell": {
+                lineHeight: "1.4rem",
               },
-            "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
-              backgroundColor: "#f1f1f1f1",
-            },
-            "& .MuiDataGrid-cell": {
-              whiteSpace: "normal",
-              lineHeight: "1.4rem",
-              alignItems: "flex-start",
-              py: 1,
-            },
-          }}
-        />
+            }}
+          />
+          </Box>
       </Paper>
     </Box>
   );
