@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmationDialog from "../components/confirmationDialog";
-
+import InputAdornment from "@mui/material/InputAdornment";
 import {
   Box,
   Typography,
@@ -11,17 +11,16 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Stack,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 // Icons
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import EditIcon from "@mui/icons-material/Edit";
-import ArchiveIcon from "@mui/icons-material/Archive";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import SearchIcon from "@mui/icons-material/Search";
+
 
 /**
  * A page used to display a list of all patients for a merchant user.
@@ -197,40 +196,97 @@ const PatientManagement = () => {
           flexDirection: "column",
         }}
       >
-        <Typography
-          variant="h4"
+        <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>
+          <Typography
+            variant="h3"
+            sx={{ fontSize: { xs: "2em", sm: "2em", md: "3em" } }}
+          >
+            Patient Management
+          </Typography>
+          <Divider />
+        </Stack>
+
+        <Paper
           sx={{
-            color: "primary.main",
-            fontWeight: 600,
-            textAlign: "center",
-            mb: 2,
+            mb: "16px",
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { md: "center" },
           }}
         >
-          Patient Management
-        </Typography>
-        <Paper sx={{ p: 2, mb: 2 }}>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, flex: 1, mx: 1, py: 1 }}>
             <TextField
-              label="Search by Given Names"
-              variant="outlined"
+              variant="standard"
               size="small"
+              placeholder="Search by given names"
               value={givenNameInput}
               onChange={(e) => setGivenNameInput(e.target.value)}
-              sx={{ width: 300 }}
+              fullWidth
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Divider
+            orientation="vertical"
+            flexItem sx={{
+              display: { xs: "none", md: "block" },
+              }} 
+            />
+            <Divider
+              sx={{
+                display: { xs: "block", md: "none" },
+              }}
             />
             <TextField
-              label="Search by Last Name"
-              variant="outlined"
+              variant="standard"
               size="small"
+              placeholder="Search by last name"
               value={familyNameInput}
               onChange={(e) => setFamilyNameInput(e.target.value)}
-              sx={{ width: 300 }}
+              fullWidth
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
             />
+          </Box>
+
+          <Divider
+          orientation="vertical"
+          flexItem sx={{
+            display: { xs: "none", md: "block" },
+            }} 
+          />
+          <Divider
+            sx={{
+              display: { xs: "block", md: "none" },
+            }}
+          />
+
+          <Box
+            sx={{
+              p: 1,
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+              gap: 1,
+              justifyContent: { sm: "flex-end" },
+            }}
+          >
             <Button
               id="add-patient-button"
               variant="contained"
               disableElevation
-              sx={{ ml: "auto" }}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
               onClick={handleClick}
               endIcon={<KeyboardArrowDownIcon />}
             >
@@ -263,16 +319,18 @@ const PatientManagement = () => {
           </Box>
         </Paper>
 
-        <Paper sx={{ width: "100%" }}>
-          <DataGrid
-            rows={patientData}
-            columns={columns}
-            rowCount={totalPatients}
-            getRowId={(row) => row.patientId}
-            paginationModel={paginationModel}
-            paginationMode="server"
-            onPaginationModelChange={setPaginationModel}
-          />
+        <Paper sx={{ width: "100%", overflow: "hidden" }}>
+          <Box sx={{ width: "100%", overflowX: "auto" }}>
+            <DataGrid
+              rows={patientData}
+              columns={columns}
+              rowCount={totalPatients}
+              getRowId={(row) => row.patientId}
+              paginationModel={paginationModel}
+              paginationMode="server"
+              onPaginationModelChange={setPaginationModel}
+            />
+            </Box>
         </Paper>
         <ConfirmationDialog
           open={deleteDialogOpen}
