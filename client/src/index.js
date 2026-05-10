@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AIHealthPrediction from "./routes/AIHealthPrediction";
+import ReportHistory from "./routes/ReportHistory";
 import GenerateReport from "./routes/GenerateReport";
 import HealthAnalytics from "./routes/HealthAnalytics";
 import Login from "./routes/Login";
@@ -58,10 +58,7 @@ root.render(
             <Route element={<ProtectedRoutes role="standard_user" />}>
               <Route path="/user-landing" element={<UserLanding />} />
               <Route path="/user-settings" element={<UserSettings />} />
-              <Route
-                path="/ai-health-prediction"
-                element={<AIHealthPrediction />}
-              />
+              <Route path="/ai-health-prediction" element={<ReportHistory />} />
               <Route path="/generate-report" element={<GenerateReport />} />
               <Route path="/health-analytics" element={<HealthAnalytics />} />
               <Route

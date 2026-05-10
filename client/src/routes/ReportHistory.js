@@ -22,7 +22,7 @@ import {
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const AIHealthPrediction = ({}) => {
+const ReportHistory = ({}) => {
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
@@ -99,9 +99,13 @@ const AIHealthPrediction = ({}) => {
   }
 
   // Extract and sort month and years for drop down.
-  const years = [...new Set(reportDates.map((r) => new Date(r.date).getFullYear()))].sort((a, b) => a - b);
-  const months = [...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1))].sort((a, b) => a - b);
-  
+  const years = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
+  ].sort((a, b) => a - b);
+  const months = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1)),
+  ].sort((a, b) => a - b);
+
   // Filters reports based on selected year and month if any.
   const filteredReportDates = reportDates.filter((r) => {
     const date = new Date(r.date);
@@ -114,7 +118,7 @@ const AIHealthPrediction = ({}) => {
   const handleClear = () => {
     setSelectedYear(null);
     setSelectedMonth(null);
-  }
+  };
 
   // Prevents page from loading if the user has no health record
   if (!reportData) {
@@ -174,7 +178,7 @@ const AIHealthPrediction = ({}) => {
                   ))}
                 </Select>
               </FormControl>
-    
+
               {/* Month */}
               <FormControl fullWidth>
                 <InputLabel>Month</InputLabel>
@@ -185,15 +189,15 @@ const AIHealthPrediction = ({}) => {
                 >
                   {months.map((month) => (
                     <MenuItem key={month} value={month}>
-                      {new Date(0, month - 1).toLocaleString("en-AU", { month: "long" })}
+                      {new Date(0, month - 1).toLocaleString("en-AU", {
+                        month: "long",
+                      })}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-    
-              <Button onClick={handleClear}>
-                Clear
-              </Button>
+
+              <Button onClick={handleClear}>Clear</Button>
             </Box>
 
             <List component="nav" sx={{ p: 0 }}>
@@ -289,4 +293,4 @@ const AIHealthPrediction = ({}) => {
   }
 };
 
-export default AIHealthPrediction;
+export default ReportHistory;
