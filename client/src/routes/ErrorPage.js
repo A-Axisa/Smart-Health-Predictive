@@ -12,7 +12,7 @@ const ErrorPage = () => {
   const navigate = useNavigate();
   return (
     <Stack
-      spacing={6}
+      spacing={7}
       alignItems="center"
       justifyContent="center"
       sx={{
@@ -25,14 +25,9 @@ const ErrorPage = () => {
       }}
     >
       <Box>
-        <Box
-          component="img"
-          alt="WellAI Logo"
-          src={Logo}
-          sx={{ height: 50, mb: 3 }}
-        />
         <Typography
-          variant="h3"
+          variant="h2"
+          sx={{ fontWeight: 500 }}
         >
           Error 404
         </Typography>
