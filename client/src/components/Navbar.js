@@ -8,7 +8,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
-import { Drawer, List, ListItemButton, IconButton, Tooltip, ClickAwayListener, Backdrop } from "@mui/material";
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  IconButton,
+  Tooltip,
+  ClickAwayListener,
+  Backdrop,
+} from "@mui/material";
 import { UserContext } from "../utils/UserContext";
 import PrivacyNotice from "./PrivacyNotice";
 import DisclaimerPolicy from "./DisclaimerPolicy";
@@ -28,14 +36,11 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
-
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const NavBar = ({ role }) => {
-
   // Maps each route to the corrosponding page title.
   const routePageMap = {
-
     // User Pages
     "/user-landing": "Dashboard",
     "/generate-report": "Generate Report",
@@ -144,7 +149,7 @@ const NavBar = ({ role }) => {
     }
     if (page === "Report History") {
       if (role === "standard_user") {
-        navigate("/ai-health-prediction");
+        navigate("/report-history");
       }
       if (role === "merchant") {
         navigate("/merchant-reports");
@@ -257,7 +262,7 @@ const NavBar = ({ role }) => {
                 justifyContent: isOpen ? "flex-end" : "center",
                 px: 1,
                 pt: 2,
-                pb: 1
+                pb: 1,
               }}
             >
               <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
@@ -266,35 +271,38 @@ const NavBar = ({ role }) => {
             </Box>
 
             {isOpen && (
-              <Typography
-                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-              >
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                 Overview
               </Typography>
             )}
 
             <List>
               {standardUserPages.map((page) => (
-                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                <Tooltip
+                  key={page.title}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
+                >
                   <ListItemButton
                     key={page.title}
                     sx={{
                       color: selectedPage === page.title ? "#fff" : "383838",
-                      backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
+                      backgroundColor:
+                        selectedPage === page.title ? "#712b89" : "transparent",
                       mb: 1,
                       px: 3,
                       py: 1.5,
                       justifyContent: isOpen ? "initial" : "center",
                       "&:hover": {
-                        backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                        backgroundColor:
+                          selectedPage === page.title ? "#712b89" : "",
                       },
                     }}
                     onClick={() => handleNavigate(page.title)}
                   >
                     {page.icon}
                     {isOpen && (
-                      <Typography variant="h7"
-                        sx={{ ml: 3 }}>
+                      <Typography variant="h7" sx={{ ml: 3 }}>
                         {page.title}
                       </Typography>
                     )}
@@ -311,34 +319,39 @@ const NavBar = ({ role }) => {
             >
               {/* Account Options */}
               {isOpen && (
-                <Typography
-                  sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                >
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                   Account
                 </Typography>
               )}
               <List>
                 {userAccountPages.map((page) => (
-                  <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
                     <ListItemButton
                       key={page.title}
                       sx={{
                         color: selectedPage === page.title ? "#fff" : "383838",
-                        backgroundColor:selectedPage === page.title ? "#712b89" : "transparent",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#712b89"
+                            : "transparent",
                         mb: 1,
                         px: 3,
                         py: 1.5,
                         justifyContent: isOpen ? "initial" : "center",
                         "&:hover": {
-                          backgroundColor: selectedPage === page.title ? "#712b89" : "",
+                          backgroundColor:
+                            selectedPage === page.title ? "#712b89" : "",
                         },
                       }}
                       onClick={() => handleNavigate(page.title)}
                     >
                       {page.icon}
                       {isOpen && (
-                        <Typography variant="h7"
-                          sx={{ ml: 3 }}>
+                        <Typography variant="h7" sx={{ ml: 3 }}>
                           {page.title}
                         </Typography>
                       )}
@@ -358,18 +371,35 @@ const NavBar = ({ role }) => {
                   <>
                     <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
                       © 2024 WellAI. All rights reserved.{" "}
-
-                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Privacy Notice</u></b>
-                      </Box> &{" "}
-
-                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Disclaimer Policy</u></b>
-                      </Box>.
-
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
                     </Typography>
-                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
                   </>
                 )}
               </Box>
@@ -381,7 +411,7 @@ const NavBar = ({ role }) => {
 
   // Navigation Bar for merchant user type
   if (role === "merchant")
-     return (
+    return (
       <>
         <Backdrop
           open={isOpen}
@@ -446,7 +476,7 @@ const NavBar = ({ role }) => {
                 justifyContent: isOpen ? "flex-end" : "center",
                 px: 1,
                 pt: 2,
-                pb: 1
+                pb: 1,
               }}
             >
               <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
@@ -455,35 +485,38 @@ const NavBar = ({ role }) => {
             </Box>
 
             {isOpen && (
-              <Typography
-                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-              >
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                 Overview
               </Typography>
             )}
 
             <List>
               {merchantPages.map((page) => (
-                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                <Tooltip
+                  key={page.title}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
+                >
                   <ListItemButton
                     key={page.title}
                     sx={{
                       color: selectedPage === page.title ? "#fff" : "383838",
-                      backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                      backgroundColor:
+                        selectedPage === page.title ? "#417638" : "transparent",
                       mb: 1,
                       px: 3,
                       py: 1.5,
                       justifyContent: isOpen ? "initial" : "center",
                       "&:hover": {
-                        backgroundColor: selectedPage === page.title ? "#417638" : "",
+                        backgroundColor:
+                          selectedPage === page.title ? "#417638" : "",
                       },
                     }}
                     onClick={() => handleNavigate(page.title)}
                   >
                     {page.icon}
                     {isOpen && (
-                      <Typography variant="h7"
-                        sx={{ ml: 3 }}>
+                      <Typography variant="h7" sx={{ ml: 3 }}>
                         {page.title}
                       </Typography>
                     )}
@@ -500,34 +533,39 @@ const NavBar = ({ role }) => {
             >
               {/* Account Options */}
               {isOpen && (
-                <Typography
-                  sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                >
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                   Account
                 </Typography>
               )}
               <List>
                 {merchantAccountPages.map((page) => (
-                  <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
                     <ListItemButton
                       key={page.title}
                       sx={{
                         color: selectedPage === page.title ? "#fff" : "383838",
-                        backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#417638"
+                            : "transparent",
                         mb: 1,
                         px: 3,
                         py: 1.5,
                         justifyContent: isOpen ? "initial" : "center",
                         "&:hover": {
-                          backgroundColor: selectedPage === page.title ? "#417638" : "",
+                          backgroundColor:
+                            selectedPage === page.title ? "#417638" : "",
                         },
                       }}
                       onClick={() => handleNavigate(page.title)}
                     >
                       {page.icon}
                       {isOpen && (
-                        <Typography variant="h7"
-                          sx={{ ml: 3 }}>
+                        <Typography variant="h7" sx={{ ml: 3 }}>
                           {page.title}
                         </Typography>
                       )}
@@ -547,18 +585,35 @@ const NavBar = ({ role }) => {
                   <>
                     <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
                       © 2024 WellAI. All rights reserved.{" "}
-
-                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Privacy Notice</u></b>
-                      </Box> &{" "}
-
-                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Disclaimer Policy</u></b>
-                      </Box>.
-
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
                     </Typography>
-                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
                   </>
                 )}
               </Box>
@@ -635,7 +690,7 @@ const NavBar = ({ role }) => {
                 justifyContent: isOpen ? "flex-end" : "center",
                 px: 1,
                 pt: 2,
-                pb: 1
+                pb: 1,
               }}
             >
               <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
@@ -644,35 +699,38 @@ const NavBar = ({ role }) => {
             </Box>
 
             {isOpen && (
-              <Typography
-                sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-              >
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                 Overview
               </Typography>
             )}
 
             <List>
               {adminPages.map((page) => (
-                <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                <Tooltip
+                  key={page.title}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
+                >
                   <ListItemButton
                     key={page.title}
                     sx={{
                       color: selectedPage === page.title ? "#fff" : "383838",
-                      backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                      backgroundColor:
+                        selectedPage === page.title ? "#417638" : "transparent",
                       mb: 1,
                       px: 3,
                       py: 1.5,
                       justifyContent: isOpen ? "initial" : "center",
                       "&:hover": {
-                        backgroundColor: selectedPage === page.title ? "#417638" : "",
+                        backgroundColor:
+                          selectedPage === page.title ? "#417638" : "",
                       },
                     }}
                     onClick={() => handleNavigate(page.title)}
                   >
                     {page.icon}
                     {isOpen && (
-                      <Typography variant="h7"
-                        sx={{ ml: 3 }}>
+                      <Typography variant="h7" sx={{ ml: 3 }}>
                         {page.title}
                       </Typography>
                     )}
@@ -689,34 +747,39 @@ const NavBar = ({ role }) => {
             >
               {/* Account Options */}
               {isOpen && (
-                <Typography
-                  sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}
-                >
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
                   Account
                 </Typography>
               )}
               <List>
                 {adminAccountPages.map((page) => (
-                  <Tooltip key={page.title} title={!isOpen ? page.title : ""} placement="right">
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
                     <ListItemButton
                       key={page.title}
                       sx={{
                         color: selectedPage === page.title ? "#fff" : "383838",
-                        backgroundColor:selectedPage === page.title ? "#417638" : "transparent",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#417638"
+                            : "transparent",
                         mb: 1,
                         px: 3,
                         py: 1.5,
                         justifyContent: isOpen ? "initial" : "center",
                         "&:hover": {
-                          backgroundColor: selectedPage === page.title ? "#417638" : "",
+                          backgroundColor:
+                            selectedPage === page.title ? "#417638" : "",
                         },
                       }}
                       onClick={() => handleNavigate(page.title)}
                     >
                       {page.icon}
                       {isOpen && (
-                        <Typography variant="h7"
-                          sx={{ ml: 3 }}>
+                        <Typography variant="h7" sx={{ ml: 3 }}>
                           {page.title}
                         </Typography>
                       )}
@@ -736,18 +799,35 @@ const NavBar = ({ role }) => {
                   <>
                     <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
                       © 2024 WellAI. All rights reserved.{" "}
-
-                      <Box component="span" onClick={() => setPrivacyNoticeOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Privacy Notice</u></b>
-                      </Box> &{" "}
-
-                      <Box component="span" onClick={() => setDisclaimerPolicyOpen(true)} sx={{ cursor: "pointer" }}>
-                        <b><u>Disclaimer Policy</u></b>
-                      </Box>.
-
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
                     </Typography>
-                    <PrivacyNotice open={privacyNoticeOpen} onClose={() => setPrivacyNoticeOpen(false)} />
-                    <DisclaimerPolicy open={disclaimerPolicyOpen} onClose={() => setDisclaimerPolicyOpen(false)} />
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
                   </>
                 )}
               </Box>

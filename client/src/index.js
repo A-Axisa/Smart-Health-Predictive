@@ -58,7 +58,7 @@ root.render(
             <Route element={<ProtectedRoutes role="standard_user" />}>
               <Route path="/user-landing" element={<UserLanding />} />
               <Route path="/user-settings" element={<UserSettings />} />
-              <Route path="/ai-health-prediction" element={<ReportHistory />} />
+              <Route path="/report-history" element={<ReportHistory />} />
               <Route path="/generate-report" element={<GenerateReport />} />
               <Route path="/health-analytics" element={<HealthAnalytics />} />
               <Route
