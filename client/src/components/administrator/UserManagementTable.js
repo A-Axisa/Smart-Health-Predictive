@@ -1,4 +1,4 @@
-import { Paper, Box, Snackbar, Alert } from "@mui/material";
+import { Paper, Box, Snackbar, Alert, Stack, Typography, Divider } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect, useCallback } from "react";
 import ConfirmationDialog from "../confirmationDialog";
@@ -12,7 +12,7 @@ const UserManagementTable = () => {
   const [loading, setLoading] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 50,
+    pageSize: 25,
   });
   const [sortModel, setSortModel] = useState([
     { field: "createdAt", sort: "desc" },
@@ -177,24 +177,6 @@ const UserManagementTable = () => {
           return response.json();
         }),
       );
-
-      // NOTE: Need to collect deletion reports for each user.
-
-      // Generate a detailed message from the deletion report
-      // const result = await response.json();
-      // const report = result.deletion_report;
-      // let reportMessage = `User '${userToDelete.fullName}' deleted.`;
-
-      // if (report) {
-      //   const details = Object.entries(report)
-      //     .filter(([, value]) => value > 0)
-      //     .map(([key, value]) => `${value} ${key.replace(/_/g, ' ')}`)
-      //     .join(', ');
-      //   if (details) {
-      //     reportMessage += ` Cleaned up: ${details}.`;
-      //   }
-      // }
-
       setSnackbar({
         open: true,
         message: `${emails.length} user(s) deleted.`,
@@ -246,33 +228,25 @@ const UserManagementTable = () => {
   }, []);
 
   const columns = [
-    { field: "email", headerName: "Email", width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", width: 250, sortable: false },
-    {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 200,
-      sortable: true,
-    },
-    {
-      field: "validated",
-      headerName: "Validation Status",
-      width: 150,
-      sortable: true,
-    },
-    {
-      field: "role",
-      headerName: "Role",
-      width: 220,
-      sortable: false,
-      valueGetter: (params) => params?.name,
-    },
+    { field: "email", headerName: "Email", flex: 2, width: 250, sortable: true },
+    { field: "fullName", headerName: "Full Name", flex: 1.5, width: 250, sortable: false },
+    { field: "createdAt", headerName: "Created At", flex: 1.2, width: 200, sortable: true },
+    { field: "validated", headerName: "Validation Status", flex: 1, width: 150, sortable: true },
+    { field: "role", headerName: "Role", flex: 1.3, width: 220, sortable: false, valueGetter: (params) => params?.name },
   ];
 
   return (
-    <>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Box>
-        <Paper sx={{ mb: "12px" }}>
+        <Paper sx={{ mb: "16px" }}>
           <UserSearchBar
             placeholder="Search by name or email"
             onSearchChange={handleSearchChange}
@@ -304,31 +278,13 @@ const UserManagementTable = () => {
             rowCount={totalUsers}
             columns={columns}
             getRowId={(row) => row.email}
-            pageSizeOptions={[50, 100, 1000]}
             paginationModel={paginationModel}
             paginationMode="server"
             onPaginationModelChange={setPaginationModel}
             sortingMode="server"
             sortModel={sortModel}
             onSortModelChange={handleSortModelChange}
-            disableColumnResize
-            disableRowSelectionOnClick
             checkboxSelection
-            sx={{
-              border: 0,
-              p: 1,
-              // Removes cell outline.
-              "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
-                outline: "none",
-              },
-              "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-              {
-                outline: "none",
-              },
-              "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
-                backgroundColor: "#f1f1f1f1",
-              },
-            }}
           />
         </Paper>
       </Box>
@@ -377,7 +333,7 @@ const UserManagementTable = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material";
 import "@fontsource/russo-one";
-import { color } from "@mui/system";
+import { color, fontWeight } from "@mui/system";
 
 // Centralized MUI theme for the app
 export const appTheme = createTheme({
@@ -117,6 +117,70 @@ export const appTheme = createTheme({
         h7: {
           fontWeight: 'regular',
           fontFamily: "'Russo One', 'sans-serif'",
+        },
+      },
+    },
+    MuiDataGrid: {
+      defaultProps: {
+        pageSizeOptions: [25, 50, 99],
+        disableColumnResize: true,
+        disableRowSelectionOnClick: true,
+        autoHeight: false,
+        density: "standard",
+        autoHeight: false,
+      },
+      styleOverrides: {
+        root: {
+          border: 0,
+          p: 1,
+          borderRadius: 12,
+          overflow: "hidden",
+        },
+        columnHeaders: {
+          backgroundColor: "rgb(239, 239, 239)",
+          borderBottom: "1px solid rgb(239, 239, 239)",
+        },
+        columnHeader: {
+          backgroundColor: "rgb(239, 239, 239)",
+          "&:focus, &:focus-within": {
+            outline: "none",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+          },
+          "& .MuiDataGrid-sortIcon": {
+            opacity: 'inherit !important',
+          },
+          "& .MuiDataGrid-iconButtonContainer": {
+              visibility: 'visible',
+          },
+        },
+        filler: {
+          backgroundColor: "rgb(239, 239, 239)",
+        },
+        columnSeparator: {
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+        cell: {
+          borderBottom: "1px solid rgb(239, 239, 239)",
+          whiteSpace: "normal",
+          alignItems: "flex-start",
+          py: 1,
+          "&:focus, &:focus-within": {
+            outline: "none",
+          },
+        },
+        row: {
+          "&:hover": {
+            backgroundColor: "rgb(239, 239, 239, 0.5)",
+          },
+        },
+        footerContainer: {
+          borderTop: "1px solid rgb(239, 239, 239)",
+          backgroundColor: "rgb(255, 255, 255)",
+        },
+        virtualScroller: {
+          backgroundColor: "rgb(255, 255, 255)",
         },
       },
     },

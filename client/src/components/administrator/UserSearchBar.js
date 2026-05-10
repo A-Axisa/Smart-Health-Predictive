@@ -17,8 +17,9 @@ const UserSearchBar = ({ placeholder, onSearchChange, delay = 400 }) => {
   }, [inputValue, onSearchChange, delay]);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Box sx={{ display: "flex", alignItems: "center", ml: 2, }}>
       <Input
+        disableUnderline
         sx={{ py: 2 }}
         placeholder={placeholder}
         value={inputValue}

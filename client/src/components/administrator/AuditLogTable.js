@@ -36,7 +36,7 @@ const AuditLogTable = () => {
   const [loading, setLoading] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 50,
+    pageSize: 25,
   });
   const [sortModel, setSortModel] = useState([
     { field: "createdAt", sort: "desc" },
@@ -93,7 +93,7 @@ const AuditLogTable = () => {
   }, []);
 
   const columns = [
-    { field: "logID", headerName: "Log ID", width: 70, sortable: true },
+    { field: "logID", headerName: "Log ID", flex: 0.7, width: 70, sortable: true },
     { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140, sortable: true },
     { field: "success", headerName: "Success", width: 80, type: "boolean", sortable: true },
     { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180, sortable: true },
@@ -150,33 +150,15 @@ const AuditLogTable = () => {
           getRowId={(row) => row.logID}
           rowCount={totalLogs}
           loading={loading}
-          pageSizeOptions={[50, 100]}
           paginationModel={paginationModel}
           paginationMode="server"
           onPaginationModelChange={setPaginationModel}
           sortingMode="server"
           sortModel={sortModel}
           onSortModelChange={handleSortModelChange}
-          disableColumnResize
-          disableRowSelectionOnClick
           sx={{
-            border: 0,
-            p: 1,
-            "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-              {
-                outline: "none",
-              },
-            "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
-              backgroundColor: "#f1f1f1f1",
-            },
             "& .MuiDataGrid-cell": {
-              whiteSpace: "normal",
               lineHeight: "1.4rem",
-              alignItems: "flex-start",
-              py: 1,
             },
           }}
         />

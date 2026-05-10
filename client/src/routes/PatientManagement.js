@@ -270,11 +270,8 @@ const PatientManagement = () => {
             rowCount={totalPatients}
             getRowId={(row) => row.patientId}
             paginationModel={paginationModel}
-            pageSizeOptions={[25, 50]}
             paginationMode="server"
             onPaginationModelChange={setPaginationModel}
-            disableColumnResize
-            disableRowSelectionOnClick
           />
         </Paper>
         <ConfirmationDialog

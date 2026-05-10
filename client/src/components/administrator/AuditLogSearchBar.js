@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { TextField, InputAdornment } from "@mui/material";
+import { TextField, InputAdornment, Box } from "@mui/material";
 import { memo, useEffect, useState } from "react";
 
 const AuditLogSearchBar = ({ onSearchChange, delay = 500 }) => {
@@ -16,21 +16,23 @@ const AuditLogSearchBar = ({ onSearchChange, delay = 500 }) => {
   }, [value, onSearchChange, delay]);
 
   return (
-    <TextField
-      label="Search by Email"
-      variant="outlined"
-      size="small"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      sx={{ width: 300 }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        ),
-      }}
-    />
+    <Box sx={{ display: "flex", alignItems: "center", ml: 2, mr: 2 }}>
+      <TextField
+        label="Search by Email"
+        variant="outlined"
+        size="small"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        sx={{ width: 300 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Box>
   );
 };
 
