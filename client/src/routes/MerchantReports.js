@@ -2,6 +2,8 @@ import ReportTemplate from "../components/ReportTemplate";
 import DownloadReportButton from "../components/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import ConfirmationDialog from "../components/confirmationDialog";
 import React, { useState, useEffect } from "react";
@@ -20,6 +22,8 @@ import {
   Button,
   Autocomplete,
   TextField,
+  Drawer,
+  Stack,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -121,9 +125,13 @@ const MerchantReports = ({}) => {
   }
 
   // Extract and sort month and years for drop down.
-  const years = [...new Set(reportDates.map((r) => new Date(r.date).getFullYear()))].sort((a, b) => a - b);
-  const months = [...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1))].sort((a, b) => a - b);
-  
+  const years = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
+  ].sort((a, b) => a - b);
+  const months = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1)),
+  ].sort((a, b) => a - b);
+
   // Filters reports based on selected year and month if any.
   const filteredReportDates = reportDates.filter((r) => {
     const date = new Date(r.date);
@@ -136,8 +144,8 @@ const MerchantReports = ({}) => {
   const handleClear = () => {
     setSelectedYear(null);
     setSelectedMonth(null);
-  }
-    
+  };
+
   function onPatientChange(e, newValue) {
     const selectedReports = reports.filter((r) => r.name === newValue);
     setSelectedYear(null);
@@ -146,7 +154,15 @@ const MerchantReports = ({}) => {
     setReportDates(selectedReports);
     setSelectedDate(selectedReports[0]);
   }
+  const [isOpen, setIsOpen] = useState(false);
 
+  function openBar() {
+    if (isOpen === true) {
+      setIsOpen(false);
+      return;
+    }
+    setIsOpen(true);
+  }
   return (
     <Box
       sx={{
@@ -157,144 +173,185 @@ const MerchantReports = ({}) => {
         mt: "66px",
       }}
     >
-      {/* Sidebar */}
-      <Box
-        sx={{
-          width: 400,
-          bgcolor: "background.paper",
-          borderRight: "1px solid #e0e0e0",
+      {/* Top Bar */}
+      <Drawer
+        anchor="top"
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        variant="temporary"
+        PaperProps={{
+          sx: {
+            p: 2,
+            maxHeight: "50vh",
+          },
         }}
       >
-        <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Report History
-          </Typography>
-        </Box>
-        {/* Patient List */}
-        <Box sx={{ p: 2 }}>
-          <Autocomplete
-            fullWidth
-            options={patients}
-            value={selectedPatient}
-            onChange={onPatientChange}
-            getOptionLabel={(option) => option}
+        <Box
+          sx={{
+            bgcolor: "background.paper",
+            borderRight: "1px solid #e0e0e0",
+          }}
+        >
+          <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography variant="h3">Report History</Typography>
+              <IconButton aria-label="menu" onClick={openBar}>
+                <KeyboardArrowUpIcon fontSize="large" />
+              </IconButton>
+            </Stack>
+          </Box>
+          {/* Patient List */}
+          <Box sx={{ p: 2 }}>
+            <Autocomplete
+              fullWidth
+              options={patients}
+              value={selectedPatient}
+              onChange={onPatientChange}
+              getOptionLabel={(option) => option}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Patient"
-                />
+                <TextField {...params} label="Patient" />
               )}
-          />
-        </Box>
+            />
+          </Box>
 
-        <Box sx={{ p: 2, display: "flex", gap: 2 }}>
-          {/* Year */}
-          <FormControl fullWidth disabled={!selectedPatient}>
-            <InputLabel>Year</InputLabel>
-            <Select
-              value={selectedYear}
-              label="Year"
-              onChange={(e) => {
-                setSelectedYear(e.target.value);
-                setSelectedMonth(null);
-              }}
-            >
-              {years.map((year) => (
-                <MenuItem key={year} value={year}>
-                  {year}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+            {/* Year */}
+            <FormControl fullWidth disabled={!selectedPatient}>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={selectedYear}
+                label="Year"
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setSelectedMonth(null);
+                }}
+              >
+                {years.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          {/* Month */}
-          <FormControl fullWidth disabled={!selectedPatient}>
-            <InputLabel>Month</InputLabel>
-            <Select
-              value={selectedMonth}
-              label="Month"
-              onChange={(e) => setSelectedMonth(e.target.value)}
-            >
-              {months.map((month) => (
-                <MenuItem key={month} value={month}>
-                  {new Date(0, month - 1).toLocaleString("en-AU", { month: "long" })}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            {/* Month */}
+            <FormControl fullWidth disabled={!selectedPatient}>
+              <InputLabel>Month</InputLabel>
+              <Select
+                value={selectedMonth}
+                label="Month"
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                {months.map((month) => (
+                  <MenuItem key={month} value={month}>
+                    {new Date(0, month - 1).toLocaleString("en-AU", {
+                      month: "long",
+                    })}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <Button onClick={handleClear}>
-            Clear
-          </Button>
-        </Box>
+            <Button onClick={handleClear}>Clear</Button>
+          </Box>
 
-        <List component="nav" sx={{ p: 0 }}>
-          {filteredReportDates.map((item) => (
-            <ListItem
-              key={item.healthDataId}
-              selected={selectedDate?.healthDataId === item.healthDataId}
-              onClick={(e) => setSelectedDate(item)}
-              button
-              sx={{
-                py: 2,
-                px: 3,
-                borderLeft:
-                  selectedDate?.healthDataId === item.healthDataId
-                    ? "4px solid"
-                    : "4px solid transparent",
-                borderLeftColor: "primary.main",
-                bgcolor:
-                  selectedDate?.healthDataId === item.healthDataId
-                    ? "action.selected"
-                    : "transparent",
-              }}
-            >
-              <ListItemText
-                primary={`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
-                slotProps={{
-                  primary: {
-                    style: {
-                      fontWeight:
-                        selectedDate?.healthDataId === item.healthDataId
-                          ? 600
-                          : 400,
+          <List component="nav" sx={{ p: 0 }}>
+            {filteredReportDates.map((item) => (
+              <ListItem
+                key={item.healthDataId}
+                selected={selectedDate?.healthDataId === item.healthDataId}
+                onClick={(e) => setSelectedDate(item)}
+                button
+                sx={{
+                  py: 2,
+                  px: 3,
+                  borderLeft:
+                    selectedDate?.healthDataId === item.healthDataId
+                      ? "4px solid"
+                      : "4px solid transparent",
+                  borderLeftColor: "primary.main",
+                  bgcolor:
+                    selectedDate?.healthDataId === item.healthDataId
+                      ? "action.selected"
+                      : "transparent",
+                }}
+              >
+                <ListItemText
+                  primary={`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                  slotProps={{
+                    primary: {
+                      style: {
+                        fontWeight:
+                          selectedDate?.healthDataId === item.healthDataId
+                            ? 600
+                            : 400,
+                      },
                     },
-                  },
-                }}
-              />
-              {/* Delete Report Button */}
-              {selectedDate?.healthDataId === item.healthDataId && (
-                <IconButton
-                  aria-label="delete"
-                  color="error"
-                  onClick={(e) => setDeleteDialogOpen(true)}
-                >
-                  <CloseIcon />
-                </IconButton>
-              )}
-            </ListItem>
-          ))}
-        </List>
-      </Box>
+                  }}
+                />
+                {/* Delete Report Button */}
+                {selectedDate?.healthDataId === item.healthDataId && (
+                  <IconButton
+                    aria-label="delete"
+                    color="error"
+                    onClick={(e) => setDeleteDialogOpen(true)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                )}
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
       {/* Report Content */}
+
       <Box sx={{ flex: 1 }}>
-        {/* Render if there are reports for the selected patient */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                color: "text.primary",
+              }}
+            >
+              View Patient Reports
+            </Typography>
+
+            {!isOpen && (
+              <IconButton aria-label="menu" onClick={openBar}>
+                <KeyboardArrowDownIcon fontSize="large" />
+              </IconButton>
+            )}
+          </Box>
+
+          {selectedDate && reportData && (
+            <DownloadReportButton
+              healthDataId={selectedDate?.healthDataId}
+              flatReportData={reportData}
+              meta={{
+                date: selectedDate?.date,
+                healthDataId: selectedDate?.healthDataId,
+              }}
+            />
+          )}
+        </Box>
+
         {selectedDate && reportData ? (
-          <>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-              <DownloadReportButton
-                healthDataId={selectedDate?.healthDataId}
-                flatReportData={reportData}
-                meta={{
-                  date: selectedDate?.date,
-                  healthDataId: selectedDate?.healthDataId,
-                }}
-              />
-            </Box>
-            <ReportTemplate report={reportData} date={selectedDate.date} />
-          </>
+          <ReportTemplate report={reportData} date={selectedDate.date} />
         ) : (
-          <Typography sx={{ p: 3 }}>No patient selected.</Typography>
+          <Typography sx={{ p: 3 }}> </Typography>
         )}
       </Box>
       <ConfirmationDialog
