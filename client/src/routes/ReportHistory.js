@@ -181,7 +181,9 @@ const AIHealthPrediction = ({}) => {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Typography variant={isMobile ? "h4" : "h3"}>>Report History</Typography>
+                <Typography variant={isMobile ? "h4" : "h3"}>
+                  Report History
+                </Typography>
                 <IconButton aria-label="menu" onClick={openBar}>
                   <KeyboardArrowUpIcon fontSize="large" />
                 </IconButton>
