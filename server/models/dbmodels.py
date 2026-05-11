@@ -363,3 +363,27 @@ class PasswordResetToken(Base):
     def __repr__(self):
         return f'PasswordResetToken(UserID={self.UserID}, \
             Token={self.Token}, ExpiresAt={self.ExpiresAt})'
+
+
+class PatientRequestToken(Base):
+    __tablename__ = 'PatientRequestToken'
+
+    TokenID = Column(Integer, primary_key=True)
+    MerchantID = Column(Integer, ForeignKey(
+        'UserAccount.UserID'), nullable=False)
+    PatientID = Column(Integer, ForeignKey(
+        'Patient.PatientID'), nullable=False)
+
+    Token = Column(String(999), nullable=False)
+    ExpiresAt = Column(DateTime, nullable=False)
+
+    def __init__(self, merchant_id, patient_id, token, expires_at):
+        self.MerchantID = merchant_id
+        self.PatientID = patient_id
+        self.Token = token
+        self.ExpiresAt = expires_at
+
+    def __repr__(self):
+        return f'PatientRequestToken(MerchantID={self.MerchantID}, \
+            PatientID={self.PatientID},Token={self.Token}, \
+                ExpiresAt={self.ExpiresAt})'

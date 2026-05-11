@@ -74,6 +74,8 @@ const GenerateReportForm = () => {
     useState(false);
   const [bloodGlucoseInput, setBloodGlucoseInput] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     async function fetchPatientData() {
       try {
@@ -252,9 +254,11 @@ const GenerateReportForm = () => {
   }
 
   async function handleSubmit(e) {
+    setIsLoading(true);
     e.preventDefault();
     updateAllInputFieldAlerts();
     if (!isAllInputsValid()) {
+      setIsLoading(false);
       return;
     }
     // Get condition values for fetch request
@@ -302,10 +306,12 @@ const GenerateReportForm = () => {
         if (!response.ok) {
           throw new Error(response.status);
         }
+        setIsLoading(false);
         return response.json();
       })
       .then((data) => {
-        navigate("/ai-health-prediction"); // Route the user to the Health prediction page after submission
+        setIsLoading(false);
+        navigate("/report-history"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
         console.log("An error has occurred");
@@ -315,17 +321,29 @@ const GenerateReportForm = () => {
   return (
     <Card
       variant="outlined"
-      sx={{ maxWidth: 800, margin: "2rem auto", padding: 2, boxShadow: 24 }}
+      sx={{
+        margin: "1rem auto",
+        padding: 2,
+        boxShadow: 24,
+        width: {
+          xs: "100%",
+          sm: "90%",
+          md: "75%",
+        },
+        maxWidth: "1100px",
+        alignContent: "center",
+      }}
     >
-      <CardHeader
-        title="Generate Report"
+      <Typography
+        variant="h2"
         sx={{
-          mb: 3,
-          color: "primary.main",
-          fontWeight: 600,
+          mb: 2,
+          mt: 2,
           textAlign: "center",
         }}
-      />
+      >
+        Generate Report
+      </Typography>
       <CardContent>
         <Box
           sx={{
@@ -336,18 +354,29 @@ const GenerateReportForm = () => {
             mb: 5,
           }}
         >
+          <Typography
+            variant="body1"
+            sx={{
+              textAlign: "center",
+              mb: 3,
+              color: "text.secondary",
+              maxWidth: 600,
+              mx: "auto",
+            }}
+          >
+            Upload a blood report to automatically pre-fill your some health
+            data, or enter the details manually below to generate your health
+            report.
+          </Typography>
           <BloodReportUpload onChange={readBloodReport} />
         </Box>
         <Box component="form" onSubmit={handleSubmit}>
           {/* Age & Physique Section */}
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
             Age & Physique
@@ -420,24 +449,57 @@ const GenerateReportForm = () => {
           </Box>
           {/* Fitness Section */}
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
-            Fitness
+            Health & Fitness
           </Typography>
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
               gap: 3,
             }}
           >
+            {/*Multi-select Health Conditions  */}
+            <FormControl>
+              <InputLabel id="health-conditions">
+                Health Conditions (if any)
+              </InputLabel>
+              <Select
+                labelId="health-conditions-label"
+                id="health-conditions-checkbox"
+                multiple
+                value={condition}
+                onChange={handleChangeCondition}
+                input={<OutlinedInput label="Health Conditions (if any)" />}
+                renderValue={(selected) => selected.join(", ")}
+                MenuProps={MenuProps}
+              >
+                {healthConditions.map((name) => {
+                  const selected = condition.includes(name);
+                  const SelectionIcon = selected
+                    ? CheckBoxIcon
+                    : CheckBoxOutlineBlankIcon;
+                  return (
+                    <MenuItem key={name} value={name}>
+                      <SelectionIcon
+                        fontSize="small"
+                        style={{
+                          marginRight: 8,
+                          padding: 9,
+                          boxSizing: "content-box",
+                        }}
+                      />
+                      <ListItemText primary={name} />
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
             <TextField
               name="bloodGlucose"
               label="Blood Glucose (mmol/L)"
@@ -482,71 +544,26 @@ const GenerateReportForm = () => {
               }
             />
           </Box>
-          {/*Multi-select Health Conditions  */}
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 2,
-              mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
-            }}
-          >
-            Health Conditions
-          </Typography>
-          <Box sx={{ mt: 3, mb: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel id="health-conditions">
-                Health Conditions (if any)
-              </InputLabel>
-              <Select
-                labelId="health-conditions-label"
-                id="health-conditions-checkbox"
-                multiple
-                value={condition}
-                onChange={handleChangeCondition}
-                input={<OutlinedInput label="Health Conditions (if any)" />}
-                renderValue={(selected) => selected.join(", ")}
-                MenuProps={MenuProps}
-              >
-                {healthConditions.map((name) => {
-                  const selected = condition.includes(name);
-                  const SelectionIcon = selected
-                    ? CheckBoxIcon
-                    : CheckBoxOutlineBlankIcon;
-                  return (
-                    <MenuItem key={name} value={name}>
-                      <SelectionIcon
-                        fontSize="small"
-                        style={{
-                          marginRight: 8,
-                          padding: 9,
-                          boxSizing: "content-box",
-                        }}
-                      />
-                      <ListItemText primary={name} />
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Box>
 
           {/*Multi-select LifeStyle Habits */}
+
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               mb: 2,
               mt: 2,
-              color: "primary.main",
-              fontWeight: 600,
-              textAlign: "center",
             }}
           >
             Life Style
           </Typography>
-          <Box sx={{ mt: 3, mb: 2 }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 3,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel id="life-style">
                 Life Style Habits (if any)
@@ -583,75 +600,59 @@ const GenerateReportForm = () => {
                 })}
               </Select>
             </FormControl>
-            {/*Multi-select LifeStyle Habits */}
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 2,
-                mt: 2,
-                color: "primary.main",
-                fontWeight: 600,
-                textAlign: "center",
-              }}
-            >
-              Personal Information
-            </Typography>
-            <Box
-              sx={{
-                mt: 2,
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                gap: 3,
-              }}
-            >
-              {/* Marital Status Selection */}
-              <FormControl error={alertMaritalStatusRequired}>
-                <InputLabel id="marital-status-label">
-                  Marital Status
-                </InputLabel>
-                <Select
-                  labelId="marital-status-label"
-                  id="marital-status-required"
-                  value={maritalStatus}
-                  onChange={updateMaritalStatus}
-                  label="Marital Status"
-                >
-                  <MenuItem value={"Single"}>Single</MenuItem>
-                  <MenuItem value={"Married"}>Married</MenuItem>
-                </Select>
-                {alertMaritalStatusRequired && (
-                  <FormHelperText>
-                    *Please enter your working status
-                  </FormHelperText>
-                )}
-              </FormControl>
-              {/* Working Status Selection */}
-              <FormControl error={alertWorkingStatusRequired}>
-                <InputLabel id="working-status-label">
-                  Working Status
-                </InputLabel>
-                <Select
-                  labelId="working-status-label"
-                  id="working-status-required"
-                  value={workingStatus}
-                  label="Working Status"
-                  onChange={updateWorkingStatus}
-                >
-                  <MenuItem value={"Unemployed"}>Unemployed</MenuItem>
-                  <MenuItem value={"Private"}>Private</MenuItem>
-                  <MenuItem value={"Student"}>Student</MenuItem>
-                  <MenuItem value={"Public"}>Public</MenuItem>
-                </Select>
-                {alertWorkingStatusRequired && (
-                  <FormHelperText>
-                    *Please enter your working status
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Box>
+
+            {/* Marital Status Selection */}
+            <FormControl error={alertMaritalStatusRequired}>
+              <InputLabel id="marital-status-label">Marital Status</InputLabel>
+              <Select
+                labelId="marital-status-label"
+                id="marital-status-required"
+                value={maritalStatus}
+                onChange={updateMaritalStatus}
+                label="Marital Status"
+              >
+                <MenuItem value={"Single"}>Single</MenuItem>
+                <MenuItem value={"Married"}>Married</MenuItem>
+              </Select>
+              {alertMaritalStatusRequired && (
+                <FormHelperText>
+                  *Please enter your working status
+                </FormHelperText>
+              )}
+            </FormControl>
+            {/* Working Status Selection */}
+            <FormControl error={alertWorkingStatusRequired}>
+              <InputLabel id="working-status-label">Working Status</InputLabel>
+              <Select
+                labelId="working-status-label"
+                id="working-status-required"
+                value={workingStatus}
+                label="Working Status"
+                onChange={updateWorkingStatus}
+              >
+                <MenuItem value={"Unemployed"}>Unemployed</MenuItem>
+                <MenuItem value={"Private"}>Private</MenuItem>
+                <MenuItem value={"Student"}>Student</MenuItem>
+                <MenuItem value={"Public"}>Public</MenuItem>
+              </Select>
+              {alertWorkingStatusRequired && (
+                <FormHelperText>
+                  *Please enter your working status
+                </FormHelperText>
+              )}
+            </FormControl>
           </Box>
+
           <Box sx={{ display: "flex", justifyContent: "end" }}>
-            <Button variant="contained" type="submit" size="large">
+            <Button
+              loading={isLoading}
+              variant="contained"
+              type="submit"
+              size="large"
+              sx={{
+                width: { xs: "100%", md: "auto" },
+              }}
+            >
               Submit
             </Button>
           </Box>

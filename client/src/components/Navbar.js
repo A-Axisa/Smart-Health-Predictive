@@ -4,12 +4,22 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
 import logo from "../assets/WellAiLogoTR.png";
-import { Drawer, List, ListItemButton, ListItemText } from "@mui/material";
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  IconButton,
+  Tooltip,
+  ClickAwayListener,
+  Backdrop,
+} from "@mui/material";
 import { UserContext } from "../utils/UserContext";
+import PrivacyNotice from "./PrivacyNotice";
+import DisclaimerPolicy from "./DisclaimerPolicy";
 
 // Icons
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -23,13 +33,42 @@ import GroupIcon from "@mui/icons-material/Group";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const NavBar = ({ role }) => {
+  // Maps each route to the corrosponding page title.
+  const routePageMap = {
+    // User Pages
+    "/user-landing": "Dashboard",
+    "/generate-report": "Generate Report",
+    "/ai-health-prediction": "Report History",
+    "/health-analytics": "Health Analytics",
+    "/user-settings": "Settings",
+
+    // Merchant Pages
+    "/merchant-landing": "Dashboard",
+    "/merchant-generate-report": "Generate Report",
+    "/merchant-reports": "Report History",
+    "/patient-management": "Patient Management",
+    "/create-patient": "Patient Management",
+
+    // Admin Pages
+    "/admin-dashboard": "Dashboard",
+    "/admin-users": "Users",
+    "/admin-account-approval": "Account Requests",
+    "/admin-audit-logs": "Audit Logs",
+  };
+
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
-  const [selectedPage, setSelectedPage] = useState("Dashboard");
+  const location = useLocation();
+  const selectedPage = routePageMap[location.pathname] ?? null;
+  const [isOpen, setIsOpen] = useState(false);
+  const [privacyNoticeOpen, setPrivacyNoticeOpen] = useState(false);
+  const [disclaimerPolicyOpen, setDisclaimerPolicyOpen] = useState(false);
 
   // Page options for each user type
   const standardUserPages = [
@@ -37,11 +76,6 @@ const NavBar = ({ role }) => {
     { icon: <RestorePageIcon />, title: "Generate Report" },
     { icon: <HistoryIcon />, title: "Report History" },
     { icon: <TimelineIcon />, title: "Health Analytics" },
-  ];
-
-  const settings = [
-    { icon: <SettingsIcon sx={{ colo: "#383838" }} />, title: "Account" },
-    { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
   ];
 
   const merchantPages = [
@@ -56,6 +90,19 @@ const NavBar = ({ role }) => {
     { icon: <GroupIcon />, title: "Users" },
     { icon: <HowToRegIcon />, title: "Account Requests" },
     { icon: <FileCopyIcon />, title: "Audit Logs" },
+  ];
+
+  const userAccountPages = [
+    { icon: <SettingsIcon />, title: "Settings" },
+    { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
+  ];
+
+  const merchantAccountPages = [
+    { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
+  ];
+
+  const adminAccountPages = [
+    { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
   ];
 
   // Check if settings menu is open
@@ -81,7 +128,6 @@ const NavBar = ({ role }) => {
 
   // Handle navigation for each page option
   function handleNavigate(page) {
-    setSelectedPage(page);
     if (page === "Dashboard") {
       if (role === "standard_user") {
         navigate("/user-landing");
@@ -103,7 +149,7 @@ const NavBar = ({ role }) => {
     }
     if (page === "Report History") {
       if (role === "standard_user") {
-        navigate("/ai-health-prediction");
+        navigate("/report-history");
       }
       if (role === "merchant") {
         navigate("/merchant-reports");
@@ -112,7 +158,7 @@ const NavBar = ({ role }) => {
     if (page === "Health Analytics") {
       navigate("/health-analytics");
     }
-    if (page === "Account") {
+    if (page === "Settings") {
       handleCloseSettings();
       navigate("/user-settings");
     }
@@ -153,6 +199,11 @@ const NavBar = ({ role }) => {
   if (role === "standard_user")
     return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -165,8 +216,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}
@@ -179,110 +232,180 @@ const NavBar = ({ role }) => {
                 sx={{ height: 50, cursor: "pointer" }}
               />
             </Box>
-            {/*Account Settings Section  */}
-            <Box sx={{ flexGrow: 0 }}>
-              <Button color="inherit">
-                <AccountCircleIcon
-                  fontSize="large"
-                  onClick={handleOpenSettings}
-                  sx={{ p: 0, color: "#383838" }}
-                ></AccountCircleIcon>
-                <Menu
-                  sx={{ mt: "45px" }}
-                  id="menu-appbar"
-                  anchorEl={openMenu}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(openMenu)}
-                  onClose={handleCloseSettings}
-                >
-                  {settings.map((page) => (
-                    <MenuItem
-                      key={page.title}
-                      onClick={() => handleNavigate(page.title)}
-                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                    >
-                      {page.icon}
-                      <Typography>{page.title}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Button>
-            </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Nav options relocated here. */}
+        {/* Nav Options */}
         <Drawer
           variant="permanent"
           anchor="left"
           sx={{
-            width: 240,
-            borderRight: "2px solid #e9e9e9",
+            width: isOpen ? 250 : 65,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: 250,
+              width: isOpen ? 250 : 65,
               top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
             },
           }}
         >
           <Box
             sx={{
               overflow: "auto",
-              height: "780px",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
-            <Typography
-              color="#A9A9A9"
-              sx={{ fontSize: 12, px: 3, py: 1, mt: 5 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1,
+              }}
             >
-              Overview
-            </Typography>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
+
+            {isOpen && (
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                Overview
+              </Typography>
+            )}
+
             <List>
               {standardUserPages.map((page) => (
-                <ListItemButton
+                <Tooltip
                   key={page.title}
-                  sx={{
-                    color: selectedPage === page.title ? "#fff" : "383838",
-                    backgroundColor:
-                      selectedPage === page.title ? "#712b89" : "transparent",
-                    borderRadius: "10px",
-                    ml: 2,
-                    mr: 2,
-                    mb: 1,
-                    px: 2,
-                    py: 1,
-                    "&:hover": {
-                      backgroundColor:
-                        selectedPage === page.title ? "#712b89" : "",
-                    },
-                  }}
-                  onClick={() => handleNavigate(page.title)}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
                 >
-                  {page.icon}{" "}
-                  <ListItemText primary={page.title} sx={{ ml: 3 }} />
-                </ListItemButton>
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:
+                        selectedPage === page.title ? "#712b89" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor:
+                          selectedPage === page.title ? "#712b89" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7" sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
               ))}
             </List>
-          </Box>
-          <Box
-            sx={{
-              borderTop: "2px solid #e9e9e9",
-              py: 3,
-              textAlign: "center",
-            }}
-          >
-            <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-              © 2024 WellAI. All rights reserved. Privacy Notice & Disclaimer
-              Policy
-            </Typography>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
+              {isOpen && (
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                  Account
+                </Typography>
+              )}
+              <List>
+                {userAccountPages.map((page) => (
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
+                    <ListItemButton
+                      key={page.title}
+                      sx={{
+                        color: selectedPage === page.title ? "#fff" : "383838",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#712b89"
+                            : "transparent",
+                        mb: 1,
+                        px: 3,
+                        py: 1.5,
+                        justifyContent: isOpen ? "initial" : "center",
+                        "&:hover": {
+                          backgroundColor:
+                            selectedPage === page.title ? "#712b89" : "",
+                        },
+                      }}
+                      onClick={() => handleNavigate(page.title)}
+                    >
+                      {page.icon}
+                      {isOpen && (
+                        <Typography variant="h7" sx={{ ml: 3 }}>
+                          {page.title}
+                        </Typography>
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                ))}
+              </List>
+              <Box
+                sx={{
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
+                }}
+              >
+                {/* Footer */}
+                {isOpen && (
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
+                    </Typography>
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
+                  </>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Drawer>
       </>
@@ -292,6 +415,11 @@ const NavBar = ({ role }) => {
   if (role === "merchant")
     return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -304,8 +432,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}
@@ -314,113 +444,184 @@ const NavBar = ({ role }) => {
                 component="img"
                 alt="WellAI Logo"
                 src={logo}
-                onClick={() => navigate("/user-landing")}
+                onClick={() => navigate("/merchant-landing")}
                 sx={{ height: 50, cursor: "pointer" }}
               />
-            </Box>
-            {/*Account Settings Section  */}
-            <Box sx={{ flexGrow: 0 }}>
-              <Button color="inherit">
-                <AccountCircleIcon
-                  fontSize="large"
-                  onClick={handleOpenSettings}
-                  sx={{ p: 0, color: "#383838" }}
-                ></AccountCircleIcon>
-                <Menu
-                  sx={{ mt: "45px" }}
-                  id="menu-appbar"
-                  anchorEl={openMenu}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(openMenu)}
-                  onClose={handleCloseSettings}
-                >
-                  {settings.map((page) => (
-                    <MenuItem
-                      key={page.title}
-                      onClick={() => handleNavigate(page.title)}
-                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                    >
-                      {page.icon}
-                      <Typography>{page.title}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Button>
             </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Nav options relocated here. */}
+        {/* Nav Options */}
         <Drawer
           variant="permanent"
           anchor="left"
           sx={{
-            width: 240,
-            borderRgiht: "2px solid #e9e9e9",
+            width: isOpen ? 250 : 65,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: 250,
+              width: isOpen ? 250 : 65,
               top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
             },
           }}
         >
           <Box
             sx={{
               overflow: "auto",
-              height: "770px",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
-            <Typography
-              color="#A9A9A9"
-              sx={{ fontSize: 12, px: 3, py: 1, mt: 5 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1,
+              }}
             >
-              Overview
-            </Typography>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
+
+            {isOpen && (
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                Overview
+              </Typography>
+            )}
+
             <List>
               {merchantPages.map((page) => (
-                <ListItemButton
+                <Tooltip
                   key={page.title}
-                  sx={{
-                    color: selectedPage === page.title ? "#fff" : "383838",
-                    backgroundColor:
-                      selectedPage === page.title ? "#417638" : "transparent",
-                    borderRadius: "10px",
-                    ml: 2,
-                    mr: 2,
-                    mb: 1,
-                    px: 2,
-                    py: 1,
-                    "&:hover": {
-                      backgroundColor:
-                        selectedPage === page.title ? "#417638" : "",
-                    },
-                  }}
-                  onClick={() => handleNavigate(page.title)}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
                 >
-                  {page.icon}{" "}
-                  <ListItemText primary={page.title} sx={{ ml: 3 }} />
-                </ListItemButton>
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:
+                        selectedPage === page.title ? "#417638" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor:
+                          selectedPage === page.title ? "#417638" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7" sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
               ))}
             </List>
-          </Box>
-          <Box
-            sx={{
-              borderTop: "2px solid #e9e9e9",
-              py: 3,
-              textAlign: "center",
-            }}
-          >
-            <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-              © 2024 WellAI. All rights reserved.
-            </Typography>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
+              {isOpen && (
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                  Account
+                </Typography>
+              )}
+              <List>
+                {merchantAccountPages.map((page) => (
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
+                    <ListItemButton
+                      key={page.title}
+                      sx={{
+                        color: selectedPage === page.title ? "#fff" : "383838",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#417638"
+                            : "transparent",
+                        mb: 1,
+                        px: 3,
+                        py: 1.5,
+                        justifyContent: isOpen ? "initial" : "center",
+                        "&:hover": {
+                          backgroundColor:
+                            selectedPage === page.title ? "#417638" : "",
+                        },
+                      }}
+                      onClick={() => handleNavigate(page.title)}
+                    >
+                      {page.icon}
+                      {isOpen && (
+                        <Typography variant="h7" sx={{ ml: 3 }}>
+                          {page.title}
+                        </Typography>
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                ))}
+              </List>
+              <Box
+                sx={{
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
+                }}
+              >
+                {/* Footer */}
+                {isOpen && (
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
+                    </Typography>
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
+                  </>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Drawer>
       </>
@@ -430,6 +631,11 @@ const NavBar = ({ role }) => {
   if (role === "admin")
     return (
       <>
+        <Backdrop
+          open={isOpen}
+          onClick={() => setIsOpen(false)}
+          sx={{ zIndex: 1000 }}
+        />
         <AppBar
           position="fixed"
           elevation={0}
@@ -442,8 +648,10 @@ const NavBar = ({ role }) => {
             {/*Title/Logo Section*/}
             <Box
               sx={{
+                height: 64,
                 flexGrow: 1,
                 display: "flex",
+                alignItems: "center",
                 justifyContent: "flex-start",
                 pl: 2,
               }}
@@ -456,109 +664,180 @@ const NavBar = ({ role }) => {
                 sx={{ height: 50, cursor: "pointer" }}
               />
             </Box>
-            {/*Account Settings Section  */}
-            <Box sx={{ flexGrow: 0 }}>
-              <Button color="inherit">
-                <AccountCircleIcon
-                  fontSize="large"
-                  onClick={handleOpenSettings}
-                  sx={{ p: 0, color: "#383838" }}
-                ></AccountCircleIcon>
-                <Menu
-                  sx={{ mt: "45px" }}
-                  id="menu-appbar"
-                  anchorEl={openMenu}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(openMenu)}
-                  onClose={handleCloseSettings}
-                >
-                  {settings.map((page) => (
-                    <MenuItem
-                      key={page.title}
-                      onClick={() => handleNavigate(page.title)}
-                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                    >
-                      {page.icon}
-                      <Typography>{page.title}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Button>
-            </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Nav options relocated here. */}
+        {/* Nav Options */}
         <Drawer
           variant="permanent"
           anchor="left"
           sx={{
-            width: 240,
-            borderRgiht: "2px solid #e9e9e9",
+            width: isOpen ? 250 : 65,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: 250,
+              width: isOpen ? 250 : 65,
               top: "66px",
+              overflowX: "hidden",
+              transition: "width 0.2s ease",
             },
           }}
         >
           <Box
             sx={{
               overflow: "auto",
-              height: "770px",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
             }}
           >
-            <Typography
-              color="#A9A9A9"
-              sx={{ fontSize: 12, px: 3, py: 1, mt: 5 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isOpen ? "flex-end" : "center",
+                px: 1,
+                pt: 2,
+                pb: 1,
+              }}
             >
-              Overview
-            </Typography>
+              <IconButton onClick={() => setIsOpen(!isOpen)} size="small">
+                {isOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+              </IconButton>
+            </Box>
+
+            {isOpen && (
+              <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                Overview
+              </Typography>
+            )}
+
             <List>
               {adminPages.map((page) => (
-                <ListItemButton
+                <Tooltip
                   key={page.title}
-                  sx={{
-                    color: selectedPage === page.title ? "#fff" : "383838",
-                    backgroundColor:
-                      selectedPage === page.title ? "#417638" : "transparent",
-                    borderRadius: "10px",
-                    ml: 2,
-                    mr: 2,
-                    mb: 1,
-                    px: 2,
-                    py: 1,
-                    "&:hover": {
-                      backgroundColor:
-                        selectedPage === page.title ? "#417638" : "",
-                    },
-                  }}
-                  onClick={() => handleNavigate(page.title)}
+                  title={!isOpen ? page.title : ""}
+                  placement="right"
                 >
-                  {page.icon}{" "}
-                  <ListItemText primary={page.title} sx={{ ml: 3 }} />
-                </ListItemButton>
+                  <ListItemButton
+                    key={page.title}
+                    sx={{
+                      color: selectedPage === page.title ? "#fff" : "383838",
+                      backgroundColor:
+                        selectedPage === page.title ? "#417638" : "transparent",
+                      mb: 1,
+                      px: 3,
+                      py: 1.5,
+                      justifyContent: isOpen ? "initial" : "center",
+                      "&:hover": {
+                        backgroundColor:
+                          selectedPage === page.title ? "#417638" : "",
+                      },
+                    }}
+                    onClick={() => handleNavigate(page.title)}
+                  >
+                    {page.icon}
+                    {isOpen && (
+                      <Typography variant="h7" sx={{ ml: 3 }}>
+                        {page.title}
+                      </Typography>
+                    )}
+                  </ListItemButton>
+                </Tooltip>
               ))}
             </List>
-          </Box>
-          <Box
-            sx={{
-              borderTop: "2px solid #e9e9e9",
-              py: 3,
-              textAlign: "center",
-            }}
-          >
-            <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
-              © 2024 WellAI. All rights reserved.
-            </Typography>
+
+            <Box
+              sx={{
+                mt: "auto",
+                mb: 8,
+              }}
+            >
+              {/* Account Options */}
+              {isOpen && (
+                <Typography sx={{ fontSize: 12, px: 3, color: "#A9A9A9" }}>
+                  Account
+                </Typography>
+              )}
+              <List>
+                {adminAccountPages.map((page) => (
+                  <Tooltip
+                    key={page.title}
+                    title={!isOpen ? page.title : ""}
+                    placement="right"
+                  >
+                    <ListItemButton
+                      key={page.title}
+                      sx={{
+                        color: selectedPage === page.title ? "#fff" : "383838",
+                        backgroundColor:
+                          selectedPage === page.title
+                            ? "#417638"
+                            : "transparent",
+                        mb: 1,
+                        px: 3,
+                        py: 1.5,
+                        justifyContent: isOpen ? "initial" : "center",
+                        "&:hover": {
+                          backgroundColor:
+                            selectedPage === page.title ? "#417638" : "",
+                        },
+                      }}
+                      onClick={() => handleNavigate(page.title)}
+                    >
+                      {page.icon}
+                      {isOpen && (
+                        <Typography variant="h7" sx={{ ml: 3 }}>
+                          {page.title}
+                        </Typography>
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                ))}
+              </List>
+              <Box
+                sx={{
+                  borderTop: "2px solid #e9e9e9",
+                  py: 3,
+                  textAlign: "center",
+                }}
+              >
+                {/* Footer */}
+                {isOpen && (
+                  <>
+                    <Typography color="#A9A9A9" sx={{ fontSize: 12 }}>
+                      © 2024 WellAI. All rights reserved.{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setPrivacyNoticeOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Privacy Notice</u>
+                        </b>
+                      </Box>{" "}
+                      &{" "}
+                      <Box
+                        component="span"
+                        onClick={() => setDisclaimerPolicyOpen(true)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <b>
+                          <u>Disclaimer Policy</u>
+                        </b>
+                      </Box>
+                      .
+                    </Typography>
+                    <PrivacyNotice
+                      open={privacyNoticeOpen}
+                      onClose={() => setPrivacyNoticeOpen(false)}
+                    />
+                    <DisclaimerPolicy
+                      open={disclaimerPolicyOpen}
+                      onClose={() => setDisclaimerPolicyOpen(false)}
+                    />
+                  </>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Drawer>
       </>

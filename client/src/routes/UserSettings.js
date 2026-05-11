@@ -308,48 +308,87 @@ const UserSettings = () => {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", sm: "center" },
           mt: 3,
           flexWrap: "wrap",
           gap: 2,
         }}
       >
-        <Box>
-          <Typography
-            variant="subtitle1"
-            color="error"
-            sx={{ fontWeight: 600 }}
+        <Box sx={{ width: { xs: "100%", sm: "auto" }, textAlign: "left" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+              flexWrap: "wrap",
+            }}
           >
-            Danger Zone
-          </Typography>
+            <Typography
+              variant="subtitle1"
+              color="error"
+              sx={{ fontWeight: 600 }}
+            >
+              Danger Zone
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={!isUserLoggedIn || deleteBusy}
+              onClick={() => setDeleteDialogOpen(true)}
+              sx={{
+                mt: 0,
+                minWidth: "auto",
+                width: "auto",
+                px: { xs: 1.75, sm: 2.25 },
+                py: { xs: "0.45rem", sm: "0.5rem" },
+                fontSize: { xs: "0.82rem", sm: "0.85rem" },
+                lineHeight: 1.2,
+                borderRadius: 1.5,
+                fontWeight: 600,
+              }}
+            >
+              {deleteBusy ? "Deleting…" : "Delete Account"}
+            </Button>
+          </Box>
           {deleteError && (
-            <Alert severity="error" sx={{ mt: 1, maxWidth: 500 }}>
+            <Alert severity="error" sx={{ mt: 1, maxWidth: 500, textAlign: "left" }}>
               {deleteError}
             </Alert>
           )}
+        </Box>
+        <Box
+          sx={{
+            ml: { xs: 0, sm: "auto" },
+            width: { xs: "100%", sm: "auto" },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: { xs: "center", sm: "flex-end" },
+            alignItems: "center",
+            gap: { xs: 1.25, sm: 2 },
+          }}
+        >
           <Button
             variant="contained"
-            color="error"
-            disabled={!isUserLoggedIn || deleteBusy}
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={handleAccountSave}
+            disabled={accountSaving || userLoading}
             sx={{
-              mt: 1,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
+              px: 4,
+              width: { xs: "min(260px, 100%)", sm: "auto" },
+              py: { xs: "0.7rem", sm: "0.6rem" },
+              fontSize: { xs: "0.95rem", sm: "0.875rem" },
               fontWeight: 500,
             }}
           >
-            {deleteBusy ? "Deleting…" : "Delete My Account"}
+            {accountSaving ? "Saving…" : "Save Changes"}
           </Button>
-        </Box>
-        <Box sx={{ ml: "auto" }}>
           <Button
             variant="outlined"
             disabled={accountSaving}
             sx={{
-              mr: 2,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
+              width: { xs: "min(260px, 100%)", sm: "auto" },
+              py: { xs: "0.7rem", sm: "0.6rem" },
+              fontSize: { xs: "0.95rem", sm: "0.875rem" },
               fontWeight: 500,
             }}
             onClick={() => {
@@ -362,19 +401,6 @@ const UserSettings = () => {
             }}
           >
             Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAccountSave}
-            disabled={accountSaving || userLoading}
-            sx={{
-              px: 4,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
-              fontWeight: 500,
-            }}
-          >
-            {accountSaving ? "Saving…" : "Save Changes"}
           </Button>
         </Box>
       </Box>
@@ -701,9 +727,9 @@ const UserSettings = () => {
       sx={{
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
-        minHeight: "100vh",
+        minHeight: "calc(100vh - 66px)",
         bgcolor: "#f5f5f5",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >

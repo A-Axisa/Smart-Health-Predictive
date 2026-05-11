@@ -1,21 +1,47 @@
 import AuditLogTable from "../components/administrator/AuditLogTable";
-import { Box } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  Stack,
+  Container
+} from "@mui/material";
+import AdministratorApproval from "./AdministratorApproval";
 
 const AdministratorLogs = () => {
   return (
-    <Box
+    <Container
+      maxWidth={false}
+      variant="gradient"
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        flexDirection: "column",
-        p: 10,
-        alignItems: "center",
-        ml: "250px",
-        mt: "66px",
+        minHeight: "100vh",
+        overflow: "hidden",
+        pt: 1,
+        pl: 5,
       }}
     >
-      <AuditLogTable />
-    </Box>
+      <Box
+        sx={{
+          pt: { xs: "65px", sm: "67px", md: "75px" },
+          pl: { xs: "45px", sm: "62px", md: "70px" },
+          pb: { xs: "2px", sm: "0px", md: "4px" },
+          pr: { xs: "2px", sm: "0px", md: "4px" },
+          mr: "0px",
+          maxWidth: "1600px", 
+        }}
+      >
+        <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>
+          <Typography
+            variant="h3"
+            sx={{ fontSize: { xs: "2em", sm: "2em", md: "3em" } }}
+          >
+            Audit Logs
+          </Typography>
+          <Divider />
+        </Stack>
+        <AuditLogTable />
+      </Box>
+    </Container>
   );
 };
 

@@ -1,4 +1,5 @@
 import { Box, Typography, Card, CardContent } from "@mui/material";
+import { grid } from "@mui/system";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -61,7 +62,7 @@ const MerchantLanding = () => {
       sx={{
         minHeight: "100vh",
         bgcolor: "#f7fffd",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
         pt: 1,
         pl: 5,
@@ -69,12 +70,18 @@ const MerchantLanding = () => {
       }}
     >
       <Box sx={{ borderBottom: "1px solid #d6d6d6", mb: 4, py: 3 }}>
-        <Typography variant="h4">Patient Overview</Typography>
-        <Typography variant="body1">{name}'s patient activity</Typography>
+        <Typography variant="h2">Patient Overview</Typography>
       </Box>
 
       {/* Stat cards */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          mb: 3,
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr 1fr" },
+        }}
+      >
         {stats.map(({ label, value, text }) => (
           <Card key={label} sx={{ borderRadius: "10px", flex: 1 }}>
             <CardContent>
@@ -92,11 +99,17 @@ const MerchantLanding = () => {
         ))}
       </Box>
 
-      <Box sx={{ display: "flex", gap: 3 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+        }}
+      >
         {/* Condition risk graph */}
         <Card sx={{ flex: 1, borderRadius: "10px", p: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Risk distribution
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Risk Distribution
           </Typography>
           {["stroke", "cvd", "diabetes"].map((condition) => {
             const dist = data.riskDistribution?.[condition] ?? {};
@@ -113,10 +126,10 @@ const MerchantLanding = () => {
                     alignItems: "baseline",
                   }}
                 >
-                  <Typography sx={{ color: "#747474" }}>
+                  <Typography variant="h7" sx={{ color: "#747474" }}>
                     {condition.toUpperCase()}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#747474" }}>
+                  <Typography variant="h7" sx={{ color: "#747474" }}>
                     PATIENTS
                   </Typography>
                 </Box>
@@ -167,9 +180,15 @@ const MerchantLanding = () => {
         </Card>
 
         {/* Report activity */}
-        <Card sx={{ flex: 1, borderRadius: "10px", p: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Report activity
+        <Card
+          sx={{
+            flex: 1,
+            borderRadius: "10px",
+            p: 2,
+          }}
+        >
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Report Activity
           </Typography>
           <Box sx={{ maxHeight: 380, overflowY: "auto" }}>
             {(data.reportActivity ?? []).length === 0 ? (

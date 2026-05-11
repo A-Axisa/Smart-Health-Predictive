@@ -6,24 +6,46 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ConfirmationDialog from "../components/confirmationDialog";
 import Stack from "@mui/material/Stack";
 import React, { useState, useEffect } from "react";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-import { Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  Drawer,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const AIHealthPrediction = ({}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [openSideBar, setOpenSideBar] = useState(true);
+  const [openSideBar, setOpenSideBar] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   function openBar() {
-    if (openSideBar === true) {
-      setOpenSideBar(false);
+    if (isOpen === true) {
+      setIsOpen(false);
       return;
     }
-    setOpenSideBar(true);
+    setIsOpen(true);
   }
 
   function fetchReportDates() {
@@ -85,9 +107,45 @@ const AIHealthPrediction = ({}) => {
     setDeleteDialogOpen(false);
   }
 
+  // Extract and sort month and years for drop down.
+  const years = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
+  ].sort((a, b) => a - b);
+  const months = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1)),
+  ].sort((a, b) => a - b);
+
+  // Filters reports based on selected year and month if any.
+  const filteredReportDates = reportDates.filter((r) => {
+    const date = new Date(r.date);
+    return (
+      (!selectedYear || date.getFullYear() === selectedYear) &&
+      (!selectedMonth || date.getMonth() + 1 === selectedMonth)
+    );
+  });
+
+  const handleClear = () => {
+    setSelectedYear(null);
+    setSelectedMonth(null);
+  };
+
   // Prevents page from loading if the user has no health record
   if (!reportData) {
-    return <h1>User has no Health Prediction Reports</h1>;
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+        }}
+      >
+        <Typography variant="h5" sx={{ color: "text.secondary" }}>
+          No Health Prediction Reports Available
+        </Typography>
+      </Box>
+    );
   } else {
     return (
       <Box
@@ -95,15 +153,24 @@ const AIHealthPrediction = ({}) => {
           display: "flex",
           minHeight: "100vh",
           bgcolor: "background.default",
-          ml: "250px",
+          ml: "65px",
           mt: "66px",
         }}
       >
-        {/* Sidebar */}
-        {openSideBar && (
+        <Drawer
+          anchor="top"
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          variant="temporary"
+          PaperProps={{
+            sx: {
+              p: 2,
+              maxHeight: "50vh",
+            },
+          }}
+        >
           <Box
             sx={{
-              width: { xs: 300, md: 400 },
               bgcolor: "background.paper",
               borderRight: "1px solid #e0e0e0",
             }}
@@ -114,16 +181,59 @@ const AIHealthPrediction = ({}) => {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography variant={isMobile ? "h4" : "h3"}>
                   Report History
                 </Typography>
                 <IconButton aria-label="menu" onClick={openBar}>
-                  <MenuIcon fontSize="large" />
+                  <KeyboardArrowUpIcon fontSize="large" />
                 </IconButton>
               </Stack>
             </Box>
+
+            {/* Date Select */}
+            <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+              {/* Year */}
+              <FormControl fullWidth>
+                <InputLabel>Year</InputLabel>
+                <Select
+                  value={selectedYear}
+                  label="Year"
+                  onChange={(e) => {
+                    setSelectedYear(e.target.value);
+                    setSelectedMonth(null);
+                  }}
+                >
+                  {years.map((year) => (
+                    <MenuItem key={year} value={year}>
+                      {year}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Month */}
+              <FormControl fullWidth>
+                <InputLabel>Month</InputLabel>
+                <Select
+                  value={selectedMonth}
+                  label="Month"
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  {months.map((month) => (
+                    <MenuItem key={month} value={month}>
+                      {new Date(0, month - 1).toLocaleString("en-AU", {
+                        month: "long",
+                      })}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Button onClick={handleClear}>Clear</Button>
+            </Box>
+
             <List component="nav" sx={{ p: 0 }}>
-              {reportDates.map((item) => (
+              {filteredReportDates.map((item) => (
                 <ListItem
                   key={item.id}
                   selected={selectedDate.healthDataId === item.healthDataId}
@@ -144,17 +254,19 @@ const AIHealthPrediction = ({}) => {
                   }}
                 >
                   <ListItemText
-                    primary={`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
-                    slotProps={{
-                      primary: {
-                        style: {
+                    primary={
+                      <Typography
+                        variant="h7"
+                        sx={{
                           fontWeight:
                             selectedDate.healthDataId === item.healthDataId
-                              ? 600
-                              : 400,
-                        },
-                      },
-                    }}
+                              ? 400
+                              : 0,
+                        }}
+                      >
+                        {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                      </Typography>
+                    }
                   />
                   {/* Delete Report Button */}
                   {selectedDate.healthDataId === item.healthDataId && (
@@ -170,15 +282,37 @@ const AIHealthPrediction = ({}) => {
               ))}
             </List>
           </Box>
-        )}
+        </Drawer>
+
         {/* Menu and Download Buttons */}
         <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-            {!openSideBar && (
-              <IconButton aria-label="menu" onClick={openBar}>
-                <MenuIcon fontSize="large" />
-              </IconButton>
-            )}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+              gap: 2,
+              p: 2,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h5" sx={{ ml: 2 }}>
+                View Report History
+              </Typography>
+
+              {!isOpen && (
+                <IconButton aria-label="menu" onClick={openBar}>
+                  <KeyboardArrowDownIcon fontSize="large" />
+                </IconButton>
+              )}
+            </Box>
+
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}

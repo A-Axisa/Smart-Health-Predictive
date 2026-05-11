@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Paper, Button } from "@mui/material";
+import { Paper, Button, Box } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import ConfirmationDialog from "../confirmationDialog";
 
@@ -49,17 +49,13 @@ const AccountApprovalTable = ({}) => {
   };
 
   const columns = [
-    { field: "email", headerName: "Email", width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", width: 250, sortable: true },
-    {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 200,
-      sortable: true,
-    },
+    { field: "email", headerName: "Email", flex: 2, width: 250, sortable: true },
+    { field: "fullName", headerName: "Full Name", flex: 1.5, width: 250, sortable: true },
+    { field: "createdAt", headerName: "Created At", flex: 1.2, width: 200, sortable: true },
     {
       field: "confirm",
       headerName: "Confirm",
+      flex: 0.8,
       width: 130,
       sortable: false,
       renderCell: (params) => {
@@ -83,32 +79,23 @@ const AccountApprovalTable = ({}) => {
   }, []);
 
   return (
-    <>
-      <Paper sx={{ width: "100%" }}>
-        <DataGrid
-          rows={userData}
-          columns={columns}
-          getRowId={(row) => row.email}
-          pageSizeOptions={[50, 100, 1000]}
-          initialState={{ pagination: { pageSize: 50 } }}
-          disableColumnResize
-          disableRowSelectionOnClick
-          sx={{
-            border: 0,
-            p: 1,
-            // Removes cell outline.
-            "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
-              {
-                outline: "none",
-              },
-            "& .MuiDataGrid-filler, & .MuiDataGrid-columnHeader": {
-              backgroundColor: "#f1f1f1f1",
-            },
-          }}
-        />
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <Box sx={{ overflowX: "auto", width: "100%" }}>
+          <DataGrid
+            rows={userData}
+            columns={columns}
+            getRowId={(row) => row.email}
+          />
+        </Box>
       </Paper>
       <ConfirmationDialog
         open={dialogOpen}
@@ -121,7 +108,7 @@ const AccountApprovalTable = ({}) => {
         confirm={handleConfirmation}
         cancel={() => setDialogOpen(false)}
       />
-    </>
+    </Box>
   );
 };
 

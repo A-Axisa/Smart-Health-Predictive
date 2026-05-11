@@ -1,12 +1,15 @@
 import { Box, Select, Button, MenuItem } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
-const ToolBar = ({
+const UserToolBar = ({
   rowSelectionModel,
   totalRowCount,
   onUsersDelete,
   onUsersRoleChange,
+  onClinicChange,
   roleData,
+  clinicData,
+  selectedClinic,
 }) => {
   // Return row count instead of set size.
   const getEmailCount = () => {
@@ -24,18 +27,39 @@ const ToolBar = ({
       sx={{
         p: 1,
         display: "flex",
-        alignItems: "center",
-        gap: 2,
-        justifyContent: "flex-end",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: { xs: "stretch", sm: "center" },
+        gap: 1,
+        justifyContent: { xs: "flex-end" },
       }}
     >
+      <Select
+        size="small"
+        displayEmpty
+        value={selectedClinic}
+        onChange={(e) => onClinicChange(e.target.value)}
+        sx={{
+          width: { xs: "100%", sm:200},
+        }}
+      >
+        <MenuItem value="">
+          All Clinics
+        </MenuItem>
+        {clinicData.map((clinic) => (
+          <MenuItem key={clinic.id} value={clinic.id}>
+            {clinic.name}
+          </MenuItem>
+        ))}
+      </Select>
       <Select
         size="small"
         displayEmpty
         disabled={emailCount === 0}
         value=""
         onChange={(e) => onUsersRoleChange(e.target.value)}
-        sx={{ minWidth: 150 }}
+        sx={{
+          width: { xs: "100%", sm: "auto" }
+        }}
       >
         <MenuItem value="" disabled>
           Change Role...
@@ -52,6 +76,9 @@ const ToolBar = ({
         variant="contained"
         disabled={emailCount === 0}
         onClick={onUsersDelete}
+        sx={{
+          width: { xs: "100%", sm: "auto" }
+        }}
       >
         <DeleteForeverIcon /> Delete Selected
       </Button>
@@ -59,4 +86,4 @@ const ToolBar = ({
   );
 };
 
-export default ToolBar;
+export default UserToolBar;

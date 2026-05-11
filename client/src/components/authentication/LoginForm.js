@@ -1,17 +1,19 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import { useContext, useState } from "react";
 import {
-  Box,
-  Container,
-  Stack,
-  Button,
-  Typography,
-  Link,
   Alert,
+  Box,
+  Button,
+  Container,
+  Card,
+  CardContent,
   Divider,
+  Link,
+  Stack,
+  Typography,
 } from "@mui/material";
-import PasswordInputField from "../authentication/PasswordInputField";
 import EmailInputField from "../authentication/EmailInputField";
+import PasswordInputField from "../authentication/PasswordInputField";
 import { UserContext } from "../../utils/UserContext";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -22,6 +24,8 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { refreshUser } = useContext(UserContext);
   const [isLoginUnsuccessful, setIsLoginUnsuccessful] = useState(false);
   const [password, setPassword] = useState(null);
@@ -91,7 +95,10 @@ const LoginForm = () => {
       })
       .then(async (data) => {
         await refreshUser();
-        navigate("/landing");
+
+        const from = location.state?.from || "/landing";
+
+        navigate(from, { replace: true });
       })
       .catch((error) => {
         setIsLoginUnsuccessful(true);
@@ -101,17 +108,24 @@ const LoginForm = () => {
   }
 
   return (
-    <Container
+    <Card
+      component="form"
+      onSubmit={handleLogin}
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "25px",
-        alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
+        width: {
+          xs: "auto",
+          sm: "400px",
+          md: "400px",
+          lg: "600px",
+          xl: "600px",
+        },
+        minHeight: "auto",
+        maxHeight: "400px",
+        boxShadow: { xs: "none", sm: 16 },
       }}
     >
-      <Box component="form" onSubmit={handleLogin}>
-        <Stack spacing={{ xs: 2 }}>
+      <CardContent>
+        <Stack spacing={2}>
           {generateUnsuccessfulLoginAlert()}
           <EmailInputField
             onChange={validateEmail}
@@ -129,18 +143,19 @@ const LoginForm = () => {
             type="submit"
             variant="contained"
             sx={{
-              py: { xs: "1rem", sm: ".9rem" },
-              fontSize: { xs: "1.2rem", sm: "1rem" },
+              py: "1rem",
+              fontSize: "1rem",
             }}
           >
             Login
           </Button>
           <Button
-            href="/register"
+            component={RouterLink}
+            to="/register"
             variant="outlined"
             sx={{
-              py: { xs: "1rem", sm: ".9rem" },
-              fontSize: { xs: "1.2rem", sm: "1rem" },
+              py: "1rem",
+              fontSize: "1rem",
             }}
           >
             Create Account
@@ -149,18 +164,24 @@ const LoginForm = () => {
           <Stack
             direction="row"
             spacing={{ xs: 1 }}
+            alignItems="center"
             style={{ justifyContent: "center" }}
           >
-            <Typography align="center" style={{ color: "#888888" }}>
+            <Typography align="center" variant="subtle">
               Forgot your password?
             </Typography>
-            <Link href="/forgot-password" align="center" fontWeight="bold">
+            <Button
+              component={RouterLink}
+              to="/forgot-password"
+              variant="outlined"
+              align="center"
+            >
               Click Here
-            </Link>
+            </Button>
           </Stack>
         </Stack>
-      </Box>
-    </Container>
+      </CardContent>
+    </Card>
   );
 };
 

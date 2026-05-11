@@ -8,7 +8,7 @@ const GenerateReport = ({}) => {
         minHeight: "100vh",
         bgcolor: "#f5f5f5",
         display: "flex",
-        ml: "250px",
+        ml: "65px",
         mt: "66px",
       }}
     >
