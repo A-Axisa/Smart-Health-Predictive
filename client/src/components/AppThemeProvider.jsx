@@ -92,7 +92,20 @@ export const appTheme = createTheme({
       defaultProps: {
         elevation: 16,
       },
+      variants: [
+    {
+      props: { variant: "report-section" },
+      style: ({ theme }) => ({
+        borderRadius: 0,
+        marginInline: theme.spacing(2),
+        padding: theme.spacing(2),
+        boxShadow: theme.shadows[3],
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      }),
     },
+  ],
+    },
+    
     MuiTypography: {
       styleOverrides: {
         root: {
@@ -115,6 +128,10 @@ export const appTheme = createTheme({
           fontFamily: "'Russo One', 'sans-serif'",
         },
         h4: {
+          fontWeight: 'regular',
+          fontFamily: "'Russo One', 'sans-serif'",
+        },
+        h5: {
           fontWeight: 'regular',
           fontFamily: "'Russo One', 'sans-serif'",
         },

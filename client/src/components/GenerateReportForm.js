@@ -311,7 +311,7 @@ const GenerateReportForm = () => {
       })
       .then((data) => {
         setIsLoading(false);
-        navigate("/ai-health-prediction"); // Route the user to the Health prediction page after submission
+        navigate("/report-history"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
         console.log("An error has occurred");
