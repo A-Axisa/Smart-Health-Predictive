@@ -7,9 +7,14 @@ import {
   Divider,
   Card,
   Paper,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 const ReportTemplate = ({ report, date }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const workingStatusMap = {
     0: "Unemployed",
     1: "Private",
@@ -100,16 +105,29 @@ const ReportTemplate = ({ report, date }) => {
     if (risk < 70) return "#FFB800";
     return "#FF0000";
   }
+
   return (
     <Box
       sx={{
         display: "grid",
         gap: 3,
+        width: "100%",
+        px: { xs: 1, sm: 2 },
+        boxSizing: "border-box",
       }}
     >
-      <Paper variant="report-section">
+      <Paper
+        variant="report-section"
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          mx: "auto",
+        }}
+      >
         <Typography
-          variant="h2"
+          variant={isMobile ? "h4" : "h2"}
           sx={{
             textAlign: "center",
             mt: 3,
@@ -131,10 +149,19 @@ const ReportTemplate = ({ report, date }) => {
         </Typography>
       </Paper>
 
-      <Paper variant="report-section">
+      <Paper
+        variant="report-section"
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          mx: "auto",
+        }}
+      >
         {/* Health Predictions */}
         <Typography
-          variant="h3"
+          variant={isMobile ? "h5" : "h3"}
           sx={{
             mx: 3,
             mt: 3,
@@ -152,11 +179,17 @@ const ReportTemplate = ({ report, date }) => {
           }}
         >
           <Card sx={{ textAlign: "center" }}>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               Stroke
             </Typography>
             <Typography variant="h5">{report.strokeChance}%</Typography>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               Predicted Risk
             </Typography>
             <Typography
@@ -168,11 +201,17 @@ const ReportTemplate = ({ report, date }) => {
           </Card>
 
           <Card sx={{ textAlign: "center" }}>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               Diabetes
             </Typography>
             <Typography variant="h5">{report.diabetesChance}%</Typography>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               Predicted Risk
             </Typography>
             <Typography
@@ -184,11 +223,17 @@ const ReportTemplate = ({ report, date }) => {
           </Card>
 
           <Card sx={{ textAlign: "center" }}>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               CVD
             </Typography>
             <Typography variant="h5">{report.cvdChance}%</Typography>
-            <Typography variant="h4" sx={{ color: "#747474" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "#747474" }}
+            >
               Predicted Risk
             </Typography>
             <Typography
@@ -200,9 +245,18 @@ const ReportTemplate = ({ report, date }) => {
           </Card>
         </Box>
       </Paper>
-      <Paper variant="report-section">
+      <Paper
+        variant="report-section"
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          mx: "auto",
+        }}
+      >
         <Typography
-          variant="h3"
+          variant={isMobile ? "h5" : "h3"}
           sx={{
             mx: 2,
             mt: 3,
@@ -220,7 +274,7 @@ const ReportTemplate = ({ report, date }) => {
         >
           {/* Lifestyle */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
               Lifestyle Recommendations
             </Typography>
             <Typography variant="body1">
@@ -231,7 +285,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Exercise */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
               Exercise Recommendations
             </Typography>
             <Typography variant="body1">
@@ -242,7 +296,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Diet */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
               Diet Recommendations
             </Typography>
             <Typography variant="body1">
@@ -252,7 +306,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Diet to Avoid */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
               Diet to Avoid
             </Typography>
             <Typography variant="body1">
@@ -262,9 +316,18 @@ const ReportTemplate = ({ report, date }) => {
           </Box>
         </Box>
       </Paper>
-      <Paper variant="report-section" sx={{ mb: 3 }}>
+      <Paper
+        variant="report-section"
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          mx: "auto",
+        }}
+      >
         <Typography
-          variant="h3"
+          variant={isMobile ? "h5" : "h3"}
           sx={{
             mx: 3,
             mb: 3,

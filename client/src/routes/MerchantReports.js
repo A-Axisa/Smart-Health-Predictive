@@ -24,11 +24,15 @@ import {
   TextField,
   Drawer,
   Stack,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const MerchantReports = ({}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
   const pageData = location.state;
   const defaultSelectedPatientId =
@@ -198,7 +202,9 @@ const MerchantReports = ({}) => {
               alignItems="center"
               justifyContent="space-between"
             >
-              <Typography variant="h3">Report History</Typography>
+              <Typography variant={isMobile ? "h4" : "h3"}>
+                Report History
+              </Typography>
               <IconButton aria-label="menu" onClick={openBar}>
                 <KeyboardArrowUpIcon fontSize="large" />
               </IconButton>
@@ -314,12 +320,19 @@ const MerchantReports = ({}) => {
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
             p: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
             <Typography
               variant="h5"
               sx={{

@@ -21,11 +21,16 @@ import {
   MenuItem,
   Button,
   Drawer,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const AIHealthPrediction = ({}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
@@ -176,7 +181,7 @@ const AIHealthPrediction = ({}) => {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Typography variant="h3">Report History</Typography>
+                <Typography variant={isMobile ? "h4" : "h3"}>>Report History</Typography>
                 <IconButton aria-label="menu" onClick={openBar}>
                   <KeyboardArrowUpIcon fontSize="large" />
                 </IconButton>
@@ -279,15 +284,32 @@ const AIHealthPrediction = ({}) => {
 
         {/* Menu and Download Buttons */}
         <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-            <Typography variant="h5" sx={{ ml: 2 }}>
-              View Report History
-            </Typography>
-            {!isOpen && (
-              <IconButton aria-label="menu" onClick={openBar}>
-                <KeyboardArrowDownIcon fontSize="large" />
-              </IconButton>
-            )}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+              gap: 2,
+              p: 2,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h5" sx={{ ml: 2 }}>
+                View Report History
+              </Typography>
+
+              {!isOpen && (
+                <IconButton aria-label="menu" onClick={openBar}>
+                  <KeyboardArrowDownIcon fontSize="large" />
+                </IconButton>
+              )}
+            </Box>
 
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
