@@ -129,6 +129,8 @@ class Patient(Base):
     Weight = Column(Numeric(5, 2))
     Height = Column(Numeric(5, 2))
     DateOfBirth = Column(Date)
+    MaritalStatus = Column(Integer)
+    WorkingStatus = Column(Integer)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     user = relationship("UserAccount", back_populates="patients")
