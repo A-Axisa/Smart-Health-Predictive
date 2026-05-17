@@ -126,6 +126,19 @@ def setup_once_for_all_tests():
     db_conn.commit()
 
 
+# Removes patient record after a test
+@pytest.fixture
+def cleanup_patient():
+    db_conn = next(get_db())
+    created_ids = []
+    yield created_ids
+    for patient_id in created_ids:
+        db_conn.query(UserPatientAccess).filter(
+            UserPatientAccess.PatientID == patient_id).delete()
+        db_conn.query(Patient).filter(Patient.PatientID == patient_id).delete()
+        db_conn.commit()
+
+
 def test_delete_requires_authentication():
     fresh = TestClient(app)
     res = fresh.delete("/users/")
@@ -244,7 +257,7 @@ def test_merchant_cannot_access_other_patients():
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_create_patient():
+def test_create_patient(cleanup_patient):
     # Login as Merchant
     credentials = {"email": "service@example.com",
                    "password": "thisismypassword"}
@@ -265,6 +278,7 @@ def test_create_patient():
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["message"] == 'Patient successfully created.'
     assert isinstance(response.json()["patient_id"], int)
+    cleanup_patient.append(response.json()["patient_id"])
 
 
 def test_create_patient_non_merchant():
@@ -359,7 +373,36 @@ def test_create_patient_invalid_height():
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_remove_patient():
+def test_remove_patient(cleanup_patient):
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details
+    patient = {
+        "given_names": "John",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 180
+    }
+    # Create Patient
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["message"] == "Patient successfully created."
+    assert isinstance(response.json()["patient_id"], int)
+    cleanup_patient.append(response.json()["patient_id"])
+
+    response = client.delete(
+        f"/remove-patient/{response.json()["patient_id"]}")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'message': f'Patient successfully removed.'}
+
+
+def test_create_duplicate_patient(cleanup_patient):
     # Login as Merchant
     credentials = {"email": "service@example.com",
                    "password": "thisismypassword"}
@@ -378,13 +421,47 @@ def test_remove_patient():
     # Create Patient
     response = client.post("/create-patient", json=patient)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["message"] == "Patient successfully created."
     assert isinstance(response.json()["patient_id"], int)
+    cleanup_patient.append(response.json()["patient_id"])
 
-    response = client.delete(
-        f"/remove-patient/{response.json()["patient_id"]}")
+    # Attempt to create the patient record again
+    response = client.post("/create-patient", json=patient)
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_create_duplicate_patient_whitespace(cleanup_patient):
+    # Login as Merchant
+    credentials = {"email": "service@example.com",
+                   "password": "thisismypassword"}
+    login_res = client.post("/login/", json=credentials)
+    assert login_res.status_code == status.HTTP_200_OK
+    assert login_res.json() == {'message': f'Successfully logged in.'}
+    # Patient Details
+    patient = {
+        "given_names": "Timmy",
+        "family_name": "Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 180
+    }
+    whitespace_patient = {
+        "given_names": "  Timmy",
+        "family_name": "  Smith",
+        "date_of_birth": "1988-04-04",
+        "gender": "Male",
+        "weight": 80,
+        "height": 180
+    }
+    # Create Patient
+    response = client.post("/create-patient", json=patient)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'message': f'Patient successfully removed.'}
+    assert isinstance(response.json()["patient_id"], int)
+    cleanup_patient.append(response.json()["patient_id"])
+
+    # Attempt to create the patient record again using the same patient names with whitespace
+    response = client.post("/create-patient", json=whitespace_patient)
+    assert response.status_code == status.HTTP_409_CONFLICT
 
 
 class TestPatientAccessRequestFlow():
