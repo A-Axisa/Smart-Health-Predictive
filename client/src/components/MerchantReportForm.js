@@ -82,10 +82,10 @@ const MerchantReportForm = () => {
   const [alertApLowRequired, setAlertApLowRequired] = useState(false);
   const [apHigh, setApHigh] = useState(null);
   const [alertApHighRequired, setAlertApHighRequired] = useState(false);
-  const [maritalStatus, setMaritalStatus] = useState(null);
+  const [maritalStatus, setMaritalStatus] = useState("");
   const [alertMaritalStatusRequired, setAlertMaritalStatusRequired] =
     useState(false);
-  const [workingStatus, setWorkingStatus] = useState(null);
+  const [workingStatus, setWorkingStatus] = useState("");
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
   const [alertPatientRequired, setAlertPatientRequired] = useState(false);
@@ -142,6 +142,8 @@ const MerchantReportForm = () => {
         setHeight({ isValid: true, value: data.height });
         setGender(data.gender);
         setAge({ isValid: true, value: data.age });
+        setMaritalStatus(data.maritalStatus);
+        setWorkingStatus(data.workingStatus);
       } catch (err) {
         console.log("Failed to fetch patient data.");
       }

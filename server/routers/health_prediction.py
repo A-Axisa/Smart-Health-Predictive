@@ -392,6 +392,8 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
     # Update Weight & Height based on sanitized input.
     patient.Weight = sanitized_data["weight"]
     patient.Height = sanitized_data["height"]
+    patient.set_marital_status(sanitized_data["marital_status"])
+    patient.set_working_status(sanitized_data["working_status"])
 
     # Check if the merchant has permission to view the patients record
     if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
