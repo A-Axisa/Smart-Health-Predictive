@@ -992,8 +992,8 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
         "height": float(patient.Height) if patient.Height else None,
         "gender": get_gender(patient.Gender),
         "age": get_age(patient.DateOfBirth),
-        "maritalStatus": patient.get_marital_status_title(),
-        "workingStatus": patient.get_working_status_title(),
+        "maritalStatus": patient.get_marital_status(),
+        "workingStatus": patient.get_working_status(),
     }
 
     return result
@@ -1031,7 +1031,9 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         "weight": float(patient.Weight) if patient.Weight else None,
         "height": float(patient.Height) if patient.Height else None,
         "gender": get_gender(patient.Gender),
-        "age": get_age(patient.DateOfBirth)
+        "age": get_age(patient.DateOfBirth),
+        "maritalStatus": patient.get_marital_status(),
+        "workingStatus": patient.get_working_status(),
     }
 
     return result
