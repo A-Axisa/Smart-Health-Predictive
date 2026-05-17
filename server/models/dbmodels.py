@@ -2,13 +2,17 @@ from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric
 from sqlalchemy.orm import declarative_base, relationship
 import enum
 
-MARITAL_STATUS_OPTIONS = ['Single', 'Married']
-WORKING_STATUS_OPTIONS = [
-    'Unemployed',
-    'Private',
-    'Student',
-    'Public',
-]
+MARITAL_STATUS_OPTIONS = {
+    0: 'Single',
+    1: 'Married',
+}
+
+WORKING_STATUS_OPTIONS = {
+    0: 'Unemployed',
+    1: 'Private',
+    2: 'Student',
+    3: 'Public',
+}
 
 Base = declarative_base()
 
@@ -163,28 +167,20 @@ class Patient(Base):
         familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
         dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
 
-    def get_marital_status_id(self):
-        return self.MaritalStatus
-
-    def get_marital_status_title(self):
+    def get_marital_status(self):
         """Returns marital status as a string."""
-        if (self.MaritalStatus is not None
-                and self.MaritalStatus < len(MARITAL_STATUS_OPTIONS)):
-            return MARITAL_STATUS_OPTIONS[self.MaritalStatus]
-        return None
+        return MARITAL_STATUS_OPTIONS.get(self.MaritalStatus)
 
-    def get_working_status_title(self):
+    def get_working_status(self):
         """Returns working status as a string."""
-        if (self.WorkingStatus is not None
-                and self.WorkingStatus < len(WORKING_STATUS_OPTIONS)):
-            return WORKING_STATUS_OPTIONS[self.WorkingStatus]
-        return None
+        return WORKING_STATUS_OPTIONS.get(self.WorkingStatus)
 
     def set_marital_status(self, status: int | str):
         """Sets the value of the marital status and will convert a string
         to the matching integer."""
         if isinstance(status, str):
-            self.MaritalStatus = MARITAL_STATUS_OPTIONS.index(status)
+            self.MaritalStatus = next(
+                (k for k, v in MARITAL_STATUS_OPTIONS.items() if v == status), None)
         else:
             self.MaritalStatus = status
 
@@ -192,7 +188,8 @@ class Patient(Base):
         """Sets the value of the working status and will convert a string
         to the matching integer."""
         if isinstance(status, str):
-            self.WorkingStatus = WORKING_STATUS_OPTIONS.index(status)
+            self.WorkingStatus = next(
+                (k for k, v in WORKING_STATUS_OPTIONS.items() if v == status), None)
         else:
             self.WorkingStatus = status
 
