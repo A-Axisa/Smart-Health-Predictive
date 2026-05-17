@@ -167,24 +167,30 @@ class Patient(Base):
         return self.MaritalStatus
 
     def get_marital_status_title(self):
+        """Returns marital status as a string."""
         if (self.MaritalStatus is not None
                 and self.MaritalStatus < len(MARITAL_STATUS_OPTIONS)):
             return MARITAL_STATUS_OPTIONS[self.MaritalStatus]
         return None
 
     def get_working_status_title(self):
+        """Returns working status as a string."""
         if (self.WorkingStatus is not None
                 and self.WorkingStatus < len(WORKING_STATUS_OPTIONS)):
             return WORKING_STATUS_OPTIONS[self.WorkingStatus]
         return None
 
     def set_marital_status(self, status: int | str):
+        """Sets the value of the marital status and will convert a string
+        to the matching integer."""
         if isinstance(status, str):
             self.MaritalStatus = MARITAL_STATUS_OPTIONS.index(status)
         else:
             self.MaritalStatus = status
 
     def set_working_status(self, status: int | str):
+        """Sets the value of the working status and will convert a string
+        to the matching integer."""
         if isinstance(status, str):
             self.WorkingStatus = WORKING_STATUS_OPTIONS.index(status)
         else:
