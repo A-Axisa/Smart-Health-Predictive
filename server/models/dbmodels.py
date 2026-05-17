@@ -2,6 +2,14 @@ from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric
 from sqlalchemy.orm import declarative_base, relationship
 import enum
 
+MARITAL_STATUS_OPTIONS = ['Single', 'Married']
+WORKING_STATUS_OPTIONS = [
+    'Unemployed',
+    'Private',
+    'Student',
+    'Public',
+]
+
 Base = declarative_base()
 
 
@@ -129,15 +137,17 @@ class Patient(Base):
     Weight = Column(Numeric(5, 2))
     Height = Column(Numeric(5, 2))
     DateOfBirth = Column(Date)
+    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     MaritalStatus = Column(Integer)
     WorkingStatus = Column(Integer)
-    CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
 
     user = relationship("UserAccount", back_populates="patients")
     health_records = relationship("HealthData", back_populates="patient")
     user_access = relationship("UserPatientAccess", back_populates="patient")
 
-    def __init__(self, user_id, given_names, family_name, gender, weight, height, date_of_birth):
+    def __init__(self, user_id, given_names,
+                 family_name, gender, weight, height,
+                 date_of_birth, marital_status, working_status):
         self.UserID = user_id
         self.GivenNames = given_names
         self.FamilyName = family_name
@@ -145,11 +155,40 @@ class Patient(Base):
         self.Weight = weight
         self.Height = height
         self.DateOfBirth = date_of_birth
+        self.MaritalStatus = marital_status
+        self.WorkingStatus = working_status
 
     def __repr__(self):
         return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
         familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
         dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
+
+    def get_marital_status_id(self):
+        return self.MaritalStatus
+
+    def get_marital_status_title(self):
+        if (self.MaritalStatus is not None
+                and self.MaritalStatus < len(MARITAL_STATUS_OPTIONS)):
+            return MARITAL_STATUS_OPTIONS[self.MaritalStatus]
+        return None
+
+    def get_working_status_title(self):
+        if (self.WorkingStatus is not None
+                and self.WorkingStatus < len(WORKING_STATUS_OPTIONS)):
+            return WORKING_STATUS_OPTIONS[self.WorkingStatus]
+        return None
+
+    def set_marital_status(self, status: int | str):
+        if isinstance(status, str):
+            self.MaritalStatus = MARITAL_STATUS_OPTIONS.index(status)
+        else:
+            self.MaritalStatus = status
+
+    def set_working_status(self, status: int | str):
+        if isinstance(status, str):
+            self.WorkingStatus = WORKING_STATUS_OPTIONS.index(status)
+        else:
+            self.WorkingStatus = status
 
 
 class UserPatientAccess(Base):
