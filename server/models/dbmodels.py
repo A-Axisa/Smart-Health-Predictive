@@ -149,9 +149,18 @@ class Patient(Base):
     health_records = relationship("HealthData", back_populates="patient")
     user_access = relationship("UserPatientAccess", back_populates="patient")
 
-    def __init__(self, user_id, given_names,
-                 family_name, gender, weight, height,
-                 date_of_birth, marital_status, working_status):
+    def __init__(
+            self,
+            user_id,
+            given_names,
+            family_name,
+            gender,
+            weight,
+            height,
+            date_of_birth,
+            marital_status=None,
+            working_status=None
+    ):
         self.UserID = user_id
         self.GivenNames = given_names
         self.FamilyName = family_name
