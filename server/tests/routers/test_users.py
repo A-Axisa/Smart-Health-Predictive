@@ -189,7 +189,14 @@ def test_get_patient_data_returns_correct_fields():
     data = response.json()
 
     assert response.status_code == status.HTTP_200_OK
-    assert data.keys() == {"weight", "height", "gender", "age"}
+    assert data.keys() == {
+        "workingStatus",
+        "maritalStatus",
+        "weight",
+        "height",
+        "gender",
+        "age"
+    }
     assert data["gender"] == "Male"
     assert data["age"] == datetime.today().year - 1980 - \
         ((datetime.today().month, datetime.today().day) < (5, 24))
@@ -227,7 +234,14 @@ def test_merchant_get_patient_data_returns_correct_fields():
     data = response.json()
 
     assert response.status_code == status.HTTP_200_OK
-    assert data.keys() == {"weight", "height", "gender", "age"}
+    assert data.keys() == {
+        "workingStatus",
+        "maritalStatus",
+        "weight",
+        "height",
+        "gender",
+        "age"
+    }
     assert data["gender"] == "Male"
     assert data["age"] == datetime.today().year - 1980 - \
         ((datetime.today().month, datetime.today().day) < (5, 24))

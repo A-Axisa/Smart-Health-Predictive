@@ -2,6 +2,18 @@ from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric
 from sqlalchemy.orm import declarative_base, relationship
 import enum
 
+MARITAL_STATUS_OPTIONS = {
+    0: 'Single',
+    1: 'Married',
+}
+
+WORKING_STATUS_OPTIONS = {
+    0: 'Unemployed',
+    1: 'Private',
+    2: 'Student',
+    3: 'Public',
+}
+
 Base = declarative_base()
 
 
@@ -130,12 +142,25 @@ class Patient(Base):
     Height = Column(Numeric(5, 2))
     DateOfBirth = Column(Date)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    MaritalStatus = Column(Integer)
+    WorkingStatus = Column(Integer)
 
     user = relationship("UserAccount", back_populates="patients")
     health_records = relationship("HealthData", back_populates="patient")
     user_access = relationship("UserPatientAccess", back_populates="patient")
 
-    def __init__(self, user_id, given_names, family_name, gender, weight, height, date_of_birth):
+    def __init__(
+            self,
+            user_id,
+            given_names,
+            family_name,
+            gender,
+            weight,
+            height,
+            date_of_birth,
+            marital_status=None,
+            working_status=None
+    ):
         self.UserID = user_id
         self.GivenNames = given_names
         self.FamilyName = family_name
@@ -143,11 +168,39 @@ class Patient(Base):
         self.Weight = weight
         self.Height = height
         self.DateOfBirth = date_of_birth
+        self.MaritalStatus = marital_status
+        self.WorkingStatus = working_status
 
     def __repr__(self):
         return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
         familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
         dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
+
+    def get_marital_status(self):
+        """Returns marital status as a string."""
+        return MARITAL_STATUS_OPTIONS.get(self.MaritalStatus)
+
+    def get_working_status(self):
+        """Returns working status as a string."""
+        return WORKING_STATUS_OPTIONS.get(self.WorkingStatus)
+
+    def set_marital_status(self, status: int | str):
+        """Sets the value of the marital status and will convert a string
+        to the matching integer."""
+        if isinstance(status, str):
+            self.MaritalStatus = next(
+                (k for k, v in MARITAL_STATUS_OPTIONS.items() if v == status), None)
+        else:
+            self.MaritalStatus = status
+
+    def set_working_status(self, status: int | str):
+        """Sets the value of the working status and will convert a string
+        to the matching integer."""
+        if isinstance(status, str):
+            self.WorkingStatus = next(
+                (k for k, v in WORKING_STATUS_OPTIONS.items() if v == status), None)
+        else:
+            self.WorkingStatus = status
 
 
 class UserPatientAccess(Base):
