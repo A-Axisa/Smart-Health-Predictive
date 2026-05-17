@@ -189,12 +189,43 @@ async def get_users(
 async def update_user_role(user_email: str, role_id: int, request: Request,
                            db_conn: Session = Depends(get_db)):
     """Update a user's role"""
+    # Authenticate the requesting user.
+    current_user_data = get_current_user(request, db_conn)
+    requesting_user_email = current_user_data.get('email')
+
+    # Verify the requesting user is an administrator.
+    admin_user = db_conn.query(UserAccount).filter(
+        UserAccount.Email == requesting_user_email).first()
+    if not admin_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Could not identify the requesting user.")
+
+    admin_role = db_conn.query(AccountRole).join(
+        UserAccountRole, AccountRole.RoleID == UserAccountRole.RoleID
+    ).filter(UserAccountRole.UserID == admin_user.UserID).first()
+
+    if not admin_role or admin_role.RoleName.lower() != 'admin':
+        write_audit_log(db_conn,
+                        eventType=LogEventType.ROLE_CHANGED,
+                        success=False,
+                        userEmail=requesting_user_email,
+                        device=request.headers.get("user-agent"),
+                        ipAddress=request.client.host,
+                        description=f"Unauthorized role change attempt for account: {user_email}.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You do not have permission to change user roles.")
+
     # Check if both the user and role exist.
     user = db_conn.query(UserAccount).filter(
         UserAccount.Email == user_email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    # Prevent admin from changing their own role.
+    if admin_user.UserID == user.UserID:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Administrators cannot change their own role.")
 
     role = db_conn.query(AccountRole).filter(
         AccountRole.RoleID == role_id).first()
@@ -214,16 +245,10 @@ async def update_user_role(user_email: str, role_id: int, request: Request,
 
     db_conn.commit()
 
-    actor_email = None
-    try:  # After resolving the authentication issue for this endpoint, this exception handling should be removed
-        actor_email = get_current_user(request, db_conn).get('email')
-    except Exception:
-        pass
-
     write_audit_log(db_conn,
                     eventType=LogEventType.ROLE_CHANGED,
                     success=True,
-                    userEmail=actor_email,
+                    userEmail=requesting_user_email,
                     device=request.headers.get("user-agent"),
                     ipAddress=request.client.host,
                     description=f"Role changed for {user_email} to {role.RoleName}.")
