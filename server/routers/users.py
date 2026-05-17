@@ -9,6 +9,7 @@ from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
 import re
+from sqlalchemy import func
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -657,10 +658,30 @@ async def create_patient(patient: PatientCreationDetails, request: Request, db_c
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    # Sanitize name input and remove whitespace
+    sanitizer = Sanitizer()
+    sanitized_given_names = sanitizer.sanitize(patient.given_names).strip()
+    sanitized_family_name = sanitizer.sanitize(patient.family_name).strip()
+
+    # Check if the patient already exists
+    existing_patient = db_conn.query(Patient).filter(
+        func.lower(Patient.GivenNames) == sanitized_given_names.lower(),
+        func.lower(Patient.FamilyName) == sanitized_family_name.lower(),
+        Patient.DateOfBirth == patient.date_of_birth,
+        Patient.Gender == gender_map[patient.gender]
+    ).first()
+
+    if existing_patient:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Patient already exists."
+        )
+
     # Create new patient
     new_patient = Patient(user_id=None,
-                          given_names=patient.given_names,
-                          family_name=patient.family_name, gender=gender_map[patient.gender],
+                          given_names=sanitized_given_names,
+                          family_name=sanitized_family_name,
+                          gender=gender_map[patient.gender],
                           date_of_birth=patient.date_of_birth,
                           weight=patient.weight,
                           height=patient.height)

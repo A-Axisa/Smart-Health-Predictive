@@ -168,12 +168,12 @@ const CreatePatientForm = () => {
       .then((response) => {
         if (!response.ok) {
           setShowFailMessage(true);
+          setShowSuccessMessage(false);
+          return
         }
-        return response.json();
-      })
-      .then((data) => {
         setShowSuccessMessage(true);
         setShowFailMessage(false);
+        return response.json();
       })
       .catch((err) => {
         console.log("An error has occurred");
