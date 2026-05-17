@@ -218,7 +218,7 @@ const PatientDetails = () => {
                     {key.toUpperCase()}
                   </Typography>
                   <Typography sx={{ fontSize: { xs: "1.4rem", sm: "2.125rem" }, fontWeight: 400, lineHeight: 1.2 }}>
-                    {patientData?.risks?.[key]?.slice(-1)[0] ?? 0}%
+                    {patientData?.risks?.[key]?.[0] ?? 0}%
                   </Typography>
                   <Box
                     component="span"
