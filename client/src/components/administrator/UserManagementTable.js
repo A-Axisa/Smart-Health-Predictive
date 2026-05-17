@@ -130,6 +130,7 @@ const UserManagementTable = () => {
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
+              credentials: "include",
             },
           );
           if (!response.ok) throw new Error(response.status);
