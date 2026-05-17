@@ -107,15 +107,30 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     # Update Weight & Height based on sanitized input.
     patient.Weight = sanitized_data["weight"]
     patient.Height = sanitized_data["height"]
+    patient.set_marital_status(sanitized_data["marital_status"])
+    patient.set_working_status(sanitized_data["working_status"])
 
     # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
     patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
-    healthData = HealthData(patient_id, sanitized_data["age"], sanitized_data["weight"], sanitized_data["height"], gender_map[sanitized_data["gender"]],
-                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data[
-                                "ap_lo"], sanitized_data["high_cholesterol"],
-                            sanitized_data["hypertension"], sanitized_data[
-                                "heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
-                            smoker_map[sanitized_data["smoker"]],  marital_map[sanitized_data["marital_status"]], working_map[sanitized_data["working_status"]], sanitized_data["stroke"])
+    healthData = HealthData(
+        patient_id,
+        sanitized_data["age"],
+        sanitized_data["weight"],
+        sanitized_data["height"],
+        gender_map[sanitized_data["gender"]],
+        sanitized_data["blood_glucose"],
+        sanitized_data["ap_hi"],
+        sanitized_data["ap_lo"],
+        sanitized_data["high_cholesterol"],
+
+        sanitized_data["hypertension"],
+        sanitized_data["heart_disease"],
+        sanitized_data["diabetes"],
+        sanitized_data["alcohol"],
+        smoker_map[sanitized_data["smoker"]],
+        marital_map[sanitized_data["marital_status"]],
+        working_map[sanitized_data["working_status"]],
+        sanitized_data["stroke"])
 
     # Store health data into the database
     db_conn.add(healthData)
