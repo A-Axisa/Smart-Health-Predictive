@@ -6,10 +6,7 @@ import {
   ListItem,
   ListItemText,
   TextField,
-  Divider,
   Button,
-  Switch,
-  FormControlLabel,
   FormControl,
   InputLabel,
   Select,
@@ -58,16 +55,6 @@ const UserSettings = () => {
   });
 
   const [passwordChanged, setPasswordChanged] = useState(false);
-
-  // Notification state
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    pushNotifications: true,
-    healthReminders: true,
-    reportUpdates: true,
-    systemAlerts: false,
-  });
 
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
@@ -161,12 +148,6 @@ const UserSettings = () => {
 
   const updateForm = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
   const updatePwd = (k, v) => setPasswordData((p) => ({ ...p, [k]: v }));
-  const updateNotify = (k, v) => setNotifications((p) => ({ ...p, [k]: v }));
-
-  const handleSave = (section) => {
-    setSaveMessage(`${section} saved successfully!`);
-    setTimeout(() => setSaveMessage(""), 2500);
-  };
 
   const validateProfile = () => {
     const errors = {};
@@ -324,13 +305,6 @@ const UserSettings = () => {
               flexWrap: "wrap",
             }}
           >
-            <Typography
-              variant="subtitle1"
-              color="error"
-              sx={{ fontWeight: 600 }}
-            >
-              Danger Zone
-            </Typography>
             <Button
               variant="contained"
               color="error"
@@ -594,115 +568,6 @@ const UserSettings = () => {
     );
   };
 
-  const Notifications = () => (
-    <Box>
-      <Typography
-        variant="h5"
-        sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
-      >
-        Notification Settings
-      </Typography>
-      {saveMessage && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {saveMessage}
-        </Alert>
-      )}
-
-      <Stack spacing={1.5}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.emailNotifications}
-              onChange={(e) =>
-                updateNotify("emailNotifications", e.target.checked)
-              }
-            />
-          }
-          label="Email Notifications"
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-          Receive reminders and updates via email
-        </Typography>
-
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.pushNotifications}
-              onChange={(e) =>
-                updateNotify("pushNotifications", e.target.checked)
-              }
-            />
-          }
-          label="Push Notifications"
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-          Get instant notifications on your device
-        </Typography>
-
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.smsNotifications}
-              onChange={(e) =>
-                updateNotify("smsNotifications", e.target.checked)
-              }
-            />
-          }
-          label="SMS Notifications"
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-          Receive important health alerts via SMS
-        </Typography>
-
-        <Divider sx={{ my: 2 }} />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.healthReminders}
-              onChange={(e) =>
-                updateNotify("healthReminders", e.target.checked)
-              }
-            />
-          }
-          label="Health Reminders"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.reportUpdates}
-              onChange={(e) => updateNotify("reportUpdates", e.target.checked)}
-            />
-          }
-          label="Report Updates"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={notifications.systemAlerts}
-              onChange={(e) => updateNotify("systemAlerts", e.target.checked)}
-            />
-          }
-          label="System Alerts"
-        />
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
-          <Button
-            variant="contained"
-            onClick={() => handleSave("Notifications")}
-            sx={{
-              px: 4,
-              py: { xs: "0.8rem", sm: "0.6rem" },
-              fontSize: { xs: "1rem", sm: "0.875rem" },
-              fontWeight: 500,
-            }}
-          >
-            Save Preferences
-          </Button>
-        </Box>
-      </Stack>
-    </Box>
-  );
-
   const handleTabChange = (event, newValue) => {
     setSelectedSection(newValue);
   };
@@ -715,8 +580,6 @@ const UserSettings = () => {
         return Profile();
       case "Password":
         return Password();
-      case "Notifications":
-        return Notifications();
       default:
         return null;
     }
@@ -758,7 +621,6 @@ const UserSettings = () => {
             <Tab label="Account Details" value="Account Details" />
             <Tab label="Profile" value="Profile" />
             <Tab label="Password" value="Password" />
-            <Tab label="Notifications" value="Notifications" />
           </Tabs>
         </Box>
       ) : (
@@ -776,7 +638,7 @@ const UserSettings = () => {
             </Typography>
           </Box>
           <List component="nav" sx={{ p: 0 }}>
-            {["Account Details", "Profile", "Password", "Notifications"].map(
+            {["Account Details", "Profile", "Password"].map(
               (item) => (
                 <ListItem
                   key={item}
