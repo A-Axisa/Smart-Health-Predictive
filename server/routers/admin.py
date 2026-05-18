@@ -536,6 +536,7 @@ async def get_logs(
 
 @router.get("/admin-dashboard/active-account-analytics")
 async def get_active_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return counts of active standard-user accounts in the past month and week."""
     _confirm_admin(request, db_conn)
     prev_month = datetime.now() - timedelta(days=30)
     prev_week = datetime.now() - timedelta(days=7)
@@ -570,6 +571,7 @@ async def get_active_account_analytics(request: Request, db_conn: Session = Depe
 
 @router.get("/admin-dashboard/active-merchant-analytics")
 async def get_active_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return counts of active merchant accounts in the past month and week."""
     _confirm_admin(request, db_conn)
     prev_month = datetime.now() - timedelta(days=30)
     prev_week = datetime.now() - timedelta(days=7)
@@ -604,6 +606,7 @@ async def get_active_merchant_analytics(request: Request, db_conn: Session = Dep
 
 @router.get("/admin-dashboard/recent-reports-generated-analytics")
 async def get_reports_generated_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return counts of health reports generated in the past month and week."""
     _confirm_admin(request, db_conn)
     prev_month = datetime.now() - timedelta(days=30)
     prev_week = datetime.now() - timedelta(days=7)
@@ -628,6 +631,7 @@ async def get_reports_generated_analytics(request: Request, db_conn: Session = D
 
 @router.get("/admin-dashboard/pending-merchants-analytics")
 async def get_pending_merchant_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return the number of merchant accounts awaiting validation."""
     _confirm_admin(request, db_conn)
 
     pending_merchants = (
@@ -649,6 +653,7 @@ async def get_pending_merchant_analytics(request: Request, db_conn: Session = De
 
 @router.get("/admin-dashboard/predictions-distinct-years")
 async def get_predictions_distinct_years(request: Request, db_conn: Session = Depends(get_db)):
+    """Return a sorted list of distinct years in which predictions exist."""
     _confirm_admin(request, db_conn)
     query = db_conn.query(
         extract("year", Prediction.CreatedAt).label("year")
@@ -658,6 +663,15 @@ async def get_predictions_distinct_years(request: Request, db_conn: Session = De
 
 @router.get("/admin-dashboard/ave-risk-series/{year}")
 async def get_average_risk_series(year: int, request: Request, db_conn: Session = Depends(get_db)):
+    """
+    Return monthly average risk probabilities (stroke, diabetes, CVD) for a given year.
+
+    :param year: The calendar year to aggregate risk data for (e.g. 2025).
+    :param request: The HTTP request object (used for admin authentication).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A list of dicts, each with ``date`` (YYYY-MM) and average ``stroke``,
+             ``diabetes``, ``cvd`` values.
+    """
     _confirm_admin(request, db_conn)
 
     year_start = datetime(year, 1, 1)
@@ -678,6 +692,7 @@ async def get_average_risk_series(year: int, request: Request, db_conn: Session 
 
 @router.get("/admin-dashboard/login-activity/{timespanInDays}")
 async def get_login_activity(timespanInDays: int, request: Request, db_conn: Session = Depends(get_db)):
+    """Return daily login event counts over the specified number of days."""
     _confirm_admin(request, db_conn)
 
     start_date = datetime.now() - timedelta(days=timespanInDays)
@@ -695,6 +710,7 @@ async def get_login_activity(timespanInDays: int, request: Request, db_conn: Ses
 
 @router.get("/admin-dashboard/unvalidated-account-analytics")
 async def get_unvalidated_account_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return the number of standard-user accounts that have not been validated."""
     _confirm_admin(request, db_conn)
 
     unvalidated_accounts = (
@@ -715,6 +731,7 @@ async def get_unvalidated_account_analytics(request: Request, db_conn: Session =
 
 @router.get("/admin-dashboard/user-analytics")
 async def get_user_analytics(request: Request, db_conn: Session = Depends(get_db)):
+    """Return aggregated counts of total, standard, patient-only, and merchant accounts."""
     _confirm_admin(request, db_conn)
 
     account_total = db_conn.query(UserAccount).filter(
@@ -741,6 +758,7 @@ async def get_user_analytics(request: Request, db_conn: Session = Depends(get_db
 
 
 def _confirm_admin(request: Request, db_conn: Session):
+    """Verify the requesting user has an admin role; raises 403/404 otherwise."""
     user = get_current_user(request, db_conn)
     admin = db_conn.query(UserAccount).filter(
         UserAccount.Email == user["email"]).first()
