@@ -269,9 +269,9 @@ const GenerateReportForm = () => {
     );
     setAlertApLowRequired(apLow === null || !apLow.isValid);
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
-    setAlertMaritalStatusRequired(maritalStatus === null);
-    setAlertWorkingStatusRequired(workingStatus === null);
-    setAlertRaceRequired(race === null);
+    setAlertMaritalStatusRequired(maritalStatus === "");
+    setAlertWorkingStatusRequired(workingStatus === "");
+    setAlertRaceRequired(race === "");
     setAlertSmokerRequired(smoker === "");
     setAlertAlcoholRequired(alcohol === "");
   }
@@ -581,9 +581,6 @@ const GenerateReportForm = () => {
               }
             />
           </Box>
-
-          {/*Multi-select LifeStyle Habits */}
-
           <Typography
             variant="h4"
             sx={{
