@@ -11,11 +11,14 @@ import {
  * selection for a dialling code.
  *
  * @param {Object} props
- * @param {function} [props.onChange] - Callback function called when input
- *   is changed.
+ * @param {function} [props.onChange] - Callback function to call when input is changed.
+ *                                      Event parameters: phone, isValid, and rawDigits
+ * @param {String} [props.value] - Phone number
  */
-const PhoneInputField = ({ onChange }) => {
-  const [rawPhoneNumber, setRawPhoneNumber] = useState("");
+const PhoneInputField = ({ onChange, value }) => {
+  const [rawPhoneNumber, setRawPhoneNumber] = useState(
+    value === null ? value : "",
+  );
   const [selectedDialingCode, setSelectedDialingCode] = useState("");
   const [isValid, setIsValid] = useState(true);
   const [isValidDialingCode, setIsValidDialingCode] = useState(true);
@@ -82,6 +85,7 @@ const PhoneInputField = ({ onChange }) => {
       onChange?.({
         phone: outputPhoneNumber,
         isValid: true,
+        rawDigits: phoneNumber,
       });
     } else {
       setIsValid(false);
@@ -89,6 +93,7 @@ const PhoneInputField = ({ onChange }) => {
       onChange?.({
         phone: null,
         isValid: false,
+        rawDigits: phoneNumber,
       });
     }
   }
@@ -128,6 +133,7 @@ const PhoneInputField = ({ onChange }) => {
             id="outlined-input"
             name="phone"
             label="Phone"
+            value={value}
             onChange={updatePhoneNumber}
             sx={{ width: "100%" }}
           ></TextField>
