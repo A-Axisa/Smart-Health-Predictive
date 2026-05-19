@@ -11,8 +11,9 @@ import {
  * selection for a dialling code.
  *
  * @param {Object} props
- * @param {function} [props.onChange] - Callback function called when input
- *   is changed.
+ * @param {function} [props.onChange] - Callback function to call when input is changed.
+ *                                      Event parameters: phone, isValid, and rawDigits
+ * @param {String} [props.value] - Phone number
  */
 const PhoneInputField = ({ onChange, value }) => {
   const [rawPhoneNumber, setRawPhoneNumber] = useState(
