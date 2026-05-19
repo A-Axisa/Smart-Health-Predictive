@@ -157,7 +157,7 @@ const UserLanding = ({}) => {
                       lineHeight: 1.2,
                     }}
                   >
-                    {data?.risks?.[key]?.slice(-1)[0] ?? 0}%
+                    {data?.risks?.[key]?.[0] ?? 0}%
                   </Typography>
                   <Box
                     component="span"
