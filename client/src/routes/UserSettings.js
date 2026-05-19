@@ -147,7 +147,7 @@ const UserSettings = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Failed to change password");
       });
   }
 
