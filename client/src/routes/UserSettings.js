@@ -291,7 +291,6 @@ const UserSettings = () => {
             updateForm("phone", e.phone);
             setIsPhoneValid(e.isValid);
             setRawPhoneDigits(e.rawDigits);
-            console.log(e);
           }}
           value={rawPhoneDigits}
         />
