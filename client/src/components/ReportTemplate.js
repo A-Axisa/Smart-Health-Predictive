@@ -272,16 +272,6 @@ const ReportTemplate = ({ report, date }) => {
             p: 2,
           }}
         >
-          {/* Lifestyle */}
-          <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
-              Lifestyle Recommendations
-            </Typography>
-            <Typography variant="body1">
-              {report.lifestyleRecommendation ||
-                "No lifestyle recommendation available."}
-            </Typography>
-          </Box>
 
           {/* Exercise */}
           <Box>
@@ -301,6 +291,17 @@ const ReportTemplate = ({ report, date }) => {
             </Typography>
             <Typography variant="body1">
               {report.dietRecommendation || "No diet recommendation available."}
+            </Typography>
+          </Box>
+
+          {/* Lifestyle */}
+          <Box>
+            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
+              Lifestyle Recommendations
+            </Typography>
+            <Typography variant="body1">
+              {report.lifestyleRecommendation ||
+                "No lifestyle recommendation available."}
             </Typography>
           </Box>
 
