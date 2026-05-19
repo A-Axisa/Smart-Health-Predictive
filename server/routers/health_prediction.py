@@ -68,9 +68,8 @@ gender_map = {'Male': 1, 'Female': 0}
 smoker_map = {'No': 0, 'Yes': 1, 'Former smoker': 2}
 marital_map = {'Single': 0, 'Married': 1, 'Widow': 2, 'Divorced': 3}
 working_map = {
-    'Unemployed': 0, 'Homemaker': 1,
-    'Private': 1, 'Student': 2,
-    'Working': 3, 'Public': 4
+    'Unemployed': 0, 'Homemaker': 1, 'Student': 2,
+    'Working': 3
 }
 race_map = {'Malay': 0, 'Chinese': 1, 'Indian': 2, 'Other': 3}
 alcohol_map = {'Regular': 0, 'Occasional': 1, 'Non-drinker': 2}

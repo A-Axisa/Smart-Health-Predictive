@@ -5,13 +5,15 @@ import enum
 MARITAL_STATUS_OPTIONS = {
     0: 'Single',
     1: 'Married',
+    2: 'Widow',
+    3: 'Divorced'
 }
 
 WORKING_STATUS_OPTIONS = {
     0: 'Unemployed',
-    1: 'Private',
+    1: 'Homemaker',
     2: 'Student',
-    3: 'Public',
+    3: 'Working',
 }
 
 RACE_OPTIONS = {
@@ -19,6 +21,18 @@ RACE_OPTIONS = {
     1: 'Chinese',
     2: 'Indian',
     3: 'Other'
+}
+
+SMOKER_OPTIONS = {
+    0: 'No',
+    1: 'Yes',
+    2: 'Former smoker'
+}
+
+ALCOHOL_OPTIONS = {
+    0: 'Regular',
+    1: 'Occasional',
+    2: 'Non-drinker'
 }
 
 Base = declarative_base()
@@ -194,7 +208,7 @@ class Patient(Base):
         """Returns working status as a string."""
         return WORKING_STATUS_OPTIONS.get(self.WorkingStatus)
 
-    def get_working_status(self):
+    def get_race(self):
         """Returns race as a string."""
         return RACE_OPTIONS.get(self.Race)
 
