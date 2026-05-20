@@ -455,10 +455,7 @@ async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),
 ):
-    """
-    Returns time-series health risk probabilities for the current user
-    using historical predictions stored in the database.
-    """
+    """Return time-series health risk probabilities from the current user's historical predictions."""
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
     if not patient:
@@ -1108,9 +1105,7 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
 @router.get("/patient-data")
 async def get_patient_data(request: Request, db_conn: Session = Depends(get_db)):
-    """
-    Retrieves a user's patient data required for report form inputs.
-    """
+    """Return the authenticated user's patient data for report form inputs."""
 
     # Get current user details.
     user = get_current_user(request, db_conn)
@@ -1134,9 +1129,7 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
 
 @router.get("/merchant/patient-data/{patient_id}")
 async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: Session = Depends(get_db)):
-    """
-    Allows merchant to retrieve a user's patient data required for report form inputs.
-    """
+    """Return a patient's data for merchant report form inputs."""
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)

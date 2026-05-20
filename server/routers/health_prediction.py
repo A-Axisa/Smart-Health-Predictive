@@ -757,9 +757,7 @@ def validate_all_input(data: HealthDataInput):
 
 
 def merchant_view_patient(user_id: int, patient_id: int, db_conn: Session):
-    """
-    Returns True if the merchant is linked to the patient, False if they can not.
-    """
+    """Check whether a merchant is linked to a patient; return True if linked."""
     access = db_conn.query(UserPatientAccess).filter_by(
         UserID=user_id,
         PatientID=patient_id

@@ -261,9 +261,7 @@ async def update_user_role(user_email: str, role_id: int, request: Request,
 
 
 def _delete_user_data(user_email: str, db_conn: Session):
-    """
-    Deletes a user and all their associated data, returning a report of the deletion.
-    """
+    """Delete a user and all their associated data, returning a report of the deletion."""
     deletion_report = {}
 
     try:
