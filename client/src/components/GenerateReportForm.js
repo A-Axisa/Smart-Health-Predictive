@@ -46,6 +46,7 @@ const GenerateReportForm = () => {
     "Homemaker",
     "Student",
     "Working",
+    "Retired",
   ];
 
   const raceOptions = ["Malay", "Chinese", "Indian", "Other"];

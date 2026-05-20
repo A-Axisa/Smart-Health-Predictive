@@ -14,9 +14,8 @@ from ..services.health_recommendation_service import get_health_recommendations
 from .authentication import get_current_user, get_user, get_patient_by_email
 from ..utils.audit_log import write_audit_log
 
+
 # HealthData
-
-
 class HealthDataInput(CamelModel):
     age: int
     weight: float           # kg
@@ -69,7 +68,7 @@ smoker_map = {'No': 0, 'Yes': 1, 'Former smoker': 2}
 marital_map = {'Single': 0, 'Married': 1, 'Widow': 2, 'Divorced': 3}
 working_map = {
     'Unemployed': 0, 'Homemaker': 1, 'Student': 2,
-    'Working': 3
+    'Working': 3, 'Retired': 4
 }
 race_map = {'Malay': 0, 'Chinese': 1, 'Indian': 2, 'Other': 3}
 alcohol_map = {'Regular': 0, 'Occasional': 1, 'Non-drinker': 2}
@@ -708,7 +707,7 @@ def validate_sanitized_data(sanitized_data: dict):
             not is_age_valid(sanitized_data.get("age")) or
             not is_weight_valid(sanitized_data.get("weight")) or
             not is_height_valid(sanitized_data.get("height")) or
-            sanitized_data.get("gender") is None or sanitized_data.get("gender") not in gender_map or
+            not is_gender_valid(sanitized_data.get("gender")) or
             not is_blood_glucose_valid(sanitized_data.get("blood_glucose")) or
             not is_ap_hi_valid(sanitized_data.get("ap_hi")) or
             not is_ap_lo_valid(sanitized_data.get("ap_lo")) or
@@ -716,12 +715,12 @@ def validate_sanitized_data(sanitized_data: dict):
             not is_hyper_tension_valid(sanitized_data.get("hypertension")) or
             not is_heart_disease_valid(sanitized_data.get("heart_disease")) or
             not is_diabetes_valid(sanitized_data.get("diabetes")) or
-            sanitized_data.get("alcohol") is None or sanitized_data.get("alcohol") not in alcohol_map or
-            sanitized_data.get("smoker") is None or sanitized_data.get("smoker") not in smoker_map or
-            sanitized_data.get("marital_status") is None or sanitized_data.get("marital_status") not in marital_map or
-            sanitized_data.get("working_status") is None or sanitized_data.get("working_status") not in working_map or
+            not is_alcohol_valid(sanitized_data.get("alcohol")) or
+            not is_smoker_valid(sanitized_data.get("smoker")) or
+            not is_marital_status_valid(sanitized_data.get("marital_status")) or
+            not is_working_status_valid(sanitized_data.get("working_status")) or
             not is_stroke_valid(sanitized_data.get("stroke")) or
-            sanitized_data.get("race") is None or sanitized_data.get("race") not in race_map):
+            not is_race_valid(sanitized_data.get("race"))):
 
         return False
 
@@ -748,8 +747,8 @@ def validate_all_input(data: HealthDataInput):
             not is_smoker_valid(data.smoker) or
             not is_marital_status_valid(data.marital_status) or
             not is_working_status_valid(data.working_status) or
-            not is_stroke_valid(data.stroke)):
-
+            not is_stroke_valid(data.stroke) or
+            not is_race_valid(data.race)):
         return False
 
     return True

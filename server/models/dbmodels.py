@@ -14,6 +14,7 @@ WORKING_STATUS_OPTIONS = {
     1: 'Homemaker',
     2: 'Student',
     3: 'Working',
+    4: 'Retired',
 }
 
 RACE_OPTIONS = {
