@@ -93,7 +93,22 @@ async def get_users(
     sort_order: Optional[str] = "desc",
     db_conn: Session = Depends(get_db)
 ):
-    """Return all user accounts"""
+    """
+    Return a paginated, filterable, sortable list of validated user accounts.
+
+    Supports searching by email, patient name, or clinic name; filtering by
+    clinic; and sorting by email, creation date, or validation status.
+
+    :param skip: Number of records to skip (offset).
+    :param limit: Maximum number of records to return.
+    :param search: Optional keyword to search across email, name, and clinic.
+    :param clinic_id: Optional clinic ID to filter users.
+    :param sort_by: Column name to sort by (email, createdAt, validated).
+    :param sort_order: Sort direction (asc or desc).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with ``users`` (list) and ``total`` (count).
+    :raises HTTPException 400: If ``skip`` is negative or ``limit`` is not positive.
+    """
 
     if skip < 0:
         raise HTTPException(
@@ -188,7 +203,23 @@ async def get_users(
 @router.patch("/users/{user_email}/roles/{role_id}")
 async def update_user_role(user_email: str, role_id: int, request: Request,
                            db_conn: Session = Depends(get_db)):
-    """Update a user's role"""
+    """
+    Update a user's role to the specified role ID.
+
+    Verifies the requesting user is an administrator, prevents self-role
+    changes, and creates or updates the ``UserAccountRole`` mapping.
+    An audit log is written on both success and failure.
+
+    :param user_email: The email of the target user whose role will change.
+    :param role_id: The ``RoleID`` to assign to the user.
+    :param request: The HTTP request (for current-user extraction and audit logging).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with a success message and the assigned role info.
+    :raises HTTPException 401: If the requesting user cannot be identified.
+    :raises HTTPException 403: If the requesting user is not an admin.
+    :raises HTTPException 404: If the user or role is not found.
+    :raises HTTPException 400: If an admin attempts to change their own role.
+    """
     # Authenticate the requesting user.
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -261,7 +292,19 @@ async def update_user_role(user_email: str, role_id: int, request: Request,
 
 
 def _delete_user_data(user_email: str, db_conn: Session):
-    """Delete a user and all their associated data, returning a report of the deletion."""
+    """
+    Delete a user and all their associated data, returning a report of the deletion.
+
+    Removes patient access links, recommendations, predictions, health data,
+    validation tokens, and role mappings in the correct order to avoid
+    foreign-key violations. Rolls back on failure.
+
+    :param user_email: The email of the account to delete.
+    :param db_conn: Database session.
+    :return: A dict with counts of deleted records per table.
+    :raises HTTPException 404: If the user is not found.
+    :raises HTTPException 500: If the deletion fails.
+    """
     deletion_report = {}
 
     try:
@@ -328,7 +371,22 @@ def _delete_user_data(user_email: str, db_conn: Session):
 
 @router.delete("/users/{user_email}")
 async def delete_user_by_admin(user_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    """Delete a user account """
+    """
+    Delete a user account and all associated data (admin only).
+
+    Verifies the requesting user is an administrator, prevents self-deletion,
+    then cascades to remove health data, predictions, recommendations, and
+    role mappings. An audit log is written on both success and failure.
+
+    :param user_email: The email of the user account to delete.
+    :param request: The HTTP request (for current-user extraction and audit logging).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with a success message and a ``deletion_report``.
+    :raises HTTPException 401: If the requesting user cannot be identified.
+    :raises HTTPException 403: If the requesting user is not an admin.
+    :raises HTTPException 404: If the target user is not found.
+    :raises HTTPException 400: If an admin attempts to delete their own account.
+    """
     # Get the current user making the request
     current_user_data = get_current_user(request, db_conn)
     requesting_user_email = current_user_data.get('email')
@@ -412,7 +470,20 @@ async def get_invalid_merchant_accounts(db_conn: Session = Depends(get_db)):
 
 @router.patch("/users/merchants/{merchant_email}")
 async def validate_merchant(merchant_email: str, request: Request, db_conn: Session = Depends(get_db)):
-    """Validate a merchant user account"""
+    """
+    Validate a pending merchant account so they can access the platform.
+
+    Verifies the requesting user is an administrator, then sets the
+    merchant's ``IsValidated`` flag to 1. An audit log is written on
+    both success and failure.
+
+    :param merchant_email: The email of the merchant account to validate.
+    :param request: The HTTP request (for current-user extraction and audit logging).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with a success message.
+    :raises HTTPException 404: If the requesting user or merchant is not found.
+    :raises HTTPException 403: If the requesting user is not an admin.
+    """
     # Check if requesting user is Admin.
     current_user = get_current_user(request, db_conn)
     current_user_email = current_user.get('email')
