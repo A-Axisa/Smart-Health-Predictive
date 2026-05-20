@@ -145,7 +145,7 @@ const ReportTemplate = ({ report, date }) => {
             mx: "auto",
           }}
         >
-          Generated on: {new Date(date).toLocaleDateString("en-AU")}
+          Generated on: {new Date(date).toLocaleDateString("en-AU")}{" at "}{`${new Date(date).toLocaleTimeString("en-AU")}`}
         </Typography>
       </Paper>
 
