@@ -645,12 +645,7 @@ def is_stroke_valid(stroke: int):
 
 
 def sanitize_health_data(data: HealthDataInput):
-    """
-    Sanitise and normalize health data following phone sanitisation pattern.
-    Handles whitespace trimming, case normalization for categorical values,
-    and decimal precision for numeric values.
-    Returns normalized dict or None if any field fails critical validation.
-    """
+    """Sanitise and normalise health data, returning a normalised dict or None if invalid."""
     def normalize_categorical(value, mapping, field_name):
         """Helper: case-insensitive lookup with fallback to None."""
         if not isinstance(value, str):
@@ -710,10 +705,7 @@ def sanitize_health_data(data: HealthDataInput):
 
 
 def validate_sanitized_data(sanitized_data: dict):
-    """
-    Validates all sanitized/normalized data fields.
-    Returns True only if all fields are valid after sanitization.
-    """
+    """Validate all sanitised data fields; return True only if all are valid."""
     if sanitized_data is None:
         return False
 
@@ -740,9 +732,7 @@ def validate_sanitized_data(sanitized_data: dict):
 
 
 def validate_all_input(data: HealthDataInput):
-    """
-    Validates all user inputs
-    """
+    """Validate all user input fields; return True only if all are valid."""
     if (
             not is_age_valid(data.age) or
             not is_weight_valid(data.weight) or
