@@ -76,6 +76,16 @@ router = APIRouter()
 
 
 def build_model_input_df(model, values):
+    """
+    Construct a single-row pandas DataFrame from model features and input values.
+
+    Uses the model's ``feature_names_in_`` attribute as column headers when available,
+    falling back to a positional layout if the attribute is absent.
+
+    :param model: A fitted scikit-learn model (expected to expose ``feature_names_in_``).
+    :param values: A list of numeric values corresponding to the model's feature set.
+    :return: A pandas DataFrame with one row suitable for ``model.predict_proba()``.
+    """
     feature_names = getattr(model, "feature_names_in_", None)
     if feature_names is not None and len(feature_names) == len(values):
         return pd.DataFrame([values], columns=list(feature_names))
@@ -85,7 +95,21 @@ def build_model_input_df(model, values):
 @router.post("/health-prediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
                   csv_patient_id: Optional[int] = None):
+    """
+    Generate cardio, stroke, and diabetes risk predictions for the authenticated user.
 
+    Accepts health metrics via ``HealthDataInput``, sanitises and validates the data,
+    calculates BMI, runs three ML prediction models, persists health data and predictions
+    to the database, and generates AI-powered health recommendations (best-effort).
+
+    :param data: Health metrics including vitals, lifestyle choices, and medical history.
+    :param request: The HTTP request object (used for audit logging and user extraction).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :param csv_patient_id: Optional patient ID forwarded from CSV bulk upload flow.
+    :return: JSON with ``cardioProbability``, ``strokeProbability``, ``diabetesProbability``,
+             and a ``recommendations`` block.
+    :raises HTTPException 422: If sanitised health data fails validation.
+    """
     # Sanitize and normalize health data
     sanitized_data = sanitize_health_data(data)
 
@@ -541,76 +565,87 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
 
 def is_age_valid(age: int):
+    """Check whether ``age`` falls within the valid physiological range (0–100)."""
     return age >= 0 and age <= 100
 
 
 def is_weight_valid(weight: float):
+    """Check whether ``weight`` (kg) falls within the valid range (0.0–200.0)."""
     return weight >= 0.0 and weight <= 200.0
 
 
 def is_height_valid(height: float):
+    """Check whether ``height`` (cm) falls within the valid range (0.0–300.0)."""
     return height >= 0.0 and height <= 300
 
 
 def is_gender_valid(gender: int):
+    """Check whether ``gender`` is present in the predefined mapping."""
     return gender in gender_map
 
 
 def is_blood_glucose_valid(blood_glucose: float):
+    """Check whether ``blood_glucose`` (mmol/L) falls within the valid range (0.0–20.0)."""
     return blood_glucose >= 0.0 and blood_glucose <= 20.0
 
 
 def is_ap_hi_valid(ap_hi: float):
+    """Check whether systolic blood pressure ``ap_hi`` (mmHg) is valid (0.0–200.0)."""
     return ap_hi >= 0.0 and ap_hi <= 200.0
 
 
 def is_ap_lo_valid(ap_lo: float):
+    """Check whether diastolic blood pressure ``ap_lo`` (mmHg) is valid (0.0–200.0)."""
     return ap_lo >= 0.0 and ap_lo <= 200.0
 
 
 def is_high_cholesterol_valid(high_cholesterol: int):
+    """Check whether ``high_cholesterol`` is a binary flag (0 or 1)."""
     return high_cholesterol == 0 or high_cholesterol == 1
 
 
 def is_hyper_tension_valid(hypertension: int):
+    """Check whether ``hypertension`` is a binary flag (0 or 1)."""
     return hypertension == 0 or hypertension == 1
 
 
 def is_heart_disease_valid(heart_disease: int):
+    """Check whether ``heart_disease`` is a binary flag (0 or 1)."""
     return heart_disease == 0 or heart_disease == 1
 
 
 def is_diabetes_valid(diabetes: int):
+    """Check whether ``diabetes`` is a binary flag (0 or 1)."""
     return diabetes == 0 or diabetes == 1
 
 
 def is_alcohol_valid(alcohol: int):
+    """Check whether ``alcohol`` is a binary flag (0 or 1)."""
     return alcohol == 0 or alcohol == 1
 
 
 def is_smoker_valid(smoker: str):
+    """Check whether ``smoker`` is present in the predefined smoking-status mapping."""
     return smoker in smoker_map
 
 
 def is_marital_status_valid(marital_status: str):
+    """Check whether ``marital_status`` is present in the predefined mapping."""
     return marital_status in marital_map
 
 
 def is_working_status_valid(working_status: str):
+    """Check whether ``working_status`` is present in the predefined mapping."""
     return working_status in working_map
 
 
 def is_stroke_valid(stroke: int):
+    """Check whether ``stroke`` is a binary flag (0 or 1)."""
     return stroke == 0 or stroke == 1
 
 
 def sanitize_health_data(data: HealthDataInput):
-    """
-    Sanitise and normalize health data following phone sanitisation pattern.
-    Handles whitespace trimming, case normalization for categorical values,
-    and decimal precision for numeric values.
-    Returns normalized dict or None if any field fails critical validation.
-    """
+    """Sanitise and normalise health data, returning a normalised dict or None if invalid."""
     def normalize_categorical(value, mapping, field_name):
         """Helper: case-insensitive lookup with fallback to None."""
         if not isinstance(value, str):
@@ -670,10 +705,7 @@ def sanitize_health_data(data: HealthDataInput):
 
 
 def validate_sanitized_data(sanitized_data: dict):
-    """
-    Validates all sanitized/normalized data fields.
-    Returns True only if all fields are valid after sanitization.
-    """
+    """Validate all sanitised data fields; return True only if all are valid."""
     if sanitized_data is None:
         return False
 
@@ -700,9 +732,7 @@ def validate_sanitized_data(sanitized_data: dict):
 
 
 def validate_all_input(data: HealthDataInput):
-    """
-    Validates all user inputs
-    """
+    """Validate all user input fields; return True only if all are valid."""
     if (
             not is_age_valid(data.age) or
             not is_weight_valid(data.weight) or
@@ -727,9 +757,7 @@ def validate_all_input(data: HealthDataInput):
 
 
 def merchant_view_patient(user_id: int, patient_id: int, db_conn: Session):
-    """
-    Returns True if the merchant is linked to the patient, False if they can not.
-    """
+    """Check whether a merchant is linked to a patient; return True if linked."""
     access = db_conn.query(UserPatientAccess).filter_by(
         UserID=user_id,
         PatientID=patient_id
