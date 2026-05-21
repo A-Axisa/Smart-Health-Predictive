@@ -638,12 +638,12 @@ def is_diabetes_valid(diabetes: int):
 
 
 def is_alcohol_valid(alcohol: str):
-  """Check whether ``alcohol`` is present in the predefined alcohol mapping."""
+    """Check whether ``alcohol`` is present in the predefined alcohol_map mapping."""
     return alcohol in alcohol_map
 
 
 def is_smoker_valid(smoker: str):
-    
+    """Check whether ``smoker`` is present in the predefined smoker_map mapping."""
     return smoker in smoker_map
 
 
