@@ -122,7 +122,6 @@ const LoginForm = () => {
           xl: "600px",
         },
         minHeight: "auto",
-        maxHeight: "400px",
         boxShadow: { xs: "none", sm: 16 },
       }}
     >

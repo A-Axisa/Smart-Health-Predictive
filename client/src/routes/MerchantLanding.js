@@ -216,7 +216,7 @@ const MerchantLanding = () => {
                 >
                   <Typography sx={{ flex: 1, pt: 1 }}>{a.message}</Typography>
                   <Typography sx={{ color: "#747474", whiteSpace: "nowrap" }}>
-                    {relativeTime(a.createdAt)}
+                    {new Date(a.createdAt).toLocaleDateString("en-AU")}
                   </Typography>
                 </Box>
               ))

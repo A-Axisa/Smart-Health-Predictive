@@ -291,17 +291,22 @@ const MerchantReports = ({}) => {
                 }}
               >
                 <ListItemText
-                  primary={`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
-                  slotProps={{
-                    primary: {
-                      style: {
+                  primary={
+                    <Typography
+                      variant="h7"
+                      sx={{
                         fontWeight:
-                          selectedDate?.healthDataId === item.healthDataId
-                            ? 600
-                            : 400,
-                      },
-                    },
-                  }}
+                          selectedDate.healthDataId === item.healthDataId
+                            ? 400
+                            : 0,
+                      }}
+                    >
+                      {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                      <Typography variant="subtle">
+                          {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                      </Typography>
+                    </Typography>
+                  }
                 />
                 {/* Delete Report Button */}
                 {selectedDate?.healthDataId === item.healthDataId && (

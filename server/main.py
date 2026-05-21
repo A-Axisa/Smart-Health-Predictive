@@ -1,3 +1,9 @@
+"""FastAPI application entry point for the Smart Health Predictive API.
+
+Includes router modules for health predictions, authentication, user
+management, and admin operations. CORS is configured from environment
+variable ``CORS_ORIGINS`` or a default set of development origins.
+"""
 import os
 
 from fastapi import FastAPI
@@ -31,6 +37,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    """Health-check endpoint; returns a simple greeting."""
     return {"message": "Hello World"}
 
 app.include_router(health_prediction.router)

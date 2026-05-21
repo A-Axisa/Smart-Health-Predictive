@@ -5,13 +5,35 @@ import enum
 MARITAL_STATUS_OPTIONS = {
     0: 'Single',
     1: 'Married',
+    2: 'Widow',
+    3: 'Divorced'
 }
 
 WORKING_STATUS_OPTIONS = {
     0: 'Unemployed',
-    1: 'Private',
+    1: 'Homemaker',
     2: 'Student',
-    3: 'Public',
+    3: 'Working',
+    4: 'Retired',
+}
+
+RACE_OPTIONS = {
+    0: 'Malay',
+    1: 'Chinese',
+    2: 'Indian',
+    3: 'Other'
+}
+
+SMOKER_OPTIONS = {
+    0: 'No',
+    1: 'Yes',
+    2: 'Former smoker'
+}
+
+ALCOHOL_OPTIONS = {
+    0: 'Regular',
+    1: 'Occasional',
+    2: 'Non-drinker'
 }
 
 Base = declarative_base()
@@ -144,6 +166,7 @@ class Patient(Base):
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     MaritalStatus = Column(Integer)
     WorkingStatus = Column(Integer)
+    Race = Column(Integer)
 
     user = relationship("UserAccount", back_populates="patients")
     health_records = relationship("HealthData", back_populates="patient")
@@ -159,7 +182,8 @@ class Patient(Base):
             height,
             date_of_birth,
             marital_status=None,
-            working_status=None
+            working_status=None,
+            race=None
     ):
         self.UserID = user_id
         self.GivenNames = given_names
@@ -170,6 +194,7 @@ class Patient(Base):
         self.DateOfBirth = date_of_birth
         self.MaritalStatus = marital_status
         self.WorkingStatus = working_status
+        self.race = race
 
     def __repr__(self):
         return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
@@ -183,6 +208,10 @@ class Patient(Base):
     def get_working_status(self):
         """Returns working status as a string."""
         return WORKING_STATUS_OPTIONS.get(self.WorkingStatus)
+
+    def get_race(self):
+        """Returns race as a string."""
+        return RACE_OPTIONS.get(self.Race)
 
     def set_marital_status(self, status: int | str):
         """Sets the value of the marital status and will convert a string
@@ -201,6 +230,15 @@ class Patient(Base):
                 (k for k, v in WORKING_STATUS_OPTIONS.items() if v == status), None)
         else:
             self.WorkingStatus = status
+
+    def set_race(self, race: int | str):
+        """Sets the value of the race and will convert a string
+        to the matching integer."""
+        if isinstance(race, str):
+            self.Race = next(
+                (k for k, v in RACE_OPTIONS.items() if v == race), None)
+        else:
+            self.Race = race
 
 
 class UserPatientAccess(Base):
@@ -240,12 +278,13 @@ class HealthData(Base):
     HyperTension = Column(Boolean)
     HeartDisease = Column(Boolean)
     Diabetes = Column(Boolean)
-    Alcohol = Column(Boolean)
+    Alcohol = Column(Integer)
     SmokingStatus = Column(Integer)
     MaritalStatus = Column(Integer)
     WorkingStatus = Column(Integer)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     Stroke = Column(Integer)
+    Race = Column(Integer)
 
     patient = relationship("Patient", back_populates="health_records")
     predictions = relationship("Prediction", back_populates="health_data")
@@ -254,7 +293,7 @@ class HealthData(Base):
 
     def __init__(self, PatientID, age, weight, height, gender, bloodGlucose, ap_hi,
                  ap_lo, highCholesterol, hyperTension, heartDisease,
-                 diabetes, alcohol, smoker, maritalStatus, workingStatus, stroke):
+                 diabetes, alcohol, smoker, maritalStatus, workingStatus, stroke, race):
         self.PatientID = PatientID
         self.Age = age
         self.WeightKilograms = weight
@@ -271,7 +310,8 @@ class HealthData(Base):
         self.SmokingStatus = smoker
         self.MaritalStatus = maritalStatus
         self.WorkingStatus = workingStatus
-        self.Stroke = stroke
+        self.Stroke = stroke,
+        self.Race = race
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
@@ -279,7 +319,7 @@ class HealthData(Base):
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
-            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  Stroke={self.Stroke} )'
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, race={self.Race}, Created={self.CreatedAt},  Stroke={self.Stroke} )'
 
 
 class Prediction(Base):

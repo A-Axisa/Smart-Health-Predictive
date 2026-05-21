@@ -172,7 +172,7 @@ def _fallback_recommendations(ctx: Dict):
     if "high cholesterol" in conditions:
         diet += "Increase soluble fiber (oats, legumes) and healthy fats (olive oil, nuts); reduce saturated fats. "
 
-    lifestyle = "[FALLBACK] Sleep 7–9 hours nightly, manage stress with short daily breathing or mindfulness. Hydrate adequately. "
+    lifestyle = "Sleep 7–9 hours nightly, manage stress with short daily breathing or mindfulness. Hydrate adequately. "
     if "smoking" in conditions:
         lifestyle += "Begin a smoking cessation plan (nicotine replacement or counseling). "
     if "alcohol use" in conditions:

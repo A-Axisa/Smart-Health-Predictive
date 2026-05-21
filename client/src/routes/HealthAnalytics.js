@@ -468,7 +468,7 @@ const HealthAnalytics = () => {
             >
               <Button
                 variant="outlined"
-                href="/ai-health-prediction"
+                href="/report-history"
                 sx={{
                   width: isMobile ? "100%" : "auto",
                   py: { xs: "0.8rem", sm: "0.6rem" },

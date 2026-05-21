@@ -12,21 +12,21 @@ import io
 client = TestClient(app)
 
 # Test CSV data.
-populated_rows = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
-User,1,user1@example.com,0412345678,31,50,170,Male,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1
-User,2,user2@example.com,0812345678,31,60,170,Male,6,140,120,0,1,0,0,1,No,Married,Private,0"""
+populated_rows = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
+User,1,user1@example.com,0412345678,31,50,170,Male,4.5,135,120,1,1,0,1,Regular,Yes,Single,Working,1,Malay
+User,2,user2@example.com,0812345678,31,60,170,Male,6,140,120,0,1,0,0,Regular,No,Married,Working,0,Chinese"""
 
-unpopulated_rows = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
+unpopulated_rows = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,"""
 
-one_populated_row = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
+one_populated_row = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
 ,,,,,,,,,,,,,,,,,,,
-User,2,user2@example.com,0812345678,31,60,170,Male,6,140,120,0,1,0,0,1,No,Married,Private,0"""
+User,2,user2@example.com,0812345678,31,60,170,Male,6,140,120,0,1,0,0,Regular,No,Married,Working,0,Malay"""
 
-missing_email = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
-User,1,user1@example.com,0412345678,31,50,170,Male,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1
-User,2,,0812345678,31,60,170,Male,6,140,120,0,1,0,0,1,No,Married,Private,0"""
+missing_email = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
+User,1,user1@example.com,0412345678,31,50,170,Male,4.5,135,120,1,1,0,1,Regular,Yes,Single,Working,1,Malay
+User,2,,0812345678,31,60,170,Male,6,140,120,0,1,0,0,Regular,No,Married,Working,0,Malay"""
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -257,8 +257,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender=" Male ",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="Yes", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="Yes", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -270,8 +270,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender="female",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="Yes", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="Yes", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -283,8 +283,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="NO", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="NO", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -296,8 +296,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="  FORMER SMOKER  ", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="  FORMER SMOKER  ", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -309,8 +309,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.12345, height=170.6789, gender="Male",
             blood_glucose=5.6789, ap_hi=120.123, ap_lo=80.999,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="Yes", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="Yes", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -326,8 +326,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender="InvalidGender",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="Yes", marital_status="Married", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="Yes", marital_status="Married", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -339,8 +339,8 @@ class TestSanitizeHealthData:
             age=30, weight=75.0, height=170.0, gender="Male",
             blood_glucose=5.5, ap_hi=120, ap_lo=80,
             high_cholesterol=0, hypertension=0, heart_disease=0,
-            diabetes=0, alcohol=0,
-            smoker="Yes", marital_status="  MARRIED  ", working_status="Private", stroke=0
+            diabetes=0, alcohol="Regular",
+            smoker="Yes", marital_status="  MARRIED  ", working_status="Working", stroke=0, race="Malay"
         )
         result = sanitize_health_data(data)
         assert result is not None
@@ -364,11 +364,12 @@ class TestValidateSanitizedData:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": "Yes",
             "marital_status": "Married",
-            "working_status": "Private",
+            "working_status": "Working",
             "stroke": 0,
+            "race": "Malay",
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is True
@@ -387,11 +388,12 @@ class TestValidateSanitizedData:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": "Yes",
             "marital_status": "Married",
-            "working_status": "Private",
+            "working_status": "Working",
             "stroke": 0,
+            "race": "Malay",
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
@@ -410,11 +412,12 @@ class TestValidateSanitizedData:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": None,  # Invalid
             "marital_status": "Married",
-            "working_status": "Private",
+            "working_status": "Working",
             "stroke": 0,
+            "race": "Malay",
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
@@ -433,11 +436,12 @@ class TestValidateSanitizedData:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": "Yes",
             "marital_status": "Married",
-            "working_status": "Private",
+            "working_status": "Working",
             "stroke": 0,
+            "race": "Malay",
             "patient_id": None
         }
         assert validate_sanitized_data(sanitized) is False
@@ -468,11 +472,12 @@ class TestHealthPredictionEndpointSanitization:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": "Yes",
             "marital_status": "Married",
-            "working_status": "Private",
-            "stroke": 0
+            "working_status": "Working",
+            "stroke": 0,
+            "race": "Malay",
         }
 
         response = client.post("/health-prediction/", json=health_data)
@@ -500,11 +505,12 @@ class TestHealthPredictionEndpointSanitization:
             "hypertension": 0,
             "heart_disease": 0,
             "diabetes": 0,
-            "alcohol": 0,
+            "alcohol": "Regular",
             "smoker": "  No  ",  # whitespace
             "marital_status": "Married",
-            "working_status": "Private",
-            "stroke": 0
+            "working_status": "Working",
+            "stroke": 0,
+            "race": "Malay"
         }
 
         response = client.post("/health-prediction/", json=health_data)
@@ -527,8 +533,8 @@ class TestCSVUploadSanitization:
 
     def test_csv_upload_with_case_variations(self):
         """CSV upload handles case variations in categorical fields."""
-        csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
-User,3,user1@example.com,0412345678,31,50,170,male,4.5,135,120,1,1,0,1,0,no,single,private,1"""
+        csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
+User,3,user1@example.com,0412345678,31,50,170,male,4.5,135,120,1,1,0,1,Regular,no,single,working,1,Malay"""
 
         pre_count = count_health_data()
         response = upload_csv(csv_data)
@@ -541,8 +547,8 @@ User,3,user1@example.com,0412345678,31,50,170,male,4.5,135,120,1,1,0,1,0,no,sing
 
     def test_csv_upload_with_invalid_gender_skipped(self):
         """CSV upload skips rows with invalid gender after attempted sanitization."""
-        csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
-User,4,user1@example.com,0412345678,31,50,170,InvalidGender,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1"""
+        csv_data = """GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
+User,4,user1@example.com,0412345678,31,50,170,InvalidGender,4.5,135,120,1,1,0,1,Regular,Yes,Single,working,1,Malay"""
 
         pre_count = count_health_data()
         response = upload_csv(csv_data)

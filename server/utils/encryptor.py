@@ -9,6 +9,13 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 def load_key():
+    """Load the AES-256 key from the ``DATA_CIPHER_KEY`` environment variable.
+
+    Supports both raw Base64-encoded (~44 chars) and direct 32-byte UTF-8 keys.
+
+    :return: A 32-byte key suitable for AES-256-GCM.
+    :raises RuntimeError: If the env var is missing, unparseable, or not 32 bytes.
+    """
     raw = os.getenv('DATA_CIPHER_KEY')
     if not raw:
         raise RuntimeError('Missing env DATA_CIPHER_KEY')
@@ -26,6 +33,15 @@ def load_key():
 
 
 def encrypt(plain_text):
+    """Encrypt plain-text with AES-256-GCM and return a versioned string.
+
+    Output format: ``v1:gcm:base64(iv):base64(tag):base64(cipher)``.
+    Accepts strings (encoded as UTF-8) or raw bytes. ``None`` is treated
+    as an empty string.
+
+    :param plain_text: The data to encrypt (``str`` or ``bytes``).
+    :return: A colon-delimited versioned cipher-text string.
+    """
     if plain_text is None:
         plain_text = ''
     if isinstance(plain_text, str):
@@ -46,6 +62,15 @@ def encrypt(plain_text):
 
 
 def decrypt(payload):
+    """Decrypt a versioned cipher-string produced by :func:`encrypt`.
+
+    Expects the ``v1:gcm:base64(iv):base64(tag):base64(cipher)`` format.
+    Validates IV length (12 bytes) and cipher format before decryption.
+
+    :param payload: The versioned cipher-string to decrypt.
+    :return: The original UTF-8 plain-text.
+    :raises RuntimeError: If the format, IV length, or authentication tag is invalid.
+    """
     if not isinstance(payload, str):
         raise RuntimeError('Cipher payload must be string')
     parts = payload.split(':')
