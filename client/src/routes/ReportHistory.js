@@ -265,6 +265,9 @@ const AIHealthPrediction = ({}) => {
                         }}
                       >
                         {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                        <Typography variant="subtle">
+                            {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                        </Typography>
                       </Typography>
                     }
                   />

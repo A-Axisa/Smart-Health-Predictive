@@ -21,6 +21,7 @@ import {
 import ConfirmationDialog from "../components/confirmationDialog";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../utils/UserContext";
+import PhoneInputField from "../components/authentication/PhoneInputField";
 
 const UserSettings = () => {
   const navigate = useNavigate();
@@ -65,6 +66,9 @@ const UserSettings = () => {
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
+  const [rawPhoneDigits, setRawPhoneDigits] = useState("");
+
   // Resolve API base from environment variable
   const API_BASE = useMemo(
     () => process.env.REACT_APP_API_URL || "http://localhost:8000",
@@ -90,6 +94,7 @@ const UserSettings = () => {
       height: user.height ?? "",
       weight: user.weight ?? "",
     }));
+    setRawPhoneDigits(user.phone_number || "");
   }, [user]);
 
   const clearMessages = () => {
@@ -142,7 +147,7 @@ const UserSettings = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Failed to change password");
       });
   }
 
@@ -190,6 +195,11 @@ const UserSettings = () => {
 
   const handleAccountSave = async () => {
     clearMessages();
+    if (!isPhoneValid) {
+      setSaveError("Please provide a valid phone number.");
+      return;
+    }
+
     setAccountSaving(true);
     try {
       const phone = formData.phone ?? "";
@@ -276,12 +286,13 @@ const UserSettings = () => {
           helperText="Email update is currently not supported"
           fullWidth
         />
-        <TextField
-          label="Phone Number"
-          value={formData.phone}
-          onChange={(e) => updateForm("phone", e.target.value)}
-          helperText="Only digits will be stored"
-          fullWidth
+        <PhoneInputField
+          onChange={(e) => {
+            updateForm("phone", e.phone);
+            setIsPhoneValid(e.isValid);
+            setRawPhoneDigits(e.rawDigits);
+          }}
+          value={rawPhoneDigits}
         />
       </Box>
 
