@@ -28,6 +28,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const GenerateReportForm = () => {
   const navigate = useNavigate();
 
+  // Options for each drop down input. This can be modified as required to change the input for each selection
   const healthConditions = [
     "Hyper Tension",
     "Heart Disease",
@@ -35,7 +36,22 @@ const GenerateReportForm = () => {
     "High Cholesterol",
     "Stroke",
   ];
-  const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
+
+  const smokerOptions = ["No", "Yes", "Former smoker"];
+
+  const maritalStatusOptions = ["Single", "Married", "Widow", "Divorced"];
+
+  const workingStatusOptions = [
+    "Unemployed",
+    "Homemaker",
+    "Student",
+    "Working",
+    "Retired",
+  ];
+
+  const raceOptions = ["Malay", "Chinese", "Indian", "Other"];
+
+  const alcoholOptions = ["Regular", "Occasional", "Non-drinker"];
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -73,6 +89,12 @@ const GenerateReportForm = () => {
   const [alertWorkingStatusRequired, setAlertWorkingStatusRequired] =
     useState(false);
   const [bloodGlucoseInput, setBloodGlucoseInput] = useState("");
+  const [race, setRace] = useState("");
+  const [alertRaceRequired, setAlertRaceRequired] = useState(false);
+  const [smoker, setSmoker] = useState("");
+  const [alertSmokerRequired, setAlertSmokerRequired] = useState(false);
+  const [alcohol, setAlcohol] = useState("");
+  const [alertAlcoholRequired, setAlertAlcoholRequired] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -94,6 +116,7 @@ const GenerateReportForm = () => {
         setAge({ isValid: true, value: data.age });
         setMaritalStatus(data.maritalStatus);
         setWorkingStatus(data.workingStatus);
+        setRace(data.race);
       } catch (err) {
         console.log("Failed to fetch patient data.");
       }
@@ -202,6 +225,19 @@ const GenerateReportForm = () => {
     setAlertWorkingStatusRequired(false);
   }
 
+  function updateRace(e) {
+    setRace(e.target.value);
+    setAlertRaceRequired(false);
+  }
+  function updateSmoker(e) {
+    setSmoker(e.target.value);
+    setAlertSmokerRequired(false);
+  }
+  function updateAlcohol(e) {
+    setAlcohol(e.target.value);
+    setAlertAlcoholRequired(false);
+  }
+
   function isAllInputsValid() {
     return (
       weight !== null &&
@@ -217,8 +253,11 @@ const GenerateReportForm = () => {
       apLow.isValid &&
       apHigh !== null &&
       apHigh.isValid &&
-      maritalStatus !== null &&
-      workingStatus !== null
+      maritalStatus !== "" &&
+      workingStatus !== "" &&
+      race !== "" &&
+      smoker !== "" &&
+      alcohol !== ""
     );
   }
   function updateAllInputFieldAlerts() {
@@ -231,8 +270,11 @@ const GenerateReportForm = () => {
     );
     setAlertApLowRequired(apLow === null || !apLow.isValid);
     setAlertApHighRequired(apHigh === null || !apHigh.isValid);
-    setAlertMaritalStatusRequired(maritalStatus === null);
-    setAlertWorkingStatusRequired(workingStatus === null);
+    setAlertMaritalStatusRequired(maritalStatus === "");
+    setAlertWorkingStatusRequired(workingStatus === "");
+    setAlertRaceRequired(race === "");
+    setAlertSmokerRequired(smoker === "");
+    setAlertAlcoholRequired(alcohol === "");
   }
 
   // Fills in fields with information found in the blood reports.
@@ -270,14 +312,6 @@ const GenerateReportForm = () => {
     const highCholesterol = condition.includes("High Cholesterol") ? 1 : 0;
     const stroke = condition.includes("Stroke") ? 1 : 0;
 
-    // Get lifestyle values for fetch request
-    const alcohol = lifeStyle.includes("Drink Alcohol") ? 1 : 0;
-    const smoker = lifeStyle.includes("Current Smoker")
-      ? "Yes"
-      : lifeStyle.includes("Former Smoker")
-        ? "Former smoker"
-        : "No";
-
     // Fetch request for AI Model
     await fetch(`${API_BASE}/health-prediction`, {
       method: "POST",
@@ -302,10 +336,12 @@ const GenerateReportForm = () => {
         maritalStatus: maritalStatus,
         workingStatus: workingStatus,
         stroke: stroke,
+        race: race,
       }),
     })
       .then((response) => {
         if (!response.ok) {
+          setIsLoading(false);
           throw new Error(response.status);
         }
         setIsLoading(false);
@@ -546,9 +582,6 @@ const GenerateReportForm = () => {
               }
             />
           </Box>
-
-          {/*Multi-select LifeStyle Habits */}
-
           <Typography
             variant="h4"
             sx={{
@@ -566,41 +599,53 @@ const GenerateReportForm = () => {
               gap: 3,
             }}
           >
-            <FormControl fullWidth>
-              <InputLabel id="life-style">
-                Life Style Habits (if any)
-              </InputLabel>
-              <Select
-                labelId="life-style-label"
-                id="life-style-checkbox"
-                multiple
-                value={lifeStyle}
-                onChange={handleChangeLifeStyle}
-                input={<OutlinedInput label="Life Style Habits (if any)" />}
-                renderValue={(selected) => selected.join(", ")}
-                MenuProps={MenuProps}
-              >
-                {lifeStyleChoices.map((name) => {
-                  const selected = lifeStyle.includes(name);
-                  const SelectionIcon = selected
-                    ? CheckBoxIcon
-                    : CheckBoxOutlineBlankIcon;
+            {/* Smoking Status Selection */}
+            <FormControl error={alertSmokerRequired}>
+              <InputLabel id="smoker-label">Smoking Status</InputLabel>
 
-                  return (
-                    <MenuItem key={name} value={name}>
-                      <SelectionIcon
-                        fontSize="small"
-                        style={{
-                          marginRight: 8,
-                          padding: 9,
-                          boxSizing: "content-box",
-                        }}
-                      />
-                      <ListItemText primary={name} />
-                    </MenuItem>
-                  );
-                })}
+              <Select
+                labelId="smoker-label"
+                id="smoker-required"
+                value={smoker}
+                label="Smoking Status"
+                onChange={updateSmoker}
+              >
+                {smokerOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
               </Select>
+
+              {alertSmokerRequired && (
+                <FormHelperText>
+                  *Please enter your smoking status
+                </FormHelperText>
+              )}
+            </FormControl>
+            {/* Alcohol Status Selection */}
+            <FormControl error={alertAlcoholRequired}>
+              <InputLabel id="alcohol-label">Alcohol Consumption</InputLabel>
+
+              <Select
+                labelId="alcohol-label"
+                id="alcohol-required"
+                value={alcohol}
+                label="Alcohol Consumption"
+                onChange={updateAlcohol}
+              >
+                {alcoholOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              {alertAlcoholRequired && (
+                <FormHelperText>
+                  *Please enter your alcohol consumption
+                </FormHelperText>
+              )}
             </FormControl>
 
             {/* Marital Status Selection */}
@@ -613,8 +658,11 @@ const GenerateReportForm = () => {
                 onChange={updateMaritalStatus}
                 label="Marital Status"
               >
-                <MenuItem value={"Single"}>Single</MenuItem>
-                <MenuItem value={"Married"}>Married</MenuItem>
+                {maritalStatusOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
               </Select>
               {alertMaritalStatusRequired && (
                 <FormHelperText>
@@ -632,15 +680,37 @@ const GenerateReportForm = () => {
                 label="Working Status"
                 onChange={updateWorkingStatus}
               >
-                <MenuItem value={"Unemployed"}>Unemployed</MenuItem>
-                <MenuItem value={"Private"}>Private</MenuItem>
-                <MenuItem value={"Student"}>Student</MenuItem>
-                <MenuItem value={"Public"}>Public</MenuItem>
+                {workingStatusOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
               </Select>
               {alertWorkingStatusRequired && (
                 <FormHelperText>
                   *Please enter your working status
                 </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl error={alertRaceRequired}>
+              <InputLabel id="race-label">Race</InputLabel>
+
+              <Select
+                labelId="race-label"
+                id="race-required"
+                value={race}
+                label="Race"
+                onChange={updateRace}
+              >
+                {raceOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              {alertRaceRequired && (
+                <FormHelperText>*Please enter your race</FormHelperText>
               )}
             </FormControl>
           </Box>

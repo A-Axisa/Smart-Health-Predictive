@@ -1122,6 +1122,7 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
         "age": get_age(patient.DateOfBirth),
         "maritalStatus": patient.get_marital_status(),
         "workingStatus": patient.get_working_status(),
+        "race": patient.get_race()
     }
 
     return result
