@@ -4,11 +4,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-
 import ConfirmationDialog from "../components/confirmationDialog";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-
 import {
   Box,
   Typography,
@@ -30,6 +28,12 @@ import {
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A page that provides the tools for a merchants to browse through their
+ * list of patients and view their past history reports.
+ *
+ * @returns {@mui.material.Box}
+ */
 const MerchantReports = ({}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

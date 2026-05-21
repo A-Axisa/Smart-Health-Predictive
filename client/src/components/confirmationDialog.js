@@ -7,17 +7,21 @@ import {
   Button,
 } from "@mui/material";
 
-// Reusable confirmation dialog with fully controlled content/styles by caller.
-// Props:
-// - open: boolean
-// - title: string | ReactNode
-// - message: string | ReactNode
-// - confirm: () => void
-// - cancel: () => void
-// - confirmText: string
-// - cancelText: string
-// - confirmColor: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
-// - cancelColor: same as above
+/**
+ * A confirmation dialog with fully controlled content/styles by caller.
+ *
+ * @param {Object} props
+ * @param {boolean} [props.open]
+ * @param {string | ReactNode} [props.title]
+ * @param {string | ReactNode} [props.message]
+ * @param {function} [props.confirm]
+ * @param {function} [props.cancel]
+ * @param {string} [props.confirmText]
+ * @param {string} [props.cancelText]
+ * @param {string} [props.confirmColor] primary, secondary, error, info, success, warning
+ * @param {string} [props.cancelColor] Same as above
+ * @returns {@mui.material.Dialog}
+ */
 const ConfirmationDialog = ({
   open,
   title,

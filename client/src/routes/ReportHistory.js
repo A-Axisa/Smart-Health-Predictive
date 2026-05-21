@@ -27,6 +27,11 @@ import {
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A page that provide the tools for a user to past health reports.
+ *
+ * @returns {@mui.material.Container}
+ */
 const AIHealthPrediction = ({}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

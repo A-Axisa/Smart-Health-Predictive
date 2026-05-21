@@ -49,6 +49,12 @@ const formatXAxisLabel = (label, index, total, isMobile) => {
   return label;
 };
 
+/**
+ * A page that displays the trends in the user's health based on
+ * their report history.
+ *
+ * @returns {@mui.material.Box}
+ */
 const HealthAnalytics = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -352,7 +358,9 @@ const HealthAnalytics = () => {
                     control={
                       <Checkbox
                         checked={selectedMetrics.diabetesProbability}
-                        onChange={() => handleMetricChange("diabetesProbability")}
+                        onChange={() =>
+                          handleMetricChange("diabetesProbability")
+                        }
                         sx={{
                           color: colors[2],
                           "&.Mui-checked": { color: colors[2] },
@@ -369,7 +377,11 @@ const HealthAnalytics = () => {
 
         <Card sx={cardWrapperSx}>
           <CardContent sx={chartCardContentSx}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ fontWeight: 600, mb: 2 }}
+            >
               Health Risk Trends Over Time
             </Typography>
             {chartSeries.length > 0 && healthData.length > 0 ? (

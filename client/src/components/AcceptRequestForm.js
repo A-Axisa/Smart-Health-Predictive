@@ -16,8 +16,10 @@ import {
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Allows the user to accept an access request from a merchant user.
- * This will allow the merchant to view manage the patients record.
+ * A form that allows a user to accept an access request from a merchant
+ * and grant the permission to view their health records.
+ *
+ * @returns {@mui.material.Container}
  */
 const AcceptRequestForm = () => {
   const [isLoading, setIsLoading] = useState(false);

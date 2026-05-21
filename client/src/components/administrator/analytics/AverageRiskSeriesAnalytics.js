@@ -20,8 +20,10 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const DEFAULT_YEAR = 2026;
 
 /**
- * Displays the average progression for stroke, diabetes, and cardiovascular
- * disease of the years.
+ * A card that displays the average progression for stroke, diabetes,
+ * and cardiovascular disease of the years.
+ *
+ * @returns {@mui.material.Card}
  */
 const AverageRiskSeriesAnalytics = () => {
   const [availableYears, setAvailableYears] = useState([]);

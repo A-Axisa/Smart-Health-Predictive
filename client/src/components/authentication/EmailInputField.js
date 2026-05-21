@@ -6,8 +6,11 @@ import validator from "validator";
  * An input field that provides basic validation for an entered email.
  *
  * @param {Object} props
- * @param {function} [props.onChange] - Callback function called when input is changed.
- * @param {boolean} [props.showRequired] - Force the component to show the error state.
+ * @param {function} [props.onChange] - Callback function called when
+ * input is changed.
+ * @param {boolean} [props.showRequired] - Force the component to show
+ * the error state.
+ * @returns {@mui.material.TextField}
  */
 const EmailInputField = ({ onChange, showRequired = false }) => {
   const [email, setEmail] = useState("");

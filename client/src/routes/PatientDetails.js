@@ -1,4 +1,12 @@
-import { Box, Typography, Card, CardContent, Button, useTheme, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -8,7 +16,9 @@ const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
 const DRAWER_WIDTH = "65px";
 
 /**
- * A page used to display a individual patient information for a merchant user.
+ * A route used to display a individual patient information for a merchant user.
+ *
+ * @returns {@mui.materials.Box}
  */
 const PatientDetails = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -201,23 +211,33 @@ const PatientDetails = () => {
           >
             {["stroke", "diabetes", "cvd"].map((key) => (
               <Card key={key} sx={{ flex: 1, minWidth: 0 }}>
-                <CardContent 
-                  sx={{ 
-                    p: { xs: 1.5, sm: 2 }, 
+                <CardContent
+                  sx={{
+                    p: { xs: 1.5, sm: 2 },
                     "&:last-child": { pb: { xs: 1.5, sm: 2 } },
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    textAlign: "center"
+                    textAlign: "center",
                   }}
                 >
                   <Typography
                     gutterBottom
-                    sx={{ color: "#747474", fontSize: { xs: "0.7rem", sm: "1.25rem" }, fontWeight: 500 }}
+                    sx={{
+                      color: "#747474",
+                      fontSize: { xs: "0.7rem", sm: "1.25rem" },
+                      fontWeight: 500,
+                    }}
                   >
                     {key.toUpperCase()}
                   </Typography>
-                  <Typography sx={{ fontSize: { xs: "1.4rem", sm: "2.125rem" }, fontWeight: 400, lineHeight: 1.2 }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "1.4rem", sm: "2.125rem" },
+                      fontWeight: 400,
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {patientData?.risks?.[key]?.slice(-1)[0] ?? 0}%
                   </Typography>
                   <Box

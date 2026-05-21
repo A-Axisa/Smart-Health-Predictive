@@ -1,8 +1,8 @@
-import { pdf } from '@react-pdf/renderer';
-import { saveAs } from 'file-saver';
-import HealthReportPDFFlat from './HealthReportPDFFlat';
-import { Button } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
+import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
+import HealthReportPDFFlat from "./HealthReportPDFFlat";
+import { Button } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
 
 /**
  * A simple button component to trigger a PDF report download for a specific health data ID.
@@ -16,9 +16,14 @@ import DownloadIcon from '@mui/icons-material/Download';
  * @param {object} [props.flatReportData] - Already-fetched flat report data from /getReportData/{id}.
  * @param {object} [props.meta] - Additional metadata: { date, healthDataID, fileNameHint }.
  * @param {function} props.onError - Callback function to handle errors.
+ * @returns {@mui.material.Button}
  */
-const DownloadReportButton = ({ healthDataId, flatReportData, meta, onError }) => {
-
+const DownloadReportButton = ({
+  healthDataId,
+  flatReportData,
+  meta,
+  onError,
+}) => {
   const handleDownload = async () => {
     if (!flatReportData && !healthDataId) {
       onError?.("Health Data ID is required.");
@@ -28,24 +33,28 @@ const DownloadReportButton = ({ healthDataId, flatReportData, meta, onError }) =
     try {
       // Build local date string for filename to avoid timezone shift
       const buildLocalDatePart = (value) => {
-        if (!value) return 'report';
+        if (!value) return "report";
         const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return 'report';
+        if (Number.isNaN(d.getTime())) return "report";
         const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
         return `${y}-${m}-${day}`;
       };
 
       // Generate from flat data (page already has it)
-      const fileName = meta?.fileNameHint
-        || `HealthReport_${String(meta?.healthDataID ?? healthDataId)}_${buildLocalDatePart(meta?.date)}.pdf`;
+      const fileName =
+        meta?.fileNameHint ||
+        `HealthReport_${String(meta?.healthDataID ?? healthDataId)}_${buildLocalDatePart(meta?.date)}.pdf`;
       const blob = await pdf(
-        <HealthReportPDFFlat data={flatReportData} metaId={meta?.healthDataID ?? healthDataId} metaDate={meta?.date} />
+        <HealthReportPDFFlat
+          data={flatReportData}
+          metaId={meta?.healthDataID ?? healthDataId}
+          metaDate={meta?.date}
+        />,
       ).toBlob();
       saveAs(blob, fileName);
       if (onError) onError?.(null); // Clear previous errors on success
-
     } catch (error) {
       console.error("Failed to download report:", error);
       if (onError) onError(error.message);
@@ -53,7 +62,12 @@ const DownloadReportButton = ({ healthDataId, flatReportData, meta, onError }) =
   };
 
   return (
-    <Button variant="contained" color="primary" onClick={handleDownload} startIcon={<DownloadIcon />}> 
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={handleDownload}
+      startIcon={<DownloadIcon />}
+    >
       Download Report
     </Button>
   );

@@ -19,8 +19,10 @@ import { UserContext } from "../../utils/UserContext";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides the user a form with the required fields and buttons to login to
- * the application.
+ * A form that can be filled in with a user's account credentials to login
+ * to the service.
+ *
+ * @returns {@mui.material.Card}
  */
 const LoginForm = () => {
   const navigate = useNavigate();

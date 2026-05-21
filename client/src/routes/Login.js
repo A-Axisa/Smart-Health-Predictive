@@ -4,8 +4,10 @@ import Logo from "../assets/WellAiLogoTR.png";
 import WelcomePanel from "../components/WelcomePanel";
 
 /**
- * Introduces the services and provides forms for logging in to
- * the service.
+ * A page that introduces the service and provides the form for logging
+ * into the service.
+ *
+ * @returns {@mui.material.Box}
  */
 const Login = () => {
   return (

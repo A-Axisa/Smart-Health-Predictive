@@ -11,6 +11,15 @@ import {
   useMediaQuery,
 } from "@mui/material";
 
+/**
+ * A template that can be filled in with health data from generated from
+ * reports and displays them in a readable format.
+ *
+ * @param {Object} props
+ * @param {Object} [props.report] - Health data in the report.
+ * @param {Object} [props.date] - Date the report was generated.
+ * @returns {@mui.material.Box}
+ */
 const ReportTemplate = ({ report, date }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

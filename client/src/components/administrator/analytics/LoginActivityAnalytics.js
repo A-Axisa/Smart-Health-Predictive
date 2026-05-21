@@ -21,7 +21,9 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const TIMESPAN_IN_DAYS = 7;
 
 /**
- * Displays the number of logins over the past seven days.
+ * A card that displays the number of logins over the past seven days.
+ *
+ * @returns {@mui.material.Card}
  */
 const LoginActivityAnalytics = () => {
   const [xAxisData, setXAxisData] = useState([]);

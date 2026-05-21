@@ -1,4 +1,12 @@
-import { Card, CardContent, Box, Divider, Typography, useTheme, useMediaQuery } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Box,
+  Divider,
+  Typography,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -6,9 +14,13 @@ import { BarChart } from "@mui/x-charts/BarChart";
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
 const DRAWER_WIDTH = "65px";
-
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A page that displays a collection of metrics based on the user's data.
+ *
+ * @returns {@mui.material.Box}
+ */
 const UserLanding = ({}) => {
   const navigate = useNavigate();
   const [name, setName] = useState(null);

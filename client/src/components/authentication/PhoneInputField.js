@@ -12,7 +12,8 @@ import {
  *
  * @param {Object} props
  * @param {function} [props.onChange] - Callback function called when input
- *   is changed.
+ *  is changed.
+ * @returns {@mui.material.Box}
  */
 const PhoneInputField = ({ onChange }) => {
   const [rawPhoneNumber, setRawPhoneNumber] = useState("");

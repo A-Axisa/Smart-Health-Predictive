@@ -21,9 +21,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
 
-
 /**
  * A page used to display a list of all patients for a merchant user.
+ *
+ * @returns {@mui.material.Box}
  */
 const PatientManagement = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -214,7 +215,16 @@ const PatientManagement = () => {
             alignItems: { md: "center" },
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, flex: 1, mx: 1, py: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1,
+              flex: 1,
+              mx: 1,
+              py: 1,
+            }}
+          >
             <TextField
               variant="standard"
               size="small"
@@ -232,10 +242,11 @@ const PatientManagement = () => {
               }}
             />
             <Divider
-            orientation="vertical"
-            flexItem sx={{
-              display: { xs: "none", md: "block" },
-              }} 
+              orientation="vertical"
+              flexItem
+              sx={{
+                display: { xs: "none", md: "block" },
+              }}
             />
             <Divider
               sx={{
@@ -261,10 +272,11 @@ const PatientManagement = () => {
           </Box>
 
           <Divider
-          orientation="vertical"
-          flexItem sx={{
-            display: { xs: "none", md: "block" },
-            }} 
+            orientation="vertical"
+            flexItem
+            sx={{
+              display: { xs: "none", md: "block" },
+            }}
           />
           <Divider
             sx={{
@@ -330,7 +342,7 @@ const PatientManagement = () => {
               paginationMode="server"
               onPaginationModelChange={setPaginationModel}
             />
-            </Box>
+          </Box>
         </Paper>
         <ConfirmationDialog
           open={deleteDialogOpen}
