@@ -12,8 +12,10 @@ import { useEffect, useState } from "react";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays the amount of health reports that have been generated over the
- * past month and past week.
+ * A card that displays the amount of health reports that have been
+ * generated over the past month and past week.
+ *
+ * @returns {@mui.material.Card}
  */
 const RecentReportsGeneratedAnalytics = () => {
   const [data, setData] = useState({});

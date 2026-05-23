@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -17,14 +16,18 @@ import {
   Select,
   FormHelperText,
 } from "@mui/material";
-
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A form that can be filled in by a standard user with their health
+ * information to generate a health report.
+ *
+ * @returns {@mui.material.Card}
+ */
 const GenerateReportForm = () => {
   const navigate = useNavigate();
 

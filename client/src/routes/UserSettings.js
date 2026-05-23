@@ -23,6 +23,12 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../utils/UserContext";
 import PhoneInputField from "../components/authentication/PhoneInputField";
 
+/**
+ * A page that provides the tools for a user to securely update their
+ * account and personal details.
+ *
+ * @returns {@mui.material.Box}
+ */
 const UserSettings = () => {
   const navigate = useNavigate();
   const {
@@ -337,7 +343,10 @@ const UserSettings = () => {
             </Button>
           </Box>
           {deleteError && (
-            <Alert severity="error" sx={{ mt: 1, maxWidth: 500, textAlign: "left" }}>
+            <Alert
+              severity="error"
+              sx={{ mt: 1, maxWidth: 500, textAlign: "left" }}
+            >
               {deleteError}
             </Alert>
           )}
@@ -649,39 +658,37 @@ const UserSettings = () => {
             </Typography>
           </Box>
           <List component="nav" sx={{ p: 0 }}>
-            {["Account Details", "Profile", "Password"].map(
-              (item) => (
-                <ListItem
-                  key={item}
-                  button
-                  selected={selectedSection === item}
-                  onClick={() => setSelectedSection(item)}
-                  sx={{
-                    py: 2,
-                    px: 3,
-                    borderLeft:
-                      selectedSection === item
-                        ? "4px solid"
-                        : "4px solid transparent",
-                    borderLeftColor: "primary.main",
-                    bgcolor:
-                      selectedSection === item
-                        ? "action.selected"
-                        : "transparent",
-                    "&:hover": {
-                      bgcolor: "action.hover",
-                    },
+            {["Account Details", "Profile", "Password"].map((item) => (
+              <ListItem
+                key={item}
+                button
+                selected={selectedSection === item}
+                onClick={() => setSelectedSection(item)}
+                sx={{
+                  py: 2,
+                  px: 3,
+                  borderLeft:
+                    selectedSection === item
+                      ? "4px solid"
+                      : "4px solid transparent",
+                  borderLeftColor: "primary.main",
+                  bgcolor:
+                    selectedSection === item
+                      ? "action.selected"
+                      : "transparent",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={item}
+                  primaryTypographyProps={{
+                    fontWeight: selectedSection === item ? 600 : 400,
                   }}
-                >
-                  <ListItemText
-                    primary={item}
-                    primaryTypographyProps={{
-                      fontWeight: selectedSection === item ? 600 : 400,
-                    }}
-                  />
-                </ListItem>
-              ),
-            )}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       )}

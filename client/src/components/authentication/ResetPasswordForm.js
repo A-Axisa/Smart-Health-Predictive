@@ -18,7 +18,9 @@ import PasswordInputField from "../authentication/PasswordInputField";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides a form to reset their password one time with a reset token.
+ * A form to reset a user's password using a one-time reset token.
+ *
+ * @returns {@mui.material.Card}
  */
 const ResetPasswordForm = () => {
   const { token } = useParams();

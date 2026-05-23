@@ -15,6 +15,8 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
  * Provides a merchant user with a form to send an access request to an existing patient.
+ *
+ * @returns {@mui.material.Container}
  */
 const RequestPatientAccessForm = () => {
   const [email, setEmail] = useState(null);

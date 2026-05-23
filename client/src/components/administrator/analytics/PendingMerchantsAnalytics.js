@@ -13,7 +13,9 @@ import ErrorIcon from "@mui/icons-material/Error";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays the amount of merchants awaiting approval from a moderator.
+ * A card that displays the amount of merchants awaiting approval from a moderator.
+ *
+ * @returns {@mui.material.Card}
  */
 const PendingMerchantsAnalytics = () => {
   const [data, setData] = useState({});

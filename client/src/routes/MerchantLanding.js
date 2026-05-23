@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A page that displays a collections of metrics that summarises the
+ * history and health data for all of a merchant's patients providing
+ * a quick overview.
+ *
+ * @returns {@mui.material.Container}
+ */
 const MerchantLanding = () => {
   const [data, setData] = useState({});
   const [name, setName] = useState("");

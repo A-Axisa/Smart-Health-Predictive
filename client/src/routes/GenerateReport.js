@@ -1,6 +1,11 @@
 import GenerateReportForm from "../components/GenerateReportForm";
 import { Box } from "@mui/material";
 
+/**
+ * A page that provides the form for user's to generate a health report.
+ *
+ * @returns {@mui.material.Box}
+ */
 const GenerateReport = ({}) => {
   return (
     <Box

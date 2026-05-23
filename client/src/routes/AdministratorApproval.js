@@ -1,12 +1,12 @@
 import AccountApprovalTable from "../components/administrator/AccountApprovalTable";
-import {
-  Box,
-  Typography,
-  Divider,
-  Stack,
-  Container
-} from "@mui/material";
+import { Box, Typography, Divider, Stack, Container } from "@mui/material";
 
+/**
+ * A route that displays the merchant approval table where administrators
+ * can audit and approve the creation of a merchant's account.
+ *
+ * @returns {@mui.material.Container}
+ */
 const AdministratorApproval = () => {
   return (
     <Container
@@ -26,7 +26,7 @@ const AdministratorApproval = () => {
           pb: { xs: "2px", sm: "0px", md: "4px" },
           pr: { xs: "2px", sm: "0px", md: "4px" },
           mr: "0px",
-          maxWidth: "1600px", 
+          maxWidth: "1600px",
         }}
       >
         <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>

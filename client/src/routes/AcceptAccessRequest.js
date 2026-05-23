@@ -10,7 +10,10 @@ import {
 import AcceptRequestForm from "../components/AcceptRequestForm";
 
 /**
- * Displays the form to accept an access request
+ * A page that displays the accept access request form for users to
+ * accept requests from merchants.
+ *
+ * @returns {@mui.material.Container}
  */
 const AcceptAccessRequest = () => {
   return (

@@ -6,7 +6,9 @@ const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
 const DRAWER_WIDTH = "65px";
 
 /**
- * A page used to create a new patient record.
+ * A page provides tools to create a new patient record.
+ *
+ * @returns {@mui.material.Box}
  */
 const CreatePatient = () => {
   return (

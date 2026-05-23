@@ -12,8 +12,10 @@ import { useEffect, useState } from "react";
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays the amount of standard users that have logged into the system over the
- * past month and past week.
+ * A card that displays the amount of standard users that have logged into
+ * the system over the past month and past week.
+ *
+ * @returns {@mui.material.Card}
  */
 const ActiveUsersAnalytics = () => {
   const [data, setData] = useState({});

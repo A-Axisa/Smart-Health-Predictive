@@ -35,6 +35,12 @@ const ACCOUNT_TYPES = Object.freeze({
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A form that can be filled out by a user to create an account with the
+ * service.
+ *
+ * @returns {@mui.material.Card}
+ */
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const [givenNameState, setGivenNameState] = useState(null);

@@ -2,8 +2,9 @@ import { Container } from "@mui/material";
 import RegistrationForm from "../components/authentication/RegistrationForm";
 
 /**
- * A page used to display registration information and provide a form to allow
- * users to register.
+ * A page that displays the registration form.
+ *
+ * @returns {@mui.material.Container}
  */
 const Register = () => {
   return (

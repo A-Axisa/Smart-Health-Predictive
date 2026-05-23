@@ -11,7 +11,6 @@ import {
   Button,
   Autocomplete,
 } from "@mui/material";
-
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -23,11 +22,16 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormHelperText from "@mui/material/FormHelperText";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import { styled } from "@mui/material/styles";
-
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A form that can be filled in by a merchant with a patients health
+ * information to generate health report for them.
+ *
+ * @returns {@mui.material.Card}
+ */
 const MerchantReportForm = () => {
   const navigate = useNavigate();
   const location = useLocation();

@@ -2,7 +2,10 @@ import { Container } from "@mui/material";
 import ResetPasswordForm from "../components/authentication/ResetPasswordForm";
 
 /**
- * Displays the form to reset a user's password if it has been forgotten.
+ * A page that displays the form to reset a user's password using a one-time
+ * password reset token.
+ *
+ * @return {@mui.material.Container}
  */
 const ResetPassword = () => {
   return (

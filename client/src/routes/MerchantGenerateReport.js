@@ -2,6 +2,12 @@ import { Container, ButtonGroup, Button, Box } from "@mui/material";
 import MerchantReportForm from "../components/MerchantReportForm";
 import { useState } from "react";
 
+/**
+ * A page that provides the health report form for merchants to generate
+ * reports for their patients.
+ *
+ * @returns {@mui.material.Container}
+ */
 const MerchantGenerateReport = ({}) => {
   const [page, setPage] = useState("manual");
 

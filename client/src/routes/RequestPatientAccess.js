@@ -11,7 +11,9 @@ import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm"
 import RequestPatientAccessForm from "../components/RequestPatientAccessForm";
 
 /**
- * Displays the form to request access to a patients record.
+ * A page that displays the form to request access to a patients record.
+ *
+ * @returns {@mui.material.Box}
  */
 const RequestPatientAccess = () => {
   return (

@@ -2,7 +2,10 @@ import { Box, Container, Stack, Typography } from "@mui/material";
 import Logo from "../assets/WellAiLogoTR.png";
 
 /**
- * An panel that introduce the web service.
+ * A panel that displays the name of the web application and the
+ * company's logo as an introduction to the web application.
+ *
+ * @returns {@mui.material.Container}
  */
 const WelcomePanel = () => {
   return (

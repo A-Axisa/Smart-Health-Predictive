@@ -31,6 +31,12 @@ const EVENT_TYPES = [
   "PATIENT_PROFILE_UPDATED",
 ];
 
+/**
+ * A table that lists the system's audit logs with the tools to filter
+ * them efficiently.
+ *
+ * @returns {@mui.material.Box}
+ */
 const AuditLogTable = () => {
   const [logData, setLogData] = useState([]);
   const [totalLogs, setTotalLogs] = useState(0);
@@ -81,7 +87,13 @@ const AuditLogTable = () => {
 
   useEffect(() => {
     fetchLogs();
-  }, [paginationModel.page, paginationModel.pageSize, userEmail, eventType, sortModel]);
+  }, [
+    paginationModel.page,
+    paginationModel.pageSize,
+    userEmail,
+    eventType,
+    sortModel,
+  ]);
 
   const handleEmailSearchChange = useCallback((value) => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
@@ -94,14 +106,62 @@ const AuditLogTable = () => {
   }, []);
 
   const columns = [
-    { field: "logID", headerName: "Log ID", flex: 0.7, width: 70, sortable: true },
-    { field: "eventType", headerName: "Event Type", flex: 1, minWidth: 140, sortable: true },
-    { field: "success", headerName: "Success", width: 80, type: "boolean", sortable: true },
-    { field: "userEmail", headerName: "User Email", flex: 1.5, minWidth: 180, sortable: true },
-    { field: "ipAddress", headerName: "IP Address", flex: 0.8, minWidth: 100, sortable: true },
-    { field: "device", headerName: "Device", flex: 1, minWidth: 120, sortable: false },
-    { field: "createdAt", headerName: "Created At", flex: 1, minWidth: 160, sortable: true },
-    { field: "description", headerName: "Description", flex: 2, minWidth: 200, sortable: false },
+    {
+      field: "logID",
+      headerName: "Log ID",
+      flex: 0.7,
+      width: 70,
+      sortable: true,
+    },
+    {
+      field: "eventType",
+      headerName: "Event Type",
+      flex: 1,
+      minWidth: 140,
+      sortable: true,
+    },
+    {
+      field: "success",
+      headerName: "Success",
+      width: 80,
+      type: "boolean",
+      sortable: true,
+    },
+    {
+      field: "userEmail",
+      headerName: "User Email",
+      flex: 1.5,
+      minWidth: 180,
+      sortable: true,
+    },
+    {
+      field: "ipAddress",
+      headerName: "IP Address",
+      flex: 0.8,
+      minWidth: 100,
+      sortable: true,
+    },
+    {
+      field: "device",
+      headerName: "Device",
+      flex: 1,
+      minWidth: 120,
+      sortable: false,
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      flex: 1,
+      minWidth: 160,
+      sortable: true,
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      flex: 2,
+      minWidth: 200,
+      sortable: false,
+    },
   ];
 
   return (
@@ -128,9 +188,10 @@ const AuditLogTable = () => {
         />
         <Divider
           orientation="vertical"
-          flexItem sx={{
+          flexItem
+          sx={{
             display: { xs: "none", md: "block" },
-            }} 
+          }}
         />
         <Divider
           sx={{
@@ -150,7 +211,7 @@ const AuditLogTable = () => {
           <FormControl
             size="small"
             sx={{
-              width: { xs: "100%", sm: 250 }
+              width: { xs: "100%", sm: 250 },
             }}
           >
             <InputLabel id="event-type-label">Filter by Event Type</InputLabel>
@@ -174,11 +235,10 @@ const AuditLogTable = () => {
             </Select>
           </FormControl>
         </Box>
-
       </Paper>
 
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <Box sx={{ width: "100%", overflowX: "auto"}}>
+        <Box sx={{ width: "100%", overflowX: "auto" }}>
           <DataGrid
             rows={logData}
             columns={columns}
@@ -198,7 +258,7 @@ const AuditLogTable = () => {
               },
             }}
           />
-          </Box>
+        </Box>
       </Paper>
     </Box>
   );

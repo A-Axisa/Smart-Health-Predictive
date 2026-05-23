@@ -1,13 +1,12 @@
 import AuditLogTable from "../components/administrator/AuditLogTable";
-import {
-  Box,
-  Typography,
-  Divider,
-  Stack,
-  Container
-} from "@mui/material";
+import { Box, Typography, Divider, Stack, Container } from "@mui/material";
 import AdministratorApproval from "./AdministratorApproval";
 
+/**
+ * A route that provides tools to filter through and audit the systems logs.
+ *
+ * @returns {@mui.material.Container}
+ */
 const AdministratorLogs = () => {
   return (
     <Container
@@ -27,7 +26,7 @@ const AdministratorLogs = () => {
           pb: { xs: "2px", sm: "0px", md: "4px" },
           pr: { xs: "2px", sm: "0px", md: "4px" },
           mr: "0px",
-          maxWidth: "1600px", 
+          maxWidth: "1600px",
         }}
       >
         <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>

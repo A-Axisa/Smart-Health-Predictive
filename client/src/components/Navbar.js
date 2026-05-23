@@ -38,6 +38,16 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A navigation bar located on the side of the page that allows quick navigation
+ * of the service. Different tabs will be displayed based on the current
+ * user's role and provide access to the appropriate pages.
+ * The service's disclaimer policy and privacy notice are also located at the bottom.
+ *
+ * @param {Object} props
+ * @param {string} [props.role] - Renders different tabs based on a user's role.
+ * @returns {<>}
+ */
 const NavBar = ({ role }) => {
   // Maps each route to the corrosponding page title.
   const routePageMap = {

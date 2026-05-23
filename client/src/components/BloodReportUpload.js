@@ -3,6 +3,14 @@ import { styled } from "@mui/material/styles";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import pdfToText from "react-pdftotext";
 
+/**
+ * A button that allows a user to select and submit a blood report that
+ * will auto fill sections of the health report form.
+ *
+ * @param {Object} props
+ * @param {function} [props.onChange] - Callback function called when files are changed
+ * @returns {@mui.material.Button}
+ */
 const BloodReportUpload = ({ onChange }) => {
   const HiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
