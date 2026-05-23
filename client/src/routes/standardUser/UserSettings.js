@@ -18,10 +18,10 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import ConfirmationDialog from "../components/confirmationDialog";
+import ConfirmationDialog from "../../components/confirmationDialog";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../utils/UserContext";
-import PhoneInputField from "../components/authentication/PhoneInputField";
+import { UserContext } from "../../utils/UserContext";
+import PhoneInputField from "../../components/authentication/PhoneInputField";
 
 /**
  * A page that provides the tools for a user to securely update their

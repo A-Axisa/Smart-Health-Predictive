@@ -1,9 +1,9 @@
-import ReportTemplate from "../components/ReportTemplate";
-import DownloadReportButton from "../components/DownloadReportButton";
+import ReportTemplate from "../../components/ReportTemplate";
+import DownloadReportButton from "../../components/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import ConfirmationDialog from "../components/confirmationDialog";
+import ConfirmationDialog from "../../components/confirmationDialog";
 import Stack from "@mui/material/Stack";
 import React, { useState, useEffect } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -271,7 +271,8 @@ const AIHealthPrediction = ({}) => {
                       >
                         {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
                         <Typography variant="subtle">
-                            {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                          {" "}
+                          {`${new Date(item.date).toLocaleTimeString("en-AU")}`}
                         </Typography>
                       </Typography>
                     }

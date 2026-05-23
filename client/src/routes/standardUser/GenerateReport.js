@@ -1,4 +1,4 @@
-import GenerateReportForm from "../components/GenerateReportForm";
+import GenerateReportForm from "../../components/GenerateReportForm";
 import { Box } from "@mui/material";
 
 /**

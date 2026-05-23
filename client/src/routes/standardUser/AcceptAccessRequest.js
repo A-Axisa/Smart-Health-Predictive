@@ -7,7 +7,7 @@ import {
   Link,
   Divider,
 } from "@mui/material";
-import AcceptRequestForm from "../components/AcceptRequestForm";
+import AcceptRequestForm from "../../components/AcceptRequestForm";
 
 /**
  * A page that displays the accept access request form for users to
