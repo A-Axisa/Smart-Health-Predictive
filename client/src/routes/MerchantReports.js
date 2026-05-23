@@ -137,8 +137,10 @@ const MerchantReports = ({}) => {
   const years = [
     ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
   ].sort((a, b) => a - b);
+
   const months = [
-    ...new Set(reportDates.map((r) => new Date(r.date).getMonth() + 1)),
+    ...new Set(reportDates.filter((r) => !selectedYear || new Date(r.date).getFullYear() === selectedYear,)
+    .map((r) => new Date(r.date).getMonth() + 1),),
   ].sort((a, b) => a - b);
 
   // Filters reports based on selected year and month if any.
