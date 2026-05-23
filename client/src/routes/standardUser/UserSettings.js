@@ -18,7 +18,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import ConfirmationDialog from "../../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../utils/UserContext";
 import PhoneInputField from "../../components/authentication/PhoneInputField";

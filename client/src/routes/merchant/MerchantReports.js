@@ -4,7 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ConfirmationDialog from "../../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {

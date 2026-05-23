@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ConfirmationDialog from "../../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import InputAdornment from "@mui/material/InputAdornment";
 import {
   Box,

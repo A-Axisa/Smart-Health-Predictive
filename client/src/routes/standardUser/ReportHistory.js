@@ -3,7 +3,7 @@ import DownloadReportButton from "../../components/healthReport/DownloadReportBu
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import ConfirmationDialog from "../../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import Stack from "@mui/material/Stack";
 import React, { useState, useEffect } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";

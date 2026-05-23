@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect, useCallback } from "react";
-import ConfirmationDialog from "../confirmationDialog";
+import ConfirmationDialog from "../dialog/confirmationDialog";
 import UserSearchBar from "./UserSearchBar";
 import UserToolBar from "./UserToolBar";
 import * as React from "react";

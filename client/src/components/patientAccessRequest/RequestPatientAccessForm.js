@@ -9,7 +9,7 @@ import {
   Link,
   Divider,
 } from "@mui/material";
-import EmailInputField from "./authentication/EmailInputField";
+import EmailInputField from "../authentication/EmailInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
