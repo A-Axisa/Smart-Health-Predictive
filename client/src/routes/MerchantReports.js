@@ -24,6 +24,7 @@ import {
   Stack,
   useTheme,
   useMediaQuery,
+  Paper,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -174,45 +175,26 @@ const MerchantReports = ({}) => {
   return (
     <Box
       sx={{
-        display: "flex",
         minHeight: "100vh",
         bgcolor: "background.default",
         ml: "65px",
-        mt: "66px",
+        mt: "80px",
       }}
     >
-      {/* Top Bar */}
-      <Drawer
-        anchor="top"
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        variant="temporary"
-        PaperProps={{
-          sx: {
-            p: 2,
-            maxHeight: "50vh",
-          },
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderRight: "1px solid #e0e0e0",
         }}
       >
-        <Box
-          sx={{
-            bgcolor: "background.paper",
-            borderRight: "1px solid #e0e0e0",
-          }}
-        >
+        <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+            <Typography
+              variant={isMobile ? "h4" : "h3"}
+              sx={{ textAlign: "center" }}
             >
-              <Typography variant={isMobile ? "h4" : "h3"}>
-                Report History
-              </Typography>
-              <IconButton aria-label="menu" onClick={openBar}>
-                <KeyboardArrowUpIcon fontSize="large" />
-              </IconButton>
-            </Stack>
+              Report History
+            </Typography>
           </Box>
           {/* Patient List */}
           <Box sx={{ p: 2 }}>
@@ -228,7 +210,17 @@ const MerchantReports = ({}) => {
             />
           </Box>
 
-          <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              gap: 2,
+              flexDirection: {
+                xs: "column",
+                md: "row",
+              },
+            }}
+          >
             {/* Year */}
             <FormControl fullWidth disabled={!selectedPatient}>
               <InputLabel>Year</InputLabel>
@@ -268,61 +260,69 @@ const MerchantReports = ({}) => {
 
             <Button onClick={handleClear}>Clear</Button>
           </Box>
-
-          <List component="nav" sx={{ p: 0 }}>
-            {filteredReportDates.map((item) => (
-              <ListItem
-                key={item.healthDataId}
-                selected={selectedDate?.healthDataId === item.healthDataId}
-                onClick={(e) => setSelectedDate(item)}
-                button
-                sx={{
-                  py: 2,
-                  px: 3,
-                  borderLeft:
-                    selectedDate?.healthDataId === item.healthDataId
-                      ? "4px solid"
-                      : "4px solid transparent",
-                  borderLeftColor: "primary.main",
-                  bgcolor:
-                    selectedDate?.healthDataId === item.healthDataId
-                      ? "action.selected"
-                      : "transparent",
-                }}
-              >
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="h7"
-                      sx={{
-                        fontWeight:
-                          selectedDate.healthDataId === item.healthDataId
-                            ? 400
-                            : 0,
-                      }}
-                    >
-                      {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
-                      <Typography variant="subtle">
-                          {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+          <Box
+            sx={{
+              maxHeight: 190,
+              overflowY: "auto",
+            }}
+          >
+            <List component="nav" sx={{ p: 0 }}>
+              {filteredReportDates.map((item) => (
+                <ListItem
+                  key={item.healthDataId}
+                  selected={selectedDate?.healthDataId === item.healthDataId}
+                  onClick={(e) => setSelectedDate(item)}
+                  button
+                  sx={{
+                    py: 2,
+                    px: 3,
+                    borderLeft:
+                      selectedDate?.healthDataId === item.healthDataId
+                        ? "4px solid"
+                        : "4px solid transparent",
+                    borderLeftColor: "primary.main",
+                    bgcolor:
+                      selectedDate?.healthDataId === item.healthDataId
+                        ? "action.selected"
+                        : "transparent",
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="h7"
+                        sx={{
+                          fontWeight:
+                            selectedDate.healthDataId === item.healthDataId
+                              ? 400
+                              : 0,
+                        }}
+                      >
+                        {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                        <Typography variant="subtle">
+                          {" "}
+                          {`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                  }
-                />
-                {/* Delete Report Button */}
-                {selectedDate?.healthDataId === item.healthDataId && (
-                  <IconButton
-                    aria-label="delete"
-                    color="error"
-                    onClick={(e) => setDeleteDialogOpen(true)}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                )}
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
+                    }
+                  />
+                  {/* Delete Report Button */}
+                  {selectedDate?.healthDataId === item.healthDataId && (
+                    <IconButton
+                      aria-label="delete"
+                      color="error"
+                      onClick={(e) => setDeleteDialogOpen(true)}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  )}
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Paper>
+      </Box>
+
       {/* Report Content */}
 
       <Box sx={{ flex: 1 }}>
@@ -333,31 +333,9 @@ const MerchantReports = ({}) => {
             alignItems: { xs: "stretch", sm: "center" },
             gap: 2,
             p: 2,
+            justifyContent: "flex-end",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textAlign: "center",
-            }}
-          >
-            <Typography
-              variant="h5"
-              sx={{
-                color: "text.primary",
-              }}
-            >
-              View Patient Reports
-            </Typography>
-
-            {!isOpen && (
-              <IconButton aria-label="menu" onClick={openBar}>
-                <KeyboardArrowDownIcon fontSize="large" />
-              </IconButton>
-            )}
-          </Box>
-
           {selectedDate && reportData && (
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}
