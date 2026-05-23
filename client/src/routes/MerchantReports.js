@@ -5,7 +5,8 @@ import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ConfirmationDialog from "../components/confirmationDialog";
-import React, { useState, useEffect } from "react";
+import PDFHealthChart from "../components/PDFHealthChart";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -51,6 +52,8 @@ const MerchantReports = ({}) => {
   const [reports, setReports] = useState([]); // Stores all report data
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
 
   function fetchMerchantReports() {
     fetch(`${API_BASE}/merchants/reports`, {
@@ -132,6 +135,19 @@ const MerchantReports = ({}) => {
     setDeleteDialogOpen(false);
   }
 
+  // Health Analytics for Chart
+  useEffect(() => {
+    if (!selectedDate) {
+      return;
+    }
+    fetch(`${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`, {
+      credentials: "include",
+    })
+    .then((r) => r.json())
+    .then(setChartData)
+    .catch(console.error);
+  }, [selectedDate]);
+
   // Extract and sort month and years for drop down.
   const years = [
     ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
@@ -181,6 +197,10 @@ const MerchantReports = ({}) => {
         mt: "66px",
       }}
     >
+      <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+          <PDFHealthChart ref={chartRef} healthData={chartData} />
+      </div>
+
       {/* Top Bar */}
       <Drawer
         anchor="top"
@@ -362,6 +382,7 @@ const MerchantReports = ({}) => {
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
+              chartRef={chartRef}
               meta={{
                 date: selectedDate?.date,
                 healthDataId: selectedDate?.healthDataId,
