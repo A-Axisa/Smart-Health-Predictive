@@ -1,10 +1,10 @@
-import ReportTemplate from "../components/ReportTemplate";
-import DownloadReportButton from "../components/DownloadReportButton";
+import ReportTemplate from "../../components/ReportTemplate";
+import DownloadReportButton from "../../components/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ConfirmationDialog from "../components/confirmationDialog";
+import ConfirmationDialog from "../../components/confirmationDialog";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
@@ -303,7 +303,8 @@ const MerchantReports = ({}) => {
                     >
                       {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
                       <Typography variant="subtle">
-                          {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                        {" "}
+                        {`${new Date(item.date).toLocaleTimeString("en-AU")}`}
                       </Typography>
                     </Typography>
                   }

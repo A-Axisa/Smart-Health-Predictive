@@ -1,5 +1,5 @@
 import { Container, ButtonGroup, Button, Box } from "@mui/material";
-import MerchantReportForm from "../components/MerchantReportForm";
+import MerchantReportForm from "../../components/MerchantReportForm";
 import { useState } from "react";
 
 /**
