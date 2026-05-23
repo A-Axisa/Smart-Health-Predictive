@@ -3,6 +3,8 @@ import { saveAs } from "file-saver";
 import HealthReportPDFFlat from "./HealthReportPDFFlat";
 import { Button } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
+import html2canvas from "html2canvas";
+
 
 /**
  * A simple button component to trigger a PDF report download for a specific health data ID.
@@ -23,6 +25,7 @@ const DownloadReportButton = ({
   flatReportData,
   meta,
   onError,
+  chartRef,
 }) => {
   const handleDownload = async () => {
     if (!flatReportData && !healthDataId) {
@@ -46,11 +49,16 @@ const DownloadReportButton = ({
       const fileName =
         meta?.fileNameHint ||
         `HealthReport_${String(meta?.healthDataID ?? healthDataId)}_${buildLocalDatePart(meta?.date)}.pdf`;
+      
+      const canvas = await html2canvas(chartRef.current);
+      const chartImage = canvas.toDataURL("image/png");
+
       const blob = await pdf(
         <HealthReportPDFFlat
           data={flatReportData}
           metaId={meta?.healthDataID ?? healthDataId}
           metaDate={meta?.date}
+          chartImage={chartImage}
         />,
       ).toBlob();
       saveAs(blob, fileName);
