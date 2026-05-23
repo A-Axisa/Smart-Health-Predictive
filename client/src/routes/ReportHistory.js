@@ -221,7 +221,7 @@ const AIHealthPrediction = ({}) => {
           </Box>
           <Box
             sx={{
-              maxHeight: 3 * 72,
+              maxHeight: 190,
               overflowY: "auto",
             }}
           >
