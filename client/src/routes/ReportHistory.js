@@ -180,18 +180,6 @@ const AIHealthPrediction = ({}) => {
           <PDFHealthChart ref={chartRef} healthData={chartData} />
         </div>
         
-        <Drawer
-          anchor="top"
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          variant="temporary"
-          PaperProps={{
-            sx: {
-              p: 2,
-              maxHeight: "50vh",
-            },
-          }}
-        >
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography

@@ -203,17 +203,6 @@ const MerchantReports = ({}) => {
           <PDFHealthChart ref={chartRef} healthData={chartData} />
       </div>
 
-      {/* Top Bar */}
-      <Drawer
-        anchor="top"
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        variant="temporary"
-        PaperProps={{
-          sx: {
-            p: 2,
-            maxHeight: "50vh",
-          },
       <Box
         sx={{
           bgcolor: "background.paper",
