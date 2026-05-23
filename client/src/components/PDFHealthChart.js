@@ -177,18 +177,11 @@ const PDFHealthChart = forwardRef(({ healthData }, ref) => {
     <Box
       ref={ref}
       sx={{
-        width: 750,
+        width: 1200,
       }}
     >
       <Card sx={{ borderRadius: 2, boxShadow: 24, bgcolor: "#ffffff", overflow: "hidden" }}>
         <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ fontWeight: 600, mb: 2 }}
-          >
-            Health Risk Trends Over Time
-          </Typography>
             <Box
               sx={{
                 width: "100%",
