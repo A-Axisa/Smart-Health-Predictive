@@ -23,7 +23,9 @@ import {
   Drawer,
   useTheme,
   useMediaQuery,
+  Paper,
 } from "@mui/material";
+import { textAlign } from "@mui/system";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -150,88 +152,79 @@ const AIHealthPrediction = ({}) => {
     return (
       <Box
         sx={{
-          display: "flex",
           minHeight: "100vh",
           bgcolor: "background.default",
           ml: "65px",
-          mt: "66px",
+          mt: "80px",
         }}
       >
-        <Drawer
-          anchor="top"
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          variant="temporary"
-          PaperProps={{
-            sx: {
-              p: 2,
-              maxHeight: "50vh",
-            },
-          }}
-        >
+        <Paper variant="report-section">
+          <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
+            <Typography
+              variant={isMobile ? "h4" : "h3"}
+              sx={{ textAlign: "center" }}
+            >
+              Report History
+            </Typography>
+          </Box>
+
+          {/* Date Select */}
           <Box
             sx={{
-              bgcolor: "background.paper",
-              borderRight: "1px solid #e0e0e0",
+              p: 2,
+              display: "flex",
+              gap: 2,
+              flexDirection: {
+                xs: "column",
+                md: "row",
+              },
             }}
           >
-            <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
+            {/* Year */}
+            <FormControl fullWidth>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={selectedYear}
+                label="Year"
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setSelectedMonth(null);
+                }}
               >
-                <Typography variant={isMobile ? "h4" : "h3"}>
-                  Report History
-                </Typography>
-                <IconButton aria-label="menu" onClick={openBar}>
-                  <KeyboardArrowUpIcon fontSize="large" />
-                </IconButton>
-              </Stack>
-            </Box>
+                {years.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-            {/* Date Select */}
-            <Box sx={{ p: 2, display: "flex", gap: 2 }}>
-              {/* Year */}
-              <FormControl fullWidth>
-                <InputLabel>Year</InputLabel>
-                <Select
-                  value={selectedYear}
-                  label="Year"
-                  onChange={(e) => {
-                    setSelectedYear(e.target.value);
-                    setSelectedMonth(null);
-                  }}
-                >
-                  {years.map((year) => (
-                    <MenuItem key={year} value={year}>
-                      {year}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            {/* Month */}
+            <FormControl fullWidth>
+              <InputLabel>Month</InputLabel>
+              <Select
+                value={selectedMonth}
+                label="Month"
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                {months.map((month) => (
+                  <MenuItem key={month} value={month}>
+                    {new Date(0, month - 1).toLocaleString("en-AU", {
+                      month: "long",
+                    })}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-              {/* Month */}
-              <FormControl fullWidth>
-                <InputLabel>Month</InputLabel>
-                <Select
-                  value={selectedMonth}
-                  label="Month"
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                >
-                  {months.map((month) => (
-                    <MenuItem key={month} value={month}>
-                      {new Date(0, month - 1).toLocaleString("en-AU", {
-                        month: "long",
-                      })}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Button onClick={handleClear}>Clear</Button>
-            </Box>
-
+            <Button onClick={handleClear}>Clear</Button>
+          </Box>
+          <Box
+            sx={{
+              maxHeight: 3 * 72,
+              overflowY: "auto",
+            }}
+          >
             <List component="nav" sx={{ p: 0 }}>
               {filteredReportDates.map((item) => (
                 <ListItem
@@ -266,11 +259,13 @@ const AIHealthPrediction = ({}) => {
                       >
                         {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
                         <Typography variant="subtle">
-                            {" "}{`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                          {" "}
+                          {`${new Date(item.date).toLocaleTimeString("en-AU")}`}
                         </Typography>
                       </Typography>
                     }
                   />
+
                   {/* Delete Report Button */}
                   {selectedDate.healthDataId === item.healthDataId && (
                     <IconButton
@@ -285,7 +280,7 @@ const AIHealthPrediction = ({}) => {
               ))}
             </List>
           </Box>
-        </Drawer>
+        </Paper>
 
         {/* Menu and Download Buttons */}
         <Box sx={{ flex: 1 }}>
@@ -298,24 +293,6 @@ const AIHealthPrediction = ({}) => {
               p: 2,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                textAlign: "center",
-              }}
-            >
-              <Typography variant="h5" sx={{ ml: 2 }}>
-                View Report History
-              </Typography>
-
-              {!isOpen && (
-                <IconButton aria-label="menu" onClick={openBar}>
-                  <KeyboardArrowDownIcon fontSize="large" />
-                </IconButton>
-              )}
-            </Box>
-
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}
