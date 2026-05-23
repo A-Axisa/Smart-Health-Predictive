@@ -4,33 +4,43 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Public routes
+import Login from "./routes/public/Login";
+import Register from "./routes/public/Register";
+import ForgotPassword from "./routes/public/ForgotPassword";
+import ResetPassword from "./routes/public/ResetPassword";
+import ErrorPage from "./routes/public/ErrorPage";
+
+// Standard user routes
+import UserLanding from "./routes/standardUser/UserLanding";
 import ReportHistory from "./routes/standardUser/ReportHistory";
 import GenerateReport from "./routes/standardUser/GenerateReport";
 import HealthAnalytics from "./routes/standardUser/HealthAnalytics";
-import Login from "./routes/public/Login";
-import Register from "./routes/public/Register";
-import UserLanding from "./routes/standardUser/UserLanding";
 import UserSettings from "./routes/standardUser/UserSettings";
+import AcceptAccessRequest from "./routes/standardUser/AcceptAccessRequest";
+
+// Merchant routes
+import MerchantLanding from "./routes/merchant/MerchantLanding";
+import MerchantReports from "./routes/merchant/MerchantReports";
 import MerchantGenerateReport from "./routes/merchant/MerchantGenerateReport";
+import PatientManagement from "./routes/merchant/PatientManagement";
+import PatientDetails from "./routes/merchant/PatientDetails";
+import CreatePatient from "./routes/merchant/CreatePatient";
+import RequestPatientAccess from "./routes/merchant/RequestPatientAccess";
+
+// Admin routes
 import AdministratorDashboard from "./routes/admin/AdministratorDashboard";
 import AdministratorApproval from "./routes/admin/AdministratorApproval";
 import AdministratorLogs from "./routes/admin/AdministratorLogs";
 import AdministratorUsers from "./routes/admin/AdministratorUsers";
-import MerchantLanding from "./routes/merchant/MerchantLanding";
-import MerchantReports from "./routes/merchant/MerchantReports";
+
+// Utils
 import AppThemeProvider from "./components/AppThemeProvider";
+import { UserProvider } from "./utils/UserContext";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import PublicOnlyRoutes from "./utils/PublicOnlyRoutes";
 import LandingRoute from "./utils/LandingRoute";
-import { UserProvider } from "./utils/UserContext";
-import ErrorPage from "./routes/public/ErrorPage";
-import PatientManagement from "./routes/merchant/PatientManagement";
-import PatientDetails from "./routes/merchant/PatientDetails";
-import CreatePatient from "./routes/merchant/CreatePatient";
-import ForgotPassword from "./routes/public/ForgotPassword";
-import ResetPassword from "./routes/public/ResetPassword";
-import AcceptAccessRequest from "./routes/standardUser/AcceptAccessRequest";
-import RequestPatientAccess from "./routes/merchant/RequestPatientAccess";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
