@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import RegistrationForm from "../components/authentication/RegistrationForm";
+import RegistrationForm from "../../components/authentication/RegistrationForm";
 
 /**
  * A page that displays the registration form.

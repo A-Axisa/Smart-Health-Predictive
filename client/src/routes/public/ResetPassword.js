@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import ResetPasswordForm from "../components/authentication/ResetPasswordForm";
+import ResetPasswordForm from "../../components/authentication/ResetPasswordForm";
 
 /**
  * A page that displays the form to reset a user's password using a one-time

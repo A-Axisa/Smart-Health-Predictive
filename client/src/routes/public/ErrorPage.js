@@ -1,6 +1,6 @@
 import { Typography, Button, Box, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/WellAiLogoTR.png";
+import Logo from "../../assets/WellAiLogoTR.png";
 
 /**
  * A page that is displayed when a user tried to navigate a non-existent
