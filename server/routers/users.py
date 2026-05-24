@@ -1161,6 +1161,7 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         "age": get_age(patient.DateOfBirth),
         "maritalStatus": patient.get_marital_status(),
         "workingStatus": patient.get_working_status(),
+        "race": patient.get_race()
     }
 
     return result

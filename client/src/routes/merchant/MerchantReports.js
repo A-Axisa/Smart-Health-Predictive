@@ -292,7 +292,7 @@ const MerchantReports = () => {
                         variant="h7"
                         sx={{
                           fontWeight:
-                            selectedDate.healthDataId === item.healthDataId
+                            selectedDate?.healthDataId === item.healthDataId
                               ? 400
                               : 0,
                         }}

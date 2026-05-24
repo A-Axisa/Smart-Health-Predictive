@@ -268,43 +268,35 @@ const MerchantReportForm = () => {
 
   function isAllInputsValid() {
     return (
-      weight !== null &&
-      weight.isValid &&
-      age !== null &&
-      age.isValid &&
-      height !== null &&
-      height.isValid &&
-      gender !== null &&
-      bloodGlucose !== null &&
-      bloodGlucose.isValid &&
-      apLow !== null &&
-      apLow.isValid &&
-      apHigh !== null &&
-      apHigh.isValid &&
-      maritalStatus !== "" &&
-      workingStatus !== "" &&
-      race !== "" &&
-      smoker !== "" &&
-      alcohol !== "" &&
-      selectedPatient !== null
+      weight?.isValid &&
+      age?.isValid &&
+      height?.isValid &&
+      gender != null &&
+      bloodGlucose?.isValid &&
+      apLow?.isValid &&
+      apHigh?.isValid &&
+      maritalStatus &&
+      workingStatus &&
+      race &&
+      smoker &&
+      alcohol &&
+      selectedPatient != null
     );
   }
   function updateAllInputFieldAlerts() {
-    setAlertWeightRequired(weight === null || !weight.isValid);
-    setAlertAgeRequired(age === null || !age.isValid);
-    setAlertHeightRequired(height === null || !height.isValid);
-    setAlertGenderRequired(gender === null);
-    setAlertBloodGlucoseRequired(
-      bloodGlucose === null || !bloodGlucose.isValid,
-    );
-    setAlertApLowRequired(apLow === null || !apLow.isValid);
-    setAlertApHighRequired(apHigh === null || !apHigh.isValid);
-    setAlertMaritalStatusRequired(maritalStatus === "");
-    setAlertWorkingStatusRequired(workingStatus === "");
-    setAlertPatientRequired(selectedPatient === null);
-    setAlertSmokerRequired(smoker === "");
-    setAlertAlcoholRequired(alcohol === "");
-    setAlertRaceRequired(race === "");
+    setAlertWeightRequired(!weight?.isValid);
+    setAlertAgeRequired(!age?.isValid);
+    setAlertHeightRequired(!height?.isValid);
+    setAlertGenderRequired(!gender);
+    setAlertBloodGlucoseRequired(!bloodGlucose?.isValid);
+    setAlertApLowRequired(!apLow?.isValid);
+    setAlertApHighRequired(!apHigh?.isValid);
+    setAlertMaritalStatusRequired(!maritalStatus);
+    setAlertWorkingStatusRequired(!workingStatus);
+    setAlertPatientRequired(!selectedPatient);
+    setAlertSmokerRequired(!smoker);
+    setAlertAlcoholRequired(!alcohol);
+    setAlertRaceRequired(!race);
   }
 
   // Fills in fields with information found in the blood reports.
