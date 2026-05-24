@@ -49,7 +49,7 @@ const NavBar = ({ role }) => {
     // User Pages
     "/user-landing": "Dashboard",
     "/generate-report": "Generate Report",
-    "/ai-health-prediction": "Report History",
+    "/report-history": "Report History",
     "/health-analytics": "Health Analytics",
     "/user-settings": "Settings",
 
