@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CardContent,
+  Divider,
   Typography,
   useMediaQuery,
   useTheme,
@@ -81,7 +82,7 @@ const PatientDetails = () => {
       >
         <Card sx={{ p: 2 }}>
           <Typography
-            variant="h3"
+            variant={isMobile ? "h4" : "h3"}
             sx={{
               textAlign: "center",
               mb: 2,
@@ -89,97 +90,103 @@ const PatientDetails = () => {
           >
             Patient Details
           </Typography>
-          <hr />
+
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 3,
+              p: 3,
             }}
           >
-            <Typography sx={{ mb: 1 }}>
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Given Name:
-              </Box>
-              {" " + patientData?.patientInfo?.givenNames}
+              </Box>{" "}
+              {patientData?.patientInfo?.givenNames}
             </Typography>
 
-            <Typography sx={{ mb: 1 }}>
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Last Name:
-              </Box>
-              {" " + patientData?.patientInfo?.familyName}
+              </Box>{" "}
+              {patientData?.patientInfo?.familyName}
             </Typography>
 
-            <Typography sx={{ mb: 1 }}>
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Date Of Birth:
-              </Box>
-              {" " + patientData?.patientInfo?.dateOfBirth}
+              </Box>{" "}
+              {patientData?.patientInfo?.dateOfBirth}
             </Typography>
 
-            <Typography sx={{ mb: 1 }}>
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Age:
-              </Box>
-              {" " + patientData?.patientInfo?.age}
+              </Box>{" "}
+              {patientData?.patientInfo?.age}
             </Typography>
 
-            <Typography sx={{ mb: 1 }}>
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Gender:
               </Box>{" "}
               {patientData?.patientInfo?.gender == 1 ? "Male" : "Female"}
             </Typography>
-            <Typography sx={{ mb: 1 }}>
+
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Weight:
-              </Box>
-              {" " + patientData?.patientInfo?.weight} kg
+              </Box>{" "}
+              {patientData?.patientInfo?.weight} kg
             </Typography>
-            <Typography sx={{ mb: 1 }}>
+
+            <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>
               <Box
                 component="span"
-                sx={{ color: "primary.main", fontWeight: 600 }}
+                sx={{ color: "#888", textTransform: "uppercase", fontSize: 12 }}
               >
                 Height:
-              </Box>
-              {" " + patientData?.patientInfo?.height} cm
+              </Box>{" "}
+              {patientData?.patientInfo?.height} cm
             </Typography>
           </Box>
-          <hr />
-          <Typography variant="h5" sx={{ mb: 1 }}>
-            It has been {patientData?.days} days since{" "}
-            {patientData?.patientInfo?.givenNames}'s last health report
-          </Typography>
+          <Divider sx={{ borderColor: "#E0E0E0" }} />
+          <Box sx={{ ml: 2 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ mt: 2 }}>
+              It has been {patientData?.days} days since{" "}
+              {patientData?.patientInfo?.givenNames}'s last health report
+            </Typography>
 
-          <Button
-            variant="contained"
-            onClick={(e) =>
-              navigate("/merchant-generate-report", {
-                state: { patientID: patientID },
-              })
-            }
-          >
-            Generate Report
-          </Button>
+            <Button
+              variant="contained"
+              onClick={(e) =>
+                navigate("/merchant-generate-report", {
+                  state: { patientID: patientID },
+                })
+              }
+            >
+              Generate Report
+            </Button>
+          </Box>
         </Card>
       </Box>
 
@@ -206,7 +213,7 @@ const PatientDetails = () => {
             sx={{
               display: "flex",
               gap: { xs: 1, sm: 2 },
-              flexDirection: "row",
+              flexDirection: isMobile ? "column" : "row",
             }}
           >
             {["stroke", "diabetes", "cvd"].map((key) => (
@@ -299,7 +306,7 @@ const PatientDetails = () => {
               height: { xs: "auto", md: "95%" },
             }}
           >
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ mb: 2 }}>
               Latest Recommendations
             </Typography>
             <Box>
@@ -317,7 +324,10 @@ const PatientDetails = () => {
                             : "none",
                       }}
                     >
-                      <Typography variant="h6" sx={{ mb: 1 }}>
+                      <Typography
+                        variant={isMobile ? "h7" : "h6"}
+                        sx={{ mb: 1 }}
+                      >
                         {key.toUpperCase()}
                       </Typography>
                       <Typography sx={{ whiteSpace: "pre-line" }}>
