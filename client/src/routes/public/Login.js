@@ -1,7 +1,7 @@
 import { Box, Container, Stack, Typography } from "@mui/material";
-import LoginForm from "../components/authentication/LoginForm";
-import Logo from "../assets/WellAiLogoTR.png";
-import WelcomePanel from "../components/WelcomePanel";
+import LoginForm from "../../components/authentication/LoginForm";
+import Logo from "../../assets/WellAiLogoTR.png";
+import WelcomePanel from "../../components/WelcomePanel";
 
 /**
  * A page that introduces the service and provides the form for logging

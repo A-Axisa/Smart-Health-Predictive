@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import WellAiLogo from "../assets/WellAiLogoTR.png";
+import WellAiLogo from "../../assets/WellAiLogoTR.png";
 
 /**
  * The document used for converting a health report to a PDF File.

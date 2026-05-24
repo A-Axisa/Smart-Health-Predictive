@@ -1,26 +1,28 @@
-import ReportTemplate from "../components/ReportTemplate";
-import DownloadReportButton from "../components/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import ConfirmationDialog from "../components/confirmationDialog";
-import Stack from "@mui/material/Stack";
-import React, { useState, useEffect, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import PDFHealthChart from "../components/PDFHealthChart";
-
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import PDFHealthChart from "../components/healthReport/PDFHealthChart";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
   List,
   ListItem,
   ListItemText,
+  MenuItem,
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
   Button,
+  Autocomplete,
+  TextField,
+  Drawer,
+  Stack,
   useTheme,
   useMediaQuery,
   Paper,
@@ -29,54 +31,67 @@ import {
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * A page that provide the tools for a user to past health reports.
+ * A page that provides the tools for a merchants to browse through their
+ * list of patients and view their past history reports.
  *
- * @returns {@mui.material.Container}
+ * @returns {@mui.material.Box}
  */
-const AIHealthPrediction = ({}) => {
+const MerchantReports = ({}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const location = useLocation();
+  const pageData = location.state;
+  const defaultSelectedPatientId =
+    pageData && pageData["patientName"] ? pageData["patientName"] : null;
 
   const [reportDates, setReportDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [openSideBar, setOpenSideBar] = useState(false);
+  const [patients, setPatients] = useState([]); // Stores list of patients
+  const [selectedPatient, setSelectedPatient] = useState(""); // Stores the selected patient
+  const [reports, setReports] = useState([]); // Stores all report data
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
   const chartRef = useRef(null);
   const [chartData, setChartData] = useState([]);
 
-  function openBar() {
-    if (isOpen === true) {
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(true);
-  }
-
-  function fetchReportDates() {
-    fetch(`${API_BASE}/get-health-data-dates`, {
-      method: "GET",
+  function fetchMerchantReports() {
+    fetch(`${API_BASE}/merchants/reports`, {
       credentials: "include",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
       .then((data) => {
-        setReportDates(data);
         if (data.length > 0) {
-          setSelectedDate(data[0]);
-          console.log("The selected date is: " + selectedDate);
+          setReports(data);
+          // Creates an array of distinct patient names
+          let distinctPatientNames = [...new Set(data.map((r) => r.name))];
+          setPatients(distinctPatientNames);
+          setSelectedPatient(defaultSelectedPatientId);
+          setSelectedDate(null);
+
+          if (defaultSelectedPatientId) {
+            const selectedReports = data.filter(
+              (r) => r.name === defaultSelectedPatientId,
+            );
+            setReportDates(selectedReports);
+            setSelectedDate(selectedReports[0]); // Select first report
+          }
         }
       })
       .catch((err) => {
         console.log(err);
-      });
+      }, []);
   }
 
-  // Fetch the users health data ID and Dates
+  // Fetch the merchant reports
   useEffect(() => {
-    fetchReportDates();
+    fetchMerchantReports();
   }, []);
 
   // Fetch report data
@@ -102,28 +117,37 @@ const AIHealthPrediction = ({}) => {
         headers: {
           "Content-Type": "application/json",
         },
-      })
-        .then((res) => res.json())
-        .then((data) => setReportData(data))
-        .catch((err) => console.log(err));
+      });
+      // Filter remaining reports and update state
+      let updatedReports = reports.filter(
+        (r) => r.healthDataId !== selectedDate.healthDataId,
+      );
+      setReports(updatedReports);
+      // Re-select the patient reports and update state
+      let patientReports = updatedReports.filter(
+        (r) => r.name === selectedPatient,
+      );
+      setReportDates(patientReports);
+      setSelectedDate(patientReports[0]);
     } catch (err) {
       console.log(err);
     }
-    // Reload reports
-    fetchReportDates();
     // Close Dialog
     setDeleteDialogOpen(false);
   }
 
   // Health Analytics for Chart
   useEffect(() => {
-    fetch(`${API_BASE}/health-analytics`, {
+    if (!selectedDate) {
+      return;
+    }
+    fetch(`${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`, {
       credentials: "include",
     })
     .then((r) => r.json())
     .then(setChartData)
     .catch(console.error);
-  }, []);
+  }, [selectedDate]);
 
   // Extract and sort month and years for drop down.
   const years = [
@@ -131,8 +155,14 @@ const AIHealthPrediction = ({}) => {
   ].sort((a, b) => a - b);
 
   const months = [
-    ...new Set(reportDates.filter((r) => !selectedYear || new Date(r.date).getFullYear() === selectedYear,)
-    .map((r) => new Date(r.date).getMonth() + 1),),
+    ...new Set(
+      reportDates
+        .filter(
+          (r) =>
+            !selectedYear || new Date(r.date).getFullYear() === selectedYear,
+        )
+        .map((r) => new Date(r.date).getMonth() + 1),
+    ),
   ].sort((a, b) => a - b);
 
   // Filters reports based on selected year and month if any.
@@ -149,37 +179,42 @@ const AIHealthPrediction = ({}) => {
     setSelectedMonth(null);
   };
 
-  // Prevents page from loading if the user has no health record
-  if (!reportData) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "background.default",
-        }}
-      >
-        <Typography variant="h5" sx={{ color: "text.secondary" }}>
-          No Health Prediction Reports Available
-        </Typography>
-      </Box>
-    );
-  } else {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          bgcolor: "background.default",
-          ml: "65px",
-          mt: "80px",
-        }}
-      >
-        <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+  function onPatientChange(e, newValue) {
+    const selectedReports = reports.filter((r) => r.name === newValue);
+    setSelectedYear(null);
+    setSelectedMonth(null);
+    setSelectedPatient(newValue);
+    setReportDates(selectedReports);
+    setSelectedDate(selectedReports[0]);
+  }
+  const [isOpen, setIsOpen] = useState(false);
+
+  function openBar() {
+    if (isOpen === true) {
+      setIsOpen(false);
+      return;
+    }
+    setIsOpen(true);
+  }
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        ml: "65px",
+        mt: "80px",
+      }}
+    >
+      <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
           <PDFHealthChart ref={chartRef} healthData={chartData} />
-        </div>
-        
+      </div>
+
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderRight: "1px solid #e0e0e0",
+        }}
+      >
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography
@@ -189,8 +224,20 @@ const AIHealthPrediction = ({}) => {
               Report History
             </Typography>
           </Box>
+          {/* Patient List */}
+          <Box sx={{ p: 2 }}>
+            <Autocomplete
+              fullWidth
+              options={patients}
+              value={selectedPatient}
+              onChange={onPatientChange}
+              getOptionLabel={(option) => option}
+              renderInput={(params) => (
+                <TextField {...params} label="Patient" />
+              )}
+            />
+          </Box>
 
-          {/* Date Select */}
           <Box
             sx={{
               p: 2,
@@ -203,7 +250,7 @@ const AIHealthPrediction = ({}) => {
             }}
           >
             {/* Year */}
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={!selectedPatient}>
               <InputLabel>Year</InputLabel>
               <Select
                 value={selectedYear}
@@ -222,7 +269,7 @@ const AIHealthPrediction = ({}) => {
             </FormControl>
 
             {/* Month */}
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={!selectedPatient}>
               <InputLabel>Month</InputLabel>
               <Select
                 value={selectedMonth}
@@ -250,20 +297,20 @@ const AIHealthPrediction = ({}) => {
             <List component="nav" sx={{ p: 0 }}>
               {filteredReportDates.map((item) => (
                 <ListItem
-                  key={item.id}
-                  selected={selectedDate.healthDataId === item.healthDataId}
+                  key={item.healthDataId}
+                  selected={selectedDate?.healthDataId === item.healthDataId}
                   onClick={(e) => setSelectedDate(item)}
                   button
                   sx={{
                     py: 2,
                     px: 3,
                     borderLeft:
-                      selectedDate.healthDataId === item.healthDataId
+                      selectedDate?.healthDataId === item.healthDataId
                         ? "4px solid"
                         : "4px solid transparent",
                     borderLeftColor: "primary.main",
                     bgcolor:
-                      selectedDate.healthDataId === item.healthDataId
+                      selectedDate?.healthDataId === item.healthDataId
                         ? "action.selected"
                         : "transparent",
                   }}
@@ -287,9 +334,8 @@ const AIHealthPrediction = ({}) => {
                       </Typography>
                     }
                   />
-
                   {/* Delete Report Button */}
-                  {selectedDate.healthDataId === item.healthDataId && (
+                  {selectedDate?.healthDataId === item.healthDataId && (
                     <IconButton
                       aria-label="delete"
                       color="error"
@@ -303,53 +349,59 @@ const AIHealthPrediction = ({}) => {
             </List>
           </Box>
         </Paper>
+      </Box>
 
-        {/* Menu and Download Buttons */}
-        <Box sx={{ flex: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: { xs: "stretch", sm: "center" },
-              gap: 2,
-              p: 2,
-            }}
-          >
-            <Box sx={{ flexGrow: 1 }} />
+      {/* Report Content */}
+
+      <Box sx={{ flex: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
+            p: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          {selectedDate && reportData && (
             <DownloadReportButton
-              chartRef={chartRef}
               healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
+              chartRef={chartRef}
               meta={{
                 date: selectedDate?.date,
                 healthDataId: selectedDate?.healthDataId,
               }}
             />
-          </Box>
-
-          {/* Report Content */}
-          <ReportTemplate report={reportData} date={selectedDate.date} />
+          )}
         </Box>
-        <ConfirmationDialog
-          open={deleteDialogOpen}
-          title="Delete Report"
-          message={
-            <>
-              This action will permanently delete the selected health report and
-              all related health data. Are you sure you want to delete this
-              health report?.
-            </>
-          }
-          confirmText="Delete"
-          cancelText="Cancel"
-          confirmColor="error"
-          cancelColor="primary"
-          confirm={() => deleteReport()}
-          cancel={() => setDeleteDialogOpen(false)}
-        />
+
+        {selectedDate && reportData ? (
+          <ReportTemplate report={reportData} date={selectedDate.date} />
+        ) : (
+          <Typography sx={{ p: 3 }}> </Typography>
+        )}
       </Box>
-    );
-  }
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Delete Report"
+        message={
+          <>
+            This action will permanently delete the selected health report and
+            all related health data. Are you sure you want to delete this health
+            report?.
+          </>
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={() => deleteReport()}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
+    </Box>
+  );
 };
 
-export default AIHealthPrediction;
+export default MerchantReports;

@@ -7,8 +7,8 @@ import {
   Link,
   Divider,
 } from "@mui/material";
-import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm";
-import RequestPatientAccessForm from "../components/RequestPatientAccessForm";
+import ForgotPasswordForm from "../../components/authentication/ForgotPasswordForm";
+import RequestPatientAccessForm from "../../components/patientAccessRequest/RequestPatientAccessForm";
 
 /**
  * A page that displays the form to request access to a patients record.

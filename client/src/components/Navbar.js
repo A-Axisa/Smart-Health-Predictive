@@ -18,8 +18,8 @@ import {
   Backdrop,
 } from "@mui/material";
 import { UserContext } from "../utils/UserContext";
-import PrivacyNotice from "./PrivacyNotice";
-import DisclaimerPolicy from "./DisclaimerPolicy";
+import PrivacyNotice from "./dialog/PrivacyNotice";
+import DisclaimerPolicy from "./dialog/DisclaimerPolicy";
 
 // Icons
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
