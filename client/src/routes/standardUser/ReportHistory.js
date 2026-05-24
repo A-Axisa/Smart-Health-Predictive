@@ -5,9 +5,10 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import Stack from "@mui/material/Stack";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
 
 import {
   Box,
@@ -44,6 +45,8 @@ const AIHealthPrediction = ({}) => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
 
   function openBar() {
     if (isOpen === true) {
@@ -112,6 +115,16 @@ const AIHealthPrediction = ({}) => {
     setDeleteDialogOpen(false);
   }
 
+  // Health Analytics for Chart
+  useEffect(() => {
+    fetch(`${API_BASE}/health-analytics`, {
+      credentials: "include",
+    })
+    .then((r) => r.json())
+    .then(setChartData)
+    .catch(console.error);
+  }, []);
+
   // Extract and sort month and years for drop down.
   const years = [
     ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
@@ -163,6 +176,10 @@ const AIHealthPrediction = ({}) => {
           mt: "80px",
         }}
       >
+        <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+          <PDFHealthChart ref={chartRef} healthData={chartData} />
+        </div>
+        
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography
@@ -300,6 +317,7 @@ const AIHealthPrediction = ({}) => {
           >
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
+              chartRef={chartRef}
               healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
               meta={{
