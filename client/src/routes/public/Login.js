@@ -1,6 +1,5 @@
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import LoginForm from "../../components/authentication/LoginForm";
-import Logo from "../../assets/WellAiLogoTR.png";
 import WelcomePanel from "../../components/WelcomePanel";
 
 /**
