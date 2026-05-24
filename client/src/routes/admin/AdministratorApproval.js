@@ -1,13 +1,13 @@
-import UserManagementTable from "../components/administrator/UserManagementTable";
+import AccountApprovalTable from "../../components/administrator/AccountApprovalTable";
 import { Box, Typography, Divider, Stack, Container } from "@mui/material";
 
 /**
- * A route that provides tools to manage, filter and search through the users of the
- * system. Facilitating the deletion or role changes for an account.
+ * A route that displays the merchant approval table where administrators
+ * can audit and approve the creation of a merchant's account.
  *
  * @returns {@mui.material.Container}
  */
-const AdministratorUsers = () => {
+const AdministratorApproval = () => {
   return (
     <Container
       maxWidth={false}
@@ -34,14 +34,14 @@ const AdministratorUsers = () => {
             variant="h3"
             sx={{ fontSize: { xs: "2em", sm: "2em", md: "3em" } }}
           >
-            User Management
+            Partner Access Requests
           </Typography>
           <Divider />
         </Stack>
-        <UserManagementTable />
+        <AccountApprovalTable />
       </Box>
     </Container>
   );
 };
 
-export default AdministratorUsers;
+export default AdministratorApproval;

@@ -1,9 +1,9 @@
-import ReportTemplate from "../components/ReportTemplate";
-import DownloadReportButton from "../components/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import ConfirmationDialog from "../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import Stack from "@mui/material/Stack";
 import React, { useState, useEffect } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";

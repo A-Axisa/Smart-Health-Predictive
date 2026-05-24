@@ -1,10 +1,10 @@
-import ReportTemplate from "../components/ReportTemplate";
-import DownloadReportButton from "../components/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ConfirmationDialog from "../components/confirmationDialog";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
@@ -139,8 +139,14 @@ const MerchantReports = ({}) => {
   ].sort((a, b) => a - b);
 
   const months = [
-    ...new Set(reportDates.filter((r) => !selectedYear || new Date(r.date).getFullYear() === selectedYear,)
-    .map((r) => new Date(r.date).getMonth() + 1),),
+    ...new Set(
+      reportDates
+        .filter(
+          (r) =>
+            !selectedYear || new Date(r.date).getFullYear() === selectedYear,
+        )
+        .map((r) => new Date(r.date).getMonth() + 1),
+    ),
   ].sort((a, b) => a - b);
 
   // Filters reports based on selected year and month if any.

@@ -1,5 +1,5 @@
 import { Box, Container } from "@mui/material";
-import ForgotPasswordForm from "../components/authentication/ForgotPasswordForm";
+import ForgotPasswordForm from "../../components/authentication/ForgotPasswordForm";
 
 /**
  * A route that provides the form for a user to reset their password by initiating

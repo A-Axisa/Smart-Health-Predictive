@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import CreatePatientForm from "../components/authentication/CreatePatientForm";
+import CreatePatientForm from "../../components/authentication/CreatePatientForm";
 
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
