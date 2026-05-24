@@ -15,6 +15,8 @@ import {
   ListItemText,
   Select,
   FormHelperText,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
@@ -30,6 +32,8 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const GenerateReportForm = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Options for each drop down input. This can be modified as required to change the input for each selection
   const healthConditions = [
@@ -376,7 +380,7 @@ const GenerateReportForm = () => {
       }}
     >
       <Typography
-        variant="h2"
+        variant={isMobile ? "h4" : "h2"}
         sx={{
           mb: 2,
           mt: 2,
@@ -414,10 +418,11 @@ const GenerateReportForm = () => {
         <Box component="form" onSubmit={handleSubmit}>
           {/* Age & Physique Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Age & Physique
@@ -490,10 +495,11 @@ const GenerateReportForm = () => {
           </Box>
           {/* Fitness Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Health & Fitness
@@ -586,10 +592,11 @@ const GenerateReportForm = () => {
             />
           </Box>
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Life Style
@@ -718,7 +725,7 @@ const GenerateReportForm = () => {
             </FormControl>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "end" }}>
+          <Box sx={{ display: "flex", justifyContent: "end", mt: 3 }}>
             <Button
               loading={isLoading}
               variant="contained"
