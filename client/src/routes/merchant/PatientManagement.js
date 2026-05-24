@@ -8,6 +8,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import { DataGrid } from "@mui/x-data-grid";
@@ -29,6 +31,9 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 const PatientManagement = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [patientData, setPatientData] = useState([]);
   const [paginationModel, setPaginationModel] = useState({
@@ -198,10 +203,7 @@ const PatientManagement = () => {
         }}
       >
         <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>
-          <Typography
-            variant="h3"
-            sx={{ fontSize: { xs: "2em", sm: "2em", md: "3em" } }}
-          >
+          <Typography variant={isMobile ? "h5" : "h3"}>
             Patient Management
           </Typography>
           <Divider />
