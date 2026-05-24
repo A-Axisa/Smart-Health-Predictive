@@ -102,9 +102,9 @@ const AIHealthPrediction = ({}) => {
       })
         .then((res) => res.json())
         .then((data) => setReportData(data))
-        .catch((err) => console.log(err));
+        .catch(() => console.error("Failed to delete report data."));
     } catch (err) {
-      console.log(err);
+      console.error("Failed to delete report data.");
     }
     // Reload reports
     fetchReportDates();
