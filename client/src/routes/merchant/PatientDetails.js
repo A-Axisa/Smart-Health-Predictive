@@ -45,7 +45,7 @@ const PatientDetails = () => {
       .then((data) => {
         setPatientData(data);
       });
-  }, []);
+  }, [API_BASE, patientID, navigate]);
 
   const chartData = (patientData?.risks?.dates ?? [])
     .map((date, i) => ({

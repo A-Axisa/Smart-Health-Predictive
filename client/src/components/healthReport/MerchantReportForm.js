@@ -139,7 +139,7 @@ const MerchantReportForm = () => {
         }
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [defaultSelectedPatient]);
 
   function handleChangeCondition(e) {
     const {

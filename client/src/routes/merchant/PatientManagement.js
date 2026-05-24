@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import { DataGrid } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 
@@ -112,15 +112,51 @@ const PatientManagement = () => {
       ),
     },
   ];
+  const fetchPatients = useCallback(() => {
+    const params = new URLSearchParams({
+      skip: paginationModel.page * paginationModel.pageSize,
+      limit: paginationModel.pageSize,
+    });
 
-  useEffect(() => {
-    fetchPatients();
+    if (givenNameInput) params.append("given_names", givenNameInput);
+    if (familyNameInput) params.append("family_name", familyNameInput);
+
+    fetch(`${API_BASE}/merchant/associated-patients?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setPatientData(data.patients || []);
+        setTotalPatients(data.totalPatients || 0);
+      })
+      .catch((err) => {
+        console.log("An error has occurred", err);
+      });
   }, [
+    API_BASE,
     paginationModel.page,
     paginationModel.pageSize,
     givenNameInput,
     familyNameInput,
   ]);
+
+  async function handleDelete(patientID) {
+    await fetch(`${API_BASE}/remove-patient/${patientID}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .catch((err) => {
+        console.log("An error has occurred");
+      });
+    fetchPatients();
+    setDeleteDialogOpen(false);
+  }
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
 
   // Debounce given name input
   useEffect(() => {
@@ -141,42 +177,6 @@ const PatientManagement = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [familyNameInput]);
-
-  const fetchPatients = () => {
-    const params = new URLSearchParams({
-      skip: paginationModel.page * paginationModel.pageSize,
-      limit: paginationModel.pageSize,
-    });
-
-    if (givenNameInput) params.append("given_names", givenNameInput);
-    if (familyNameInput) params.append("family_name", familyNameInput);
-
-    fetch(`${API_BASE}/merchant/associated-patients?${params.toString()}`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setPatientData(data.patients || []);
-        setTotalPatients(data.totalPatients || 0);
-      })
-      .catch((err) => {
-        console.log("An error has occurred");
-      });
-  };
-
-  async function handleDelete(patientID) {
-    await fetch(`${API_BASE}/remove-patient/${patientID}`, {
-      method: "DELETE",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.log("An error has occurred");
-      });
-    fetchPatients();
-    setDeleteDialogOpen(false);
-  }
 
   return (
     <Box

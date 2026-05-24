@@ -44,15 +44,18 @@ const UserManagementTable = () => {
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const fetchUsers = () => {
+  const fetchUsers = useCallback(() => {
     setLoading(true);
+
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
       limit: paginationModel.pageSize,
     });
+
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
     }
+
     if (selectedClinic) {
       params.append("clinic_id", selectedClinic);
     }
@@ -79,10 +82,6 @@ const UserManagementTable = () => {
         console.log(err);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchUsers();
   }, [
     API_BASE,
     paginationModel.page,
@@ -91,6 +90,10 @@ const UserManagementTable = () => {
     selectedClinic,
     sortModel,
   ]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));

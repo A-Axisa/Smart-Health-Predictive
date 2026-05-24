@@ -17,7 +17,7 @@ import {
   useTheme,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
@@ -49,7 +49,7 @@ const MerchantReports = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
 
-  function fetchMerchantReports() {
+  const fetchMerchantReports = useCallback(() => {
     fetch(`${API_BASE}/merchants/reports`, {
       credentials: "include",
     })
@@ -62,9 +62,11 @@ const MerchantReports = () => {
       .then((data) => {
         if (data.length > 0) {
           setReports(data);
+
           // Creates an array of distinct patient names
           let distinctPatientNames = [...new Set(data.map((r) => r.name))];
           setPatients(distinctPatientNames);
+
           setSelectedPatient(defaultSelectedPatientId);
           setSelectedDate(null);
 
@@ -72,6 +74,7 @@ const MerchantReports = () => {
             const selectedReports = data.filter(
               (r) => r.name === defaultSelectedPatientId,
             );
+
             setReportDates(selectedReports);
             setSelectedDate(selectedReports[0]); // Select first report
           }
@@ -79,13 +82,13 @@ const MerchantReports = () => {
       })
       .catch((err) => {
         console.log(err);
-      }, []);
-  }
+      });
+  }, [defaultSelectedPatientId]);
 
   // Fetch the merchant reports
   useEffect(() => {
     fetchMerchantReports();
-  }, []);
+  }, [fetchMerchantReports]);
 
   // Fetch report data
   useEffect(() => {

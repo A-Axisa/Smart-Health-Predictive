@@ -1,6 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import ReportTemplate from "../../components/healthReport/ReportTemplate";
@@ -40,7 +40,7 @@ const AIHealthPrediction = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
 
-  function fetchReportDates() {
+  const fetchReportDates = useCallback(() => {
     fetch(`${API_BASE}/get-health-data-dates`, {
       method: "GET",
       credentials: "include",
@@ -48,20 +48,18 @@ const AIHealthPrediction = () => {
       .then((response) => response.json())
       .then((data) => {
         setReportDates(data);
+
         if (data.length > 0) {
           setSelectedDate(data[0]);
-          console.log("The selected date is: " + selectedDate);
+          console.log("The selected date is:", data[0]);
         }
       })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+      .catch((err) => console.log(err));
+  }, []);
 
-  // Fetch the users health data ID and Dates
   useEffect(() => {
     fetchReportDates();
-  }, []);
+  }, [fetchReportDates]);
 
   // Fetch report data
   useEffect(() => {

@@ -107,7 +107,10 @@ const HealthAnalytics = () => {
   };
 
   // Helpers for aggregation and y-axis scaling
-  const colors = [theme.palette.primary.main, "#ff7043", "#42a5f5"];
+  const colors = useMemo(
+    () => [theme.palette.primary.main, "#ff7043", "#42a5f5"],
+    [theme.palette.primary.main],
+  );
 
   const cardWrapperSx = useMemo(
     () => ({

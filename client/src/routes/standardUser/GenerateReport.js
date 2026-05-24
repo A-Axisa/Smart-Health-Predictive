@@ -6,7 +6,7 @@ import GenerateReportForm from "../../components/healthReport/GenerateReportForm
  *
  * @returns {@mui.material.Box}
  */
-const GenerateReport = ({}) => {
+const GenerateReport = () => {
   return (
     <Box
       sx={{

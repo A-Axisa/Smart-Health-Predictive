@@ -53,8 +53,9 @@ const AuditLogTable = () => {
   const [userEmail, setUserEmail] = useState("");
   const [eventType, setEventType] = useState("");
 
-  const fetchLogs = () => {
+  const fetchLogs = useCallback(() => {
     setLoading(true);
+
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
       limit: paginationModel.pageSize,
@@ -62,12 +63,15 @@ const AuditLogTable = () => {
 
     if (userEmail) params.append("user_email", userEmail);
     if (eventType) params.append("event_type", eventType);
+
     if (sortModel.length > 0) {
       params.append("sort_by", sortModel[0].field);
       params.append("sort_order", sortModel[0].sort || "desc");
     }
 
-    fetch(`${API_BASE}/logs?${params.toString()}`, { credentials: "include" })
+    fetch(`${API_BASE}/logs?${params.toString()}`, {
+      credentials: "include",
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.status);
@@ -83,10 +87,6 @@ const AuditLogTable = () => {
         console.log(err);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchLogs();
   }, [
     paginationModel.page,
     paginationModel.pageSize,
@@ -94,6 +94,10 @@ const AuditLogTable = () => {
     eventType,
     sortModel,
   ]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const handleEmailSearchChange = useCallback((value) => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
