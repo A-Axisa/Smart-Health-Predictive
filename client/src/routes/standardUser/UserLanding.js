@@ -1,15 +1,15 @@
 import {
+  Box,
   Card,
   CardContent,
-  Box,
   Divider,
   Typography,
-  useTheme,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };

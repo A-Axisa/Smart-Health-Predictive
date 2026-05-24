@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useMemo } from "react";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Box,
-  Container,
-  Typography,
+  Button,
   Card,
   CardContent,
-  Stack,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
   Checkbox,
-  Button,
-  useTheme,
-  useMediaQuery,
-  IconButton,
   Collapse,
+  Container,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { LineChart } from "@mui/x-charts/LineChart";
+import { useEffect, useMemo, useState } from "react";
 
 const formatXAxisLabel = (label, index, total, isMobile) => {
   if (!label) {

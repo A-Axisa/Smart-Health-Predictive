@@ -1,12 +1,4 @@
-import {
-  Box,
-  Container,
-  Stack,
-  Typography,
-  Button,
-  Link,
-  Divider,
-} from "@mui/material";
+import { Box, Container } from "@mui/material";
 import AcceptRequestForm from "../../components/patientAccessRequest/AcceptRequestForm";
 
 /**

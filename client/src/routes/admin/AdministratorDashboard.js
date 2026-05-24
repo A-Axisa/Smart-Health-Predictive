@@ -1,15 +1,11 @@
 import {
   Box,
-  Card,
-  CardContent,
   Container,
   Divider,
   Grid,
   Stack,
   Typography,
 } from "@mui/material";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { useEffect, useState } from "react";
 import ActiveMerchantsAnalytics from "../../components/administrator/analytics/ActiveMerchantsAnalytics";
 import ActiveUsersAnalytics from "../../components/administrator/analytics/ActiveUsersAnalytics";
 import AverageRiskSeriesAnalytics from "../../components/administrator/analytics/AverageRiskSeriesAnalytics";

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import CheckIcon from "@mui/icons-material/Check";
+import LockResetIcon from "@mui/icons-material/LockReset";
 import {
   Box,
   Button,
@@ -9,9 +10,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useParams, Link as RouterLink } from "react-router-dom";
-import CheckIcon from "@mui/icons-material/Check";
-import LockResetIcon from "@mui/icons-material/LockReset";
+import { useState } from "react";
+import { Link as RouterLink, useParams } from "react-router-dom";
 import Logo from "../../assets/WellAiLogoTR.png";
 import PasswordInputField from "../authentication/PasswordInputField";
 

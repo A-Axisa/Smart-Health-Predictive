@@ -1,20 +1,17 @@
 import {
   Card,
   CardContent,
-  Container,
-  Paper,
-  Typography,
-  Select,
-  MenuItem,
+  FormControl,
   Grid,
   InputLabel,
-  FormControl,
+  MenuItem,
+  Select,
+  Typography,
 } from "@mui/material";
-import { Stack } from "@mui/system";
-import { useEffect, useState } from "react";
-import { LineChart } from "@mui/x-charts/LineChart";
 import Divider from "@mui/material/Divider";
+import { LineChart } from "@mui/x-charts/LineChart";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const DEFAULT_YEAR = 2026;

@@ -1,15 +1,15 @@
 import {
   Box,
-  Typography,
+  Button,
   Card,
   CardContent,
-  Button,
-  useTheme,
+  Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
@@ -231,7 +231,13 @@ const PatientDetails = () => {
                   >
                     {key.toUpperCase()}
                   </Typography>
-                  <Typography sx={{ fontSize: { xs: "1.4rem", sm: "2.125rem" }, fontWeight: 400, lineHeight: 1.2 }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "1.4rem", sm: "2.125rem" },
+                      fontWeight: 400,
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {patientData?.risks?.[key]?.[0] ?? 0}%
                   </Typography>
                   <Box

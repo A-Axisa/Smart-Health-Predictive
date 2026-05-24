@@ -1,6 +1,6 @@
-import { Container, ButtonGroup, Button, Box } from "@mui/material";
-import MerchantReportForm from "../../components/healthReport/MerchantReportForm";
+import { Box } from "@mui/material";
 import { useState } from "react";
+import MerchantReportForm from "../../components/healthReport/MerchantReportForm";
 
 /**
  * A page that provides the health report form for merchants to generate

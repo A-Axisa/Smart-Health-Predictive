@@ -1,28 +1,24 @@
-import ReportTemplate from "../../components/healthReport/ReportTemplate";
-import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
+import { useEffect, useState } from "react";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import Stack from "@mui/material/Stack";
-import React, { useState, useEffect } from "react";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
 
 import {
   Box,
-  Typography,
+  Button,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
-  Button,
-  useTheme,
-  useMediaQuery,
   Paper,
+  Select,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -118,8 +114,14 @@ const AIHealthPrediction = ({}) => {
   ].sort((a, b) => a - b);
 
   const months = [
-    ...new Set(reportDates.filter((r) => !selectedYear || new Date(r.date).getFullYear() === selectedYear,)
-    .map((r) => new Date(r.date).getMonth() + 1),),
+    ...new Set(
+      reportDates
+        .filter(
+          (r) =>
+            !selectedYear || new Date(r.date).getFullYear() === selectedYear,
+        )
+        .map((r) => new Date(r.date).getMonth() + 1),
+    ),
   ].sort((a, b) => a - b);
 
   // Filters reports based on selected year and month if any.

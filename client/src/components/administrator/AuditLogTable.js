@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
-  Paper,
   Box,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import { useCallback, useEffect, useState } from "react";
 import AuditLogSearchBar from "./AuditLogSearchBar";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";

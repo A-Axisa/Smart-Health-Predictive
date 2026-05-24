@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { TextField, FormControl, Grid, Box, Autocomplete } from "@mui/material";
+import { Autocomplete, Box, FormControl, Grid, TextField } from "@mui/material";
 import {
   getCountries,
-  parsePhoneNumberFromString,
   getCountryCallingCode,
+  parsePhoneNumberFromString,
 } from "libphonenumber-js";
+import { useState } from "react";
 
 /**
  * An input field that provides basic validation for phone numbers and a

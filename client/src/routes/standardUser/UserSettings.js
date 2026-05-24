@@ -1,27 +1,27 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  TextField,
   Button,
   FormControl,
   InputLabel,
-  Select,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
-  Alert,
+  Select,
   Stack,
-  useTheme,
-  useMediaQuery,
-  Tabs,
   Tab,
+  Tabs,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../utils/UserContext";
 import PhoneInputField from "../../components/authentication/PhoneInputField";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import { UserContext } from "../../utils/UserContext";
 
 /**
  * A page that provides the tools for a user to securely update their

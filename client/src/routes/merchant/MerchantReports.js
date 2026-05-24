@@ -1,31 +1,27 @@
-import ReportTemplate from "../../components/healthReport/ReportTemplate";
-import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
+  Autocomplete,
   Box,
-  Typography,
+  Button,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
   MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Button,
-  Autocomplete,
-  TextField,
-  Drawer,
-  Stack,
-  useTheme,
-  useMediaQuery,
   Paper,
+  Select,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 

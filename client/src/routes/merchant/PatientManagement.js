@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import InputAdornment from "@mui/material/InputAdornment";
 import {
   Box,
-  Typography,
   Button,
-  Paper,
-  TextField,
+  Divider,
   Menu,
   MenuItem,
-  Divider,
+  Paper,
   Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
 import { DataGrid } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 
 // Icons
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 /**
  * A page used to display a list of all patients for a merchant user.

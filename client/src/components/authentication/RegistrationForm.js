@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {
   Alert,
   Box,
@@ -7,9 +7,9 @@ import {
   Card,
   CardContent,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
-  DialogActions,
   Divider,
   FormControl,
   FormHelperText,
@@ -20,12 +20,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import PasswordInputField from "../authentication/PasswordInputField";
-import EmailInputField from "../authentication/EmailInputField";
-import PhoneInputField from "../authentication/PhoneInputField";
+import { useEffect, useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/WellAiLogoTR.png";
+import EmailInputField from "../authentication/EmailInputField";
+import PasswordInputField from "../authentication/PasswordInputField";
+import PhoneInputField from "../authentication/PhoneInputField";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({

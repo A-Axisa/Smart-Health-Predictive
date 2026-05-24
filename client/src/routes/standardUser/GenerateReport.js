@@ -1,5 +1,5 @@
-import GenerateReportForm from "../../components/healthReport/GenerateReportForm";
 import { Box } from "@mui/material";
+import GenerateReportForm from "../../components/healthReport/GenerateReportForm";
 
 /**
  * A page that provides the form for user's to generate a health report.

@@ -1,13 +1,4 @@
-import {
-  Box,
-  Container,
-  Stack,
-  Typography,
-  Button,
-  Link,
-  Divider,
-} from "@mui/material";
-import ForgotPasswordForm from "../../components/authentication/ForgotPasswordForm";
+import { Box, Container } from "@mui/material";
 import RequestPatientAccessForm from "../../components/patientAccessRequest/RequestPatientAccessForm";
 
 /**
