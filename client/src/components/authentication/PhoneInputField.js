@@ -109,36 +109,37 @@ const PhoneInputField = ({ onChange, value }) => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        <Grid size={7}>
-          <FormControl sx={{ width: "100%" }}>
-            <Autocomplete
-              options={getDialingCodeDropdownOptions()}
-              getOptionLabel={(option) => option.label}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Dialing Code"
-                  error={!isValidDialingCode}
-                />
-              )}
-              onChange={updateDialingCode}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+        gap: 2,
+      }}
+    >
+      <FormControl sx={{ width: "100%" }}>
+        <Autocomplete
+          options={getDialingCodeDropdownOptions()}
+          getOptionLabel={(option) => option.label}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Dialing Code"
+              error={!isValidDialingCode}
             />
-          </FormControl>
-        </Grid>
-        <Grid size={5}>
-          <TextField
-            error={!isValid}
-            id="outlined-input"
-            name="phone"
-            label="Phone"
-            value={value}
-            onChange={updatePhoneNumber}
-            sx={{ width: "100%" }}
-          ></TextField>
-        </Grid>
-      </Grid>
+          )}
+          onChange={updateDialingCode}
+        />
+      </FormControl>
+
+      <TextField
+        error={!isValid}
+        id="outlined-input"
+        name="phone"
+        label="Phone"
+        value={value}
+        onChange={updatePhoneNumber}
+        sx={{ width: "100%" }}
+      />
     </Box>
   );
 };
