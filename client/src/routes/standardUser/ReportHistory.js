@@ -29,7 +29,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Container}
  */
-const AIHealthPrediction = ({}) => {
+const AIHealthPrediction = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -37,18 +37,8 @@ const AIHealthPrediction = ({}) => {
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [openSideBar, setOpenSideBar] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  function openBar() {
-    if (isOpen === true) {
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(true);
-  }
 
   function fetchReportDates() {
     fetch(`${API_BASE}/get-health-data-dates`, {

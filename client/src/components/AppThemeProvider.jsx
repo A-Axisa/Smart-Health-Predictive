@@ -1,7 +1,5 @@
-import React from "react";
-import { ThemeProvider, createTheme } from "@mui/material";
 import "@fontsource/russo-one";
-import { color, fontWeight } from "@mui/system";
+import { ThemeProvider, createTheme } from "@mui/material";
 
 /**
  * A centralized MUI theme for the web app.
@@ -154,7 +152,6 @@ export const appTheme = createTheme({
         disableRowSelectionOnClick: true,
         autoHeight: false,
         density: "standard",
-        autoHeight: false,
       },
       styleOverrides: {
         root: {

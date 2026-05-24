@@ -41,7 +41,6 @@ const PatientManagement = () => {
     pageSize: 25,
   });
   const [totalPatients, setTotalPatients] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPatientID, setSelectedPatientID] = useState(null);
@@ -144,7 +143,6 @@ const PatientManagement = () => {
   }, [familyNameInput]);
 
   const fetchPatients = () => {
-    setLoading(true);
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
       limit: paginationModel.pageSize,
@@ -161,11 +159,9 @@ const PatientManagement = () => {
       .then((data) => {
         setPatientData(data.patients || []);
         setTotalPatients(data.totalPatients || 0);
-        setLoading(false);
       })
       .catch((err) => {
         console.log("An error has occurred");
-        setLoading(false);
       });
   };
 

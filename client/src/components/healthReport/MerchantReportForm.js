@@ -1,29 +1,28 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Autocomplete,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import ListItemText from "@mui/material/ListItemText";
-import Select from "@mui/material/Select";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import FormHelperText from "@mui/material/FormHelperText";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
+import InputLabel from "@mui/material/InputLabel";
+import ListItemText from "@mui/material/ListItemText";
+import MenuItem from "@mui/material/MenuItem";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Select from "@mui/material/Select";
 import { styled } from "@mui/material/styles";
+import { useLocation, useNavigate } from "react-router-dom";
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -59,9 +58,8 @@ const MerchantReportForm = () => {
     "High Cholesterol",
     "Stroke",
   ];
-  // List of lifestyle choices
-  const lifeStyleChoices = ["Drink Alcohol", "Current Smoker", "Former Smoker"];
 
+  // List of lifestyle choices
   const smokerOptions = ["No", "Yes", "Former smoker"];
 
   const maritalStatusOptions = ["Single", "Married", "Widow", "Divorced"];
@@ -89,7 +87,6 @@ const MerchantReportForm = () => {
   };
   // List variables from multiselect lists
   const [condition, setCondition] = useState([]);
-  const [lifeStyle, setLifeStyle] = useState([]);
 
   // Form Variables and alerts for input validation
   const [weight, setWeight] = useState(null);
@@ -136,7 +133,7 @@ const MerchantReportForm = () => {
         setPatientList(data);
         if (defaultSelectedPatient) {
           const name = data.find(
-            (item) => item.patientId == defaultSelectedPatient,
+            (item) => item.patientId === defaultSelectedPatient,
           );
           setPatientName(name.name);
         }
@@ -181,32 +178,6 @@ const MerchantReportForm = () => {
     }
     fetchPatientData();
   }, [selectedPatient]);
-
-  function handleChangeLifeStyle(e) {
-    const {
-      target: { value },
-    } = e;
-
-    let newValues = typeof value === "string" ? value.split(",") : value;
-    const lastSelected = newValues[newValues.length - 1];
-
-    // Remove former smoker if the user selects they are a current smoker
-    if (
-      lastSelected === "Current Smoker" &&
-      newValues.includes("Former Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Former Smoker");
-    }
-
-    // Remove current smoker if the user selects they are a former smoker
-    if (
-      lastSelected === "Former Smoker" &&
-      newValues.includes("Current Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Current Smoker");
-    }
-    setLifeStyle(newValues);
-  }
 
   function updateAge(e) {
     const ageValue = Number(e.target.value);
@@ -338,7 +309,7 @@ const MerchantReportForm = () => {
 
   // Fills in fields with information found in the blood reports.
   async function readBloodReport(e) {
-    if (e.aveBloodGlucose !== NaN) {
+    if (!isNaN(e.aveBloodGlucose)) {
       // Value needs to be in a specific dictionary format to be validated and set.
       updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
     }

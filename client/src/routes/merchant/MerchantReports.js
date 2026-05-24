@@ -31,7 +31,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Box}
  */
-const MerchantReports = ({}) => {
+const MerchantReports = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
@@ -167,15 +167,7 @@ const MerchantReports = ({}) => {
     setReportDates(selectedReports);
     setSelectedDate(selectedReports[0]);
   }
-  const [isOpen, setIsOpen] = useState(false);
 
-  function openBar() {
-    if (isOpen === true) {
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(true);
-  }
   return (
     <Box
       sx={{

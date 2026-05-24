@@ -19,21 +19,9 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const MerchantLanding = () => {
   const [data, setData] = useState({});
-  const [name, setName] = useState("");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  useEffect(() => {
-    fetch(`${API_BASE}/user/me`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((user) => {
-        setName(user.name);
-      });
-  }, []);
 
   useEffect(() => {
     fetch(`${API_BASE}/merchant-dashboard`, {
@@ -64,14 +52,6 @@ const MerchantLanding = () => {
       text: "no submissions in 30 days",
     },
   ];
-
-  function relativeTime(date) {
-    const diff = (Date.now() - new Date(date)) / 1000;
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  }
 
   return (
     <Box

@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
@@ -21,8 +20,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Box}
  */
-const UserLanding = ({}) => {
-  const navigate = useNavigate();
+const UserLanding = () => {
   const [name, setName] = useState(null);
   const [data, setData] = useState({});
 

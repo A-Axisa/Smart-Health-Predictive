@@ -146,7 +146,7 @@ const PatientDetails = () => {
               >
                 Gender:
               </Box>{" "}
-              {patientData?.patientInfo?.gender == 1 ? "Male" : "Female"}
+              {patientData?.patientInfo?.gender === 1 ? "Male" : "Female"}
             </Typography>
 
             <Typography sx={{ borderBottom: "1px solid #E0E0E0", pb: 1.5 }}>

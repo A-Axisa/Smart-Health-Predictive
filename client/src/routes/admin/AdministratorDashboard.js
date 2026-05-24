@@ -15,8 +15,6 @@ import RecentReportsGeneratedAnalytics from "../../components/administrator/anal
 import UnvalidatedAccountAnalytics from "../../components/administrator/analytics/UnvalidatedAccountAnalytics";
 import UserAccountAnalytics from "../../components/administrator/analytics/UserAccountAnalytics";
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
-
 /**
  * A route that displays a collection of metrics describing the current
  * state of the system, it's users, and the health reports generated.

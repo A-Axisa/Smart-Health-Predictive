@@ -1,14 +1,13 @@
-import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
-  Container,
-  Stack,
   Button,
-  Typography,
-  Link,
+  Container,
   Divider,
+  Stack,
+  Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import EmailInputField from "../authentication/EmailInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";

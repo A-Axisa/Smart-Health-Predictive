@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import { useState } from "react";
 import MerchantReportForm from "../../components/healthReport/MerchantReportForm";
 
 /**
@@ -8,9 +7,7 @@ import MerchantReportForm from "../../components/healthReport/MerchantReportForm
  *
  * @returns {@mui.material.Container}
  */
-const MerchantGenerateReport = ({}) => {
-  const [page, setPage] = useState("manual");
-
+const MerchantGenerateReport = () => {
   return (
     <Box
       sx={{

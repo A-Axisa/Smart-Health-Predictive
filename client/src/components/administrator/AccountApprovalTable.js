@@ -10,7 +10,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Box}
  */
-const AccountApprovalTable = ({}) => {
+const AccountApprovalTable = () => {
   const [userData, setUserData] = useState([]); // Stores user data
   const [selectedUser, setselectedUser] = useState(); // Stores the selected user
   const [dialogOpen, setDialogOpen] = useState(false); // Stores dialog state

@@ -1,14 +1,10 @@
 import {
   Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   Card,
   Paper,
-  useTheme,
+  Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 /**

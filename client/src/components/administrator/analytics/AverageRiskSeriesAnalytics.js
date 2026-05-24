@@ -16,7 +16,6 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
-const DEFAULT_YEAR = 2026;
 
 /**
  * A card that displays the average progression for stroke, diabetes,
@@ -74,10 +73,6 @@ const AverageRiskSeriesAnalytics = () => {
         setCVDData(data.map((d) => d.cvd));
       });
   }, [year]);
-
-  function extractXAxisData(rawData) {
-    return rawData.map((d) => new Date(d.date));
-  }
 
   return (
     <Card sx={{ p: "5px" }}>

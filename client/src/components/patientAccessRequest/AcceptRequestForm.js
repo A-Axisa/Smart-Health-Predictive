@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";
-import { useParams, Link as RouterLink } from "react-router-dom";
 import {
   Box,
-  Container,
-  Stack,
   Button,
-  Typography,
-  Link,
+  Container,
+  Divider,
   List,
   ListItem,
   ListItemText,
-  Divider,
+  Stack,
+  Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { Link as RouterLink, useParams } from "react-router-dom";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 

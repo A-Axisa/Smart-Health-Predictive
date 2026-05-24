@@ -1,25 +1,24 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import {
-  Card,
-  CardHeader,
-  CardContent,
   Box,
-  Typography,
-  TextField,
   Button,
+  Card,
+  CardContent,
+  FormControl,
+  FormHelperText,
   InputLabel,
+  ListItemText,
   MenuItem,
   OutlinedInput,
-  FormControl,
-  ListItemText,
   Select,
-  FormHelperText,
-  useTheme,
+  TextField,
+  Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -72,7 +71,6 @@ const GenerateReportForm = () => {
   };
 
   const [condition, setCondition] = useState([]);
-  const [lifeStyle, setLifeStyle] = useState([]);
 
   const [weight, setWeight] = useState(null);
   const [alertWeightRequired, setAlertWeightRequired] = useState(false);
@@ -136,32 +134,6 @@ const GenerateReportForm = () => {
       target: { value },
     } = e;
     setCondition(typeof value === "string" ? value.split(",") : value);
-  }
-
-  function handleChangeLifeStyle(e) {
-    const {
-      target: { value },
-    } = e;
-
-    let newValues = typeof value === "string" ? value.split(",") : value;
-    const lastSelected = newValues[newValues.length - 1];
-
-    // Remove former smoker if the user selects they are a current smoker
-    if (
-      lastSelected === "Current Smoker" &&
-      newValues.includes("Former Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Former Smoker");
-    }
-
-    // Remove current smoker if the user selects they are a former smoker
-    if (
-      lastSelected === "Former Smoker" &&
-      newValues.includes("Current Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Current Smoker");
-    }
-    setLifeStyle(newValues);
   }
 
   function updateAge(e) {
@@ -286,7 +258,7 @@ const GenerateReportForm = () => {
 
   // Fills in fields with information found in the blood reports.
   async function readBloodReport(e) {
-    if (e.aveBloodGlucose !== NaN) {
+    if (!isNaN(e.aveBloodGlucose)) {
       // Value needs to be in a specific dictionary format to be validated and set.
       updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
     }

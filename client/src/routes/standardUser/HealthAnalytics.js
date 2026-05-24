@@ -12,7 +12,6 @@ import {
   FormControlLabel,
   FormGroup,
   IconButton,
-  Stack,
   Typography,
   useMediaQuery,
   useTheme,

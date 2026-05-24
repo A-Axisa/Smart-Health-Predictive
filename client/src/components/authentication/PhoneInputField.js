@@ -1,4 +1,4 @@
-import { Autocomplete, Box, FormControl, Grid, TextField } from "@mui/material";
+import { Autocomplete, Box, FormControl, TextField } from "@mui/material";
 import {
   getCountries,
   getCountryCallingCode,
@@ -44,20 +44,6 @@ const PhoneInputField = ({ onChange, value }) => {
         dialingCode: getCountryCallingCode(country),
       }))
       .sort((a, b) => a - b);
-  }
-
-  /**
-   * Creates an array containing all unique dialing codes.
-   * @returns Array of possible dialing codes.
-   */
-  function getUniqueDialingCodes() {
-    return Array.from(
-      new Set(
-        getCountries()
-          .map((country) => getCountryCallingCode(country))
-          .sort((a, b) => a - b),
-      ),
-    );
   }
 
   function updateDialingCode(_, value) {
