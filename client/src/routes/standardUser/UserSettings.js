@@ -153,7 +153,7 @@ const UserSettings = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log("Failed to change password");
+        console.error("Failed to change password.");
       });
   }
 

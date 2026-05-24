@@ -63,11 +63,10 @@ const AIHealthPrediction = ({}) => {
         setReportDates(data);
         if (data.length > 0) {
           setSelectedDate(data[0]);
-          console.log("The selected date is: " + selectedDate);
         }
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch health data dates.");
       });
   }
 
@@ -87,7 +86,7 @@ const AIHealthPrediction = ({}) => {
     })
       .then((res) => res.json())
       .then((data) => setReportData(data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Failed to fetch report data."));
   }, [selectedDate]);
 
   // Delete report data

@@ -77,7 +77,7 @@ const RegistrationForm = () => {
     })
       .then((res) => res.json())
       .then((data) => setClinicList(data))
-      .catch((err) => console.log("An error has occurred"));
+      .catch((err) => console.error("An error has occurred."));
   }, []);
 
   function updateGivenName(e) {
@@ -281,7 +281,7 @@ const RegistrationForm = () => {
         setShowFailMessage(false);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("User reigstration requeset failed.");
       });
     setIsLoading(false);
   }

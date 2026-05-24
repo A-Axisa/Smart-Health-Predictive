@@ -198,7 +198,6 @@ const NavBar = ({ role }) => {
 
   function handleOpenSettings(e) {
     setOpenMenu(e.currentTarget);
-    console.log(openMenu);
   }
 
   function handleCloseSettings() {

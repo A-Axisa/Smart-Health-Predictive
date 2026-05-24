@@ -84,7 +84,7 @@ const UserManagementTable = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch user data.");
         setLoading(false);
       });
   };
@@ -114,7 +114,7 @@ const UserManagementTable = () => {
       })
       .then((data) => setRoleData(data))
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch role data.");
       });
   }, [API_BASE]);
 
@@ -128,7 +128,7 @@ const UserManagementTable = () => {
       })
       .then((data) => setClinicData(data))
       .catch(() => {
-        console.log("Failed to fetch Clinics");
+        console.error("Failed to fetch clinic data.");
       });
   }, [API_BASE]);
 
@@ -170,7 +170,7 @@ const UserManagementTable = () => {
       setNewRole(null);
       setRowSelectionModel({ type: "include", ids: new Set() });
     } catch (err) {
-      console.log(err);
+      console.error("Failed to process request.");
     }
   };
 
@@ -204,7 +204,7 @@ const UserManagementTable = () => {
       setUserToDelete(null);
       setRowSelectionModel({ type: "include", ids: new Set() }); // Reset the checkbox after deletion.
     } catch (error) {
-      console.error("Delete user error:", error);
+      console.error("Failed to delete user.");
       setSnackbar({ open: true, message: error.message, severity: "error" });
     }
   };

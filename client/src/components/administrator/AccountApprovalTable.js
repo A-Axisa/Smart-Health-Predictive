@@ -25,7 +25,7 @@ const AccountApprovalTable = ({}) => {
       })
       .then((data) => setUserData(data))
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch merchant data.");
       });
   };
 
@@ -49,7 +49,7 @@ const AccountApprovalTable = ({}) => {
         fetchMerchants();
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to validate merchant account.");
       });
   };
 

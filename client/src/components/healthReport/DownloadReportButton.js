@@ -56,7 +56,7 @@ const DownloadReportButton = ({
       saveAs(blob, fileName);
       if (onError) onError?.(null); // Clear previous errors on success
     } catch (error) {
-      console.error("Failed to download report:", error);
+      console.error("Failed to download report.");
       if (onError) onError(error.message);
     }
   };

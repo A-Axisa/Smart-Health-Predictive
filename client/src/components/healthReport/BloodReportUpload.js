@@ -28,7 +28,7 @@ const BloodReportUpload = ({ onChange }) => {
     const file = e.target.files[0];
     await pdfToText(file)
       .then((text) => onChange?.(extractPatientInfoAsDict(text)))
-      .catch((error) => console.error(error));
+      .catch((error) => console.error("Failed to process blood report."));
   }
 
   function extractPatientInfoAsDict(text) {

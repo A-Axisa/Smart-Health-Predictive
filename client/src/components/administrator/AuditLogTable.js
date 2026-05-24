@@ -80,7 +80,7 @@ const AuditLogTable = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch log data.");
         setLoading(false);
       });
   };

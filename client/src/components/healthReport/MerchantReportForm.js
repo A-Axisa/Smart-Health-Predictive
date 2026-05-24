@@ -135,7 +135,7 @@ const MerchantReportForm = () => {
           setPatientName(name.name);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Failed to fetch patient names."));
   }, []);
 
   function handleChangeCondition(e) {
@@ -170,7 +170,7 @@ const MerchantReportForm = () => {
         setWorkingStatus(data.workingStatus);
         setRace(data.race);
       } catch (err) {
-        console.log("Failed to fetch patient data.");
+        console.error("Failed to fetch patient data.");
       }
     }
     fetchPatientData();
@@ -374,7 +374,7 @@ const MerchantReportForm = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log("Something went wrong.");
+        console.error("Failed to process request.");
       });
     navigate("/merchant-reports");
     setIsLoading(false);
@@ -437,7 +437,7 @@ const MerchantReportForm = () => {
         }); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log("Something went wrong");
+        console.error("Failed to process request.");
       });
   }
   const HiddenInput = styled("input")({
