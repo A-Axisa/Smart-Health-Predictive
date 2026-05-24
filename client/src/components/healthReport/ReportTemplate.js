@@ -154,7 +154,9 @@ const ReportTemplate = ({ report, date }) => {
             mx: "auto",
           }}
         >
-          Generated on: {new Date(date).toLocaleDateString("en-AU")}{" at "}{`${new Date(date).toLocaleTimeString("en-AU")}`}
+          Generated on: {new Date(date).toLocaleDateString("en-AU")}
+          {" at "}
+          {`${new Date(date).toLocaleTimeString("en-AU")}`}
         </Typography>
       </Paper>
 
@@ -265,7 +267,7 @@ const ReportTemplate = ({ report, date }) => {
         }}
       >
         <Typography
-          variant={isMobile ? "h5" : "h3"}
+          variant={isMobile ? "h6" : "h3"}
           sx={{
             mx: 2,
             mt: 3,
@@ -281,10 +283,9 @@ const ReportTemplate = ({ report, date }) => {
             p: 2,
           }}
         >
-
           {/* Exercise */}
           <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
               Exercise Recommendations
             </Typography>
             <Typography variant="body1">
@@ -295,7 +296,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Diet */}
           <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
               Diet Recommendations
             </Typography>
             <Typography variant="body1">
@@ -305,7 +306,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Lifestyle */}
           <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
               Lifestyle Recommendations
             </Typography>
             <Typography variant="body1">
@@ -316,7 +317,7 @@ const ReportTemplate = ({ report, date }) => {
 
           {/* Diet to Avoid */}
           <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} sx={{ mb: 1 }}>
+            <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
               Diet to Avoid
             </Typography>
             <Typography variant="body1">
