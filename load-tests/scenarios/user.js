@@ -3,8 +3,8 @@ import { check, sleep } from "k6";
 
 
 const BASE_URL = __ENV.BASEURL || 'http://localhost:8000';
-const TEST_EMAIL = __ENV.TEST_EMAIL || 'audrey.young@example.com'
-const TEST_PASSWORD = __ENV.TEST_PASSWORD || 'whyaretherebirds'
+const TEST_EMAIL = __ENV.TEST_EMAIL;
+const TEST_PASSWORD = __ENV.TEST_PASSWORD;
 
 export default function () {
   // Test login.
