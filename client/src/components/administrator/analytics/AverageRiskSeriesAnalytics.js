@@ -7,6 +7,8 @@ import {
   MenuItem,
   Select,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import { LineChart } from "@mui/x-charts/LineChart";
@@ -23,6 +25,9 @@ const DEFAULT_YEAR = 2026;
  * @returns {@mui.material.Card}
  */
 const AverageRiskSeriesAnalytics = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [availableYears, setAvailableYears] = useState([]);
   const [year, setYear] = useState("");
   const [xAxisData, setXAxisData] = useState([]);
@@ -96,7 +101,7 @@ const AverageRiskSeriesAnalytics = () => {
               Average Disease Risk (%)
             </Typography>
           </Grid>
-          <Grid size={2}>
+          <Grid size={isMobile ? 12 : 2}>
             <FormControl>
               <InputLabel id="year-label-id">Year</InputLabel>
               <Select
