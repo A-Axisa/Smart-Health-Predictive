@@ -10,6 +10,8 @@ import {
   TextField,
   Button,
   Autocomplete,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
@@ -35,6 +37,10 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const MerchantReportForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const pageData = location.state;
   const defaultSelectedPatient =
     pageData && pageData["patientID"] ? pageData["patientID"] : null;
@@ -468,7 +474,7 @@ const MerchantReportForm = () => {
       }}
     >
       <Typography
-        variant="h2"
+        variant={isMobile ? "h4" : "h2"}
         sx={{
           mb: 2,
           mt: 2,
@@ -568,10 +574,11 @@ const MerchantReportForm = () => {
           </Box>
           {/* Age & Physique Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Age & Physique
@@ -644,10 +651,11 @@ const MerchantReportForm = () => {
           </Box>
           {/* Fitness Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Health & Fitness
@@ -743,10 +751,11 @@ const MerchantReportForm = () => {
           {/*Multi-select LifeStyle Habits */}
 
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Life Style
