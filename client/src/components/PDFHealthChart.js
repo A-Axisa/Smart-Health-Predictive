@@ -180,7 +180,7 @@ const PDFHealthChart = forwardRef(({ healthData }, ref) => {
         width: 1200,
       }}
     >
-      <Card sx={{ borderRadius: 2, boxShadow: 24, bgcolor: "#ffffff", overflow: "hidden" }}>
+      <Card sx={{ borderRadius: 2, bgcolor: "#ffffff", overflow: "hidden" }}>
         <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
             <Box
               sx={{
