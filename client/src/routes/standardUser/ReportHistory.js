@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 import React, { useState, useEffect, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import PDFHealthChart from "../components/PDFHealthChart";
+import PDFHealthChart from "../components/healthReport/PDFHealthChart";
 
 import {
   Box,
