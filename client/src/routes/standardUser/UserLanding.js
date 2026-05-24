@@ -118,7 +118,7 @@ const UserLanding = ({}) => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", md: "row" },
+          flexDirection: isMobile ? "column" : "row",
           gap: 3,
         }}
       >
@@ -137,7 +137,7 @@ const UserLanding = ({}) => {
             sx={{
               display: "flex",
               gap: { xs: 1, sm: 2 },
-              flexDirection: "row",
+              flexDirection: isMobile ? "column" : "row",
             }}
           >
             {["stroke", "diabetes", "cvd"].map((key) => (
@@ -228,7 +228,7 @@ const UserLanding = ({}) => {
               height: { xs: "auto", md: "95%" },
             }}
           >
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ mb: 2 }}>
               Latest Recommendations
             </Typography>
             <Box>
@@ -246,7 +246,10 @@ const UserLanding = ({}) => {
                             : "none",
                       }}
                     >
-                      <Typography variant="h6" sx={{ mb: 1 }}>
+                      <Typography
+                        variant={isMobile ? "h7" : "h6"}
+                        sx={{ mb: 1 }}
+                      >
                         {key.toUpperCase()}
                       </Typography>
                       <Typography sx={{ whiteSpace: "pre-line" }}>
