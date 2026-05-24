@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useEffect, useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 const formatXAxisLabel = (label, index, total, isMobile) => {
   if (!label) {
@@ -468,7 +469,8 @@ const HealthAnalytics = () => {
             >
               <Button
                 variant="outlined"
-                href="/report-history"
+                component={RouterLink}
+                to="/report-history"
                 sx={{
                   width: isMobile ? "100%" : "auto",
                   py: { xs: "0.8rem", sm: "0.6rem" },
@@ -480,7 +482,8 @@ const HealthAnalytics = () => {
               </Button>
               <Button
                 variant="contained"
-                href="/generate-report"
+                component={RouterLink}
+                to="/generate-report"
                 sx={{
                   width: isMobile ? "100%" : "auto",
                   py: { xs: "0.8rem", sm: "0.6rem" },
