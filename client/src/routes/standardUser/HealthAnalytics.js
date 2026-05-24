@@ -291,16 +291,12 @@ const HealthAnalytics = () => {
           boxSizing: "border-box",
         }}
       >
-        <Stack spacing={1.5} sx={{ mb: 3 }}>
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            component="h1"
-            color="primary"
-            sx={{ fontWeight: 600 }}
-          >
-            Health Analytics
-          </Typography>
-        </Stack>
+        <Typography
+          variant={isMobile ? "h4" : "h2"}
+          sx={{ textAlign: "center", mb: 2 }}
+        >
+          Health Analytics
+        </Typography>
 
         <Card sx={cardWrapperSx}>
           <CardContent sx={cardContentSx}>
@@ -312,9 +308,10 @@ const HealthAnalytics = () => {
                 mb: showSettings ? 2 : 0,
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant={isMobile ? "h5" : "h4"}>
                 Probability Metrics Selection
               </Typography>
+
               {isMobile && (
                 <IconButton
                   onClick={() => setShowSettings(!showSettings)}
@@ -378,11 +375,7 @@ const HealthAnalytics = () => {
 
         <Card sx={cardWrapperSx}>
           <CardContent sx={chartCardContentSx}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{ fontWeight: 600, mb: 2 }}
-            >
+            <Typography variant={isMobile ? "h5" : "h4"}>
               Health Risk Trends Over Time
             </Typography>
             {chartSeries.length > 0 && healthData.length > 0 ? (
