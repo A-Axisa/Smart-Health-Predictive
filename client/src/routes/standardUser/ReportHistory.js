@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import ReportTemplate from "../../components/healthReport/ReportTemplate";
+import { Link as RouterLink } from "react-router-dom";
 
 import {
   Box,
@@ -144,15 +145,38 @@ const AIHealthPrediction = ({}) => {
       <Box
         sx={{
           minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           bgcolor: "background.default",
+          ml: "65px",
+          mt: "80px",
         }}
       >
-        <Typography variant="h5" sx={{ color: "text.secondary" }}>
-          No Health Prediction Reports Available
-        </Typography>
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: "background.default",
+            flexDirection: "column",
+          }}
+        >
+          <Typography variant="h5" sx={{ color: "text.secondary" }}>
+            No Health Prediction Reports Available
+          </Typography>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="/generate-report"
+            sx={{
+              width: isMobile ? "100%" : "auto",
+              py: { xs: "0.8rem", sm: "0.6rem" },
+              fontSize: { xs: "1rem", sm: "0.875rem" },
+              fontWeight: 500,
+            }}
+          >
+            Generate Report
+          </Button>
+        </Box>
       </Box>
     );
   } else {
