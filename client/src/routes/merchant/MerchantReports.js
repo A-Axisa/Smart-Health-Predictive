@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import PDFHealthChart from "../components/healthReport/PDFHealthChart";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
