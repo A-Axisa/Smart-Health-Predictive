@@ -50,7 +50,7 @@ const DownloadReportButton = ({
         meta?.fileNameHint ||
         `HealthReport_${String(meta?.healthDataID ?? healthDataId)}_${buildLocalDatePart(meta?.date)}.pdf`;
       
-      const canvas = await html2canvas(chartRef.current);
+      const canvas = await html2canvas(chartRef.current, {scale: 2});
       const chartImage = canvas.toDataURL("image/png");
 
       const blob = await pdf(
