@@ -131,7 +131,7 @@ const PatientManagement = () => {
         setTotalPatients(data.totalPatients || 0);
       })
       .catch((err) => {
-        console.log("An error has occurred", err);
+        console.log("An error has occurred");
       });
   }, [
     API_BASE,
