@@ -1,29 +1,26 @@
-import ReportTemplate from "../../components/healthReport/ReportTemplate";
-import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
+import { useEffect, useState, useCallback, useRef } from "react";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import Stack from "@mui/material/Stack";
-import React, { useState, useEffect, useRef } from "react";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
+import { Link as RouterLink } from "react-router-dom";
 import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
 
 import {
   Box,
-  Typography,
+  Button,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
-  Button,
-  useTheme,
-  useMediaQuery,
   Paper,
+  Select,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -33,7 +30,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Container}
  */
-const AIHealthPrediction = ({}) => {
+const AIHealthPrediction = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -41,22 +38,12 @@ const AIHealthPrediction = ({}) => {
   const [selectedDate, setSelectedDate] = useState();
   const [reportData, setReportData] = useState();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [openSideBar, setOpenSideBar] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
   const chartRef = useRef(null);
   const [chartData, setChartData] = useState([]);
 
-  function openBar() {
-    if (isOpen === true) {
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(true);
-  }
-
-  function fetchReportDates() {
+  const fetchReportDates = useCallback(() => {
     fetch(`${API_BASE}/get-health-data-dates`, {
       method: "GET",
       credentials: "include",
@@ -64,20 +51,18 @@ const AIHealthPrediction = ({}) => {
       .then((response) => response.json())
       .then((data) => {
         setReportDates(data);
+
         if (data.length > 0) {
           setSelectedDate(data[0]);
-          console.log("The selected date is: " + selectedDate);
+          console.log("The selected date is:", data[0]);
         }
       })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+      .catch((err) => console.log(err));
+  }, []);
 
-  // Fetch the users health data ID and Dates
   useEffect(() => {
     fetchReportDates();
-  }, []);
+  }, [fetchReportDates]);
 
   // Fetch report data
   useEffect(() => {
@@ -120,9 +105,9 @@ const AIHealthPrediction = ({}) => {
     fetch(`${API_BASE}/health-analytics`, {
       credentials: "include",
     })
-    .then((r) => r.json())
-    .then(setChartData)
-    .catch(console.error);
+      .then((r) => r.json())
+      .then(setChartData)
+      .catch(console.error);
   }, []);
 
   // Extract and sort month and years for drop down.
@@ -131,8 +116,14 @@ const AIHealthPrediction = ({}) => {
   ].sort((a, b) => a - b);
 
   const months = [
-    ...new Set(reportDates.filter((r) => !selectedYear || new Date(r.date).getFullYear() === selectedYear,)
-    .map((r) => new Date(r.date).getMonth() + 1),),
+    ...new Set(
+      reportDates
+        .filter(
+          (r) =>
+            !selectedYear || new Date(r.date).getFullYear() === selectedYear,
+        )
+        .map((r) => new Date(r.date).getMonth() + 1),
+    ),
   ].sort((a, b) => a - b);
 
   // Filters reports based on selected year and month if any.
@@ -155,15 +146,38 @@ const AIHealthPrediction = ({}) => {
       <Box
         sx={{
           minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           bgcolor: "background.default",
+          ml: "65px",
+          mt: "80px",
         }}
       >
-        <Typography variant="h5" sx={{ color: "text.secondary" }}>
-          No Health Prediction Reports Available
-        </Typography>
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: "background.default",
+            flexDirection: "column",
+          }}
+        >
+          <Typography variant="h5" sx={{ color: "text.secondary" }}>
+            No Health Prediction Reports Available
+          </Typography>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="/generate-report"
+            sx={{
+              width: isMobile ? "100%" : "auto",
+              py: { xs: "0.8rem", sm: "0.6rem" },
+              fontSize: { xs: "1rem", sm: "0.875rem" },
+              fontWeight: 500,
+            }}
+          >
+            Generate Report
+          </Button>
+        </Box>
       </Box>
     );
   } else {
@@ -176,10 +190,20 @@ const AIHealthPrediction = ({}) => {
           mt: "80px",
         }}
       >
-        <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+        <div
+          style={{
+            position: "fixed",
+            top: -9999,
+            left: -9999,
+            pointerEvents: "none",
+            overflow: "hidden",
+            width: 0,
+            height: 0,
+          }}
+        >
           <PDFHealthChart ref={chartRef} healthData={chartData} />
         </div>
-        
+
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography

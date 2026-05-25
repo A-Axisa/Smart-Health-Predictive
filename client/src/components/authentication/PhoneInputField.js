@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { TextField, FormControl, Grid, Box, Autocomplete } from "@mui/material";
+import { Autocomplete, Box, FormControl, TextField } from "@mui/material";
 import {
   getCountries,
-  parsePhoneNumberFromString,
   getCountryCallingCode,
+  parsePhoneNumberFromString,
 } from "libphonenumber-js";
+import { useState } from "react";
 
 /**
  * An input field that provides basic validation for phone numbers and a
@@ -44,20 +44,6 @@ const PhoneInputField = ({ onChange, value }) => {
         dialingCode: getCountryCallingCode(country),
       }))
       .sort((a, b) => a - b);
-  }
-
-  /**
-   * Creates an array containing all unique dialing codes.
-   * @returns Array of possible dialing codes.
-   */
-  function getUniqueDialingCodes() {
-    return Array.from(
-      new Set(
-        getCountries()
-          .map((country) => getCountryCallingCode(country))
-          .sort((a, b) => a - b),
-      ),
-    );
   }
 
   function updateDialingCode(_, value) {
@@ -109,36 +95,37 @@ const PhoneInputField = ({ onChange, value }) => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        <Grid size={7}>
-          <FormControl sx={{ width: "100%" }}>
-            <Autocomplete
-              options={getDialingCodeDropdownOptions()}
-              getOptionLabel={(option) => option.label}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Dialing Code"
-                  error={!isValidDialingCode}
-                />
-              )}
-              onChange={updateDialingCode}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+        gap: 2,
+      }}
+    >
+      <FormControl sx={{ width: "100%" }}>
+        <Autocomplete
+          options={getDialingCodeDropdownOptions()}
+          getOptionLabel={(option) => option.label}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Dialing Code"
+              error={!isValidDialingCode}
             />
-          </FormControl>
-        </Grid>
-        <Grid size={5}>
-          <TextField
-            error={!isValid}
-            id="outlined-input"
-            name="phone"
-            label="Phone"
-            value={value}
-            onChange={updatePhoneNumber}
-            sx={{ width: "100%" }}
-          ></TextField>
-        </Grid>
-      </Grid>
+          )}
+          onChange={updateDialingCode}
+        />
+      </FormControl>
+
+      <TextField
+        error={!isValid}
+        id="outlined-input"
+        name="phone"
+        label="Phone"
+        value={value}
+        onChange={updatePhoneNumber}
+        sx={{ width: "100%" }}
+      />
     </Box>
   );
 };

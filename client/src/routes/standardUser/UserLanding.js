@@ -1,15 +1,14 @@
 import {
+  Box,
   Card,
   CardContent,
-  Box,
   Divider,
   Typography,
-  useTheme,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { useEffect, useState } from "react";
 
 // AppBar height: 56px toolbar + 2px border on mobile (xs), 64px + 2px on desktop (sm+)
 const APPBAR_HEIGHT = { xs: "58px", sm: "66px" };
@@ -21,8 +20,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Box}
  */
-const UserLanding = ({}) => {
-  const navigate = useNavigate();
+const UserLanding = () => {
   const [name, setName] = useState(null);
   const [data, setData] = useState({});
 
@@ -118,7 +116,7 @@ const UserLanding = ({}) => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", md: "row" },
+          flexDirection: isMobile ? "column" : "row",
           gap: 3,
         }}
       >
@@ -137,7 +135,7 @@ const UserLanding = ({}) => {
             sx={{
               display: "flex",
               gap: { xs: 1, sm: 2 },
-              flexDirection: "row",
+              flexDirection: isMobile ? "column" : "row",
             }}
           >
             {["stroke", "diabetes", "cvd"].map((key) => (
@@ -228,7 +226,7 @@ const UserLanding = ({}) => {
               height: { xs: "auto", md: "95%" },
             }}
           >
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ mb: 2 }}>
               Latest Recommendations
             </Typography>
             <Box>
@@ -246,7 +244,10 @@ const UserLanding = ({}) => {
                             : "none",
                       }}
                     >
-                      <Typography variant="h6" sx={{ mb: 1 }}>
+                      <Typography
+                        variant={isMobile ? "h7" : "h6"}
+                        sx={{ mb: 1 }}
+                      >
                         {key.toUpperCase()}
                       </Typography>
                       <Typography sx={{ whiteSpace: "pre-line" }}>

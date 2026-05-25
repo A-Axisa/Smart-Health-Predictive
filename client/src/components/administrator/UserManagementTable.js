@@ -1,18 +1,10 @@
-import {
-  Paper,
-  Box,
-  Snackbar,
-  Alert,
-  Stack,
-  Typography,
-  Divider,
-} from "@mui/material";
+import { Alert, Box, Divider, Paper, Snackbar } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { useState, useEffect, useCallback } from "react";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import ConfirmationDialog from "../dialog/confirmationDialog";
 import UserSearchBar from "./UserSearchBar";
 import UserToolBar from "./UserToolBar";
-import * as React from "react";
 
 /**
  * A table listing all the user accounts in the system with tools to search
@@ -52,15 +44,18 @@ const UserManagementTable = () => {
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const fetchUsers = () => {
+  const fetchUsers = useCallback(() => {
     setLoading(true);
+
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
       limit: paginationModel.pageSize,
     });
+
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
     }
+
     if (selectedClinic) {
       params.append("clinic_id", selectedClinic);
     }
@@ -87,10 +82,6 @@ const UserManagementTable = () => {
         console.log(err);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchUsers();
   }, [
     API_BASE,
     paginationModel.page,
@@ -99,6 +90,10 @@ const UserManagementTable = () => {
     selectedClinic,
     sortModel,
   ]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));

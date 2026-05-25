@@ -1,5 +1,5 @@
-import { Box, Select, Button, MenuItem } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { Box, Button, MenuItem, Select } from "@mui/material";
 
 /**
  * A tool bar to that provides the controls for modifying and filtering user

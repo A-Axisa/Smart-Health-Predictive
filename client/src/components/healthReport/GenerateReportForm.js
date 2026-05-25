@@ -1,23 +1,24 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import {
-  Card,
-  CardHeader,
-  CardContent,
   Box,
-  Typography,
-  TextField,
   Button,
+  Card,
+  CardContent,
+  FormControl,
+  FormHelperText,
   InputLabel,
+  ListItemText,
   MenuItem,
   OutlinedInput,
-  FormControl,
-  ListItemText,
   Select,
-  FormHelperText,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BloodReportUpload from "./BloodReportUpload";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -30,6 +31,8 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const GenerateReportForm = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Options for each drop down input. This can be modified as required to change the input for each selection
   const healthConditions = [
@@ -68,7 +71,6 @@ const GenerateReportForm = () => {
   };
 
   const [condition, setCondition] = useState([]);
-  const [lifeStyle, setLifeStyle] = useState([]);
 
   const [weight, setWeight] = useState(null);
   const [alertWeightRequired, setAlertWeightRequired] = useState(false);
@@ -132,32 +134,6 @@ const GenerateReportForm = () => {
       target: { value },
     } = e;
     setCondition(typeof value === "string" ? value.split(",") : value);
-  }
-
-  function handleChangeLifeStyle(e) {
-    const {
-      target: { value },
-    } = e;
-
-    let newValues = typeof value === "string" ? value.split(",") : value;
-    const lastSelected = newValues[newValues.length - 1];
-
-    // Remove former smoker if the user selects they are a current smoker
-    if (
-      lastSelected === "Current Smoker" &&
-      newValues.includes("Former Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Former Smoker");
-    }
-
-    // Remove current smoker if the user selects they are a former smoker
-    if (
-      lastSelected === "Former Smoker" &&
-      newValues.includes("Current Smoker")
-    ) {
-      newValues = newValues.filter((smoker) => smoker !== "Current Smoker");
-    }
-    setLifeStyle(newValues);
   }
 
   function updateAge(e) {
@@ -282,7 +258,7 @@ const GenerateReportForm = () => {
 
   // Fills in fields with information found in the blood reports.
   async function readBloodReport(e) {
-    if (e.aveBloodGlucose !== NaN) {
+    if (!isNaN(e.aveBloodGlucose)) {
       // Value needs to be in a specific dictionary format to be validated and set.
       updateBloodGlucose({ target: { value: e.aveBloodGlucose.toString() } });
     }
@@ -376,7 +352,7 @@ const GenerateReportForm = () => {
       }}
     >
       <Typography
-        variant="h2"
+        variant={isMobile ? "h4" : "h2"}
         sx={{
           mb: 2,
           mt: 2,
@@ -414,10 +390,11 @@ const GenerateReportForm = () => {
         <Box component="form" onSubmit={handleSubmit}>
           {/* Age & Physique Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Age & Physique
@@ -490,10 +467,11 @@ const GenerateReportForm = () => {
           </Box>
           {/* Fitness Section */}
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Health & Fitness
@@ -586,10 +564,11 @@ const GenerateReportForm = () => {
             />
           </Box>
           <Typography
-            variant="h4"
+            variant={isMobile ? "h5" : "h4"}
             sx={{
               mb: 2,
               mt: 2,
+              textAlign: isMobile ? "center" : "left",
             }}
           >
             Life Style
@@ -718,7 +697,7 @@ const GenerateReportForm = () => {
             </FormControl>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "end" }}>
+          <Box sx={{ display: "flex", justifyContent: "end", mt: 3 }}>
             <Button
               loading={isLoading}
               variant="contained"

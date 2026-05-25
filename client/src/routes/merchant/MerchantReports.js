@@ -1,32 +1,28 @@
-import ReportTemplate from "../../components/healthReport/ReportTemplate";
-import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import {
+  Autocomplete,
   Box,
-  Typography,
+  Button,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
   MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Button,
-  Autocomplete,
-  TextField,
-  Drawer,
-  Stack,
-  useTheme,
-  useMediaQuery,
   Paper,
+  Select,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -36,7 +32,7 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  *
  * @returns {@mui.material.Box}
  */
-const MerchantReports = ({}) => {
+const MerchantReports = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
@@ -56,7 +52,7 @@ const MerchantReports = ({}) => {
   const chartRef = useRef(null);
   const [chartData, setChartData] = useState([]);
 
-  function fetchMerchantReports() {
+  const fetchMerchantReports = useCallback(() => {
     fetch(`${API_BASE}/merchants/reports`, {
       credentials: "include",
     })
@@ -69,9 +65,11 @@ const MerchantReports = ({}) => {
       .then((data) => {
         if (data.length > 0) {
           setReports(data);
+
           // Creates an array of distinct patient names
           let distinctPatientNames = [...new Set(data.map((r) => r.name))];
           setPatients(distinctPatientNames);
+
           setSelectedPatient(defaultSelectedPatientId);
           setSelectedDate(null);
 
@@ -79,6 +77,7 @@ const MerchantReports = ({}) => {
             const selectedReports = data.filter(
               (r) => r.name === defaultSelectedPatientId,
             );
+
             setReportDates(selectedReports);
             setSelectedDate(selectedReports[0]); // Select first report
           }
@@ -86,13 +85,13 @@ const MerchantReports = ({}) => {
       })
       .catch((err) => {
         console.log(err);
-      }, []);
-  }
+      });
+  }, [defaultSelectedPatientId]);
 
   // Fetch the merchant reports
   useEffect(() => {
     fetchMerchantReports();
-  }, []);
+  }, [fetchMerchantReports]);
 
   // Fetch report data
   useEffect(() => {
@@ -141,12 +140,15 @@ const MerchantReports = ({}) => {
     if (!selectedDate) {
       return;
     }
-    fetch(`${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`, {
-      credentials: "include",
-    })
-    .then((r) => r.json())
-    .then(setChartData)
-    .catch(console.error);
+    fetch(
+      `${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`,
+      {
+        credentials: "include",
+      },
+    )
+      .then((r) => r.json())
+      .then(setChartData)
+      .catch(console.error);
   }, [selectedDate]);
 
   // Extract and sort month and years for drop down.
@@ -187,15 +189,7 @@ const MerchantReports = ({}) => {
     setReportDates(selectedReports);
     setSelectedDate(selectedReports[0]);
   }
-  const [isOpen, setIsOpen] = useState(false);
 
-  function openBar() {
-    if (isOpen === true) {
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(true);
-  }
   return (
     <Box
       sx={{
@@ -205,8 +199,18 @@ const MerchantReports = ({}) => {
         mt: "80px",
       }}
     >
-      <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
-          <PDFHealthChart ref={chartRef} healthData={chartData} />
+      <div
+        style={{
+          position: "fixed",
+          top: -9999,
+          left: -9999,
+          pointerEvents: "none",
+          overflow: "hidden",
+          width: 0,
+          height: 0,
+        }}
+      >
+        <PDFHealthChart ref={chartRef} healthData={chartData} />
       </div>
 
       <Box
@@ -321,7 +325,7 @@ const MerchantReports = ({}) => {
                         variant="h7"
                         sx={{
                           fontWeight:
-                            selectedDate.healthDataId === item.healthDataId
+                            selectedDate?.healthDataId === item.healthDataId
                               ? 400
                               : 0,
                         }}

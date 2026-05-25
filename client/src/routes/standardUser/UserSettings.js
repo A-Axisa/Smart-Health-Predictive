@@ -1,27 +1,27 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  TextField,
   Button,
   FormControl,
   InputLabel,
-  Select,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
-  Alert,
+  Select,
   Stack,
-  useTheme,
-  useMediaQuery,
-  Tabs,
   Tab,
+  Tabs,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../utils/UserContext";
 import PhoneInputField from "../../components/authentication/PhoneInputField";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import { UserContext } from "../../utils/UserContext";
 
 /**
  * A page that provides the tools for a user to securely update their
@@ -261,8 +261,8 @@ const UserSettings = () => {
   const AccountDetails = () => (
     <Box>
       <Typography
-        variant="h5"
-        sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
+        variant={isMobile ? "h5" : "h4"}
+        sx={{ mb: 3, textAlign: isMobile ? "center" : "left" }}
       >
         Account Details
       </Typography>
@@ -320,6 +320,7 @@ const UserSettings = () => {
               justifyContent: "space-between",
               gap: 1,
               flexWrap: "wrap",
+              flexDirection: isMobile ? "column" : "row",
             }}
           >
             <Button
@@ -327,17 +328,7 @@ const UserSettings = () => {
               color="error"
               disabled={!isUserLoggedIn || deleteBusy}
               onClick={() => setDeleteDialogOpen(true)}
-              sx={{
-                mt: 0,
-                minWidth: "auto",
-                width: "auto",
-                px: { xs: 1.75, sm: 2.25 },
-                py: { xs: "0.45rem", sm: "0.5rem" },
-                fontSize: { xs: "0.82rem", sm: "0.85rem" },
-                lineHeight: 1.2,
-                borderRadius: 1.5,
-                fontWeight: 600,
-              }}
+              sx={{ width: isMobile ? "100%" : "auto" }}
             >
               {deleteBusy ? "Deleting…" : "Delete Account"}
             </Button>
@@ -371,7 +362,6 @@ const UserSettings = () => {
               width: { xs: "min(260px, 100%)", sm: "auto" },
               py: { xs: "0.7rem", sm: "0.6rem" },
               fontSize: { xs: "0.95rem", sm: "0.875rem" },
-              fontWeight: 500,
             }}
           >
             {accountSaving ? "Saving…" : "Save Changes"}
@@ -404,8 +394,8 @@ const UserSettings = () => {
   const Profile = () => (
     <Box>
       <Typography
-        variant="h5"
-        sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
+        variant={isMobile ? "h5" : "h4"}
+        sx={{ mb: 3, textAlign: isMobile ? "center" : "left" }}
       >
         Profile Settings
       </Typography>
@@ -419,15 +409,6 @@ const UserSettings = () => {
           {saveError}
         </Alert>
       )}
-
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6">
-          {user?.given_names || ""} {user?.family_name || ""}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {user?.email || ""}
-        </Typography>
-      </Box>
 
       <Box
         sx={{
@@ -523,8 +504,8 @@ const UserSettings = () => {
     return (
       <Box>
         <Typography
-          variant="h5"
-          sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
+          variant={isMobile ? "h5" : "h4"}
+          sx={{ mb: 3, textAlign: isMobile ? "center" : "left" }}
         >
           Change Password
         </Typography>

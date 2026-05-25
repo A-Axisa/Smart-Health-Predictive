@@ -1,20 +1,17 @@
-import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
-import { useContext, useState } from "react";
 import {
   Alert,
-  Box,
   Button,
-  Container,
   Card,
   CardContent,
   Divider,
-  Link,
   Stack,
   Typography,
 } from "@mui/material";
+import { useContext, useState } from "react";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { UserContext } from "../../utils/UserContext";
 import EmailInputField from "../authentication/EmailInputField";
 import PasswordInputField from "../authentication/PasswordInputField";
-import { UserContext } from "../../utils/UserContext";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 

@@ -1,15 +1,11 @@
 import {
   Box,
-  Card,
-  CardContent,
   Container,
   Divider,
   Grid,
   Stack,
   Typography,
 } from "@mui/material";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { useEffect, useState } from "react";
 import ActiveMerchantsAnalytics from "../../components/administrator/analytics/ActiveMerchantsAnalytics";
 import ActiveUsersAnalytics from "../../components/administrator/analytics/ActiveUsersAnalytics";
 import AverageRiskSeriesAnalytics from "../../components/administrator/analytics/AverageRiskSeriesAnalytics";
@@ -18,8 +14,6 @@ import PendingMerchantsAnalytics from "../../components/administrator/analytics/
 import RecentReportsGeneratedAnalytics from "../../components/administrator/analytics/RecentReportsGeneratedAnalytics";
 import UnvalidatedAccountAnalytics from "../../components/administrator/analytics/UnvalidatedAccountAnalytics";
 import UserAccountAnalytics from "../../components/administrator/analytics/UserAccountAnalytics";
-
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
  * A route that displays a collection of metrics describing the current
