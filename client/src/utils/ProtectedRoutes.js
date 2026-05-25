@@ -1,9 +1,18 @@
-import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import NavBar from "../components/Navbar";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * Only grants access to components nested within to user's with the
+ * specified role. If the user is not logged when attempting to navigate to
+ * a protected route, they will be redirected once they log in.
+ *
+ * @param {Object} props
+ * @param {string} [props.role] - The role of a user
+ * @returns { empty | react-router-dom.Navigate}
+ */
 const ProtectedRoutes = ({ role }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -9,6 +9,7 @@ from fastapi_camelcase import CamelModel
 from sqlalchemy.orm import Session
 from html_sanitizer import Sanitizer
 import re
+from sqlalchemy import func
 
 from ..utils.database import get_db
 from ..utils.audit_log import write_audit_log
@@ -134,6 +135,7 @@ class PatientAcceptDetails(BaseModel):
 
 
 def _to_float(val) -> float:
+    """Safely convert a value to float, returning 0.0 on failure."""
     if isinstance(val, Decimal):
         return float(val)
     try:
@@ -146,6 +148,7 @@ router = APIRouter()
 
 
 def _validated_name(value: Optional[str], field_name: str) -> Optional[str]:
+    """Sanitise and validate a name field; raises 422 if longer than 255 chars."""
     if value is None:
         return None
     sanitizer = Sanitizer()
@@ -159,6 +162,7 @@ def _validated_name(value: Optional[str], field_name: str) -> Optional[str]:
 
 
 def _to_nullable_float(value: Optional[float], field_name: str, min_v: float, max_v: float) -> Optional[float]:
+    """Validate and return a nullable float within [min_v, max_v]; raises 422 if out of range."""
     if value is None:
         return None
     if value < min_v or value > max_v:
@@ -175,7 +179,20 @@ async def update_current_user_profile(
     request: Request,
     db_conn: Session = Depends(get_db),
 ):
-    """Updates a user's account information"""
+    """
+    Update the authenticated user's account-level profile fields.
+
+    Currently supports updating the ``phone_number`` field. The phone is
+    formatted and validated before persisting.
+
+    :param payload: Object containing the fields to update (only ``phone_number`` supported).
+    :param request: The HTTP request (for audit-logging client metadata).
+    :param db_conn: Database session.
+    :return: A dict with a success message and the updated fields.
+    :raises HTTPException 404: If the user is not found.
+    :raises HTTPException 400: If no fields are provided for update.
+    :raises HTTPException 422: If the phone number is invalid.
+    """
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
@@ -219,7 +236,21 @@ async def update_current_patient_profile(
     request: Request,
     db_conn: Session = Depends(get_db),
 ):
-    """Update a user's patient information"""
+    """
+    Update the authenticated user's patient profile fields.
+
+    Supports updating ``given_names``, ``family_name``, ``gender``, ``weight``,
+    ``height``, and ``date_of_birth``. Creates a patient record if one does
+    not already exist.
+
+    :param payload: Object containing the fields to update.
+    :param request: The HTTP request (for audit-logging client metadata).
+    :param db_conn: Database session.
+    :return: A dict with a success message and the updated fields.
+    :raises HTTPException 404: If the user is not found.
+    :raises HTTPException 400: If no fields are provided for update.
+    :raises HTTPException 422: If any field fails validation.
+    """
     current_user = get_current_user(request, db_conn)
     user = get_user(current_user["email"], db_conn)
     if user is None:
@@ -300,7 +331,17 @@ async def update_current_patient_profile(
 
 def _delete_user_data(user_id: int, db_conn: Session):
     """
-    Deletes a user and all their associated data, returning a report of the deletion.
+    Delete a user and all associated data (cascading), returning a deletion report.
+
+    Removes patient access links, recommendations, predictions, health data,
+    validation tokens, and role mappings in the correct order to avoid
+    foreign-key violations. Rolls back on failure.
+
+    :param user_id: The ``UserID`` of the account to delete.
+    :param db_conn: Database session.
+    :return: A dict with counts of deleted records per table.
+    :raises HTTPException 404: If the user is not found.
+    :raises HTTPException 500: If the deletion fails.
     """
     deletion_report = {}
 
@@ -367,7 +408,18 @@ def _delete_user_data(user_id: int, db_conn: Session):
 
 @router.delete("/users/")
 async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
-    """Delete a users account and their related data"""
+    """
+    Delete the authenticated user's account and all associated data.
+
+    Cascades to remove patient access links, health data, predictions,
+    recommendations, validation tokens, and role mappings.
+
+    :param request: The HTTP request (for current-user extraction and audit logging).
+    :param db_conn: Database session.
+    :return: A dict with a success message.
+    :raises HTTPException 401: If credentials are invalid.
+    :raises HTTPException 404: If the user is not found.
+    """
     # Current request user
     current = get_current_user(request, db_conn)
     request_user_email = current.get(
@@ -402,16 +454,34 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
 async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),
+    health_data_id: Optional[int] = None,
 ):
-    """
-    Returns time-series health risk probabilities for the current user
-    using historical predictions stored in the database.
-    """
+    """Return time-series health risk probabilities from the current user's historical predictions."""
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
-    if not patient:
-        return []
-    patient_id = patient.PatientID
+
+    if not health_data_id:
+        if not patient:
+            return []
+        patient_id = patient.PatientID
+
+    else:
+        # Retrieve patientID from selected health report.
+        health_data = db_conn.query(HealthData).filter(HealthData.HealthDataID == health_data_id).first()
+        if not health_data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health data not found.")
+        
+        patient_id = health_data.PatientID
+
+        # Verify Merchant has access to patient.
+        merchant = db_conn.query(UserAccount).filter_by(Email=user_email["email"]).first()
+        merchant_access = (db_conn.query(UserPatientAccess)
+                        .filter(UserPatientAccess.UserID == merchant.UserID, UserPatientAccess.PatientID == patient_id)
+                        .first())
+                        
+        if not merchant_access:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
@@ -458,7 +528,15 @@ async def get_health_analytics(
 
 @router.get("/report-data/{healthDataId}")
 async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
-    """Return data for a report"""
+    """
+    Return a full health report (metrics, predictions, recommendations) by health-data ID.
+
+    :param healthDataId: The primary key of the ``HealthData`` record.
+    :param db_conn: Database session.
+    :return: A ``Report`` object containing patient info, vitals, risk probabilities,
+             and AI recommendations.
+    :raises HTTPException 404: If the health data is not found.
+    """
     validID = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
     if not validID:
@@ -525,7 +603,18 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
 
 @router.delete("/report-data/{healthDataId}")
 async def delete_report_data(healthDataId: int, db_conn: Session = Depends(get_db)):
-    """Deletes data from a generated report"""
+    """
+    Delete a health report and its associated predictions and recommendations.
+
+    Removes the recommendation and prediction records first to avoid foreign-key
+    violations, then deletes the health-data row itself.
+
+    :param healthDataId: The primary key of the ``HealthData`` record to delete.
+    :param db_conn: Database session.
+    :return: A dict with a success message.
+    :raises HTTPException 404: If the health data is not found.
+    :raises HTTPException 500: If the database deletion fails.
+    """
    # Raise exception if health data is not in the DB
     health_data = db_conn.query(HealthData).filter_by(
         HealthDataID=healthDataId).first()
@@ -643,7 +732,19 @@ async def get_clinic_names(request: Request, db_conn: Session = Depends(get_db))
 
 @router.post("/create-patient/")
 async def create_patient(patient: PatientCreationDetails, request: Request, db_conn: Session = Depends(get_db),):
-    """Creates a new patient record and creates a relationship between the merchant and patient"""
+    """
+    Create a new patient record and link it to the requesting merchant.
+
+    Sanitises name inputs, checks for duplicate patients by name + DOB + gender,
+    then creates the patient and grants the merchant access.
+
+    :param patient: Patient creation details (names, DOB, gender, weight, height).
+    :param request: The HTTP request (for current-merchant extraction).
+    :param db_conn: Database session.
+    :return: A dict with a success message and the new ``patient_id``.
+    :raises HTTPException 422: If any input field fails validation.
+    :raises HTTPException 409: If a matching patient already exists.
+    """
     # Check if the requesting user is a merchant.
     merchant = get_current_merchant(request, db_conn)
 
@@ -657,10 +758,30 @@ async def create_patient(patient: PatientCreationDetails, request: Request, db_c
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    # Sanitize name input and remove whitespace
+    sanitizer = Sanitizer()
+    sanitized_given_names = sanitizer.sanitize(patient.given_names).strip()
+    sanitized_family_name = sanitizer.sanitize(patient.family_name).strip()
+
+    # Check if the patient already exists
+    existing_patient = db_conn.query(Patient).filter(
+        func.lower(Patient.GivenNames) == sanitized_given_names.lower(),
+        func.lower(Patient.FamilyName) == sanitized_family_name.lower(),
+        Patient.DateOfBirth == patient.date_of_birth,
+        Patient.Gender == gender_map[patient.gender]
+    ).first()
+
+    if existing_patient:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Patient already exists."
+        )
+
     # Create new patient
     new_patient = Patient(user_id=None,
-                          given_names=patient.given_names,
-                          family_name=patient.family_name, gender=gender_map[patient.gender],
+                          given_names=sanitized_given_names,
+                          family_name=sanitized_family_name,
+                          gender=gender_map[patient.gender],
                           date_of_birth=patient.date_of_birth,
                           weight=patient.weight,
                           height=patient.height)
@@ -746,7 +867,15 @@ async def associated_patients(request: Request, given_names: str = None, family_
 
 
 def get_current_merchant(request: Request, db_conn):
-    """Check if the current user is a merchant"""
+    """
+    Verify the requesting user is a merchant and return their ``UserAccount``.
+
+    :param request: The HTTP request (for cookie-based user extraction).
+    :param db_conn: Database session.
+    :return: The ``UserAccount`` object of the merchant.
+    :raises HTTPException 404: If the user is not found.
+    :raises HTTPException 403: If the user's role is not ``merchant``.
+    """
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
@@ -776,7 +905,18 @@ def get_merchant_patients(merchantID: int, db_conn):
 
 @router.get("/dashboard", response_model=Dashboard)
 async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
-    """Returns a user's dashboard information"""
+    """
+    Return the authenticated user's dashboard with latest risks, trends, and recommendations.
+
+    Fetches the last 5 predictions and calculates risk deltas, days since last
+    report, and the most recent AI-generated recommendations.
+
+    :param request: The HTTP request (for current-user extraction).
+    :param db_conn: Database session.
+    :return: A ``Dashboard`` object containing ``days``, ``risks``, ``diff``,
+             and ``recommendations``.
+    :raises HTTPException 404: If the patient record is not found.
+    """
     user = get_current_user(request, db_conn)
     patient = get_patient_by_email(user["email"], db_conn)
 
@@ -861,6 +1001,17 @@ async def get_dashboard(request: Request, db_conn: Session = Depends(get_db)):
 
 @router.get("/merchant-dashboard", response_model=MerchantDashboard)
 async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(get_db)):
+    """
+    Return the merchant dashboard with patient/report stats and risk distributions.
+
+    Aggregates data across all patients linked to the merchant: total and
+    inactive patient counts, report volumes, per-disease risk distribution
+    (high / moderate / low), and recent report activity.
+
+    :param request: The HTTP request (for current-merchant extraction).
+    :param db_conn: Database session.
+    :return: A ``MerchantDashboard`` object with aggregated analytics.
+    """
 
     merchant = get_current_merchant(request, db_conn)
     merchant_id = merchant.UserID
@@ -975,9 +1126,7 @@ async def get_merchant_dashboard(request: Request, db_conn: Session = Depends(ge
 
 @router.get("/patient-data")
 async def get_patient_data(request: Request, db_conn: Session = Depends(get_db)):
-    """
-    Retrieves a user's patient data required for report form inputs.
-    """
+    """Return the authenticated user's patient data for report form inputs."""
 
     # Get current user details.
     user = get_current_user(request, db_conn)
@@ -991,7 +1140,10 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
         "weight": float(patient.Weight) if patient.Weight else None,
         "height": float(patient.Height) if patient.Height else None,
         "gender": get_gender(patient.Gender),
-        "age": get_age(patient.DateOfBirth)
+        "age": get_age(patient.DateOfBirth),
+        "maritalStatus": patient.get_marital_status(),
+        "workingStatus": patient.get_working_status(),
+        "race": patient.get_race()
     }
 
     return result
@@ -999,9 +1151,7 @@ async def get_patient_data(request: Request, db_conn: Session = Depends(get_db))
 
 @router.get("/merchant/patient-data/{patient_id}")
 async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: Session = Depends(get_db)):
-    """
-    Allows merchant to retrieve a user's patient data required for report form inputs.
-    """
+    """Return a patient's data for merchant report form inputs."""
 
     # Check if the requesting user is a merchant.
     current_user = get_current_user(request, db_conn)
@@ -1029,7 +1179,10 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         "weight": float(patient.Weight) if patient.Weight else None,
         "height": float(patient.Height) if patient.Height else None,
         "gender": get_gender(patient.Gender),
-        "age": get_age(patient.DateOfBirth)
+        "age": get_age(patient.DateOfBirth),
+        "maritalStatus": patient.get_marital_status(),
+        "workingStatus": patient.get_working_status(),
+        "race": patient.get_race()
     }
 
     return result
@@ -1137,7 +1290,21 @@ async def get_dashboard(patient_id: str, request: Request, db_conn: Session = De
 
 @router.post('/patient-request')
 def patient_request(patient_request: PatientRequest, request: Request, db_conn: Session = Depends(get_db)):
-    """Generates a patient request token for a given patient email."""
+    """
+    Generate a time-limited access token and email a patient access request.
+
+    The merchant can request access to a patient's records via email. A
+    7-day token is created and emailed to the patient for approval.
+    Only one active token is allowed per merchant-patient pair.
+
+    :param patient_request: Object containing the patient's email address.
+    :param request: The HTTP request (for current-merchant extraction).
+    :param db_conn: Database session.
+    :return: A dict with a success message.
+    :raises HTTPException 422: If the email is invalid.
+    :raises HTTPException 404: If no patient is found for the email.
+    :raises HTTPException 409: If the merchant already has access to the patient.
+    """
 
     # Check the current user is a merchant
     merchant = get_current_merchant(request, db_conn)
@@ -1199,7 +1366,20 @@ def patient_request(patient_request: PatientRequest, request: Request, db_conn: 
 
 @router.post('/patient-accept-request')
 def patient_accept_request(patient_accept_details: PatientAcceptDetails, request: Request, db_conn: Session = Depends(get_db)):
-    """Allows a patient to accept a request to be added to a merchant account"""
+    """
+    Verify a patient-access token and grant the merchant access to the patient's records.
+
+    The authenticated standard user must match the patient the request was
+    created for. On success, the token is consumed and a ``UserPatientAccess``
+    row is created.
+
+    :param patient_accept_details: Object containing the signed access token.
+    :param request: The HTTP request (for current-user extraction).
+    :param db_conn: Database session.
+    :return: A dict with a success message.
+    :raises HTTPException 403: If the user is not a standard user or doesn't match the patient.
+    :raises HTTPException 404: If the token is invalid, expired, or the patient is not found.
+    """
 
     # Get current user's details
     current_user = get_current_user(request, db_conn)
@@ -1244,7 +1424,18 @@ def patient_accept_request(patient_accept_details: PatientAcceptDetails, request
 
 
 def send_patient_request_email(email: str, patient: Patient, clinic: str, request: Request, token: str):
-    """Helper function to send a patient request email."""
+    """
+    Send an email to a patient requesting permission for a merchant to access their records.
+
+    All dynamic content (token, name, clinic) is sanitised before embedding
+    in the HTML email body.
+
+    :param email: The recipient patient's email address.
+    :param patient: The patient's profile (for personalisation).
+    :param clinic: The requesting clinic's name.
+    :param request: The HTTP request (for client-context logging; unused in body).
+    :param token: The unsigned access-request token to embed in the link.
+    """
     sanitizer = Sanitizer()
     sanitized_token = sanitizer.sanitize(token)
     given_names = sanitizer.sanitize(patient.GivenNames)

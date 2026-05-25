@@ -1,50 +1,55 @@
+import {
+  Backdrop,
+  Drawer,
+  IconButton,
+  List,
+  ListItemButton,
+  Tooltip,
+} from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import { useNavigate, useLocation } from "react-router-dom";
-import MenuItem from "@mui/material/MenuItem";
 import { useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/WellAiLogoTR.png";
-import {
-  Drawer,
-  List,
-  ListItemButton,
-  IconButton,
-  Tooltip,
-  ClickAwayListener,
-  Backdrop,
-} from "@mui/material";
 import { UserContext } from "../utils/UserContext";
-import PrivacyNotice from "./PrivacyNotice";
-import DisclaimerPolicy from "./DisclaimerPolicy";
+import DisclaimerPolicy from "./dialog/DisclaimerPolicy";
+import PrivacyNotice from "./dialog/PrivacyNotice";
 
 // Icons
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import RestorePageIcon from "@mui/icons-material/RestorePage";
-import TimelineIcon from "@mui/icons-material/Timeline";
-import HistoryIcon from "@mui/icons-material/History";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import GroupIcon from "@mui/icons-material/Group";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
+import GroupIcon from "@mui/icons-material/Group";
+import HistoryIcon from "@mui/icons-material/History";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import LogoutIcon from "@mui/icons-material/Logout";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import RestorePageIcon from "@mui/icons-material/RestorePage";
+import SettingsIcon from "@mui/icons-material/Settings";
+import TimelineIcon from "@mui/icons-material/Timeline";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A navigation bar located on the side of the page that allows quick navigation
+ * of the service. Different tabs will be displayed based on the current
+ * user's role and provide access to the appropriate pages.
+ * The service's disclaimer policy and privacy notice are also located at the bottom.
+ *
+ * @param {Object} props
+ * @param {string} [props.role] - Renders different tabs based on a user's role.
+ * @returns {<>}
+ */
 const NavBar = ({ role }) => {
   // Maps each route to the corrosponding page title.
   const routePageMap = {
     // User Pages
     "/user-landing": "Dashboard",
     "/generate-report": "Generate Report",
-    "/ai-health-prediction": "Report History",
+    "/report-history": "Report History",
     "/health-analytics": "Health Analytics",
     "/user-settings": "Settings",
 
@@ -105,9 +110,6 @@ const NavBar = ({ role }) => {
     { icon: <LogoutIcon sx={{ color: "#ff4f4f" }} />, title: "Logout" },
   ];
 
-  // Check if settings menu is open
-  const [openMenu, setOpenMenu] = useState(null);
-
   // User Logout
   async function logout() {
     await fetch(`${API_BASE}/logout`, {
@@ -159,11 +161,9 @@ const NavBar = ({ role }) => {
       navigate("/health-analytics");
     }
     if (page === "Settings") {
-      handleCloseSettings();
       navigate("/user-settings");
     }
     if (page === "Logout") {
-      handleCloseSettings();
       logout();
     }
     if (page === "Users") {
@@ -184,15 +184,6 @@ const NavBar = ({ role }) => {
     if (page === "Patient Management") {
       navigate("/patient-management");
     }
-  }
-
-  function handleOpenSettings(e) {
-    setOpenMenu(e.currentTarget);
-    console.log(openMenu);
-  }
-
-  function handleCloseSettings() {
-    setOpenMenu(null);
   }
 
   // Navigation Bar for standard user type

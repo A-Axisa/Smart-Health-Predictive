@@ -1,19 +1,14 @@
-import {
-  Card,
-  CardContent,
-  Container,
-  Divider,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Card, CardContent, Grid, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays general account information in the system.
+ * A card that displays general information about the users in the system.
+ * This includes the total number of accounts, how they are distributed
+ * between standard and merchant accounts, and the total number of patients.
+ *
+ * @returns {@mui.material.Card}
  */
 const UserAccountAnalytics = () => {
   const [data, setData] = useState({});

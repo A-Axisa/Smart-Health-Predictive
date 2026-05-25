@@ -1,19 +1,13 @@
-import {
-  Card,
-  CardContent,
-  Container,
-  Divider,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { useEffect, useState } from "react";
 import ErrorIcon from "@mui/icons-material/Error";
+import { Card, CardContent, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays the amount of merchants awaiting approval from a moderator.
+ * A card that displays the amount of merchants awaiting approval from a moderator.
+ *
+ * @returns {@mui.material.Card}
  */
 const PendingMerchantsAnalytics = () => {
   const [data, setData] = useState({});

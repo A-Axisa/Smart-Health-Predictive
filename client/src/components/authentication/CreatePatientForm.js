@@ -1,28 +1,33 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Container,
-  Paper,
-  Stack,
-  TextField,
-  Button,
   Alert,
+  Button,
+  Container,
   Dialog,
-  DialogTitle,
   DialogActions,
+  DialogTitle,
   Divider,
+  FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
-  FormControl,
+  Paper,
   Select,
-  FormHelperText,
+  Stack,
+  TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const FULL_NAME_MAX_LENGTH = 255;
-
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A form that contains all the necessary fields and functionality
+ * for the creation of a new patient.
+ *
+ * @returns {@mui.material.Paper}
+ */
 const CreatePatientForm = () => {
   const navigate = useNavigate();
   const [givenNames, setGivenNames] = useState(null);
@@ -168,15 +173,15 @@ const CreatePatientForm = () => {
       .then((response) => {
         if (!response.ok) {
           setShowFailMessage(true);
+          setShowSuccessMessage(false);
+          return;
         }
-        return response.json();
-      })
-      .then((data) => {
         setShowSuccessMessage(true);
         setShowFailMessage(false);
+        return response.json();
       })
       .catch((err) => {
-        console.log("An error has occurred");
+        console.error("An error has occurred.");
       });
     setIsLoading(false);
   }
@@ -205,7 +210,8 @@ const CreatePatientForm = () => {
           <Stack spacing={1} sx={{ textAlign: "center" }}>
             <Typography variant="h4">Create Patient</Typography>
             <Typography variant="body2" color="text.secondary">
-              Register a patient profile to enable adding health records for them.
+              Register a patient profile to enable adding health records for
+              them.
             </Typography>
           </Stack>
 

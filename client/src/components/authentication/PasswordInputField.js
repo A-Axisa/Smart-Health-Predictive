@@ -10,6 +10,7 @@ import { TextField } from "@mui/material";
  *   outside the suitable length.
  * @param {boolean} [props.truncate] - Truncate the password in the onChange callback.
  * @param {boolean} [props.showRequired] - Force the component to show the error state.
+ * @returns {@mui.material.TextField}
  */
 const PasswordInputField = ({
   onChange,
@@ -94,7 +95,7 @@ const PasswordInputField = ({
     if (!isAltered && !showRequired) {
       return null;
     }
-    if (password.length === 0 || password === null || showRequired) {
+    if (!password || showRequired) {
       return "*Required";
     }
 

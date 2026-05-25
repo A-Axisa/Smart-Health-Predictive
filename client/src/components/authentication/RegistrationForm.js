@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {
   Alert,
   Box,
@@ -7,9 +7,9 @@ import {
   Card,
   CardContent,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
-  DialogActions,
   Divider,
   FormControl,
   FormHelperText,
@@ -20,12 +20,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import PasswordInputField from "../authentication/PasswordInputField";
-import EmailInputField from "../authentication/EmailInputField";
-import PhoneInputField from "../authentication/PhoneInputField";
+import { useEffect, useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/WellAiLogoTR.png";
+import EmailInputField from "../authentication/EmailInputField";
+import PasswordInputField from "../authentication/PasswordInputField";
+import PhoneInputField from "../authentication/PhoneInputField";
+import { stringEqual } from "../../utils/stringEqual";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({
@@ -35,6 +36,12 @@ const ACCOUNT_TYPES = Object.freeze({
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * A form that can be filled out by a user to create an account with the
+ * service.
+ *
+ * @returns {@mui.material.Card}
+ */
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const [givenNameState, setGivenNameState] = useState(null);
@@ -71,7 +78,7 @@ const RegistrationForm = () => {
     })
       .then((res) => res.json())
       .then((data) => setClinicList(data))
-      .catch((err) => console.log("An error has occurred"));
+      .catch((err) => console.error("An error has occurred."));
   }, []);
 
   function updateGivenName(e) {
@@ -128,7 +135,7 @@ const RegistrationForm = () => {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
     setAlertPasswordsDontMatch(
-      confirmPasswordInput !== passwordState.password ||
+      !stringEqual(confirmPasswordInput, passwordState.password) ||
         confirmPasswordInput === "",
     );
   }
@@ -176,7 +183,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertGenderRequired(genderState === "");
@@ -188,7 +195,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertClinicRequired(clinicState === "");
@@ -208,7 +215,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword
+      stringEqual(passwordState.password, confirmPassword)
     );
   }
 
@@ -219,7 +226,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword &&
+      stringEqual(passwordState.password, confirmPassword) &&
       clinicState !== ""
     );
   }
@@ -275,7 +282,7 @@ const RegistrationForm = () => {
         setShowFailMessage(false);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("User reigstration requeset failed.");
       });
     setIsLoading(false);
   }

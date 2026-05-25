@@ -1,11 +1,18 @@
-import { Paper, Box, Snackbar, Alert, Stack, Typography, Divider } from "@mui/material";
+import { Alert, Box, Divider, Paper, Snackbar } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { useState, useEffect, useCallback } from "react";
-import ConfirmationDialog from "../confirmationDialog";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
+import ConfirmationDialog from "../dialog/confirmationDialog";
 import UserSearchBar from "./UserSearchBar";
 import UserToolBar from "./UserToolBar";
-import * as React from "react";
 
+/**
+ * A table listing all the user accounts in the system with tools to search
+ * and filter through them. It details the account's email, full name,
+ * creation date, validation status, and role.
+ *
+ * @returns {@mui.material.Box}
+ */
 const UserManagementTable = () => {
   const [userData, setUserData] = useState([]); // Stores user data
   const [totalUsers, setTotalUsers] = useState(0);
@@ -37,19 +44,22 @@ const UserManagementTable = () => {
 
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const fetchUsers = () => {
+  const fetchUsers = useCallback(() => {
     setLoading(true);
+
     const params = new URLSearchParams({
       skip: paginationModel.page * paginationModel.pageSize,
       limit: paginationModel.pageSize,
     });
+
     if (debouncedSearchQuery) {
       params.append("search", debouncedSearchQuery);
     }
+
     if (selectedClinic) {
       params.append("clinic_id", selectedClinic);
     }
-      
+
     // Append sort params when sort is active
     if (sortModel.length > 0) {
       params.append("sort_by", sortModel[0].field);
@@ -69,13 +79,9 @@ const UserManagementTable = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch user data.");
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchUsers();
   }, [
     API_BASE,
     paginationModel.page,
@@ -84,6 +90,10 @@ const UserManagementTable = () => {
     selectedClinic,
     sortModel,
   ]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
@@ -99,11 +109,11 @@ const UserManagementTable = () => {
       })
       .then((data) => setRoleData(data))
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch role data.");
       });
   }, [API_BASE]);
 
-    useEffect(() => {
+  useEffect(() => {
     fetch(`${API_BASE}/clinics`)
       .then((response) => {
         if (!response.ok) {
@@ -113,10 +123,9 @@ const UserManagementTable = () => {
       })
       .then((data) => setClinicData(data))
       .catch(() => {
-        console.log("Failed to fetch Clinics");
+        console.error("Failed to fetch clinic data.");
       });
   }, [API_BASE]);
-
 
   const confirmRoleChange = async (e) => {
     e.preventDefault();
@@ -130,6 +139,7 @@ const UserManagementTable = () => {
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
+              credentials: "include",
             },
           );
           if (!response.ok) throw new Error(response.status);
@@ -155,7 +165,7 @@ const UserManagementTable = () => {
       setNewRole(null);
       setRowSelectionModel({ type: "include", ids: new Set() });
     } catch (err) {
-      console.log(err);
+      console.error("Failed to process request.");
     }
   };
 
@@ -189,7 +199,7 @@ const UserManagementTable = () => {
       setUserToDelete(null);
       setRowSelectionModel({ type: "include", ids: new Set() }); // Reset the checkbox after deletion.
     } catch (error) {
-      console.error("Delete user error:", error);
+      console.error("Failed to delete user.");
       setSnackbar({ open: true, message: error.message, severity: "error" });
     }
   };
@@ -228,11 +238,42 @@ const UserManagementTable = () => {
   }, []);
 
   const columns = [
-    { field: "email", headerName: "Email", flex: 2, width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", flex: 1.5, width: 250, sortable: false },
-    { field: "createdAt", headerName: "Created At", flex: 1.2, width: 200, sortable: true },
-    { field: "validated", headerName: "Validation Status", flex: 1, width: 150, sortable: true },
-    { field: "role", headerName: "Role", flex: 1.3, width: 220, sortable: false, valueGetter: (params) => params?.name },
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 2,
+      width: 250,
+      sortable: true,
+    },
+    {
+      field: "fullName",
+      headerName: "Full Name",
+      flex: 1.5,
+      width: 250,
+      sortable: false,
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      flex: 1.2,
+      width: 200,
+      sortable: true,
+    },
+    {
+      field: "validated",
+      headerName: "Validation Status",
+      flex: 1,
+      width: 150,
+      sortable: true,
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      flex: 1.3,
+      width: 220,
+      sortable: false,
+      valueGetter: (params) => params?.name,
+    },
   ];
 
   return (
@@ -246,11 +287,12 @@ const UserManagementTable = () => {
       }}
     >
       <Box>
-        <Paper sx={{
-          mb: "16px",
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: { md: "center" },
+        <Paper
+          sx={{
+            mb: "16px",
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { md: "center" },
           }}
         >
           <UserSearchBar
@@ -259,29 +301,30 @@ const UserManagementTable = () => {
             delay={400}
           />
           <Divider
-          orientation="vertical"
-          flexItem sx={{
-            display: { xs: "none", md: "block" },
-            }} 
+            orientation="vertical"
+            flexItem
+            sx={{
+              display: { xs: "none", md: "block" },
+            }}
           />
           <Divider
             sx={{
               display: { xs: "block", md: "none" },
             }}
           />
-            <UserToolBar
-              rowSelectionModel={rowSelectionModel}
-              totalRowCount={totalUsers}
-              onUsersDelete={handleUsersDelete}
-              onUsersRoleChange={handleUsersRoleChange}
-              onClinicChange={handleClinicChange}
-              roleData={roleData}
-              clinicData={clinicData}
-              selectedClinic={selectedClinic}
-            />
+          <UserToolBar
+            rowSelectionModel={rowSelectionModel}
+            totalRowCount={totalUsers}
+            onUsersDelete={handleUsersDelete}
+            onUsersRoleChange={handleUsersRoleChange}
+            onClinicChange={handleClinicChange}
+            roleData={roleData}
+            clinicData={clinicData}
+            selectedClinic={selectedClinic}
+          />
         </Paper>
         <Paper sx={{ width: "100%", overflow: "hidden" }}>
-          <Box sx={{ width: "100%", overflowX: "auto"}}>
+          <Box sx={{ width: "100%", overflowX: "auto" }}>
             <DataGrid
               loading={loading}
               onRowSelectionModelChange={(newSelection) =>

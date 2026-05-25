@@ -1,8 +1,13 @@
-import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
+/**
+ * Reroutes a user to the landing page that corresponds to their role.
+ *
+ * @returns {react-router-dom.Navigate}
+ */
 const LandingRoute = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

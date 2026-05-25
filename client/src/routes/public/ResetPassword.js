@@ -1,0 +1,31 @@
+import { Container } from "@mui/material";
+import ResetPasswordForm from "../../components/authentication/ResetPasswordForm";
+
+/**
+ * A page that displays the form to reset a user's password using a one-time
+ * password reset token.
+ *
+ * @return {@mui.material.Container}
+ */
+const ResetPassword = () => {
+  return (
+    <Container
+      variant="gradient"
+      maxWidth={false}
+      sx={{
+        width: "100vw",
+        minHeight: "100vh",
+        padding: "0",
+        margin: "0",
+        display: "flex",
+        alignItems: { xs: "flex-start", sm: "center" },
+        justifyContent: "center",
+        flexGrow: 1,
+      }}
+    >
+      <ResetPasswordForm />
+    </Container>
+  );
+};
+
+export default ResetPassword;

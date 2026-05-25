@@ -1,26 +1,25 @@
-import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
-import { useContext, useState } from "react";
 import {
   Alert,
-  Box,
   Button,
-  Container,
   Card,
   CardContent,
   Divider,
-  Link,
   Stack,
   Typography,
 } from "@mui/material";
+import { useContext, useState } from "react";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { UserContext } from "../../utils/UserContext";
 import EmailInputField from "../authentication/EmailInputField";
 import PasswordInputField from "../authentication/PasswordInputField";
-import { UserContext } from "../../utils/UserContext";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides the user a form with the required fields and buttons to login to
- * the application.
+ * A form that can be filled in with a user's account credentials to login
+ * to the service.
+ *
+ * @returns {@mui.material.Card}
  */
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -120,7 +119,6 @@ const LoginForm = () => {
           xl: "600px",
         },
         minHeight: "auto",
-        maxHeight: "400px",
         boxShadow: { xs: "none", sm: 16 },
       }}
     >

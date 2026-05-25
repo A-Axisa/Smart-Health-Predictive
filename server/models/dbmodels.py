@@ -2,6 +2,40 @@ from sqlalchemy import Column, Integer, String, DateTime, text, Boolean, Numeric
 from sqlalchemy.orm import declarative_base, relationship
 import enum
 
+MARITAL_STATUS_OPTIONS = {
+    0: 'Single',
+    1: 'Married',
+    2: 'Widow',
+    3: 'Divorced'
+}
+
+WORKING_STATUS_OPTIONS = {
+    0: 'Unemployed',
+    1: 'Homemaker',
+    2: 'Student',
+    3: 'Working',
+    4: 'Retired',
+}
+
+RACE_OPTIONS = {
+    0: 'Malay',
+    1: 'Chinese',
+    2: 'Indian',
+    3: 'Other'
+}
+
+SMOKER_OPTIONS = {
+    0: 'No',
+    1: 'Yes',
+    2: 'Former smoker'
+}
+
+ALCOHOL_OPTIONS = {
+    0: 'Regular',
+    1: 'Occasional',
+    2: 'Non-drinker'
+}
+
 Base = declarative_base()
 
 
@@ -54,28 +88,12 @@ class AccountRole(Base):
     RoleName = Column(String(100))
 
     userRoles = relationship("UserAccountRole", back_populates="role")
-    rolePermissions = relationship("RolePermission", back_populates="role")
 
     def __init__(self, RoleName):
         self.RoleName = RoleName
 
     def __repr__(self):
         return f'AccountRole(RoleID={self.RoleID}, RoleName={self.RoleName})'
-
-
-class Permission(Base):
-    __tablename__ = 'Permission'
-    PermissionID = Column(Integer, primary_key=True)
-    PermissionName = Column(String(100))
-
-    permissionRoles = relationship(
-        "RolePermission", back_populates="permission")
-
-    def __init__(self, PermissionName):
-        self.PermissionName = PermissionName
-
-    def __repr__(self):
-        return f'Permission(PermissionID={self.PermissionID}, PermissionName={self.PermissionName})'
 
 
 class UserAccountRole(Base):
@@ -93,28 +111,8 @@ class UserAccountRole(Base):
         self.RoleID = RoleID
         self.UserID = UserID
 
-    def __repr(self):
-        return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
-                AssignedAt={self.AssignedAt})'
-
-
-class RolePermission(Base):
-    __tablename__ = 'RolePermission'
-    RoleID = Column(Integer, ForeignKey(
-        "AccountRole.RoleID"), primary_key=True)
-    PermissionID = Column(Integer, ForeignKey(
-        "Permission.PermissionID"), primary_key=True)
-    AssignedAt = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-
-    role = relationship("AccountRole", back_populates="rolePermissions")
-    permission = relationship("Permission", back_populates="permissionRoles")
-
-    def __init__(self, RoleID, PermissionID):
-        self.RoleID = RoleID
-        self.PermissionID = PermissionID
-
     def __repr__(self):
-        return f'RolePermission(RoleID={self.RoleID}, PermissionID={self.PermissionID}, \
+        return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
                 AssignedAt={self.AssignedAt})'
 
 
@@ -130,12 +128,27 @@ class Patient(Base):
     Height = Column(Numeric(5, 2))
     DateOfBirth = Column(Date)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    MaritalStatus = Column(Integer)
+    WorkingStatus = Column(Integer)
+    Race = Column(Integer)
 
     user = relationship("UserAccount", back_populates="patients")
     health_records = relationship("HealthData", back_populates="patient")
     user_access = relationship("UserPatientAccess", back_populates="patient")
 
-    def __init__(self, user_id, given_names, family_name, gender, weight, height, date_of_birth):
+    def __init__(
+            self,
+            user_id,
+            given_names,
+            family_name,
+            gender,
+            weight,
+            height,
+            date_of_birth,
+            marital_status=None,
+            working_status=None,
+            race=None
+    ):
         self.UserID = user_id
         self.GivenNames = given_names
         self.FamilyName = family_name
@@ -143,11 +156,53 @@ class Patient(Base):
         self.Weight = weight
         self.Height = height
         self.DateOfBirth = date_of_birth
+        self.MaritalStatus = marital_status
+        self.WorkingStatus = working_status
+        self.race = race
 
     def __repr__(self):
         return f'Patient(PatientID={self.PatientID}, UserID={self.UserID}, givenNames={self.GivenNames}, \
         familyName={self.FamilyName}, gender={self.Gender}, weight={self.Weight}, height={self.Height}, \
         dateOfBirth={self.DateOfBirth}, Created={self.CreatedAt})'
+
+    def get_marital_status(self):
+        """Returns marital status as a string."""
+        return MARITAL_STATUS_OPTIONS.get(self.MaritalStatus)
+
+    def get_working_status(self):
+        """Returns working status as a string."""
+        return WORKING_STATUS_OPTIONS.get(self.WorkingStatus)
+
+    def get_race(self):
+        """Returns race as a string."""
+        return RACE_OPTIONS.get(self.Race)
+
+    def set_marital_status(self, status: int | str):
+        """Sets the value of the marital status and will convert a string
+        to the matching integer."""
+        if isinstance(status, str):
+            self.MaritalStatus = next(
+                (k for k, v in MARITAL_STATUS_OPTIONS.items() if v == status), None)
+        else:
+            self.MaritalStatus = status
+
+    def set_working_status(self, status: int | str):
+        """Sets the value of the working status and will convert a string
+        to the matching integer."""
+        if isinstance(status, str):
+            self.WorkingStatus = next(
+                (k for k, v in WORKING_STATUS_OPTIONS.items() if v == status), None)
+        else:
+            self.WorkingStatus = status
+
+    def set_race(self, race: int | str):
+        """Sets the value of the race and will convert a string
+        to the matching integer."""
+        if isinstance(race, str):
+            self.Race = next(
+                (k for k, v in RACE_OPTIONS.items() if v == race), None)
+        else:
+            self.Race = race
 
 
 class UserPatientAccess(Base):
@@ -187,12 +242,13 @@ class HealthData(Base):
     HyperTension = Column(Boolean)
     HeartDisease = Column(Boolean)
     Diabetes = Column(Boolean)
-    Alcohol = Column(Boolean)
+    Alcohol = Column(Integer)
     SmokingStatus = Column(Integer)
     MaritalStatus = Column(Integer)
     WorkingStatus = Column(Integer)
     CreatedAt = Column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     Stroke = Column(Integer)
+    Race = Column(Integer)
 
     patient = relationship("Patient", back_populates="health_records")
     predictions = relationship("Prediction", back_populates="health_data")
@@ -201,7 +257,7 @@ class HealthData(Base):
 
     def __init__(self, PatientID, age, weight, height, gender, bloodGlucose, ap_hi,
                  ap_lo, highCholesterol, hyperTension, heartDisease,
-                 diabetes, alcohol, smoker, maritalStatus, workingStatus, stroke):
+                 diabetes, alcohol, smoker, maritalStatus, workingStatus, stroke, race):
         self.PatientID = PatientID
         self.Age = age
         self.WeightKilograms = weight
@@ -218,7 +274,8 @@ class HealthData(Base):
         self.SmokingStatus = smoker
         self.MaritalStatus = maritalStatus
         self.WorkingStatus = workingStatus
-        self.Stroke = stroke
+        self.Stroke = stroke,
+        self.Race = race
 
     def __repr__(self):
         return f'HealthData(HealthDataID = {self.HealthDataID}, UserID={self.UserID}, age={self.Age}, weight={self.WeightKilograms}, \
@@ -226,7 +283,7 @@ class HealthData(Base):
             ap_hi={self.APHigh}, ap_lo={self.APLow}, highCholesterol={self.HighCholesterol}, \
             hyperTension={self.HyperTension}, heartDisease={self.HeartDisease}, \
             diabetes={self.Diabetes}, alcohol={self.Alcohol}, smoker={self.SmokingStatus}, \
-            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, Created={self.CreatedAt},  Stroke={self.Stroke} )'
+            maritalStatus={self.MaritalStatus}, workingStatus={self.WorkingStatus}, race={self.Race}, Created={self.CreatedAt},  Stroke={self.Stroke} )'
 
 
 class Prediction(Base):

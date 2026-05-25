@@ -1,12 +1,16 @@
-import { Outlet, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import NavBar from "../components/Navbar";
+import { Navigate, Outlet } from "react-router-dom";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const PublicOnlyRoutes = ({ role }) => {
+/**
+ * Only grants access to child components when a user is not logged in
+ * the website.
+ *
+ * @returns {react-router-dom.Navigate | react-router-dom.Outlet}
+ */
+const PublicOnlyRoutes = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${API_BASE}/user/me`, {

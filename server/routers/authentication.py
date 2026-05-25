@@ -107,7 +107,17 @@ password_hasher = PasswordHash((owasp_argon2_hasher,))
 @router.post("/register")
 async def register(user_reg: UserRegistrationDetails,
                    db_conn: Session = Depends(get_db)):
-    """Register a new account for the user provided the details are valid."""
+    """
+    Register a new user account after validating all input fields.
+
+    Creates the user record, assigns a role, optionally creates a patient
+    profile (standard users), and generates an email-validation token.
+
+    :param user_reg: Registration details including personal info, credentials, and account type.
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with a success message.
+    :raises HTTPException 422: If any input field fails validation.
+    """
 
     formatted_phone = format_phone_number(user_reg.phone)
 
@@ -189,7 +199,7 @@ async def register(user_reg: UserRegistrationDetails,
 
 
 def _send_validation_email(user: UserAccount, token: str):
-    """Helper function to send a validation email."""
+    """Send an email-validation link to the newly registered user."""
     validation_url = f"http://localhost:8000/validate-email?token={token}"
     email_subject = "Validate your account"
     email_content = f"""
@@ -211,11 +221,11 @@ def _send_validation_email(user: UserAccount, token: str):
 
 @router.get("/validate-email")
 async def validate_email_address(token: str, db_conn: Session = Depends(get_db)):
+    """Validate a user's email address via a signed token sent by email."""
     validation_failure_exception = HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Invalid or expired validation token."
     )
-    """Validates a user's account"""
 
     # Find the token in the database
     validation_token_entry = db_conn.query(
@@ -274,7 +284,19 @@ async def validate_email_address(token: str, db_conn: Session = Depends(get_db))
 @router.post('/login')
 async def login(request: Request, response: Response, user_cred: LoginCredentials,
                 db_conn: Session = Depends(get_db)):
-    """Authenticates a user with the credentials and provides an access token."""
+    """
+    Authenticate a user and issue an http-only cookie with a JWT access token.
+
+    Validates credentials, increments the token version (invalidating previous
+    sessions), and sets the ``auth_token`` cookie on the response.
+
+    :param request: The HTTP request (used for audit-logging client metadata).
+    :param response: The HTTP response (used to set the cookie).
+    :param user_cred: Login credentials (email and password).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :return: A dict with a success message.
+    :raises HTTPException 401: If credentials are incorrect.
+    """
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -312,6 +334,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
     cookie_settings = _cookie_security_settings(request)
 
+    # bearer:disable python_django_cookies
     response.set_cookie(
         key='auth_token',
         value=token,
@@ -331,7 +354,17 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
 
 def authenticate_user(email: str, password: str, db_conn: Session):
-    """Authenticates a user from the provided email and password."""
+    """
+    Verify credentials and return the user account if authentication succeeds.
+
+    Checks the user exists, is validated (if email validation is enabled),
+    and the password matches the stored hash.
+
+    :param email: The user's email address.
+    :param password: The plain-text password to verify.
+    :param db_conn: Database session.
+    :return: The ``UserAccount`` object if authentication succeeds, ``False`` otherwise.
+    """
     user = db_conn.query(UserAccount).filter_by(Email=email).first()
     if not user:
         return False
@@ -350,7 +383,16 @@ def verify_password(password_text: str, password_hash: str) -> bool:
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    """Returns JWT containing the access token with the given data."""
+    """
+    Create a signed JWT access token containing the given claims.
+
+    Encodes the data dict with an ``exp`` claim set to the current time plus
+    the provided delta (or a default of 10 minutes).
+
+    :param data: Claims to encode (must include ``sub`` for the subject).
+    :param expires_delta: Optional custom expiration duration.
+    :return: A signed JWT string.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -363,12 +405,24 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 @router.get('/user/me')
 async def get_user_me(request: Request, db_conn: Session = Depends(get_db)):
-    """Endpoint for retrieving the currently active user on a device."""
+    """Return the currently authenticated user's profile information."""
     return get_current_user(request, db_conn)
 
 
 def get_current_user(request: Request, db_conn: Session):
-    """Returns user information from the http-only cookie on their device."""
+    """
+    Extract and return the authenticated user's details from the http-only cookie.
+
+    Decodes the JWT in the ``auth_token`` cookie, validates the token version
+    against the database, and fetches the user's role and patient profile.
+
+    :param request: The HTTP request containing the ``auth_token`` cookie.
+    :param db_conn: Database session.
+    :return: A dict with keys ``email``, ``role``, ``name``, ``phone_number``,
+             ``given_names``, ``family_name``, ``gender``, ``weight``, ``height``,
+             ``date_of_birth``.
+    :raises HTTPException 401: If the token is missing, invalid, or expired.
+    """
 
     # Prepare an exception for invalid or missing credentials.
     credentials_exception = HTTPException(
@@ -451,7 +505,17 @@ def get_user_role(email: str, db_conn: Session):
 
 @router.post('/logout')
 def logout_current_user(request: Request, response: Response, db_conn: Session = Depends(get_db)):
-    """Deletes the user cookie and invalidates their access token."""
+    """
+    Log out the current user by deleting the auth cookie and invalidating the token.
+
+    Increments the token version in the database so existing JWTs are rejected,
+    then removes the ``auth_token`` cookie from the response.
+
+    :param request: The HTTP request (for current-user extraction).
+    :param response: The HTTP response (for cookie deletion).
+    :param db_conn: Database session.
+    :return: ``None`` (cookie is deleted on the response object).
+    """
     try:
         user = get_current_user(request, db_conn)
         if user:
@@ -477,7 +541,16 @@ def invalidate_access_token(email: str, db_conn: Session):
 
 
 def is_password_valid(password: str):
-    """Verifies the password follows policy rules."""
+    """
+    Verify a password meets all policy requirements.
+
+    Rules: at least one lowercase, one uppercase, one digit, one symbol
+    (from ``VALID_PASSWORD_SYMBOLS``), and length between ``PASSWORD_MIN_LENGTH``
+    and ``PASSWORD_MAX_LENGTH``.
+
+    :param password: The plain-text password to check.
+    :return: ``True`` if the password complies with policy, ``False`` otherwise.
+    """
 
     contains_lower = any(c.islower() for c in password)
     contains_upper = any(c.isupper() for c in password)
@@ -494,7 +567,7 @@ def is_password_valid(password: str):
 
 
 def is_email_valid(email: str):
-    """Verifies a password follow the pattern xxx@xxx.xxx."""
+    """Verifies an email follows the pattern xxx@xxx.xxx."""
     if not email:
         return False
     try:
@@ -555,7 +628,19 @@ def is_age_valid(date_of_birth: date):
 
 @router.post('/change-password')
 def change_password_current_user(password_details: ChangePasswordDetails, request: Request, db_conn: Session = Depends(get_db)):
-    """Change a user's password"""
+    """
+    Change the authenticated user's password after verifying their current password.
+
+    Validates the current password, confirms the new password matches the
+    confirmation field, then hashes and persists the new password.
+
+    :param password_details: Object containing ``current_password``, ``new_password``,
+                             and ``confirm_new_password``.
+    :param request: The HTTP request (for current-user extraction and audit logging).
+    :param db_conn: Database session.
+    :return: A dict with a success message.
+    :raises HTTPException 401: If current password is wrong or new passwords don't match.
+    """
 
     # Retrieve current user data
     user_email = get_current_user(request, db_conn)
@@ -590,7 +675,18 @@ def change_password_current_user(password_details: ChangePasswordDetails, reques
 
 @router.post('/forgot-password')
 def forgot_password(forgot_password_request: ForgotPasswordRequest, request: Request, db_conn: Session = Depends(get_db)):
-    """Generates a reset password token for a given email."""
+    """
+    Generate a password-reset token and email it to the user (if the account exists).
+
+    Sanitises the email, looks up the user (excluding admin accounts), creates
+    a time-limited reset token, and sends a reset link. Responds identically
+    whether or not the email exists (to prevent enumeration).
+
+    :param forgot_password_request: Object containing the user's email address.
+    :param request: The HTTP request (for audit-logging client metadata).
+    :param db_conn: Database session.
+    :return: ``None`` (email is sent asynchronously).
+    """
     is_success = False
 
     sanitised_email = re.sub(r'[()<>[\]:,;\\]', '',
@@ -642,7 +738,18 @@ async def password_reset(
     request: Request,
     db_conn: Session = Depends(get_db)
 ):
-    """Updates a user's password if the token is valid and password are valid."""
+    """
+    Reset a user's password using a valid, non-expired reset token.
+
+    Validates the token, checks the new password against policy rules,
+    hashes it, and persists the change. The token is consumed (deleted)
+    regardless of success to prevent replay.
+
+    :param reset_request: Object containing the reset token and new password.
+    :param request: The HTTP request (for audit-logging client metadata).
+    :param db_conn: Database session.
+    :return: ``None`` (audit log is written on every attempt).
+    """
     is_successful = False
     user = None
 
@@ -674,7 +781,17 @@ async def password_reset(
 
 
 def _send_reset_password_email(user: UserAccount, patient: Patient, request: Request, token: str):
-    """Helper function to send a validation email."""
+    """
+    Send a password-reset email containing a signed link to the user.
+
+    Sanitises all dynamic content (token, name, IP, device) before embedding
+    in the HTML email to prevent XSS in rendered email clients.
+
+    :param user: The target user account.
+    :param patient: The user's patient profile (for personalisation).
+    :param request: The HTTP request (for client IP and user-agent).
+    :param token: The unsigned reset token to embed in the link.
+    """
     sanitizer = Sanitizer()
     sanitized_token = sanitizer.sanitize(token)
     given_names = sanitizer.sanitize(patient.GivenNames)

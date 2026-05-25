@@ -7,6 +7,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 import csv
 import codecs
+import logging
 
 from ..utils.database import get_db
 from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess, Patient, LogEventType
@@ -14,9 +15,10 @@ from ..services.health_recommendation_service import get_health_recommendations
 from .authentication import get_current_user, get_user, get_patient_by_email
 from ..utils.audit_log import write_audit_log
 
+
+logger = logging.getLogger(__name__)
+
 # HealthData
-
-
 class HealthDataInput(CamelModel):
     age: int
     weight: float           # kg
@@ -29,11 +31,12 @@ class HealthDataInput(CamelModel):
     hypertension: int
     heart_disease: int
     diabetes: int
-    alcohol: int
+    alcohol: str
     smoker: str
     marital_status: str
     working_status: str
     stroke: int
+    race: str
 
 
 class MerchantHealthDataInput(CamelModel):
@@ -48,11 +51,12 @@ class MerchantHealthDataInput(CamelModel):
     hypertension: int
     heart_disease: int
     diabetes: int
-    alcohol: int
+    alcohol: str
     smoker: str
     marital_status: str
     working_status: str
     stroke: int
+    race: str
     patient_id: int
 
 
@@ -64,18 +68,28 @@ diabetes_model = joblib.load("prediction_models/model_diabetes_h.joblib")
 
 gender_map = {'Male': 1, 'Female': 0}
 smoker_map = {'No': 0, 'Yes': 1, 'Former smoker': 2}
-marital_map = {'Divorced': 0, 'Single': 0, 'Married': 1, 'Widow': 2}
+marital_map = {'Single': 0, 'Married': 1, 'Widow': 2, 'Divorced': 3}
 working_map = {
-    'Homemaker': 0, 'Unemployed': 0, 'Retired': 0,
-    'Private': 1, 'Self-employed': 1, 'Student': 2,
-    'Working': 3, 'Public': 4
+    'Unemployed': 0, 'Homemaker': 1, 'Student': 2,
+    'Working': 3, 'Retired': 4
 }
-
+race_map = {'Malay': 0, 'Chinese': 1, 'Indian': 2, 'Other': 3}
+alcohol_map = {'Regular': 0, 'Occasional': 1, 'Non-drinker': 2}
 
 router = APIRouter()
 
 
 def build_model_input_df(model, values):
+    """
+    Construct a single-row pandas DataFrame from model features and input values.
+
+    Uses the model's ``feature_names_in_`` attribute as column headers when available,
+    falling back to a positional layout if the attribute is absent.
+
+    :param model: A fitted scikit-learn model (expected to expose ``feature_names_in_``).
+    :param values: A list of numeric values corresponding to the model's feature set.
+    :return: A pandas DataFrame with one row suitable for ``model.predict_proba()``.
+    """
     feature_names = getattr(model, "feature_names_in_", None)
     if feature_names is not None and len(feature_names) == len(values):
         return pd.DataFrame([values], columns=list(feature_names))
@@ -85,7 +99,21 @@ def build_model_input_df(model, values):
 @router.post("/health-prediction/")
 async def predict(data: HealthDataInput, request: Request, db_conn: Session = Depends(get_db),
                   csv_patient_id: Optional[int] = None):
+    """
+    Generate cardio, stroke, and diabetes risk predictions for the authenticated user.
 
+    Accepts health metrics via ``HealthDataInput``, sanitises and validates the data,
+    calculates BMI, runs three ML prediction models, persists health data and predictions
+    to the database, and generates AI-powered health recommendations (best-effort).
+
+    :param data: Health metrics including vitals, lifestyle choices, and medical history.
+    :param request: The HTTP request object (used for audit logging and user extraction).
+    :param db_conn: Database session provided by the FastAPI dependency.
+    :param csv_patient_id: Optional patient ID forwarded from CSV bulk upload flow.
+    :return: JSON with ``cardioProbability``, ``strokeProbability``, ``diabetesProbability``,
+             and a ``recommendations`` block.
+    :raises HTTPException 422: If sanitised health data fails validation.
+    """
     # Sanitize and normalize health data
     sanitized_data = sanitize_health_data(data)
 
@@ -107,15 +135,31 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
     # Update Weight & Height based on sanitized input.
     patient.Weight = sanitized_data["weight"]
     patient.Height = sanitized_data["height"]
+    patient.set_marital_status(sanitized_data["marital_status"])
+    patient.set_working_status(sanitized_data["working_status"])
+    patient.set_race(sanitized_data["race"])
 
     # Get the CSV patients's ID, otherwise uses the authenticated user's ID.
     patient_id = csv_patient_id if csv_patient_id is not None else patient.PatientID
-    healthData = HealthData(patient_id, sanitized_data["age"], sanitized_data["weight"], sanitized_data["height"], gender_map[sanitized_data["gender"]],
-                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data[
-                                "ap_lo"], sanitized_data["high_cholesterol"],
-                            sanitized_data["hypertension"], sanitized_data[
-                                "heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
-                            smoker_map[sanitized_data["smoker"]],  marital_map[sanitized_data["marital_status"]], working_map[sanitized_data["working_status"]], sanitized_data["stroke"])
+    healthData = HealthData(
+        patient_id,
+        sanitized_data["age"],
+        sanitized_data["weight"],
+        sanitized_data["height"],
+        gender_map[sanitized_data["gender"]],
+        sanitized_data["blood_glucose"],
+        sanitized_data["ap_hi"],
+        sanitized_data["ap_lo"],
+        sanitized_data["high_cholesterol"],
+        sanitized_data["hypertension"],
+        sanitized_data["heart_disease"],
+        sanitized_data["diabetes"],
+        alcohol_map[sanitized_data["alcohol"]],
+        smoker_map[sanitized_data["smoker"]],
+        marital_map[sanitized_data["marital_status"]],
+        working_map[sanitized_data["working_status"]],
+        sanitized_data["stroke"],
+        race_map[sanitized_data["race"]])
 
     # Store health data into the database
     db_conn.add(healthData)
@@ -134,7 +178,7 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
         sanitized_data["high_cholesterol"],
         sanitized_data["blood_glucose"],
         smoker_map[sanitized_data["smoker"]],
-        sanitized_data["alcohol"]
+        alcohol_map[sanitized_data["alcohol"]]
     ]
     cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
@@ -192,8 +236,9 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
                 db_conn=db_conn, health_data_id=int(_hd_id))
         else:
             recommendations = {"error": "Missing HealthDataID"}
-    except Exception as e:
-        recommendations = {"error": str(e)}
+    except Exception:
+        logger.error("Health recommendations failed to generate.")
+        recommendations = None
 
     # Persist recommendations when available
     exercise_rec = None
@@ -296,7 +341,8 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
                 heart_disease=int(row["HeartDisease"]) if row.get(
                     "HeartDisease") else 0,
                 diabetes=int(row["Diabetes"]) if row.get("Diabetes") else 0,
-                alcohol=int(row["Alcohol"]) if row.get("Alcohol") else 0,
+                alcohol=str(row["Alcohol"]) if row.get(
+                    "Alcohol") else "",
                 smoker=str(row["SmokingStatus"]) if row.get(
                     "SmokingStatus") else "",
                 marital_status=str(row["MaritalStatus"]) if row.get(
@@ -304,6 +350,8 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
                 working_status=str(row["WorkingStatus"]) if row.get(
                     "WorkingStatus") else "",
                 stroke=int(row["Stroke"]) if row.get("Stroke") else 0,
+                race=str(row["Race"]) if row.get(
+                    "Race") else "",
                 patient_id=patient.PatientID
             )
             # Sanitize data before passing to merchant_predict
@@ -377,6 +425,9 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
     # Update Weight & Height based on sanitized input.
     patient.Weight = sanitized_data["weight"]
     patient.Height = sanitized_data["height"]
+    patient.set_marital_status(sanitized_data["marital_status"])
+    patient.set_working_status(sanitized_data["working_status"])
+    patient.set_race(sanitized_data["race"])
 
     # Check if the merchant has permission to view the patients record
     if (merchant_view_patient(merchant.UserID, patient.PatientID, db_conn) == False):
@@ -399,12 +450,24 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         BMI = (sanitized_data["weight"]/((sanitized_data["height"]/100)**2))
 
     # Get the CSV user's ID, otherwise uses the authenticated user's ID.
-    healthData = HealthData(patient.PatientID, sanitized_data["age"], sanitized_data["weight"], sanitized_data["height"], gender_map[sanitized_data["gender"]],
-                            sanitized_data["blood_glucose"], sanitized_data["ap_hi"], sanitized_data[
-                                "ap_lo"], sanitized_data["high_cholesterol"],
-                            sanitized_data["hypertension"], sanitized_data[
-                                "heart_disease"], sanitized_data["diabetes"], sanitized_data["alcohol"],
-                            smoker_map[sanitized_data["smoker"]],  marital_map[sanitized_data["marital_status"]], working_map[sanitized_data["working_status"]], sanitized_data["stroke"])
+    healthData = HealthData(patient.PatientID,
+                            sanitized_data["age"],
+                            sanitized_data["weight"],
+                            sanitized_data["height"],
+                            gender_map[sanitized_data["gender"]],
+                            sanitized_data["blood_glucose"],
+                            sanitized_data["ap_hi"],
+                            sanitized_data["ap_lo"],
+                            sanitized_data["high_cholesterol"],
+                            sanitized_data["hypertension"],
+                            sanitized_data["heart_disease"],
+                            sanitized_data["diabetes"],
+                            alcohol_map[sanitized_data["alcohol"]],
+                            smoker_map[sanitized_data["smoker"]],
+                            marital_map[sanitized_data["marital_status"]],
+                            working_map[sanitized_data["working_status"]],
+                            sanitized_data["stroke"],
+                            race_map[sanitized_data["race"]])
     # Store health data into the database
     db_conn.add(healthData)
     db_conn.commit()
@@ -422,7 +485,7 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
         sanitized_data["high_cholesterol"],
         sanitized_data["blood_glucose"],
         smoker_map[sanitized_data["smoker"]],
-        sanitized_data["alcohol"]
+        alcohol_map[sanitized_data["alcohol"]]
     ]
     cardio_df = build_model_input_df(cardio_model, cardio_values)
     # Cardio prediction
@@ -480,8 +543,9 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
                 db_conn=db_conn, health_data_id=int(_hd_id))
         else:
             recommendations = {"error": "Missing HealthDataID"}
-    except Exception as e:
-        recommendations = {"error": str(e)}
+    except Exception:
+        logger.error("Health recommendations failed to generate.")
+        recommendations = None
 
     # Persist recommendations when available
     exercise_rec = None
@@ -524,76 +588,91 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
 
 
 def is_age_valid(age: int):
+    """Check whether ``age`` falls within the valid physiological range (0–100)."""
     return age >= 0 and age <= 100
 
 
 def is_weight_valid(weight: float):
+    """Check whether ``weight`` (kg) falls within the valid range (0.0–200.0)."""
     return weight >= 0.0 and weight <= 200.0
 
 
 def is_height_valid(height: float):
+    """Check whether ``height`` (cm) falls within the valid range (0.0–300.0)."""
     return height >= 0.0 and height <= 300
 
 
 def is_gender_valid(gender: int):
+    """Check whether ``gender`` is present in the predefined mapping."""
     return gender in gender_map
 
 
 def is_blood_glucose_valid(blood_glucose: float):
+    """Check whether ``blood_glucose`` (mmol/L) falls within the valid range (0.0–20.0)."""
     return blood_glucose >= 0.0 and blood_glucose <= 20.0
 
 
 def is_ap_hi_valid(ap_hi: float):
+    """Check whether systolic blood pressure ``ap_hi`` (mmHg) is valid (0.0–200.0)."""
     return ap_hi >= 0.0 and ap_hi <= 200.0
 
 
 def is_ap_lo_valid(ap_lo: float):
+    """Check whether diastolic blood pressure ``ap_lo`` (mmHg) is valid (0.0–200.0)."""
     return ap_lo >= 0.0 and ap_lo <= 200.0
 
 
 def is_high_cholesterol_valid(high_cholesterol: int):
+    """Check whether ``high_cholesterol`` is a binary flag (0 or 1)."""
     return high_cholesterol == 0 or high_cholesterol == 1
 
 
 def is_hyper_tension_valid(hypertension: int):
+    """Check whether ``hypertension`` is a binary flag (0 or 1)."""
     return hypertension == 0 or hypertension == 1
 
 
 def is_heart_disease_valid(heart_disease: int):
+    """Check whether ``heart_disease`` is a binary flag (0 or 1)."""
     return heart_disease == 0 or heart_disease == 1
 
 
 def is_diabetes_valid(diabetes: int):
+    """Check whether ``diabetes`` is a binary flag (0 or 1)."""
     return diabetes == 0 or diabetes == 1
 
 
-def is_alcohol_valid(alcohol: int):
-    return alcohol == 0 or alcohol == 1
+def is_alcohol_valid(alcohol: str):
+    """Check whether ``alcohol`` is present in the predefined alcohol_map mapping."""
+    return alcohol in alcohol_map
 
 
 def is_smoker_valid(smoker: str):
+    """Check whether ``smoker`` is present in the predefined smoker_map mapping."""
     return smoker in smoker_map
 
 
 def is_marital_status_valid(marital_status: str):
+    """Check whether ``marital_status`` is present in the predefined mapping."""
     return marital_status in marital_map
 
 
 def is_working_status_valid(working_status: str):
+    """Check whether ``working_status`` is present in the predefined mapping."""
     return working_status in working_map
 
 
 def is_stroke_valid(stroke: int):
+    """Check whether ``stroke`` is a binary flag (0 or 1)."""
     return stroke == 0 or stroke == 1
 
 
+def is_race_valid(race: str):
+    return race in race_map
+
+
 def sanitize_health_data(data: HealthDataInput):
-    """
-    Sanitise and normalize health data following phone sanitisation pattern.
-    Handles whitespace trimming, case normalization for categorical values,
-    and decimal precision for numeric values.
-    Returns normalized dict or None if any field fails critical validation.
-    """
+    """Sanitise and normalise health data, returning a normalised dict or None if invalid."""
     def normalize_categorical(value, mapping, field_name):
         """Helper: case-insensitive lookup with fallback to None."""
         if not isinstance(value, str):
@@ -619,6 +698,9 @@ def sanitize_health_data(data: HealthDataInput):
         data.marital_status, marital_map, "marital_status")
     working_status = normalize_categorical(
         data.working_status, working_map, "working_status")
+    alcohol = normalize_categorical(
+        data.alcohol, alcohol_map, "alcohol")
+    race = normalize_categorical(data.race, race_map, "race")
 
     # Sanitize numeric fields (clamp to 2 decimal places)
     try:
@@ -643,20 +725,18 @@ def sanitize_health_data(data: HealthDataInput):
         "hypertension": data.hypertension,
         "heart_disease": data.heart_disease,
         "diabetes": data.diabetes,
-        "alcohol": data.alcohol,
+        "alcohol": alcohol,
         "smoker": smoker,
         "marital_status": marital_status,
         "working_status": working_status,
         "stroke": data.stroke,
+        "race": race,
         "patient_id": getattr(data, 'patient_id', None)
     }
 
 
 def validate_sanitized_data(sanitized_data: dict):
-    """
-    Validates all sanitized/normalized data fields.
-    Returns True only if all fields are valid after sanitization.
-    """
+    """Validate all sanitised data fields; return True only if all are valid."""
     if sanitized_data is None:
         return False
 
@@ -664,7 +744,7 @@ def validate_sanitized_data(sanitized_data: dict):
             not is_age_valid(sanitized_data.get("age")) or
             not is_weight_valid(sanitized_data.get("weight")) or
             not is_height_valid(sanitized_data.get("height")) or
-            sanitized_data.get("gender") is None or sanitized_data.get("gender") not in gender_map or
+            not is_gender_valid(sanitized_data.get("gender")) or
             not is_blood_glucose_valid(sanitized_data.get("blood_glucose")) or
             not is_ap_hi_valid(sanitized_data.get("ap_hi")) or
             not is_ap_lo_valid(sanitized_data.get("ap_lo")) or
@@ -673,19 +753,19 @@ def validate_sanitized_data(sanitized_data: dict):
             not is_heart_disease_valid(sanitized_data.get("heart_disease")) or
             not is_diabetes_valid(sanitized_data.get("diabetes")) or
             not is_alcohol_valid(sanitized_data.get("alcohol")) or
-            sanitized_data.get("smoker") is None or sanitized_data.get("smoker") not in smoker_map or
-            sanitized_data.get("marital_status") is None or sanitized_data.get("marital_status") not in marital_map or
-            sanitized_data.get("working_status") is None or sanitized_data.get("working_status") not in working_map or
-            not is_stroke_valid(sanitized_data.get("stroke"))):
+            not is_smoker_valid(sanitized_data.get("smoker")) or
+            not is_marital_status_valid(sanitized_data.get("marital_status")) or
+            not is_working_status_valid(sanitized_data.get("working_status")) or
+            not is_stroke_valid(sanitized_data.get("stroke")) or
+            not is_race_valid(sanitized_data.get("race"))):
+
         return False
 
     return True
 
 
 def validate_all_input(data: HealthDataInput):
-    """
-    Validates all user inputs
-    """
+    """Validate all user input fields; return True only if all are valid."""
     if (
             not is_age_valid(data.age) or
             not is_weight_valid(data.weight) or
@@ -702,17 +782,15 @@ def validate_all_input(data: HealthDataInput):
             not is_smoker_valid(data.smoker) or
             not is_marital_status_valid(data.marital_status) or
             not is_working_status_valid(data.working_status) or
-            not is_stroke_valid(data.stroke)):
-
+            not is_stroke_valid(data.stroke) or
+            not is_race_valid(data.race)):
         return False
 
     return True
 
 
 def merchant_view_patient(user_id: int, patient_id: int, db_conn: Session):
-    """
-    Returns True if the merchant is linked to the patient, False if they can not.
-    """
+    """Check whether a merchant is linked to a patient; return True if linked."""
     access = db_conn.query(UserPatientAccess).filter_by(
         UserID=user_id,
         PatientID=patient_id

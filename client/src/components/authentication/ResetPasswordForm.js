@@ -1,4 +1,5 @@
-import { useState } from "react";
+import CheckIcon from "@mui/icons-material/Check";
+import LockResetIcon from "@mui/icons-material/LockReset";
 import {
   Box,
   Button,
@@ -9,16 +10,17 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useParams, Link as RouterLink } from "react-router-dom";
-import CheckIcon from "@mui/icons-material/Check";
-import LockResetIcon from "@mui/icons-material/LockReset";
+import { useState } from "react";
+import { Link as RouterLink, useParams } from "react-router-dom";
 import Logo from "../../assets/WellAiLogoTR.png";
 import PasswordInputField from "../authentication/PasswordInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Provides a form to reset their password one time with a reset token.
+ * A form to reset a user's password using a one-time reset token.
+ *
+ * @returns {@mui.material.Card}
  */
 const ResetPasswordForm = () => {
   const { token } = useParams();

@@ -1,18 +1,12 @@
-import {
-  Card,
-  CardContent,
-  Container,
-  Divider,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Card, CardContent, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
- * Displays the number of unvalidated user accounts in the system.
+ * A card that displays the number of unvalidated user accounts in the system.
+ *
+ * @returns {@mui.material.Card}
  */
 const UnvalidatedAccountAnalytics = () => {
   const [data, setData] = useState({});

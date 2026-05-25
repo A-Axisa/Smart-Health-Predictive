@@ -1,0 +1,411 @@
+import CloseIcon from "@mui/icons-material/Close";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
+import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
+import ReportTemplate from "../../components/healthReport/ReportTemplate";
+
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
+/**
+ * A page that provides the tools for a merchants to browse through their
+ * list of patients and view their past history reports.
+ *
+ * @returns {@mui.material.Box}
+ */
+const MerchantReports = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const location = useLocation();
+  const pageData = location.state;
+  const defaultSelectedPatientId =
+    pageData && pageData["patientName"] ? pageData["patientName"] : null;
+
+  const [reportDates, setReportDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState();
+  const [reportData, setReportData] = useState();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [patients, setPatients] = useState([]); // Stores list of patients
+  const [selectedPatient, setSelectedPatient] = useState(""); // Stores the selected patient
+  const [reports, setReports] = useState([]); // Stores all report data
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
+
+  const fetchMerchantReports = useCallback(() => {
+    fetch(`${API_BASE}/merchants/reports`, {
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.length > 0) {
+          setReports(data);
+
+          // Creates an array of distinct patient names
+          let distinctPatientNames = [...new Set(data.map((r) => r.name))];
+          setPatients(distinctPatientNames);
+
+          setSelectedPatient(defaultSelectedPatientId);
+          setSelectedDate(null);
+
+          if (defaultSelectedPatientId) {
+            const selectedReports = data.filter(
+              (r) => r.name === defaultSelectedPatientId,
+            );
+
+            setReportDates(selectedReports);
+            setSelectedDate(selectedReports[0]); // Select first report
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch report data.");
+      });
+  }, [defaultSelectedPatientId]);
+
+  // Fetch the merchant reports
+  useEffect(() => {
+    fetchMerchantReports();
+  }, [fetchMerchantReports]);
+
+  // Fetch report data
+  useEffect(() => {
+    if (!selectedDate) return;
+    fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setReportData(data))
+      .catch((err) => console.error("Failed to fetch report health data."));
+  }, [selectedDate]);
+
+  // Delete report data
+  async function deleteReport() {
+    if (!selectedDate) return;
+    try {
+      fetch(`${API_BASE}/report-data/${selectedDate.healthDataId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      // Filter remaining reports and update state
+      let updatedReports = reports.filter(
+        (r) => r.healthDataId !== selectedDate.healthDataId,
+      );
+      setReports(updatedReports);
+      // Re-select the patient reports and update state
+      let patientReports = updatedReports.filter(
+        (r) => r.name === selectedPatient,
+      );
+      setReportDates(patientReports);
+      setSelectedDate(patientReports[0]);
+    } catch (err) {
+      console.error("Failed to delete report data.");
+    }
+    // Close Dialog
+    setDeleteDialogOpen(false);
+  }
+
+  // Health Analytics for Chart
+  useEffect(() => {
+    if (!selectedDate) {
+      return;
+    }
+    fetch(
+      `${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`,
+      {
+        credentials: "include",
+      },
+    )
+      .then((r) => r.json())
+      .then(setChartData)
+      .catch(console.error);
+  }, [selectedDate]);
+
+  // Extract and sort month and years for drop down.
+  const years = [
+    ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
+  ].sort((a, b) => a - b);
+
+  const months = [
+    ...new Set(
+      reportDates
+        .filter(
+          (r) =>
+            !selectedYear || new Date(r.date).getFullYear() === selectedYear,
+        )
+        .map((r) => new Date(r.date).getMonth() + 1),
+    ),
+  ].sort((a, b) => a - b);
+
+  // Filters reports based on selected year and month if any.
+  const filteredReportDates = reportDates.filter((r) => {
+    const date = new Date(r.date);
+    return (
+      (!selectedYear || date.getFullYear() === selectedYear) &&
+      (!selectedMonth || date.getMonth() + 1 === selectedMonth)
+    );
+  });
+
+  const handleClear = () => {
+    setSelectedYear(null);
+    setSelectedMonth(null);
+  };
+
+  function onPatientChange(e, newValue) {
+    const selectedReports = reports.filter((r) => r.name === newValue);
+    setSelectedYear(null);
+    setSelectedMonth(null);
+    setSelectedPatient(newValue);
+    setReportDates(selectedReports);
+    setSelectedDate(selectedReports[0]);
+  }
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        ml: "65px",
+        mt: "80px",
+      }}
+    >
+      <div
+        style={{
+          position: "fixed",
+          top: -9999,
+          left: -9999,
+          pointerEvents: "none",
+          overflow: "hidden",
+          width: 0,
+          height: 0,
+        }}
+      >
+        <PDFHealthChart ref={chartRef} healthData={chartData} />
+      </div>
+
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderRight: "1px solid #e0e0e0",
+        }}
+      >
+        <Paper variant="report-section">
+          <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
+            <Typography
+              variant={isMobile ? "h4" : "h3"}
+              sx={{ textAlign: "center" }}
+            >
+              Report History
+            </Typography>
+          </Box>
+          {/* Patient List */}
+          <Box sx={{ p: 2 }}>
+            <Autocomplete
+              fullWidth
+              options={patients}
+              value={selectedPatient}
+              onChange={onPatientChange}
+              getOptionLabel={(option) => option}
+              renderInput={(params) => (
+                <TextField {...params} label="Patient" />
+              )}
+            />
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              gap: 2,
+              flexDirection: {
+                xs: "column",
+                md: "row",
+              },
+            }}
+          >
+            {/* Year */}
+            <FormControl fullWidth disabled={!selectedPatient}>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={selectedYear}
+                label="Year"
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setSelectedMonth(null);
+                }}
+              >
+                {years.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Month */}
+            <FormControl fullWidth disabled={!selectedPatient}>
+              <InputLabel>Month</InputLabel>
+              <Select
+                value={selectedMonth}
+                label="Month"
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                {months.map((month) => (
+                  <MenuItem key={month} value={month}>
+                    {new Date(0, month - 1).toLocaleString("en-AU", {
+                      month: "long",
+                    })}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Button onClick={handleClear}>Clear</Button>
+          </Box>
+          <Box
+            sx={{
+              maxHeight: 190,
+              overflowY: "auto",
+            }}
+          >
+            <List component="nav" sx={{ p: 0 }}>
+              {filteredReportDates.map((item) => (
+                <ListItem
+                  key={item.healthDataId}
+                  selected={selectedDate?.healthDataId === item.healthDataId}
+                  onClick={(e) => setSelectedDate(item)}
+                  button
+                  sx={{
+                    py: 2,
+                    px: 3,
+                    borderLeft:
+                      selectedDate?.healthDataId === item.healthDataId
+                        ? "4px solid"
+                        : "4px solid transparent",
+                    borderLeftColor: "primary.main",
+                    bgcolor:
+                      selectedDate?.healthDataId === item.healthDataId
+                        ? "action.selected"
+                        : "transparent",
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="h7"
+                        sx={{
+                          fontWeight:
+                            selectedDate?.healthDataId === item.healthDataId
+                              ? 400
+                              : 0,
+                        }}
+                      >
+                        {`Report: ${new Date(item.date).toLocaleDateString("en-AU")}`}
+                        <Typography variant="subtle">
+                          {" "}
+                          {`${new Date(item.date).toLocaleTimeString("en-AU")}`}
+                        </Typography>
+                      </Typography>
+                    }
+                  />
+                  {/* Delete Report Button */}
+                  {selectedDate?.healthDataId === item.healthDataId && (
+                    <IconButton
+                      aria-label="delete"
+                      color="error"
+                      onClick={(e) => setDeleteDialogOpen(true)}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  )}
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Paper>
+      </Box>
+
+      {/* Report Content */}
+
+      <Box sx={{ flex: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
+            p: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          {selectedDate && reportData && (
+            <DownloadReportButton
+              healthDataId={selectedDate?.healthDataId}
+              flatReportData={reportData}
+              chartRef={chartRef}
+              meta={{
+                date: selectedDate?.date,
+                healthDataId: selectedDate?.healthDataId,
+              }}
+            />
+          )}
+        </Box>
+
+        {selectedDate && reportData ? (
+          <ReportTemplate report={reportData} date={selectedDate.date} />
+        ) : (
+          <Typography sx={{ p: 3 }}> </Typography>
+        )}
+      </Box>
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Delete Report"
+        message={
+          <>
+            This action will permanently delete the selected health report and
+            all related health data. Are you sure you want to delete this health
+            report?.
+          </>
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="error"
+        cancelColor="primary"
+        confirm={() => deleteReport()}
+        cancel={() => setDeleteDialogOpen(false)}
+      />
+    </Box>
+  );
+};
+
+export default MerchantReports;

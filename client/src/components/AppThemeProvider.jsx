@@ -1,9 +1,9 @@
-import React from "react";
-import { ThemeProvider, createTheme } from "@mui/material";
 import "@fontsource/russo-one";
-import { color, fontWeight } from "@mui/system";
+import { ThemeProvider, createTheme } from "@mui/material";
 
-// Centralized MUI theme for the app
+/**
+ * A centralized MUI theme for the web app.
+ */
 export const appTheme = createTheme({
   shape: {
     borderRadius: 20,
@@ -93,19 +93,19 @@ export const appTheme = createTheme({
         elevation: 16,
       },
       variants: [
-    {
-      props: { variant: "report-section" },
-      style: ({ theme }) => ({
-        borderRadius: 0,
-        marginInline: theme.spacing(2),
-        padding: theme.spacing(2),
-        boxShadow: theme.shadows[3],
-        borderBottom: `1px solid ${theme.palette.divider}`,
-      }),
+        {
+          props: { variant: "report-section" },
+          style: ({ theme }) => ({
+            borderRadius: 0,
+            marginInline: theme.spacing(2),
+            padding: theme.spacing(2),
+            boxShadow: theme.shadows[3],
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }),
+        },
+      ],
     },
-  ],
-    },
-    
+
     MuiTypography: {
       styleOverrides: {
         root: {
@@ -128,15 +128,19 @@ export const appTheme = createTheme({
           fontFamily: "'Russo One', 'sans-serif'",
         },
         h4: {
-          fontWeight: 'regular',
+          fontWeight: "regular",
           fontFamily: "'Russo One', 'sans-serif'",
         },
         h5: {
-          fontWeight: 'regular',
+          fontWeight: "regular",
+          fontFamily: "'Russo One', 'sans-serif'",
+        },
+        h6: {
+          fontWeight: "regular",
           fontFamily: "'Russo One', 'sans-serif'",
         },
         h7: {
-          fontWeight: 'regular',
+          fontWeight: "regular",
           fontFamily: "'Russo One', 'sans-serif'",
         },
       },
@@ -148,7 +152,6 @@ export const appTheme = createTheme({
         disableRowSelectionOnClick: true,
         autoHeight: false,
         density: "standard",
-        autoHeight: false,
       },
       styleOverrides: {
         root: {
@@ -171,10 +174,10 @@ export const appTheme = createTheme({
             fontWeight: 600,
           },
           "& .MuiDataGrid-sortIcon": {
-            opacity: 'inherit !important',
+            opacity: "inherit !important",
           },
           "& .MuiDataGrid-iconButtonContainer": {
-              visibility: 'visible',
+            visibility: "visible",
           },
         },
         filler: {

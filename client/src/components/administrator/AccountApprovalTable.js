@@ -1,11 +1,16 @@
-import { useState, useEffect } from "react";
-import { Paper, Button, Box } from "@mui/material";
+import { Box, Button, Paper } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import ConfirmationDialog from "../confirmationDialog";
+import { useEffect, useState } from "react";
+import ConfirmationDialog from "../dialog/confirmationDialog";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const AccountApprovalTable = ({}) => {
+/**
+ * A table that lists the merchant accounts awaiting approval by an administrator.
+ *
+ * @returns {@mui.material.Box}
+ */
+const AccountApprovalTable = () => {
   const [userData, setUserData] = useState([]); // Stores user data
   const [selectedUser, setselectedUser] = useState(); // Stores the selected user
   const [dialogOpen, setDialogOpen] = useState(false); // Stores dialog state
@@ -20,7 +25,7 @@ const AccountApprovalTable = ({}) => {
       })
       .then((data) => setUserData(data))
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to fetch merchant data.");
       });
   };
 
@@ -44,14 +49,32 @@ const AccountApprovalTable = ({}) => {
         fetchMerchants();
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Failed to validate merchant account.");
       });
   };
 
   const columns = [
-    { field: "email", headerName: "Email", flex: 2, width: 250, sortable: true },
-    { field: "fullName", headerName: "Full Name", flex: 1.5, width: 250, sortable: true },
-    { field: "createdAt", headerName: "Created At", flex: 1.2, width: 200, sortable: true },
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 2,
+      width: 250,
+      sortable: true,
+    },
+    {
+      field: "fullName",
+      headerName: "Full Name",
+      flex: 1.5,
+      width: 250,
+      sortable: true,
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      flex: 1.2,
+      width: 200,
+      sortable: true,
+    },
     {
       field: "confirm",
       headerName: "Confirm",

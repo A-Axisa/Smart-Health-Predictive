@@ -1,6 +1,24 @@
-import { Box, Select, Button, MenuItem } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { Box, Button, MenuItem, Select } from "@mui/material";
 
+/**
+ * A tool bar to that provides the controls for modifying and filtering user
+ * data including deletion, role changing, and clinic filtering. This
+ * component is designed to be used with the UserManagementTable.
+ *
+ * @param {Object} props
+ * @param {Object} [props.rowSelectionModel]
+ * @param {string} [props.rowSelectionModel.type] - "include" or "exclude" selection.
+ * @param {Set} [props.rowSelectionModel.ids] - User ID's that are selected
+ * @param {int} [props.totalRowCount] - Number of rows when selection type is "exclude"
+ * @param {function} [props.onUsersDelete] - Callback function for deleting user
+ * @param {function} [props.onUsersRoleChange] - Callback function for changing user role
+ * @param {function} [props.onClinicChange] - Callback function for changing clinic
+ * @param {Object} [props.roleData] - A list of all roles in the system and their ID
+ * @param {Object} [props.clinicData] - A list of all clinics in the system and their ID
+ * @param {int} [props.selectedClinic] - ID of the selected clinic
+ * @returns {@mui.material.Box}
+ */
 const UserToolBar = ({
   rowSelectionModel,
   totalRowCount,
@@ -39,12 +57,10 @@ const UserToolBar = ({
         value={selectedClinic}
         onChange={(e) => onClinicChange(e.target.value)}
         sx={{
-          width: { xs: "100%", sm:200},
+          width: { xs: "100%", sm: 200 },
         }}
       >
-        <MenuItem value="">
-          All Clinics
-        </MenuItem>
+        <MenuItem value="">All Clinics</MenuItem>
         {clinicData.map((clinic) => (
           <MenuItem key={clinic.id} value={clinic.id}>
             {clinic.name}
@@ -58,7 +74,7 @@ const UserToolBar = ({
         value=""
         onChange={(e) => onUsersRoleChange(e.target.value)}
         sx={{
-          width: { xs: "100%", sm: "auto" }
+          width: { xs: "100%", sm: "auto" },
         }}
       >
         <MenuItem value="" disabled>
@@ -77,7 +93,7 @@ const UserToolBar = ({
         disabled={emailCount === 0}
         onClick={onUsersDelete}
         sx={{
-          width: { xs: "100%", sm: "auto" }
+          width: { xs: "100%", sm: "auto" },
         }}
       >
         <DeleteForeverIcon /> Delete Selected

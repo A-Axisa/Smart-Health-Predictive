@@ -1,13 +1,20 @@
 import {
   createContext,
-  useState,
+  useCallback,
   useEffect,
   useMemo,
-  useCallback,
+  useState,
 } from "react";
 
 export const UserContext = createContext(null);
 
+/**
+ * A utility used to securely share information across the application.
+ *
+ * @param {Object} props
+ * @param {object} [props.children] - child elements nested in this element
+ * @returns {UserContext}
+ */
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
