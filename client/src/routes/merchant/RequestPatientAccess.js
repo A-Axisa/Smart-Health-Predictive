@@ -8,23 +8,32 @@ import RequestPatientAccessForm from "../../components/patientAccessRequest/Requ
  */
 const RequestPatientAccess = () => {
   return (
-    <Container
-      variant="gradient"
-      maxWidth={false}
+    <Box
       sx={{
-        width: "100vw",
-        minHeight: "100vh",
-        padding: "0",
-        margin: "0",
+        bgcolor: "#f5f5f5",
         display: "flex",
-        alignItems: { xs: "flex-start", sm: "center" },
-        justifyContent: "center",
+        ml: "65px",
+        mt: "66px",
       }}
     >
-      <Box variant="gradient">
-        <RequestPatientAccessForm />
-      </Box>
-    </Container>
+      <Container
+        variant="gradient"
+        maxWidth={false}
+        sx={{
+          width: "100vw",
+          minHeight: "100vh",
+          padding: "0",
+          margin: "0",
+          display: "flex",
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "center",
+        }}
+      >
+        <Box variant="gradient">
+          <RequestPatientAccessForm />
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

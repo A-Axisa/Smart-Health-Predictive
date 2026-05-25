@@ -5,6 +5,7 @@ import {
   Divider,
   Stack,
   Typography,
+  Card,
 } from "@mui/material";
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -64,14 +65,11 @@ const RequestPatientAccessForm = () => {
   }
 
   return (
-    <Container
+    <Card
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "40px",
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
         width: { xs: "auto", sm: "500px" },
+        minHeight: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >
@@ -85,8 +83,10 @@ const RequestPatientAccessForm = () => {
           style={{ justifyContent: "center" }}
         >
           <Stack direction="column" spacing={{ xs: 2 }}>
-            <h1>Request Access to Existing Patient Record</h1>
-            <Typography align="start" style={{ color: "#777777" }}>
+            <Typography variant="h4" align="center">
+              Request Access to Existing Patient Record{" "}
+            </Typography>
+            <Typography variant="subtle" align="start">
               Enter the email of the patient you are requesting access for.
             </Typography>
             {errorMessage && (
@@ -155,7 +155,7 @@ const RequestPatientAccessForm = () => {
           </Button>
         </Stack>
       )}
-    </Container>
+    </Card>
   );
 };
 
