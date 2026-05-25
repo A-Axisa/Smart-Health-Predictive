@@ -76,6 +76,7 @@ class UserRoleID(Enum):
 
 def load_names_csv(filename: str):
     '''Loads all the names in the CSV file to use in the dummy data'''
+    # bearer:disable python_lang_path_traversal
     with open(filename, encoding="utf-8") as csv_file:
         csv_reader = csvReader(csv_file, delimiter=',')
         for row in csv_reader:
