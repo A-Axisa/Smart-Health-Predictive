@@ -254,7 +254,8 @@ def test_merchant_get_patient_data_returns_correct_fields():
         "weight",
         "height",
         "gender",
-        "age"
+        "age",
+        "race"
     }
     assert data["gender"] == "Male"
     assert data["age"] == datetime.today().year - 1980 - \
