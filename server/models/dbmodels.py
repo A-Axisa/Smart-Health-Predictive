@@ -88,28 +88,12 @@ class AccountRole(Base):
     RoleName = Column(String(100))
 
     userRoles = relationship("UserAccountRole", back_populates="role")
-    rolePermissions = relationship("RolePermission", back_populates="role")
 
     def __init__(self, RoleName):
         self.RoleName = RoleName
 
     def __repr__(self):
         return f'AccountRole(RoleID={self.RoleID}, RoleName={self.RoleName})'
-
-
-class Permission(Base):
-    __tablename__ = 'Permission'
-    PermissionID = Column(Integer, primary_key=True)
-    PermissionName = Column(String(100))
-
-    permissionRoles = relationship(
-        "RolePermission", back_populates="permission")
-
-    def __init__(self, PermissionName):
-        self.PermissionName = PermissionName
-
-    def __repr__(self):
-        return f'Permission(PermissionID={self.PermissionID}, PermissionName={self.PermissionName})'
 
 
 class UserAccountRole(Base):
@@ -127,28 +111,8 @@ class UserAccountRole(Base):
         self.RoleID = RoleID
         self.UserID = UserID
 
-    def __repr(self):
-        return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
-                AssignedAt={self.AssignedAt})'
-
-
-class RolePermission(Base):
-    __tablename__ = 'RolePermission'
-    RoleID = Column(Integer, ForeignKey(
-        "AccountRole.RoleID"), primary_key=True)
-    PermissionID = Column(Integer, ForeignKey(
-        "Permission.PermissionID"), primary_key=True)
-    AssignedAt = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-
-    role = relationship("AccountRole", back_populates="rolePermissions")
-    permission = relationship("Permission", back_populates="permissionRoles")
-
-    def __init__(self, RoleID, PermissionID):
-        self.RoleID = RoleID
-        self.PermissionID = PermissionID
-
     def __repr__(self):
-        return f'RolePermission(RoleID={self.RoleID}, PermissionID={self.PermissionID}, \
+        return f'UserAccountRole(RoleID={self.RoleID}, UserID={self.UserID}, \
                 AssignedAt={self.AssignedAt})'
 
 
