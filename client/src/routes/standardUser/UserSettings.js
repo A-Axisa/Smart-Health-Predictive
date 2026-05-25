@@ -22,6 +22,8 @@ import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../utils/UserContext";
 import PhoneInputField from "../../components/authentication/PhoneInputField";
+import { stringEqual } from "../../utils/stringEqual";
+
 
 /**
  * A page that provides the tools for a user to securely update their
@@ -517,7 +519,7 @@ const UserSettings = () => {
   const Password = () => {
     const mismatch =
       passwordData.confirmPassword &&
-      passwordData.newPassword !== passwordData.confirmPassword;
+      !stringEqual(passwordData.newPassword, passwordData.confirmPassword);
     const disabled =
       !passwordData.currentPassword || !passwordData.newPassword || mismatch;
     return (

@@ -26,6 +26,7 @@ import PasswordInputField from "../authentication/PasswordInputField";
 import EmailInputField from "../authentication/EmailInputField";
 import PhoneInputField from "../authentication/PhoneInputField";
 import Logo from "../../assets/WellAiLogoTR.png";
+import { stringEqual } from "../../utils/stringEqual";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({
@@ -79,17 +80,6 @@ const RegistrationForm = () => {
       .then((data) => setClinicList(data))
       .catch((err) => console.error("An error has occurred."));
   }, []);
-
-  function stringEqual(a, b) {
-    if (a.length !== b.length) {
-      return false;
-    }
-    let diff = 0;
-    for (let i = 0; i < a.length; i++) {
-      diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
-    return diff === 0;
-  }
 
   function updateGivenName(e) {
     const isNameValid = e.target.value !== "";
