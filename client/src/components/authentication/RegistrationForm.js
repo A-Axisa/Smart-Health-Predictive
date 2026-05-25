@@ -80,6 +80,17 @@ const RegistrationForm = () => {
       .catch((err) => console.error("An error has occurred."));
   }, []);
 
+  function stringEqual(a, b) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) {
+      diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return diff === 0;
+  }
+
   function updateGivenName(e) {
     const isNameValid = e.target.value !== "";
     setGivenNameState({ isValid: isNameValid, name: e.target.value });
@@ -134,7 +145,7 @@ const RegistrationForm = () => {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
     setAlertPasswordsDontMatch(
-      confirmPasswordInput !== passwordState.password ||
+      !stringEqual(confirmPasswordInput, passwordState.password) ||
         confirmPasswordInput === "",
     );
   }
@@ -182,7 +193,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertGenderRequired(genderState === "");
@@ -194,7 +205,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertClinicRequired(clinicState === "");
@@ -214,7 +225,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword
+      stringEqual(passwordState.password, confirmPassword)
     );
   }
 
@@ -225,7 +236,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword &&
+      stringEqual(passwordState.password, confirmPassword) &&
       clinicState !== ""
     );
   }
