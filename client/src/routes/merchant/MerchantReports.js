@@ -17,7 +17,8 @@ import {
   useTheme,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import { useEffect, useState, useCallback } from "react";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
@@ -139,12 +140,15 @@ const MerchantReports = () => {
     if (!selectedDate) {
       return;
     }
-    fetch(`${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`, {
-      credentials: "include",
-    })
-    .then((r) => r.json())
-    .then(setChartData)
-    .catch(console.error);
+    fetch(
+      `${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`,
+      {
+        credentials: "include",
+      },
+    )
+      .then((r) => r.json())
+      .then(setChartData)
+      .catch(console.error);
   }, [selectedDate]);
 
   // Extract and sort month and years for drop down.
@@ -195,8 +199,18 @@ const MerchantReports = () => {
         mt: "80px",
       }}
     >
-      <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
-          <PDFHealthChart ref={chartRef} healthData={chartData} />
+      <div
+        style={{
+          position: "fixed",
+          top: -9999,
+          left: -9999,
+          pointerEvents: "none",
+          overflow: "hidden",
+          width: 0,
+          height: 0,
+        }}
+      >
+        <PDFHealthChart ref={chartRef} healthData={chartData} />
       </div>
 
       <Box

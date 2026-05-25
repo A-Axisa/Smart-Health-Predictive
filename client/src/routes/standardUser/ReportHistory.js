@@ -1,10 +1,11 @@
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import DownloadReportButton from "../../components/healthReport/DownloadReportButton";
 import ReportTemplate from "../../components/healthReport/ReportTemplate";
 import { Link as RouterLink } from "react-router-dom";
+import PDFHealthChart from "../../components/healthReport/PDFHealthChart";
 
 import {
   Box,
@@ -39,6 +40,8 @@ const AIHealthPrediction = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
 
   const fetchReportDates = useCallback(() => {
     fetch(`${API_BASE}/get-health-data-dates`, {
@@ -102,9 +105,9 @@ const AIHealthPrediction = () => {
     fetch(`${API_BASE}/health-analytics`, {
       credentials: "include",
     })
-    .then((r) => r.json())
-    .then(setChartData)
-    .catch(console.error);
+      .then((r) => r.json())
+      .then(setChartData)
+      .catch(console.error);
   }, []);
 
   // Extract and sort month and years for drop down.
@@ -187,10 +190,20 @@ const AIHealthPrediction = () => {
           mt: "80px",
         }}
       >
-        <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+        <div
+          style={{
+            position: "fixed",
+            top: -9999,
+            left: -9999,
+            pointerEvents: "none",
+            overflow: "hidden",
+            width: 0,
+            height: 0,
+          }}
+        >
           <PDFHealthChart ref={chartRef} healthData={chartData} />
         </div>
-        
+
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography
