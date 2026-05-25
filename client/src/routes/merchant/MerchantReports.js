@@ -48,6 +48,8 @@ const MerchantReports = () => {
   const [reports, setReports] = useState([]); // Stores all report data
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
 
   const fetchMerchantReports = useCallback(() => {
     fetch(`${API_BASE}/merchants/reports`, {
@@ -132,6 +134,19 @@ const MerchantReports = () => {
     setDeleteDialogOpen(false);
   }
 
+  // Health Analytics for Chart
+  useEffect(() => {
+    if (!selectedDate) {
+      return;
+    }
+    fetch(`${API_BASE}/health-analytics?health_data_id=${selectedDate.healthDataId}`, {
+      credentials: "include",
+    })
+    .then((r) => r.json())
+    .then(setChartData)
+    .catch(console.error);
+  }, [selectedDate]);
+
   // Extract and sort month and years for drop down.
   const years = [
     ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
@@ -180,6 +195,10 @@ const MerchantReports = () => {
         mt: "80px",
       }}
     >
+      <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+          <PDFHealthChart ref={chartRef} healthData={chartData} />
+      </div>
+
       <Box
         sx={{
           bgcolor: "background.paper",
@@ -339,6 +358,7 @@ const MerchantReports = () => {
             <DownloadReportButton
               healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
+              chartRef={chartRef}
               meta={{
                 date: selectedDate?.date,
                 healthDataId: selectedDate?.healthDataId,

@@ -97,6 +97,16 @@ const AIHealthPrediction = () => {
     setDeleteDialogOpen(false);
   }
 
+  // Health Analytics for Chart
+  useEffect(() => {
+    fetch(`${API_BASE}/health-analytics`, {
+      credentials: "include",
+    })
+    .then((r) => r.json())
+    .then(setChartData)
+    .catch(console.error);
+  }, []);
+
   // Extract and sort month and years for drop down.
   const years = [
     ...new Set(reportDates.map((r) => new Date(r.date).getFullYear())),
@@ -177,6 +187,10 @@ const AIHealthPrediction = () => {
           mt: "80px",
         }}
       >
+        <div style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none", overflow: "hidden", width: 0, height: 0 }}>
+          <PDFHealthChart ref={chartRef} healthData={chartData} />
+        </div>
+        
         <Paper variant="report-section">
           <Box sx={{ p: 3, borderBottom: "1px solid #e0e0e0" }}>
             <Typography
@@ -314,6 +328,7 @@ const AIHealthPrediction = () => {
           >
             <Box sx={{ flexGrow: 1 }} />
             <DownloadReportButton
+              chartRef={chartRef}
               healthDataId={selectedDate?.healthDataId}
               flatReportData={reportData}
               meta={{
