@@ -95,7 +95,7 @@ const PasswordInputField = ({
     if (!isAltered && !showRequired) {
       return null;
     }
-    if (password.length < 1 || password === null || showRequired) {
+    if (!password || showRequired) {
       return "*Required";
     }
 
