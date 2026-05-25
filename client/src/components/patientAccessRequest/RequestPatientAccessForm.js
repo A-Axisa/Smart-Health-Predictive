@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-  Divider,
-  Stack,
-  Typography,
-  Card,
-} from "@mui/material";
+import { Box, Button, Card, Divider, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import EmailInputField from "../authentication/EmailInputField";
