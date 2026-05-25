@@ -186,14 +186,6 @@ const NavBar = ({ role }) => {
     }
   }
 
-  function handleOpenSettings(e) {
-    setOpenMenu(e.currentTarget);
-  }
-
-  function handleCloseSettings() {
-    setOpenMenu(null);
-  }
-
   // Navigation Bar for standard user type
   if (role === "standard_user")
     return (

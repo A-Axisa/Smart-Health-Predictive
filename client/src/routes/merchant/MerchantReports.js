@@ -85,8 +85,8 @@ const MerchantReports = () => {
       })
       .catch((err) => {
         console.error("Failed to fetch report data.");
-      }, [defaultSelectedPatientId]);
-  }
+      });
+  }, [defaultSelectedPatientId]);
 
   // Fetch the merchant reports
   useEffect(() => {
