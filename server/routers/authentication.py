@@ -334,6 +334,7 @@ async def login(request: Request, response: Response, user_cred: LoginCredential
 
     cookie_settings = _cookie_security_settings(request)
 
+    # bearer:disable python_django_cookies
     response.set_cookie(
         key='auth_token',
         value=token,

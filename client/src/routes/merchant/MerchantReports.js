@@ -84,9 +84,9 @@ const MerchantReports = () => {
         }
       })
       .catch((err) => {
-        console.log(err);
-      });
-  }, [defaultSelectedPatientId]);
+        console.error("Failed to fetch report data.");
+      }, [defaultSelectedPatientId]);
+  }
 
   // Fetch the merchant reports
   useEffect(() => {
@@ -104,7 +104,7 @@ const MerchantReports = () => {
     })
       .then((res) => res.json())
       .then((data) => setReportData(data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Failed to fetch report health data."));
   }, [selectedDate]);
 
   // Delete report data
@@ -129,7 +129,7 @@ const MerchantReports = () => {
       setReportDates(patientReports);
       setSelectedDate(patientReports[0]);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to delete report data.");
     }
     // Close Dialog
     setDeleteDialogOpen(false);

@@ -123,7 +123,7 @@ const GenerateReportForm = () => {
         setWorkingStatus(data.workingStatus);
         setRace(data.race);
       } catch (err) {
-        console.log("Failed to fetch patient data.");
+        console.error("Failed to fetch patient data.");
       }
     }
     fetchPatientData();
@@ -331,7 +331,7 @@ const GenerateReportForm = () => {
         navigate("/report-history"); // Route the user to the Health prediction page after submission
       })
       .catch((error) => {
-        console.log("An error has occurred");
+        console.error("An error has occurred.");
       });
   }
 

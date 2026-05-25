@@ -131,7 +131,7 @@ const PatientManagement = () => {
         setTotalPatients(data.totalPatients || 0);
       })
       .catch((err) => {
-        console.log("An error has occurred");
+        console.error("An error has occurred.");
       });
   }, [
     API_BASE,
@@ -148,7 +148,7 @@ const PatientManagement = () => {
     })
       .then((response) => response.json())
       .catch((err) => {
-        console.log("An error has occurred");
+        console.error("An error has occurred.");
       });
     fetchPatients();
     setDeleteDialogOpen(false);

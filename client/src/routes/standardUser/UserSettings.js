@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import PhoneInputField from "../../components/authentication/PhoneInputField";
 import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 import { UserContext } from "../../utils/UserContext";
+import { stringEqual } from "../../utils/stringEqual";
 
 /**
  * A page that provides the tools for a user to securely update their
@@ -153,7 +154,7 @@ const UserSettings = () => {
         return response.json();
       })
       .catch((error) => {
-        console.log("Failed to change password");
+        console.error("Failed to change password.");
       });
   }
 
@@ -498,7 +499,7 @@ const UserSettings = () => {
   const Password = () => {
     const mismatch =
       passwordData.confirmPassword &&
-      passwordData.newPassword !== passwordData.confirmPassword;
+      !stringEqual(passwordData.newPassword, passwordData.confirmPassword);
     const disabled =
       !passwordData.currentPassword || !passwordData.newPassword || mismatch;
     return (

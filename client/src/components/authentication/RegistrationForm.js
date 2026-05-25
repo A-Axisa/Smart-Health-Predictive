@@ -26,6 +26,7 @@ import Logo from "../../assets/WellAiLogoTR.png";
 import EmailInputField from "../authentication/EmailInputField";
 import PasswordInputField from "../authentication/PasswordInputField";
 import PhoneInputField from "../authentication/PhoneInputField";
+import { stringEqual } from "../../utils/stringEqual";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const ACCOUNT_TYPES = Object.freeze({
@@ -77,7 +78,7 @@ const RegistrationForm = () => {
     })
       .then((res) => res.json())
       .then((data) => setClinicList(data))
-      .catch((err) => console.log("An error has occurred"));
+      .catch((err) => console.error("An error has occurred."));
   }, []);
 
   function updateGivenName(e) {
@@ -134,7 +135,7 @@ const RegistrationForm = () => {
     const confirmPasswordInput = e.target.value;
     setConfirmPassword(confirmPasswordInput);
     setAlertPasswordsDontMatch(
-      confirmPasswordInput !== passwordState.password ||
+      !stringEqual(confirmPasswordInput, passwordState.password) ||
         confirmPasswordInput === "",
     );
   }
@@ -182,7 +183,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertGenderRequired(genderState === "");
@@ -194,7 +195,7 @@ const RegistrationForm = () => {
     setAlertPasswordRequired(passwordState === null);
     setAlertPasswordsDontMatch(
       passwordState === null ||
-        confirmPassword !== passwordState.password ||
+        !stringEqual(confirmPassword, passwordState.password) ||
         confirmPassword === "",
     );
     setAlertClinicRequired(clinicState === "");
@@ -214,7 +215,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword
+      stringEqual(passwordState.password, confirmPassword)
     );
   }
 
@@ -225,7 +226,7 @@ const RegistrationForm = () => {
       (phoneState === null || phoneState.isValid) &&
       passwordState !== null &&
       passwordState.isValid &&
-      passwordState.password === confirmPassword &&
+      stringEqual(passwordState.password, confirmPassword) &&
       clinicState !== ""
     );
   }
@@ -281,7 +282,7 @@ const RegistrationForm = () => {
         setShowFailMessage(false);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("User reigstration requeset failed.");
       });
     setIsLoading(false);
   }

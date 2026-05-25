@@ -181,7 +181,7 @@ const CreatePatientForm = () => {
         return response.json();
       })
       .catch((err) => {
-        console.log("An error has occurred");
+        console.error("An error has occurred.");
       });
     setIsLoading(false);
   }

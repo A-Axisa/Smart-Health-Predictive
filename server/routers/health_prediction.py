@@ -7,6 +7,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 import csv
 import codecs
+import logging
 
 from ..utils.database import get_db
 from ..models.dbmodels import HealthData, Prediction, Recommendation, UserAccount, UserPatientAccess, Patient, LogEventType
@@ -14,6 +15,8 @@ from ..services.health_recommendation_service import get_health_recommendations
 from .authentication import get_current_user, get_user, get_patient_by_email
 from ..utils.audit_log import write_audit_log
 
+
+logger = logging.getLogger(__name__)
 
 # HealthData
 class HealthDataInput(CamelModel):
@@ -233,8 +236,9 @@ async def predict(data: HealthDataInput, request: Request, db_conn: Session = De
                 db_conn=db_conn, health_data_id=int(_hd_id))
         else:
             recommendations = {"error": "Missing HealthDataID"}
-    except Exception as e:
-        recommendations = {"error": str(e)}
+    except Exception:
+        logger.error("Health recommendations failed to generate.")
+        recommendations = None
 
     # Persist recommendations when available
     exercise_rec = None
@@ -539,8 +543,9 @@ async def merchant_predict(data: MerchantHealthDataInput, request: Request, db_c
                 db_conn=db_conn, health_data_id=int(_hd_id))
         else:
             recommendations = {"error": "Missing HealthDataID"}
-    except Exception as e:
-        recommendations = {"error": str(e)}
+    except Exception:
+        logger.error("Health recommendations failed to generate.")
+        recommendations = None
 
     # Persist recommendations when available
     exercise_rec = None
