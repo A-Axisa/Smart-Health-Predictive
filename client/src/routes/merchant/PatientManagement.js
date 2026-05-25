@@ -1,25 +1,27 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import ConfirmationDialog from "../../components/dialog/confirmationDialog";
-import InputAdornment from "@mui/material/InputAdornment";
 import {
   Box,
-  Typography,
   Button,
-  Paper,
-  TextField,
+  Divider,
   Menu,
   MenuItem,
-  Divider,
+  Paper,
   Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
 import { DataGrid } from "@mui/x-data-grid";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import ConfirmationDialog from "../../components/dialog/confirmationDialog";
 
 // Icons
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 /**
  * A page used to display a list of all patients for a merchant user.
@@ -30,13 +32,15 @@ const PatientManagement = () => {
   const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
   const navigate = useNavigate();
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [patientData, setPatientData] = useState([]);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 25,
   });
   const [totalPatients, setTotalPatients] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPatientID, setSelectedPatientID] = useState(null);
@@ -108,15 +112,51 @@ const PatientManagement = () => {
       ),
     },
   ];
+  const fetchPatients = useCallback(() => {
+    const params = new URLSearchParams({
+      skip: paginationModel.page * paginationModel.pageSize,
+      limit: paginationModel.pageSize,
+    });
 
-  useEffect(() => {
-    fetchPatients();
+    if (givenNameInput) params.append("given_names", givenNameInput);
+    if (familyNameInput) params.append("family_name", familyNameInput);
+
+    fetch(`${API_BASE}/merchant/associated-patients?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setPatientData(data.patients || []);
+        setTotalPatients(data.totalPatients || 0);
+      })
+      .catch((err) => {
+        console.error("An error has occurred.");
+      });
   }, [
+    API_BASE,
     paginationModel.page,
     paginationModel.pageSize,
     givenNameInput,
     familyNameInput,
   ]);
+
+  async function handleDelete(patientID) {
+    await fetch(`${API_BASE}/remove-patient/${patientID}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .catch((err) => {
+        console.error("An error has occurred.");
+      });
+    fetchPatients();
+    setDeleteDialogOpen(false);
+  }
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
 
   // Debounce given name input
   useEffect(() => {
@@ -137,45 +177,6 @@ const PatientManagement = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [familyNameInput]);
-
-  const fetchPatients = () => {
-    setLoading(true);
-    const params = new URLSearchParams({
-      skip: paginationModel.page * paginationModel.pageSize,
-      limit: paginationModel.pageSize,
-    });
-
-    if (givenNameInput) params.append("given_names", givenNameInput);
-    if (familyNameInput) params.append("family_name", familyNameInput);
-
-    fetch(`${API_BASE}/merchant/associated-patients?${params.toString()}`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setPatientData(data.patients || []);
-        setTotalPatients(data.totalPatients || 0);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("An error has occurred.");
-        setLoading(false);
-      });
-  };
-
-  async function handleDelete(patientID) {
-    await fetch(`${API_BASE}/remove-patient/${patientID}`, {
-      method: "DELETE",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.error("An error has occurred.");
-      });
-    fetchPatients();
-    setDeleteDialogOpen(false);
-  }
 
   return (
     <Box
@@ -198,10 +199,7 @@ const PatientManagement = () => {
         }}
       >
         <Stack spacing={1} sx={{ width: "100%", mb: 3 }}>
-          <Typography
-            variant="h3"
-            sx={{ fontSize: { xs: "2em", sm: "2em", md: "3em" } }}
-          >
+          <Typography variant={isMobile ? "h5" : "h3"}>
             Patient Management
           </Typography>
           <Divider />

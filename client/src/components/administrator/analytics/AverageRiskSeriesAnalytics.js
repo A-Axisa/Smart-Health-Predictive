@@ -1,23 +1,21 @@
 import {
   Card,
   CardContent,
-  Container,
-  Paper,
-  Typography,
-  Select,
-  MenuItem,
+  FormControl,
   Grid,
   InputLabel,
-  FormControl,
+  MenuItem,
+  Select,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { Stack } from "@mui/system";
-import { useEffect, useState } from "react";
-import { LineChart } from "@mui/x-charts/LineChart";
 import Divider from "@mui/material/Divider";
+import { LineChart } from "@mui/x-charts/LineChart";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
-const DEFAULT_YEAR = 2026;
 
 /**
  * A card that displays the average progression for stroke, diabetes,
@@ -26,6 +24,9 @@ const DEFAULT_YEAR = 2026;
  * @returns {@mui.material.Card}
  */
 const AverageRiskSeriesAnalytics = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [availableYears, setAvailableYears] = useState([]);
   const [year, setYear] = useState("");
   const [xAxisData, setXAxisData] = useState([]);
@@ -73,10 +74,6 @@ const AverageRiskSeriesAnalytics = () => {
       });
   }, [year]);
 
-  function extractXAxisData(rawData) {
-    return rawData.map((d) => new Date(d.date));
-  }
-
   return (
     <Card sx={{ p: "5px" }}>
       <CardContent>
@@ -99,7 +96,7 @@ const AverageRiskSeriesAnalytics = () => {
               Average Disease Risk (%)
             </Typography>
           </Grid>
-          <Grid size={2}>
+          <Grid size={isMobile ? 12 : 2}>
             <FormControl>
               <InputLabel id="year-label-id">Year</InputLabel>
               <Select

@@ -454,13 +454,34 @@ async def delete_user(request: Request, db_conn: Session = Depends(get_db)):
 async def get_health_analytics(
     request: Request,
     db_conn: Session = Depends(get_db),
+    health_data_id: Optional[int] = None,
 ):
     """Return time-series health risk probabilities from the current user's historical predictions."""
     user_email = get_current_user(request, db_conn)
     patient = get_patient_by_email(user_email["email"], db_conn)
-    if not patient:
-        return []
-    patient_id = patient.PatientID
+
+    if not health_data_id:
+        if not patient:
+            return []
+        patient_id = patient.PatientID
+
+    else:
+        # Retrieve patientID from selected health report.
+        health_data = db_conn.query(HealthData).filter(HealthData.HealthDataID == health_data_id).first()
+        if not health_data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health data not found.")
+        
+        patient_id = health_data.PatientID
+
+        # Verify Merchant has access to patient.
+        merchant = db_conn.query(UserAccount).filter_by(Email=user_email["email"]).first()
+        merchant_access = (db_conn.query(UserPatientAccess)
+                        .filter(UserPatientAccess.UserID == merchant.UserID, UserPatientAccess.PatientID == patient_id)
+                        .first())
+                        
+        if not merchant_access:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
@@ -1161,6 +1182,7 @@ async def get_merchant_patient_data(patient_id: int, request: Request, db_conn: 
         "age": get_age(patient.DateOfBirth),
         "maritalStatus": patient.get_marital_status(),
         "workingStatus": patient.get_working_status(),
+        "race": patient.get_race()
     }
 
     return result

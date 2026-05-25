@@ -1,6 +1,5 @@
+import { Box, Container, Divider, Stack, Typography } from "@mui/material";
 import AuditLogTable from "../../components/administrator/AuditLogTable";
-import { Box, Typography, Divider, Stack, Container } from "@mui/material";
-import AdministratorApproval from "./AdministratorApproval";
 
 /**
  * A route that provides tools to filter through and audit the systems logs.

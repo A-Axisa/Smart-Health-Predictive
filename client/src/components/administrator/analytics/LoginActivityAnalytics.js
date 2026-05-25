@@ -1,21 +1,14 @@
-import dayjs from "dayjs";
 import {
   Box,
   Card,
   CardContent,
-  Container,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Stack,
-  Typography,
   Divider,
+  Grid,
+  Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts";
+import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const TIMESPAN_IN_DAYS = 7;

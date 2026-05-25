@@ -98,6 +98,13 @@ const styles = StyleSheet.create({
     textDecoration: "underline",
     marginBottom: 5,
   },
+  chartSessionTitle: {
+    fontFamily: "Helvetica-Oblique",
+    fontSize: 12,
+    textDecoration: "underline",
+    marginBottom: 5,
+    marginTop: 30,
+  },
   table: {
     borderWidth: 1,
     borderColor: "#000",
@@ -191,6 +198,10 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#888",
   },
+  chartImage: {
+    marginTop: 5,
+    marginBottom: 30,
+  },
 });
 
 const getRisk = (val) => {
@@ -278,7 +289,7 @@ const renderParagraph = (text) => {
  * @param {Object} [props.metaDate] - Date the health report was generated
  * @returns {@react-pdf.renderer.Document}
  */
-const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
+const HealthReportPDFFlat = ({ data, metaId, metaDate, chartImage }) => {
   const dateObj = metaDate ? new Date(metaDate) : new Date();
   const dateStr = dateObj.toLocaleDateString("en-GB", {
     day: "numeric",
@@ -436,6 +447,16 @@ const HealthReportPDFFlat = ({ data, metaId, metaDate }) => {
             </Text>
             {renderParagraph(data.exerciseRecommendation)}
           </View>
+
+          {/* Session 3 */}
+          <Text style={styles.chartSessionTitle} break>
+            Session 3 – Health Trend Graph
+          </Text>
+
+          <Image
+            src={chartImage}
+            style={styles.chartImage}
+          />
 
           {/* Break hint: we want disclaimer to either stay at the end or push to next page. */}
           <Text style={[styles.disclaimer, { marginTop: 30 }]} break>

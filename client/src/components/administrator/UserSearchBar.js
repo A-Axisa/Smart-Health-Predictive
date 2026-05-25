@@ -1,7 +1,7 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { TextField, Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
-import { useEffect, useState, memo } from "react";
+import { memo, useEffect, useState } from "react";
 
 /**
  * A search bar that is used as an element in the UserManagementTable to

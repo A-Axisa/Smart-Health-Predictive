@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import ForwardToInboxOutlinedIcon from "@mui/icons-material/ForwardToInboxOutlined";
+import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 import {
   Box,
   Button,
@@ -9,10 +9,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import ForwardToInboxOutlinedIcon from "@mui/icons-material/ForwardToInboxOutlined";
-import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
-import EmailInputField from "./EmailInputField";
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Logo from "../../assets/WellAiLogoTR.png";
+import EmailInputField from "./EmailInputField";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 

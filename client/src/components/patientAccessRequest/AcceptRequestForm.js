@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";
-import { useParams, Link as RouterLink } from "react-router-dom";
 import {
   Box,
-  Container,
-  Stack,
   Button,
-  Typography,
-  Link,
+  Card,
+  Divider,
   List,
   ListItem,
   ListItemText,
-  Divider,
+  Stack,
+  Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { Link as RouterLink, useParams } from "react-router-dom";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -56,14 +55,11 @@ const AcceptRequestForm = () => {
   }
 
   return (
-    <Container
+    <Card
       sx={{
-        borderRadius: { xs: 0, sm: 2 },
-        padding: "40px",
         alignItems: "center",
-        boxShadow: 24,
-        backgroundColor: "#ffffff",
         width: { xs: "auto", sm: "500px" },
+        minHeight: { xs: "100vh", sm: "auto" },
         flexGrow: { xs: 1, sm: 0 },
       }}
     >
@@ -77,7 +73,7 @@ const AcceptRequestForm = () => {
           style={{ justifyContent: "center" }}
         >
           <Stack direction="column" spacing={{ xs: 2 }}>
-            <Typography variant="h4" fontWeight={600}>
+            <Typography variant="h4" align="center">
               Partner Access Request
             </Typography>
             <Typography align="start">
@@ -159,7 +155,7 @@ const AcceptRequestForm = () => {
           </Button>
         </Stack>
       )}
-    </Container>
+    </Card>
   );
 };
 

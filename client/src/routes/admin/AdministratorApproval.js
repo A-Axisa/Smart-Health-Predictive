@@ -1,5 +1,5 @@
+import { Box, Container, Divider, Stack, Typography } from "@mui/material";
 import AccountApprovalTable from "../../components/administrator/AccountApprovalTable";
-import { Box, Typography, Divider, Stack, Container } from "@mui/material";
 
 /**
  * A route that displays the merchant approval table where administrators

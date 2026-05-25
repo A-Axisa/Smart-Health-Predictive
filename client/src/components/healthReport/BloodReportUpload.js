@@ -73,6 +73,10 @@ const BloodReportUpload = ({ onChange }) => {
       variant="contained"
       tabIndex={-1}
       startIcon={<FileUploadIcon />}
+      sx={{
+        justifyContent: "center",
+        textAlign: "center",
+      }}
     >
       Upload Blood Report
       <HiddenInput type="file" onChange={processBloodReport} />

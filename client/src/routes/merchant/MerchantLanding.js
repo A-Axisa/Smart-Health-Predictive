@@ -1,5 +1,11 @@
-import { Box, Typography, Card, CardContent } from "@mui/material";
-import { grid } from "@mui/system";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -13,18 +19,9 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
  */
 const MerchantLanding = () => {
   const [data, setData] = useState({});
-  const [name, setName] = useState("");
 
-  useEffect(() => {
-    fetch(`${API_BASE}/user/me`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((user) => {
-        setName(user.name);
-      });
-  }, []);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     fetch(`${API_BASE}/merchant-dashboard`, {
@@ -56,14 +53,6 @@ const MerchantLanding = () => {
     },
   ];
 
-  function relativeTime(date) {
-    const diff = (Date.now() - new Date(date)) / 1000;
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  }
-
   return (
     <Box
       sx={{
@@ -77,7 +66,9 @@ const MerchantLanding = () => {
       }}
     >
       <Box sx={{ borderBottom: "1px solid #d6d6d6", mb: 4, py: 3 }}>
-        <Typography variant="h2">Patient Overview</Typography>
+        <Typography variant={isMobile ? "h4" : "h2"}>
+          Patient Overview
+        </Typography>
       </Box>
 
       {/* Stat cards */}
@@ -115,7 +106,10 @@ const MerchantLanding = () => {
       >
         {/* Condition risk graph */}
         <Card sx={{ flex: 1, borderRadius: "10px", p: 2 }}>
-          <Typography variant="h4" sx={{ mb: 2 }}>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: 2, textAlign: isMobile ? "center" : "left" }}
+          >
             Risk Distribution
           </Typography>
           {["stroke", "cvd", "diabetes"].map((condition) => {
@@ -194,7 +188,10 @@ const MerchantLanding = () => {
             p: 2,
           }}
         >
-          <Typography variant="h4" sx={{ mb: 2 }}>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: 2, textAlign: isMobile ? "center" : "left" }}
+          >
             Report Activity
           </Typography>
           <Box sx={{ maxHeight: 380, overflowY: "auto" }}>

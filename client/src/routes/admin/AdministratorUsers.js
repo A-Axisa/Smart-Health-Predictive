@@ -1,5 +1,5 @@
+import { Box, Container, Divider, Stack, Typography } from "@mui/material";
 import UserManagementTable from "../../components/administrator/UserManagementTable";
-import { Box, Typography, Divider, Stack, Container } from "@mui/material";
 
 /**
  * A route that provides tools to manage, filter and search through the users of the
