@@ -34,6 +34,31 @@ const ReportTemplate = ({ report, date }) => {
     2: "Former",
   };
 
+  const genderMap = {
+    0: "Female",
+    1: "Male",
+  };
+
+  const maritalStatusMap = {
+    0: "Single",
+    1: "Married",
+    2: "Widow",
+    3: "Divorced",
+  };
+
+  const raceMap = {
+    0: "Malay",
+    1: "Chinese",
+    2: "Indian",
+    3: "Other",
+  };
+
+  const alcoholMap = {
+    0: "Regular",
+    1: "Occasional",
+    2: "Non-drinker",
+  };
+
   const healthFields = [
     { label: "Age", value: report.age },
     { label: "Weight", value: `${report.weight}kg` },
@@ -82,7 +107,7 @@ const ReportTemplate = ({ report, date }) => {
 
     {
       label: "Alcohol",
-      value: report.alcohol === 1 ? "Yes" : "No",
+      value: alcoholMap[report.alcohol],
     },
 
     {
@@ -92,12 +117,16 @@ const ReportTemplate = ({ report, date }) => {
 
     {
       label: "Marital Status",
-      value: report.maritalStatus === 1 ? "Married" : "Single",
+      value: maritalStatusMap[report.maritalStatus],
     },
 
     {
       label: "Working Status",
       value: workingStatusMap[report.workingStatus],
+    },
+    {
+      label: "race",
+      value: raceMap[report.race],
     },
   ];
 
