@@ -22,9 +22,10 @@ const ReportTemplate = ({ report, date }) => {
 
   const workingStatusMap = {
     0: "Unemployed",
-    1: "Private",
+    1: "Homemaker",
     2: "Student",
-    4: "Public",
+    3: "Working",
+    4: "Retired",
   };
 
   const smokingStatusMap = {

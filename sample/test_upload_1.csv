@@ -1,3 +1,3 @@
-﻿GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke
-Audrey,Young,audrey.young@example.com,61463531525,31,50,170,Male,4.5,135,120,1,1,0,1,0,Yes,Single,Private,1
-Steven,Wallace,steven.wallace@example.com,4.92E+12,31,60,170,Male,6,140,120,0,1,0,0,1,No,Married,Private,0
+GivenNames,LastName,Email,PhoneNumber,Age,WeightKilograms,HeightCentimetres,Gender,BloodGlucose,APHigh,APLow,HighCholesterol,HyperTension,HeartDisease,Diabetes,Alcohol,SmokingStatus,MaritalStatus,WorkingStatus,Stroke,Race
+Audrey,Young,audrey.young@example.com,61463531525,58,134,168,Male,15.5,160,120,1,1,0,1,Regular,Yes,Single,Working,1,Malay
+Steven,Wallace,steven.wallace@example.com,4.92E+12,45,85,170,Male,7,170,105,1,1,1,0,Regular,Yes,Married,Working,0,Malay
