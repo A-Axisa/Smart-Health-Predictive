@@ -63,7 +63,7 @@ const ReportTemplate = ({ report, date }) => {
     { label: "Age", value: report.age },
     { label: "Weight", value: `${report.weight}kg` },
     { label: "Height", value: `${report.height}cm` },
-    { label: "Gender", value: report.gender === 0 ? "Female" : "Male" },
+    { label: "Gender", value: genderMap[report.gender] },
 
     {
       label: "Blood Glucose",
