@@ -319,7 +319,6 @@ async def upload_csv(request: Request, uploaded_file: UploadFile = File(...),
 
         if not patient:
             skipped_rows += 1
-            # TODO: Create the Patient if they don't exist.
             continue
 
         try:
