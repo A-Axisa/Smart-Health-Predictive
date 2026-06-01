@@ -128,7 +128,12 @@ be accessed directly on http://localhost:9323/.
 
 # To ensure that k6 is operational, run:
 
-k6 run load-tests/tests/smoke.js
+k6 run \
+  -e BASEURL=http://localhost:8000 \
+  -e ADMIN_EMAIL=SHP_Admin@example.com -e ADMIN_PASSWORD=password12345678 \
+  -e MERCHANT_EMAIL=service@example.com -e MERCHANT_PASSWORD=thisismypassword \
+  -e USER_EMAIL=audrey.young@example.com -e USER_PASSWORD=whyaretherebirds \
+  load-tests/tests/smoke.js
 ```
 
 
