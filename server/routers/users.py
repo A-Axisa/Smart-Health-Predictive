@@ -63,6 +63,7 @@ class Report(CamelModel):
     stroke_chance: float
     CVD_chance: float
     diabetes_chance: float
+    race: int
     # Optional recommendations
     exercise_recommendation: Optional[str] = None
     diet_recommendation: Optional[str] = None
@@ -467,21 +468,24 @@ async def get_health_analytics(
 
     else:
         # Retrieve patientID from selected health report.
-        health_data = db_conn.query(HealthData).filter(HealthData.HealthDataID == health_data_id).first()
+        health_data = db_conn.query(HealthData).filter(
+            HealthData.HealthDataID == health_data_id).first()
         if not health_data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health data not found.")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Health data not found.")
+
         patient_id = health_data.PatientID
 
         # Verify Merchant has access to patient.
-        merchant = db_conn.query(UserAccount).filter_by(Email=user_email["email"]).first()
+        merchant = db_conn.query(UserAccount).filter_by(
+            Email=user_email["email"]).first()
         merchant_access = (db_conn.query(UserPatientAccess)
-                        .filter(UserPatientAccess.UserID == merchant.UserID, UserPatientAccess.PatientID == patient_id)
-                        .first())
-                        
-        if not merchant_access:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
+                           .filter(UserPatientAccess.UserID == merchant.UserID, UserPatientAccess.PatientID == patient_id)
+                           .first())
 
+        if not merchant_access:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Impermissible action.")
 
     # Join predictions with health data to scope by user, order by prediction time
     rows = (
@@ -578,11 +582,11 @@ async def get_report_data(healthDataId: int, db_conn: Session = Depends(get_db))
             1 if bool(getattr(healthData, 'HeartDisease', False) or False) else 0),
         diabetes=int(
             1 if bool(getattr(healthData, 'Diabetes', False) or False) else 0),
-        alcohol=int(
-            1 if bool(getattr(healthData, 'Alcohol', False) or False) else 0),
+        alcohol=int(getattr(healthData, 'Alcohol', 0) or 0),
         smoker=int(getattr(healthData, 'SmokingStatus', 0) or 0),
         marital_status=int(getattr(healthData, 'MaritalStatus', 0) or 0),
         working_status=int(getattr(healthData, 'WorkingStatus', 0) or 0),
+        race=int(getattr(healthData, 'Race', 0) or 0),
         stroke_chance=float(getattr(predictionData, 'StrokeChance', 0) or 0),
         CVD_chance=float(getattr(predictionData, 'CVDChance', 0) or 0),
         diabetes_chance=float(
@@ -837,8 +841,8 @@ async def associated_patients(request: Request, given_names: str = None, family_
 
     # Retrieve patient information
     query = (db_conn.query(Patient.PatientID, Patient.GivenNames, Patient.FamilyName, Patient.Gender, Patient.DateOfBirth)
-                    .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
-                    .filter(UserPatientAccess.UserID == merchant_id)
+             .join(UserPatientAccess, UserPatientAccess.PatientID == Patient.PatientID)
+             .filter(UserPatientAccess.UserID == merchant_id)
              )
     # Filter by search parameters
     if (given_names):
@@ -1449,7 +1453,7 @@ def send_patient_request_email(email: str, patient: Patient, clinic: str, reques
         <body>
             <p>Greetings {given_names} {family_name},</p>
             <p>You have received a request from our partner {clinic_name} at WellAI Smart Health Predictive to access your patient record.</p>
-            <p>Click the following link to proceed with this process and provide access to {clinic_name} to manage your patient record. 
+            <p>Click the following link to proceed with this process and provide access to {clinic_name} to manage your patient record.
             <p>This will allow {clinic_name} to:</p>
             <ul>
                 <li>View your health report history</li>

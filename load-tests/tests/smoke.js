@@ -3,6 +3,10 @@ import merchant from '../scenarios/merchant.js';
 import admin from '../scenarios/admin.js';
 
 
+const HAS_USER = __ENV.USER_EMAIL && __ENV.USER_PASSWORD;
+const HAS_MERCHANT = __ENV.MERCHANT_EMAIL && __ENV.MERCHANT_PASSWORD;
+const HAS_ADMIN = __ENV.ADMIN_EMAIL && __ENV.ADMIN_PASSWORD;
+
 export const options = {
   scenarios: {
     users: {
@@ -26,15 +30,18 @@ export const options = {
   },
 };
 
-
 export function runUser() {
+  if (!HAS_USER) return;
   user();
 }
 
 export function runMerchant() {
+  if (!HAS_USER) return;
   merchant();
 }
 
 export function runAdmin() {
+  if (!HAS_ADMIN) return;
   admin();
 }
+ 
