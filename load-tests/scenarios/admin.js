@@ -3,15 +3,15 @@ import { check, sleep } from 'k6';
 
 
 const BASE_URL = __ENV.BASEURL || 'http://localhost:8000';
-const TEST_EMAIL = __ENV.TEST_EMAIL;
-const TEST_PASSWORD = __ENV.TEST_PASSWORD;
+const ADMIN_EMAIL = __ENV.ADMIN_EMAIL;
+const ADMIN_PASSWORD = __ENV.ADMIN_PASSWORD;
 
 export default function () {
   // Test login.
   let loginResult = http.post(`${BASE_URL}/login`,
     JSON.stringify({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
   }), {
     headers: { 'Content-Type': 'application/json' },
   });
